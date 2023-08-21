@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import Button from '@components/Button';
 
 defineProps<{ msg: string }>()
 
@@ -15,6 +16,7 @@ const count = ref(0)
       Edit
       <code>components/HelloWorld.vue</code> to test HMR
     </p>
+    <Button>Heellow</Button>
   </div>
 
   <p>
