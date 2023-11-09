@@ -12,14 +12,15 @@ import type { RouterLinkProps } from 'vue-router';
  */
 interface Props extends /* @vue-ignore */ AnchorHTMLAttributes, RouterLinkProps {
   body?: 'large' | 'medium' | 'small' | 'micro';
-  color?: string,
-  fontSize?: string,
-  fontStyle?: string,
-  fontWeight?: string,
-  lineHeight?: string,
-  textAlign?: string,
-  textDecoration?: string,
-  textTransform?: string,
+  color?: string;
+  fontSize?: string;
+  fontStyle?: string;
+  fontWeight?: string;
+  lineHeight?: string;
+  target?: string; // re-referenced since somehow even though the attributes already defined in AnchorHTMLAttributes, it's shown warning on runtime.
+  textAlign?: string;
+  textDecoration?: string;
+  textTransform?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -50,11 +51,7 @@ const linkStyle = reactive({
   >
     <slot />
   </a>
-  <RouterLink v-else
-    v-bind="$props"
-    v-slot="{ href, navigate }"
-    custom
-  >
+  <RouterLink v-else v-bind="$props" v-slot="{ href, navigate }" custom>
     <a
       v-bind="$attrs"
       class="cp-link"

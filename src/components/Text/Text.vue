@@ -5,16 +5,16 @@ interface Props {
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'span' | 'b' | 'strong' | 'p' | 'div' | 'label';
   heading?: '1' | '2' | '3' | '4' | '5' | '6' | number;
   body?: 'large' | 'medium' | 'small' | 'micro';
-  color?: string,
-  fontSize?: string,
-  fontStyle?: string,
-  fontWeight?: string,
-  lineHeight?: string,
-  textAlign?: string,
-  textDecoration?: string,
-  textTransform?: string,
-  margin?: string,
-  padding?: string,
+  color?: string;
+  fontSize?: string;
+  fontStyle?: string;
+  fontWeight?: string;
+  lineHeight?: string;
+  textAlign?: string;
+  textDecoration?: string;
+  textTransform?: string;
+  margin?: string;
+  padding?: string;
 }
 
 const props = defineProps<Props>();
