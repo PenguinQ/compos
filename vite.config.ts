@@ -44,4 +44,13 @@ export default defineConfig({
       "@helpers": fileURLToPath(new URL("./src/helpers", import.meta.url)),
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `
+          @import '@assets/_mixins.scss';
+        `,
+      },
+    },
+  },
 });

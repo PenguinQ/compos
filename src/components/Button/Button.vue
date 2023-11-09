@@ -2,6 +2,12 @@
 import { ButtonHTMLAttributes } from 'vue';
 import { stateResolver } from '@helpers';
 
+/**
+ * Vue only has limited Typescript support, tha'ts why there's
+ * @vue-ignore inline below to allow compiler ignore warning, see:
+ *
+ * https://github.com/vuejs/core/issues/8286
+ */
 interface Props extends /* @vue-ignore */ ButtonHTMLAttributes {
   error?: boolean;
   full?: boolean;

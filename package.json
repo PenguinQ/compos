@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:host": "vite --host",
     "build": "vue-tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "pinia": "^2.1.7",
     "vue": "^3.3.4",
     "vue-router": "^4.2.4"
   },

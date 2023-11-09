@@ -1,1 +1,1 @@
-// declare module '@helpers';
+declare module '@helpers';
