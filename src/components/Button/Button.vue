@@ -3,7 +3,7 @@ import { ButtonHTMLAttributes } from 'vue';
 import { stateResolver } from '@helpers';
 
 /**
- * Vue only has limited Typescript support, tha'ts why there's
+ * Vue only has limited Typescript support, that's why there's
  * @vue-ignore inline below to allow compiler ignore warning, see:
  *
  * https://github.com/vuejs/core/issues/8286

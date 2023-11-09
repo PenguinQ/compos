@@ -4,7 +4,13 @@ import { RouterLink } from 'vue-router';
 import type { AnchorHTMLAttributes } from 'vue';
 import type { RouterLinkProps } from 'vue-router';
 
-interface Props extends AnchorHTMLAttributes, RouterLinkProps {
+/**
+ * Vue only has limited Typescript support, that's why there's
+ * @vue-ignore inline below to allow compiler ignore warning, see:
+ *
+ * https://github.com/vuejs/core/issues/8286
+ */
+interface Props extends /* @vue-ignore */ AnchorHTMLAttributes, RouterLinkProps {
   body?: 'large' | 'medium' | 'small' | 'micro';
   color?: string,
   fontSize?: string,
