@@ -1,3 +1,6 @@
+<script lang="ts">
+export default { inheritAttrs: false };
+</script>
 <script setup lang="ts">
 import { computed, reactive } from 'vue';
 import { RouterLink } from 'vue-router';

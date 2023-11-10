@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Text from '@components/Text';
 import Link from '@components/Link';
+import { Eye, EyeFilled, ArrowDown } from '@icons';
 </script>
 
 <template>
@@ -20,6 +21,9 @@ import Link from '@components/Link';
   <Text body="medium">
     App link inside {{ `<Text>` }} <Link to="/sales/running">Link Text</Link>
   </Text>
+  <Eye size="48px" />
+  <EyeFilled />
+  <ArrowDown />
 </template>
 
 <style lang="scss" scoped></style>
