@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 
 import { setComponentName } from './icons-helper.ts';
+import type { ContentType } from './icons-build.ts'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,16 +16,9 @@ const generateVueIcons = ({ name, source }: { name: string, source: string}) => 
 
   return `<script setup lang="ts">
 import { reactive, ref } from 'vue';
+import type { IconProps } from './types';
 
-interface Props extends /* @vue-ignore */ SVGElement {
-  title: string,
-  size: number | string,
-  color: string,
-  rotate: number,
-  margin: string,
-}
-
-const props = defineProps<Props>();
+const props = defineProps<IconProps>();
 
 const iconRef = ref(null);
 const iconStyle = reactive({
@@ -56,7 +50,7 @@ defineExpose({ ref: iconRef });
 `;
 };
 
-const generateVueComponents = (glyphs: []) => {
+const generateVueComponents = (glyphs: ContentType[]) => {
   const log = chalk.hex('#70EAFA');
   const bold = chalk.bold;
   const spinner = ora(`${bold('Generating SVG components...')}`);

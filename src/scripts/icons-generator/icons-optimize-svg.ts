@@ -4,16 +4,12 @@ import * as glob from 'glob';
 import { optimize } from 'svgo';
 import chalk from 'chalk';
 import ora from 'ora';
-
-interface SvgListType {
-  name: string;
-  source: string;
-}
+import type { ContentType } from './icons-build.ts';
 
 const getName = (filePath: string) => path.basename(filePath, path.extname(filePath));
 
-const optimizeSVG = (pattern: string, callback: ([]) => void) => {
-  const svgList: SvgListType[] = [];
+const optimizeSVG = (pattern: string, callback: (glyphs: ContentType[]) => void) => {
+  const svgList: ContentType[] = [];
   const filePath = glob.sync(pattern);
   const log = chalk.hex('#70EAFA');
   const bold = chalk.bold;
@@ -78,7 +74,7 @@ const optimizeSVG = (pattern: string, callback: ([]) => void) => {
 
       const result = optimize(data, {
         path: p,
-        multipass: false,
+        multipass: true,
         // plugins: [
         //   'removeDoctype',
         //   'removeXMLProcInst',

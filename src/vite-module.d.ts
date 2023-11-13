@@ -1,2 +1,2 @@
-declare module '@helpers';
-declare module '@icons';
+// declare module '@helpers';
+// declare module '@icons';
