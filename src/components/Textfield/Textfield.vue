@@ -4,20 +4,26 @@ export default { inheritAttrs: false };
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
+import { Eye, EyeSlash } from '@icons';
 
-interface Props extends InputHTMLAttributes {
-  append?: string | Node;
+interface Props extends /* @vue-ignore */ InputHTMLAttributes {
+  append?: string;
+  class?: string;
+  disabled?: boolean;
   error?: boolean;
   focus?: boolean;
-  label?: string | Node;
-  message?: string | Node;
+  label?: string;
+  message?: string;
   modelValue?: string | number;
   placeholder?: string;
-  prepend?: string | Node;
+  prepend?: string;
   success?: boolean;
+  type?: 'email' | 'number' | 'password' | 'tel' | 'text';
+  value?: any;
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  disabled: false,
   error: false,
   focus: false,
   success: false,
@@ -39,8 +45,17 @@ const togglePassword = () => {
 </script>
 
 <template>
-  <div class="cp-form cp-form--textfield" :class="class">
-    <label v-if="label">{{ label }}</label>
+  <div
+    class="cp-form cp-form--textfield"
+    :class="class"
+    :data-mt-disabled="disabled ? true : undefined"
+    :data-mt-error="error ? true : undefined"
+    :data-mt-success="success ? true : undefined"
+  >
+    <label v-if="label || $slots['label']">
+      <slot name="label" />
+      {{ label }}
+    </label>
     <div class="cp-form-container">
       <div v-if="prepend || $slots['prepend']" class="cp-form-affix">
         <slot name="prepend" />
@@ -50,8 +65,9 @@ const togglePassword = () => {
         v-if="isPassword"
         class="cp-form-field"
         v-bind="$attrs"
-        :type="showPassword ? 'text' : 'password'"
         :disabled="disabled"
+        :placeholder="placeholder"
+        :type="showPassword ? 'text' : 'password'"
         :value="value || modelValue"
         @input="handleInput"
       />
@@ -59,13 +75,17 @@ const togglePassword = () => {
         v-else
         class="cp-form-field"
         v-bind="$attrs"
-        :type="type"
         :disabled="disabled"
+        :placeholder="placeholder"
+        :type="type"
         :value="value || modelValue"
         @input="handleInput"
       />
       <div v-if="append || $slots['append'] || isPassword" class="cp-form-affix">
-        <button>Eye</button>
+        <button v-if="isPassword" type="button" @click="togglePassword">
+          <Eye v-if="!showPassword" />
+          <EyeSlash v-else />
+        </button>
         <slot name="append" />
         {{ append }}
       </div>
@@ -77,4 +97,8 @@ const togglePassword = () => {
   </div>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss">
+.cp-form--textfield {
+
+}
+</style>

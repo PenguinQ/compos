@@ -1,3 +1,3 @@
-import Button from './Textarea.vue';
+import Textarea from './Textarea.vue';
 
-export default Button;
+export default Textarea;

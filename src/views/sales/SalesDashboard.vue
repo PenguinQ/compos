@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import Text from '@components/Text';
+import Textfield from '@components/Textfield';
+import Textarea from '@components/Textarea';
 import Link from '@components/Link';
 import { Eye, EyeFilled, ArrowDown } from '@icons';
 </script>
@@ -21,9 +23,16 @@ import { Eye, EyeFilled, ArrowDown } from '@icons';
   <Text body="medium">
     App link inside {{ `<Text>` }} <Link to="/sales/running">Link Text</Link>
   </Text>
+  <hr />
   <Eye size="48px" />
   <EyeFilled />
   <ArrowDown />
+  <hr />
+  <Textfield />
+  <Textfield label="Berak" />
+  <Textfield label="Berak" message="Berak Message" />
+  <hr />
+  <Textarea />
 </template>
 
 <style lang="scss" scoped></style>
