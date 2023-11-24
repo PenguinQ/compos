@@ -11,7 +11,6 @@ interface Props extends /* @vue-ignore */ InputHTMLAttributes {
   class?: string;
   disabled?: boolean;
   error?: boolean;
-  focus?: boolean;
   label?: string;
   message?: string;
   modelValue?: string | number;
@@ -25,7 +24,6 @@ interface Props extends /* @vue-ignore */ InputHTMLAttributes {
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   error: false,
-  focus: false,
   success: false,
   type: 'text',
 });
@@ -41,6 +39,10 @@ const handleInput = (e: Event) => {
 
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
+};
+
+const testLog = () => {
+  console.log('test event');
 };
 </script>
 
@@ -82,7 +84,13 @@ const togglePassword = () => {
         @input="handleInput"
       />
       <div v-if="append || $slots['append'] || isPassword" class="cp-form-affix">
-        <button v-if="isPassword" type="button" @click="togglePassword">
+        <button
+          class="cp-form--textfield__password-toggle"
+          v-if="isPassword"
+          type="button"
+          @click="togglePassword"
+          @touchstart="testLog"
+        >
           <Eye v-if="!showPassword" />
           <EyeSlash v-else />
         </button>
@@ -97,8 +105,44 @@ const togglePassword = () => {
   </div>
 </template>
 
+<style src="../../assets/_form.scss" />
 <style lang="scss">
 .cp-form--textfield {
+  .cp-form-affix {
+    color: inherit;
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 400;
+    transition: color 300ms cubic-bezier(0.63, 0.01, 0.29, 1);
+    display: flex;
 
+    &:first-child {
+      padding-left: 12px;
+    }
+
+    &:last-child {
+      padding-right: 12px;
+    }
+  }
+
+  .cp-form-field {
+    padding: 14px 0;
+
+    &:first-child {
+      padding-left: 12px;
+    }
+
+    &:last-child {
+      padding-right: 12px;
+    }
+  }
+
+  &__password-toggle {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 4px;
+  }
 }
 </style>

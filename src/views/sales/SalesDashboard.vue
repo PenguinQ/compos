@@ -29,10 +29,12 @@ import { Eye, EyeFilled, ArrowDown } from '@icons';
   <ArrowDown />
   <hr />
   <Textfield />
-  <Textfield label="Berak" />
-  <Textfield label="Berak" message="Berak Message" />
+  <Textfield label="Textfield Label" />
+  <Textfield label="Textfield Label" message="Textarea message" />
   <hr />
   <Textarea />
+  <Textarea label="Textarea Label" />
+  <Textarea label="Textarea Label" message="Textarea message" />
 </template>
 
 <style lang="scss" scoped></style>

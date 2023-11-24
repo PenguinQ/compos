@@ -18,9 +18,6 @@ const meta: Meta<typeof Textfield> = {
     error: {
       control: 'boolean',
     },
-    focus: {
-      control: 'boolean',
-    },
     label: {
       control: 'text',
     },
@@ -66,6 +63,6 @@ export const Default: Story = {
     setup() {
       return { args };
     },
-    template: '<Textfield v-bind="args" />',
+    template: `<Textfield v-bind="args" autofocus />`,
   }),
 };
