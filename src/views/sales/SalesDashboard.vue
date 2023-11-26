@@ -3,7 +3,12 @@ import Text from '@components/Text';
 import Textfield from '@components/Textfield';
 import Textarea from '@components/Textarea';
 import Link from '@components/Link';
+import QuantityEditor from '@components/QuantityEditor';
 import { Eye, EyeFilled, ArrowDown } from '@icons';
+
+const testCallback = () => {
+  console.log('Test Callback');
+};
 </script>
 
 <template>
@@ -35,6 +40,12 @@ import { Eye, EyeFilled, ArrowDown } from '@icons';
   <Textarea />
   <Textarea label="Textarea Label" />
   <Textarea label="Textarea Label" message="Textarea message" />
+  <hr />
+  <QuantityEditor
+    @on-click-decrement="testCallback"
+    @on-click-increment="testCallback"
+  />
+  <hr />
 </template>
 
 <style lang="scss" scoped></style>

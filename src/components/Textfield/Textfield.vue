@@ -40,10 +40,6 @@ const handleInput = (e: Event) => {
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
 };
-
-const testLog = () => {
-  console.log('test event');
-};
 </script>
 
 <template>
@@ -89,7 +85,6 @@ const testLog = () => {
           v-if="isPassword"
           type="button"
           @click="togglePassword"
-          @touchstart="testLog"
         >
           <Eye v-if="!showPassword" />
           <EyeSlash v-else />
