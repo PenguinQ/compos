@@ -5,12 +5,14 @@ import type { InputHTMLAttributes } from 'vue';
 import { Plus, Dash } from '@icons';
 
 interface Props extends /* @vue-ignore */ InputHTMLAttributes {
+  disabled?: boolean;
   min?: number;
   modelValue?: string | number;
   value?: string | number;
 }
 
 withDefaults(defineProps<Props>(), {
+  disabled: false,
   min: 0,
 });
 
@@ -48,9 +50,10 @@ const handleInput = (e: Event) => {
 </script>
 
 <template>
-  <div class="cp-quantity-editor">
+  <div class="cp-quantity-editor" :data-mt-disabled="disabled ? disabled : undefined">
     <button
       type="button"
+      :disabled="disabled"
       @click="$emit('onClickDecrement')"
       @mousedown="(e) => updateQuantity(e, false)"
       @mouseup="stopQuantityUpdate"
@@ -67,12 +70,14 @@ const handleInput = (e: Event) => {
       v-bind="$attrs"
       type="number"
       inputmode="numeric"
+      :disabled="disabled"
       :min="min"
       :value="value || modelValue"
       @input="handleInput"
     />
     <button
       type="button"
+      :disabled="disabled"
       @click="$emit('onClickIncrement')"
       @mousedown="(e) => updateQuantity(e)"
       @mouseup="stopQuantityUpdate"
@@ -118,15 +123,23 @@ const handleInput = (e: Event) => {
       transition: transform 300ms cubic-bezier(0.63, 0.01, 0.29, 1);
     }
 
-    &:hover,
-    &:focus {
-      background-color: var(--color-primary);
+    &:not(:disabled) {
+      &:hover,
+      &:focus {
+        background-color: var(--color-primary);
+      }
+
+      &:active {
+        svg {
+          transform: scale(0.8);
+        }
+      }
     }
 
-    &:active {
-      svg {
-        transform: scale(0.8);
-      }
+    &:disabled {
+      background-color: var(--color-disabled-2);
+      border-color: transparent;
+      cursor: not-allowed;
     }
   }
 
@@ -136,6 +149,7 @@ const handleInput = (e: Event) => {
     font-size: 16px;
     line-height: 22px;
     font-weight: 400;
+    text-align: center;
     background-color: transparent;
     border-top: 1px solid var(--color-black);
     border-right: none;
@@ -144,11 +158,23 @@ const handleInput = (e: Event) => {
     border-radius: 0;
     outline: none;
     padding: 8px 0;
-    text-align: center;
+    transition: all 300ms cubic-bezier(0.63, 0.01, 0.29, 1);
 
     &::placeholder {
       color: #CED3DC;
       opacity: 1;
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      appearance: none;
+      margin: 0;
+    }
+
+    &[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
     }
 
     &:focus {
@@ -156,18 +182,12 @@ const handleInput = (e: Event) => {
       box-shadow: 0 2px 6px rgba(127, 90, 255, 0.1);
       outline: none;
     }
-  }
 
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    appearance: none;
-    margin: 0;
-  }
-
-  input[type="number"] {
-    -moz-appearance: textfield;
-    appearance: textfield;
+    &:disabled {
+      background-color: var(--color-disabled-background);
+      border-color: var(--color-disabled-border);
+      cursor: not-allowed;
+    }
   }
 }
 </style>

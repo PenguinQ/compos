@@ -5,8 +5,14 @@ import QuantityEditor from './QuantityEditor.vue';
 const meta: Meta<typeof QuantityEditor> = {
   component: QuantityEditor,
   tags: ['autodocs'],
-  argTypes: {},
-  args: {},
+  argTypes: {
+    disabled: {
+      type: 'boolean',
+    },
+  },
+  args: {
+    disabled: false,
+  },
 };
 
 export default meta;
