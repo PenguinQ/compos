@@ -34,4 +34,45 @@
   --color-info: var(--color-blue-3);
   --color-disabled: #FCF7F8;
   --color-disabled-2: #B5B3BA;
+
+  --color-focus-outline: var(--color-blue-5);
+
+  // Font Size
+  --text-heading-1-size: 28px;
+  --text-heading-2-size: 24px;
+  --text-heading-3-size: 20px;
+  --text-heading-4-size: 16px;
+  --text-heading-5-size: 14px;
+  --text-heading-6-size: 12px;
+  --text-heading-1-height: 34px;
+  --text-heading-2-height: 30px;
+  --text-heading-3-height: 26px;
+  --text-heading-4-height: 22px;
+  --text-heading-5-height: 20px;
+  --text-heading-6-height: 18px;
+  --text-body-large-size: 16px;
+  --text-body-medium-size: 14px;
+  --text-body-small-size: 12px;
+  --text-body-micro-size: 10px;
+  --text-body-large-height: 20px;
+  --text-body-medium-height: 18px;
+  --text-body-small-height: 16px;
+  --text-body-micro-height: 14px;
+}
+
+@include screen-md {
+  :root {
+    --text-heading-1-size: 36px;
+    --text-heading-2-size: 32px;
+    --text-heading-3-size: 28px;
+    --text-heading-4-size: 24px;
+    --text-heading-5-size: 20px;
+    --text-heading-6-size: 16px;
+    --text-heading-1-height: 44px;
+    --text-heading-2-height: 40px;
+    --text-heading-3-height: 36px;
+    --text-heading-4-height: 32px;
+    --text-heading-5-height: 28px;
+    --text-heading-6-height: 24px;
+  }
 }

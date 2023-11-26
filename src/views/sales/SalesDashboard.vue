@@ -4,7 +4,7 @@ import Textfield from '@components/Textfield';
 import Textarea from '@components/Textarea';
 import Link from '@components/Link';
 import QuantityEditor from '@components/QuantityEditor';
-import { Eye, EyeFilled, ArrowDown } from '@icons';
+import { Check, Eye, EyeFilled, ArrowDown } from '@icons';
 
 const testCallback = () => {
   console.log('Test Callback');
@@ -32,6 +32,7 @@ const testCallback = () => {
   <Eye size="48px" />
   <EyeFilled />
   <ArrowDown />
+  <Check />
   <hr />
   <Textfield />
   <Textfield label="Textfield Label" />

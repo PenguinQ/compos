@@ -35,7 +35,7 @@ defineExpose({ ref: iconRef });
   <svg
     ref="iconRef"
     xmlns="http://www.w3.org/2000/svg"
-    class="mt-icon"
+    class="cp-icon"
     viewBox="0 0 24 24"
     data-mt-icon="${iconName}"
     :title="title"
