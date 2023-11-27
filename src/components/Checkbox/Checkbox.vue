@@ -25,8 +25,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emits = defineEmits(['update:modelValue']);
 
-const container = ref(null);
-const input = ref<HTMLInputElement | null>(null);
+const container = ref();
+const input = ref<HTMLInputElement>();
 const computedValue = computed(() => props.trueValue ? props.trueValue : props.value);
 const computedArray = computed({
   get() {
@@ -37,7 +37,7 @@ const computedArray = computed({
   },
 });
 const isArray = computed(() => props.modelValue instanceof Array);
-const isChecked = computed((): number | boolean | [] | undefined => {
+const isChecked = computed((): any => {
   if (computedValue.value) {
     return props.modelValue === computedValue.value;
   } else {
@@ -63,7 +63,7 @@ const handleChange = (e: Event) => {
 };
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter') (input.value as HTMLInputElement).click();
+  if (e.key === 'Enter') input.value?.click();
 };
 </script>
 
