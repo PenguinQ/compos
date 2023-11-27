@@ -1,0 +1,32 @@
+@mixin create-column($for: 'row', $size: '', $column: 12) {
+  $dataSelector: 'data-cp-column';
+  $childSelector: '> *';
+
+  @if ($for == 'column') {
+    $childSelector: '';
+  }
+
+  @if $size != '' {
+    $dataSelector: 'data-cp-column-#{$size}';
+  }
+
+  .cp-#{$for}[#{$dataSelector}="auto"] #{$childSelector} {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  @for $i from 1 through $column {
+    $baseWidth: calc((100 / $i) * 1%);
+    $additionalWidth: $gutterColumn / $i;
+
+    @if ($for == 'column') {
+      $baseWidth: calc((100 / ($column / $i)) * 1%);
+      $additionalWidth: $gutterColumn / calc($column / $i);
+    }
+
+    .cp-#{$for}[#{$dataSelector}="#{$i}"] #{$childSelector} {
+      max-width: calc((#{$baseWidth} - #{$gutterColumn}) + #{$additionalWidth});
+      flex-basis: calc((#{$baseWidth} - #{$gutterColumn}) + #{$additionalWidth});
+    }
+  }
+}

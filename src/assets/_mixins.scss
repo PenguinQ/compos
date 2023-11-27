@@ -4,8 +4,38 @@ $screen-lg: 992px;
 $screen-xl: 1200px;
 $screen-xxl: 1400px;
 
+@mixin screen-sm {
+  @media (min-width: $screen-md) {
+    @content;
+  }
+};
+
 @mixin screen-md {
   @media (min-width: $screen-md) {
     @content;
   }
 };
+
+@mixin screen-lg {
+  @media (min-width: $screen-md) {
+    @content;
+  }
+};
+
+@mixin screen-xl {
+  @media (min-width: $screen-md) {
+    @content;
+  }
+};
+
+@mixin screen-xxl {
+  @media (min-width: $screen-md) {
+    @content;
+  }
+};
+
+@mixin screen-rwd($screen) {
+  @media (min-width: $screen + 'px') {
+    @content;
+  }
+}

@@ -4,6 +4,7 @@ import Textfield from '@components/Textfield';
 import Textarea from '@components/Textarea';
 import Link from '@components/Link';
 import QuantityEditor from '@components/QuantityEditor';
+import { Container, Row, Column } from '@components/Layout';
 import { Check, Eye, EyeFilled, ArrowDown } from '@icons';
 
 const testCallback = () => {
@@ -12,6 +13,13 @@ const testCallback = () => {
 </script>
 
 <template>
+  <Container>
+    <Row>
+      <Column>Column 1</Column>
+      <Column>Column 2</Column>
+      <Column>Column 3</Column>
+    </Row>
+  </Container>
   <Text heading="1">This is Sales Dashboard page</Text>
   <Text heading="2">This is Sales Dashboard page</Text>
   <Text heading="3">This is Sales Dashboard page</Text>
