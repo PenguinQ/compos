@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { ref, reactive, onBeforeMount } from 'vue';
+import type * as CSS from 'csstype';
 
 interface Props {
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'span' | 'b' | 'strong' | 'p' | 'div' | 'label';
   heading?: '1' | '2' | '3' | '4' | '5' | '6' | number;
   body?: 'large' | 'medium' | 'small' | 'micro';
-  color?: string;
-  fontSize?: string;
-  fontStyle?: string;
-  fontWeight?: string;
-  lineHeight?: string;
-  textAlign?: string;
-  textDecoration?: string;
-  textTransform?: string;
-  margin?: string;
-  padding?: string;
+  color?: CSS.Property.Color;
+  fontSize?: CSS.Property.FontSize;
+  fontStyle?: CSS.Property.FontStyle;
+  fontWeight?: CSS.Property.FontWeight;
+  lineHeight?: CSS.Property.LineHeight;
+  textAlign?: CSS.Property.TextAlign;
+  textDecoration?: CSS.Property.TextDecoration;
+  textTransform?: CSS.Property.TextTransform;
+  margin?: CSS.Property.Margin | number;
+  padding?: CSS.Property.Padding | number;
 }
 
 const props = defineProps<Props>();

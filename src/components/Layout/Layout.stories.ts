@@ -1,4 +1,3 @@
-import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 
 import Column from './Column.vue';
@@ -22,8 +21,7 @@ export const ContainerStory: StoryContainer = {
       return { args };
     },
     template: `
-      <Container v-bind="args">Normal Container</Container>
-      <Container fluid>Fluid Container</Container>
+      <Container v-bind="args">Content</Container>
     `,
   }),
   argTypes: {
@@ -50,16 +48,70 @@ export const RowStory: StoryRow = {
     },
     template: `
       <Container>
-        <Row column="auto">
-          <Column column="auto">Column 1</Column>
+        <Row v-bind="args">
+          <Column>Column 1</Column>
           <Column>Column 2</Column>
           <Column>Column 3</Column>
+          <Column>Column 4</Column>
         </Row>
       </Container>
     `,
   }),
   argTypes: {
-
+    align: {
+      control: 'select',
+      options: [
+        'normal',
+        'flex-start',
+        'flex-end',
+        'center',
+        'start',
+        'end',
+        'self-start',
+        'self-end',
+        'baseline',
+        'first baseline',
+        'last baseline',
+        'stretch',
+        'safe',
+        'unsafe',
+      ],
+    },
+    column: {
+      control: 'number',
+    },
+    direction: {
+      control: 'select',
+      options: [
+        'row',
+        'row-reverse',
+        'column',
+        'column-reverse',
+      ],
+    },
+    gutter: {
+      control: 'text',
+    },
+    justify: {
+      control: 'select',
+      options: [
+        'start',
+        'end',
+        'flex-start',
+        'flex-end',
+        'center',
+        'left',
+        'right',
+        'normal',
+        'space-between',
+        'space-around',
+        'space-evenly',
+        'stretch',
+      ],
+    },
+    margin: {
+      control: 'text',
+    },
   },
 };
 
@@ -74,7 +126,7 @@ export const ColumnStory: StoryColumn = {
     template: `
       <Container>
         <Row>
-          <Column>Column 1</Column>
+          <Column v-bind="args">This Will Change</Column>
           <Column>Column 2</Column>
           <Column>Column 3</Column>
           <Column>Column 4</Column>
@@ -82,6 +134,32 @@ export const ColumnStory: StoryColumn = {
       </Container>
     `,
   }),
+  argTypes: {
+    align: {
+      control: 'select',
+      options: [
+        'auto',
+        'normal',
+        'self-start',
+        'self-end',
+        'flex-start',
+        'flex-end',
+        'center',
+        'baseline',
+        'first baseline',
+        'last baseline',
+        'stretch',
+        'safe',
+        'unsafe',
+      ],
+    },
+    column: {
+      control: 'number',
+    },
+    order: {
+      control: 'number',
+    },
+  },
 };
 
 ColumnStory.storyName = 'Column';

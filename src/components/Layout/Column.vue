@@ -7,9 +7,9 @@ export interface ColumnType {
 }
 
 interface Props {
-  align?: CSS.Properties<'selfAlign'>;
+  align?: CSS.Property.AlignSelf;
   column?: number | string | ColumnType;
-  order?: number | string;
+  order?: CSS.Property.Order;
 }
 
 const props = defineProps<Props>();
@@ -19,12 +19,12 @@ const { column } = props;
 const columnBreakpoints = reactive({
   'data-cp-column': typeof column === 'object' ? column?.default : column ? column : undefined,
   'data-cp-column-md': typeof column === 'object' ? column?.md : undefined,
-});'cp-row';
+});
 
 const columnStyle = reactive({
   'order': props.order,
   'align-self': props.align,
-})
+});
 </script>
 
 <template>
@@ -40,11 +40,6 @@ const columnStyle = reactive({
 .cp-column {
   max-width: 100%;
   flex: 1 0 0%;
-
-  // &[data-cp-column="auto"] {
-  //   width: auto;
-  //   flex: 0 0 auto;
-  // }
 }
 
 @include create-column('column');

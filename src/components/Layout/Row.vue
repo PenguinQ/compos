@@ -9,12 +9,12 @@ interface GutterType {
 }
 
 interface Props {
-  align?: CSS.Properties<'alignItems'>;
+  align?: CSS.Property.AlignItems;
   column?: number | string | ColumnType;
-  direction?: CSS.Properties<'flexDirection'>;
+  direction?: CSS.Property.FlexDirection;
   gutter?: number | string | GutterType;
-  justify?: CSS.Properties<'justifyContent'>;
-  margin?: number | string;
+  justify?: CSS.Property.JustifyContent;
+  margin?: CSS.Property.Margin | number;
 }
 
 const props = defineProps<Props>();
@@ -65,11 +65,6 @@ const rowStyle = reactive({
   flex-wrap: wrap;
   column-gap: $gutterColumn;
   row-gap: $gutterRow;
-
-  // &[data-cp-column="auto"] > * {
-  //   width: auto;
-  //   flex: 0 0 auto;
-  // }
 }
 
 @include create-column('row');
