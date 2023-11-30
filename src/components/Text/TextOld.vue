@@ -51,24 +51,16 @@ onBeforeMount(() => {
     if (heading && headingMap[heading]) markup.value = headingMap[heading];
   }
 });
-
-const textClass = reactive({
-  'cp-text': true,
-  'cp-text--heading-1': props.heading == 1,
-  'cp-text--heading-2': props.heading == 2,
-  'cp-text--heading-3': props.heading == 3,
-  'cp-text--heading-4': props.heading == 4,
-  'cp-text--heading-5': props.heading == 5,
-  'cp-text--heading-6': props.heading == 6,
-  'cp-text--body-large': props.body === 'large',
-  'cp-text--body-medium': props.body === 'medium',
-  'cp-text--body-small': props.body === 'small',
-  'cp-text--body-micro': props.body === 'micro',
-});
 </script>
 
 <template>
-  <component :is="markup" :class="textClass" :style="textStyle">
+  <component
+    class="cp-text"
+    :is="markup"
+    :data-cp-heading="heading ? heading : undefined"
+    :data-cp-body="body ? body : undefined"
+    :style="textStyle"
+  >
     <slot />
   </component>
 </template>
@@ -77,66 +69,100 @@ const textClass = reactive({
 .cp-text {
   color: var(--color-black);
   font-family: "DM Sans", sans-serif;
-  font-size: var(--text-body-medium-size);
+  font-size: 14px;
   font-weight: 400;
-  line-height: var(--text-body-medium-height);
+  line-height: 18px;
   text-decoration: none;
   margin-top: 0;
   margin-bottom: 12px;
 
-  &--body-large {
-    font-size: var(--text-body-large-size);
-    line-height: var(--text-body-large-height);
+  &[data-cp-body="large"] {
+    font-size: 16px;
+    line-height: 20px;
   }
 
-  &--body-medium {
-    font-size: var(--text-body-medium-size);
-    line-height: var(--text-body-medium-height);
+  &[data-cp-body="medium"] {
+    font-size: 14px;
+    line-height: 18px;
   }
 
-  &--body-small {
-    font-size: var(--text-body-small-size);
-    line-height: var(--text-body-small-height);
+  &[data-cp-body="small"] {
+    font-size: 12px;
+    line-height: 16px;
   }
 
-  &--body-micro {
-    font-size: var(--text-body-micro-size);
-    line-height: var(--text-body-micro-height);
+  &[data-cp-body="micro"] {
+    font-size: 10px;
+    line-height: 14px;
   }
 
-  &[class^="cp-text--heading"] {
+  &[data-cp-heading] {
     font-family: "Nunito", sans-serif;
     font-weight: 600;
   }
 
-  &--heading-1 {
-    font-size: var(--text-heading-1-size);
-    line-height: var(--text-heading-1-height);
+  &[data-cp-heading="1"] {
+    font-size: 28px;
+    line-height: 34px;
   }
 
-  &--heading-2 {
-    font-size: var(--text-heading-2-size);
-    line-height: var(--text-heading-2-height);
+  &[data-cp-heading="2"] {
+    font-size: 24px;
+    line-height: 30px;
   }
 
-  &--heading-3 {
-    font-size: var(--text-heading-3-size);
-    line-height: var(--text-heading-3-height);
+  &[data-cp-heading="3"] {
+    font-size: 20px;
+    line-height: 26px;
   }
 
-  &--heading-4 {
-    font-size: var(--text-heading-4-size);
-    line-height: var(--text-heading-4-height);
+  &[data-cp-heading="4"] {
+    font-size: 16px;
+    line-height: 22px;
   }
 
-  &--heading-5 {
-    font-size: var(--text-heading-5-size);
-    line-height: var(--text-heading-5-height);
+  &[data-cp-heading="5"] {
+    font-size: 14px;
+    line-height: 20px;
   }
 
-  &--heading-6 {
-    font-size: var(--text-heading-6-size);
-    line-height: var(--text-heading-6-height);
+  &[data-cp-heading="6"] {
+    font-size: 12px;
+    line-height: 18px;
+  }
+}
+
+@include screen-md {
+  .cp-text {
+    &[data-cp-heading="1"] {
+      font-size: 36px;
+      line-height: 44px;
+    }
+
+    &[data-cp-heading="2"] {
+      font-size: 32px;
+      line-height: 40px;
+    }
+
+    &[data-cp-heading="3"] {
+      font-size: 28px;
+      line-height: 36px;
+    }
+
+    &[data-cp-heading="4"] {
+      font-size: 24px;
+      line-height: 32px;
+    }
+
+    &[data-cp-heading="5"] {
+      font-size: 20px;
+      line-height: 28px;
+    }
+
+    &[data-cp-heading="6"] {
+      font-size: 16px;
+      line-height: 24px;
+    }
   }
 }
 </style>

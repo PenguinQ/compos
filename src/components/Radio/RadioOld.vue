@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
 interface Props extends /* @vue-ignore */ InputHTMLAttributes {
@@ -21,10 +21,6 @@ const props = withDefaults(defineProps<Props>(), {
 const container = ref<HTMLLabelElement>();
 const input = ref<HTMLInputElement>();
 const isChecked = computed(() => props.modelValue === props.value);
-const radioClass = reactive({
-  'cp-radio': true,
-  'cp-radio--full': props.full,
-});
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Enter') input.value?.click();
@@ -33,10 +29,12 @@ const handleKeydown = (e: KeyboardEvent) => {
 
 <template>
   <label
+    class="cp-radio"
     ref="container"
     v-bind="containerProps"
-    :class="[radioClass, $props.class]"
+    :class="class"
     :data-cp-disabled="disabled ? disabled : undefined"
+    :data-cp-full="full ? full : undefined"
     @keydown="handleKeydown"
   >
     <div class="cp-radio__container">
@@ -122,7 +120,7 @@ const handleKeydown = (e: KeyboardEvent) => {
     flex: 1;
   }
 
-  &--full {
+  &[data-cp-full] {
     width: 100%;
   }
 

@@ -2,7 +2,7 @@
 export default { inheritAttrs: false };
 </script>
 <script setup lang="ts">
-import { Teleport, Transition, onBeforeMount, watch } from 'vue';
+import { Teleport, Transition, onBeforeMount } from 'vue';
 import { useOverlayContainer } from '@hooks';
 import type * as CSS from 'csstype';
 
@@ -13,7 +13,7 @@ interface Props {
   padding?: CSS.Property.Padding;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   duration: 300,
   modelValue: false,
   overflow: false,
@@ -37,16 +37,15 @@ onBeforeMount(() => {
   createOverlayContainer();
 });
 
-watch(
-  () => props.modelValue,
-  (modelValue) => {
-    if (modelValue) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-  },
-);
+const handleEnter = () => {
+  document.body.style.overflow = 'hidden';
+  emits('enter');
+};
+
+const handleLeave = () => {
+  document.body.style.overflow = '';
+  emits('leave');
+};
 </script>
 
 <template>
@@ -54,11 +53,11 @@ watch(
     <Transition
       :duration="duration"
       @before-enter="$emit('before-enter')"
-      @enter="$emit('enter')"
+      @enter="handleEnter"
       @after-enter="$emit('after-enter')"
       @enter-cancelled="$emit('enter-cancelled')"
       @before-leave="$emit('before-leave')"
-      @leave="$emit('leave')"
+      @leave="handleLeave"
       @after-leave="$emit('after-leave')"
       @leave-cancelled="$emit('leave-cancelled')"
     >
@@ -107,10 +106,10 @@ watch(
   &__content {
     display: contents;
     contain: layout;
-    max-width: 100%;
-    max-height: 100%;
     pointer-events: auto;
     position: relative;
+    // max-width: 100%;
+    // max-height: 100%;
 
     > * {
       position: relative;

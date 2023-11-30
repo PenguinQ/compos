@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
-import type { ButtonHTMLAttributes } from 'vue';
-import type * as CSS from 'csstype';
+import { ButtonHTMLAttributes } from 'vue';
 
 /**
  * Vue only has limited Typescript support, that's why there's
@@ -10,31 +8,27 @@ import type * as CSS from 'csstype';
  * https://github.com/vuejs/core/issues/8286
  */
 interface Props extends /* @vue-ignore */ ButtonHTMLAttributes {
-  color?: CSS.Property.Color;
   full?: boolean;
   type?: any;
+  color?: string;
   variant?: 'outline' | 'text';
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   full: false,
   type: 'button',
-});
-
-const buttonClass = reactive({
-  'cp-button': true,
-  'cp-button--full': props.full,
-  'cp-button--outline': props.variant === 'outline',
-  'cp-button--text': props.variant === 'text',
-  'cp-button--red': props.color === 'red',
-  'cp-button--green': props.color === 'green',
-  'cp-button--blue': props.color === 'blue',
 });
 </script>
 
 <template>
-  <button :class="buttonClass" :type="type">
-    <slot />
+  <button
+    class="cp-button"
+    :type="type"
+    :data-cp-color="color ? color : undefined"
+    :data-cp-variant="variant ? variant : undefined"
+    :data-cp-full="full ? true : undefined"
+  >
+    <slot></slot>
   </button>
 </template>
 
@@ -56,60 +50,74 @@ const buttonClass = reactive({
   transform-origin: center;
   padding: 10px 12px;
 
-  &--full {
+  &[data-cp-full] {
     width: 100%;
   }
 
-  &--red {
+  &:not(:disabled) {
+    &[data-cp-color="red"] {
     color: var(--color-white);
     background-color: var(--color-red-3);
     border-color: var(--color-red-3);
   }
 
-  &--green {
+  &[data-cp-color="green"] {
     color: var(--color-white);
     background-color: var(--color-green-3);
     border-color: var(--color-green-3);
   }
 
-  &--blue {
+  &[data-cp-color="blue"] {
     color: var(--color-white);
     background-color: var(--color-blue-3);
     border-color: var(--color-blue-3);
   }
 
-  &--outline {
+  &[data-cp-variant="outline"] {
     color: var(--color-black);
     background-color: var(--color-white);
-  }
 
-  &--text {
-    color: var(--color-black);
-    background-color: transparent;
-    border-color: transparent;
-  }
+    &[data-cp-color] {
+      background-color: var(--color-white);
+    }
 
-  &--outline,
-  &--text {
-    &.cp-button--red {
+    &[data-cp-color="red"] {
       color: var(--color-red-3);
     }
 
-    &.cp-button--green {
+    &[data-cp-color="green"] {
       color: var(--color-green-3);
     }
 
-    &.cp-button--blue {
+    &[data-cp-color="blue"] {
       color: var(--color-blue-3);
     }
   }
 
-  &:not(:disabled):active {
-    transform: scale(0.95);
+  &[data-cp-variant="text"] {
+    color: var(--color-black);
+    background-color: transparent;
+    border-color: transparent;
+
+    &[data-cp-color="red"] {
+      color: var(--color-red-3);
+    }
+
+    &[data-cp-color="green"] {
+      color: var(--color-green-3);
+    }
+
+    &[data-cp-color="blue"] {
+      color: var(--color-blue-3);
+    }
+  }
+
+    &:active {
+      transform: scale(0.95);
+    }
   }
 
   &:disabled {
-    color: white;
     background-color: var(--color-disabled-2);
     border-color: transparent;
     cursor: not-allowed;

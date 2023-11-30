@@ -1,18 +1,21 @@
 <script setup lang="ts">
+import { reactive } from 'vue';
+
 interface Props {
   fluid?: boolean;
   breakpoint?: 'md';
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+const containerClass = reactive({
+  'cp-container': true,
+  'cp-container--fluid': props.fluid,
+  'cp-container--breakpoint-md': props.breakpoint === 'md',
+});
 </script>
 
 <template>
-  <div
-    class="cp-container"
-    :data-cp-fluid="fluid ? fluid : undefined"
-    :data-cp-breakpoint="breakpoint ? breakpoint : undefined"
-  >
+  <div :class="containerClass">
     <slot></slot>
   </div>
 </template>
@@ -20,7 +23,7 @@ defineProps<Props>();
 <style lang="scss">
 .cp-container {
   &,
-  &[data-cp-fluid] {
+  &--fluid {
     width: 100%;
     margin-right: auto;
     margin-left: auto;
@@ -29,11 +32,11 @@ defineProps<Props>();
 
 @include screen-md {
   .cp-container {
-    &:not([data-cp-breakpoint]):not([data-cp-fluid]) {
+    &:not([class^="cp-container--breakpoint"]):not([class^="cp-container--fluid"]) {
       max-width: 1320px;
     }
 
-    &[data-cp-breakpoint="md"] {
+    &--breakpoint-md {
       max-width: 1320px;
     }
   }

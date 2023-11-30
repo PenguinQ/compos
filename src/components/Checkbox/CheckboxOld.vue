@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
 import { Check } from '@icons';
@@ -44,10 +44,6 @@ const isChecked = computed((): any => {
     if (typeof props.modelValue !== 'string') return props.modelValue;
   }
 });
-const checkboxClass = reactive({
-  'cp-checkbox': true,
-  'cp-checkbox--full': props.full,
-});
 
 const handleChange = (e: Event) => {
   const checked = (e.target as HTMLInputElement).checked;
@@ -74,9 +70,11 @@ const handleKeydown = (e: KeyboardEvent) => {
 <template>
   <label
     ref="container"
+    class="cp-checkbox"
     v-bind="containerProps"
-    :class="[checkboxClass, $props.class]"
+    :class="class"
     :data-cp-disabled="disabled ? disabled : undefined"
+    :data-cp-full="full ? full : undefined"
     @keydown="handleKeydown"
   >
     <div class="cp-checkbox__container">
@@ -174,7 +172,7 @@ const handleKeydown = (e: KeyboardEvent) => {
     flex: 1;
   }
 
-  &--full {
+  &[data-cp-full] {
     width: 100%;
   }
 

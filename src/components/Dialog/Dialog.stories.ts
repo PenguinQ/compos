@@ -44,7 +44,7 @@ export const Default: Story = {
     },
     template: `
       <Button @click="show1 = true">Show Dialog 1</Button>
-      <Dialog v-model="show1" overflow>
+      <Dialog v-model="show1" v-bind="args" title="Title">
         <Button @click="show2 = true">Show Dialog 2</Button>
         <p>Lorem</p>
         <p>Lorem</p>
