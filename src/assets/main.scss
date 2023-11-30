@@ -60,6 +60,15 @@ p {
   font-weight: 400;
 }
 
+.cp-overlay-container {
+  contain: layout;
+  display: contents;
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
 @include screen-md {
   h1 {
     font-size: 36px;

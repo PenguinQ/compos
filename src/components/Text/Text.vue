@@ -14,8 +14,8 @@ interface Props {
   textAlign?: CSS.Property.TextAlign;
   textDecoration?: CSS.Property.TextDecoration;
   textTransform?: CSS.Property.TextTransform;
-  margin?: CSS.Property.Margin | number;
-  padding?: CSS.Property.Padding | number;
+  margin?: CSS.Property.Margin;
+  padding?: CSS.Property.Padding;
 }
 
 const props = defineProps<Props>();

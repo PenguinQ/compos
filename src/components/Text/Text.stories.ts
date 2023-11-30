@@ -27,6 +27,9 @@ const meta: Meta<typeof Text> = {
     fontStyle: {
       control: 'text',
     },
+    fontWeight: {
+      control: 'text',
+    },
     lineHeight: {
       control: 'text',
     },
