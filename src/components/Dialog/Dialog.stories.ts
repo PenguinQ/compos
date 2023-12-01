@@ -2,14 +2,44 @@ import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 
 import Button from '@components/Button';
+import Text from '@components/Text';
 import Dialog from './Dialog.vue';
 
 const meta: Meta<typeof Dialog> = {
   component: Dialog,
   tags: ['autodocs'],
   argTypes: {
-
+    maxWidth: {
+      control: 'text',
+    },
+    minWidth: {
+      control: 'text',
+    },
+    fullscreen: {
+      control: 'boolean',
+    },
+    noClose: {
+      control: 'boolean',
+    },
+    overflow: {
+      control: 'boolean',
+    },
+    persistent: {
+      control: 'boolean',
+    },
+    title: {
+      control: 'text',
+    },
+    width: {
+      control: 'text',
+    },
   },
+  args: {
+    fullscreen: false,
+    noClose: false,
+    overflow: false,
+    persistent: false,
+  }
 };
 
 export default meta;
@@ -17,88 +47,21 @@ type Story = StoryObj<typeof Dialog>;
 
 export const Default: Story = {
   render: (args) => ({
-    components: { Button, Dialog },
+    components: { Button, Dialog, Text },
     setup() {
-      const show1 = ref(false)
-      const show2 = ref(false);
+      const show = ref(false)
 
-      const testCallback = (text: string) => {
-        console.log(text);
-      };
-
-      const closeAll = () => {
-        show1.value = false;
-        show2.value = false;
-      };
-
-      // @beforeEnter="testCallback('before-enter')"
-      // @enter="testCallback('enter')"
-      // @afterEnter="testCallback('after-enter')"
-      // @enterCancelled="testCallback('enter-cancelled')"
-      // @beforeLeave="testCallback('before-leave')"
-      // @leave="testCallback('leave')"
-      // @afterLeave="testCallback('after-leave')"
-      // @leaveCancelled="testCallback('leave-cancelled')"
-
-      return { args, show1, show2, testCallback, closeAll };
+      return { args, show };
     },
     template: `
-      <Button @click="show1 = true">Show Dialog 1</Button>
-      <Dialog v-model="show1" v-bind="args" title="Title">
-        <Button @click="show2 = true">Show Dialog 2</Button>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-        <p>Lorem</p>
-      </Dialog>
-      <Dialog v-model="show2">
-        <Button @click="closeAll">Close All Dialog</Button>
+      <Text>Modal shown: {{ show }}</Text>
+      <Button @click="show = true">Show Dialog</Button>
+      <Dialog v-model="show" v-bind="args">
+        <Text>
+          A member of the Stellaron Hunters who is calm, collected, and beautiful.
+          Her record on the wanted list of the Interastral Peace Corporation only lists her name and her hobby.
+          People have always imagined her to be elegant, respectable, and in pursuit of things of beauty even in combat.
+        </Text>
       </Dialog>
     `,
   }),

@@ -104,7 +104,7 @@ const textClass = reactive({
     line-height: var(--text-body-micro-height);
   }
 
-  &[class^="cp-text--heading"] {
+  &[class*="cp-text--heading"] {
     font-family: "Nunito", sans-serif;
     font-weight: 600;
   }

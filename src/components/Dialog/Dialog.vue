@@ -1,15 +1,11 @@
 <script setup lang="ts">
-import { onUnmounted, watch } from 'vue';
 import type * as CSS from 'csstype';
 
 import Text from '@components/Text'
 import Overlay from '@components/Overlay'
-import { XLarge } from '@icons';
-
-import { debounce } from '@helpers';
+import { X } from '@icons';
 
 interface Props {
-  width?: CSS.Property.Width;
   fullscreen?: boolean;
   maxWidth?: CSS.Property.MaxWidth;
   minWidth?: CSS.Property.MinWidth;
@@ -18,6 +14,7 @@ interface Props {
   overflow?: boolean;
   persistent?: boolean;
   title?: string;
+  width?: CSS.Property.Width;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -39,25 +36,6 @@ const emits = defineEmits([
   'after-leave',
   'leave-cancelled',
 ]);
-
-const handleResize = debounce(() => {
-  console.log('Resize');
-});
-
-onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
-});
-
-watch(
-  () => props.modelValue,
-  (modelValue) => {
-    if (modelValue) {
-      window.addEventListener('resize', handleResize);
-    } else {
-      window.removeEventListener('resize', handleResize);
-    }
-  },
-);
 
 const closeDialog = () => {
   if (props.modelValue) emits('update:modelValue', false);
@@ -82,11 +60,7 @@ const closeDialog = () => {
     @leave-cancelled="$emit('leave-cancelled')"
     @onClickBackdrop="!persistent && closeDialog()"
   >
-    <div
-      class="cp-dialog"
-      v-if="modelValue"
-      :style="{ maxWidth, minWidth, width }"
-    >
+    <div class="cp-dialog" v-if="modelValue" :style="{ maxWidth, minWidth, width }">
       <button
         v-if="!noClose"
         class="cp-dialog__close"
@@ -94,18 +68,20 @@ const closeDialog = () => {
         aria-label="Close"
         @click="closeDialog"
       >
-        <XLarge size="24" />
+        <X size="24" />
       </button>
       <div v-if="title || $slots.header" class="cp-dialog-header">
-        <Text v-if="title && !$slots.header" class="cp-dialog-header__title" heading="3">
+        <Text v-if="title && !$slots.header" class="cp-dialog__title" heading="3" textAlign="center">
           {{ title }}
         </Text>
-        <slot v-if="$slots.header" name="header"></slot>
+        <slot v-if="$slots.header" name="header" />
       </div>
       <div class="cp-dialog-body">
         <slot />
       </div>
-      <slot v-if="$slots.footer" name="footer"></slot>
+      <div v-if="$slots.footer" class="cp-dialog-footer">
+        <slot name="footer" />
+      </div>
     </div>
   </Overlay>
 </template>
@@ -115,41 +91,46 @@ const closeDialog = () => {
   min-width: calc(320px - 32px);
   background-color: white;
   border-radius: 8px;
-  padding: 16px;
-  transition: all 300ms ease;
+  box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px, rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
   position: relative;
+  transition: all 300ms ease;
 
   &__close {
-    background-color: transparent;
-    border: none;
+    background-color: var(--color-black);
+    border: 1px solid var(--color-black);
+    border-radius: 8px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px, rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
     cursor: pointer;
     transition: all 300ms cubic-bezier(0.63, 0.01, 0.29, 1);
     transform-origin: center;
     position: absolute;
-    top: 16px;
-    right: 16px;
-    padding: 2px;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    transform: translate(50%, -50%);
+    padding: 0;
+
+    .cp-icon {
+      fill: var(--color-white);
+    }
 
     &:active {
-      transform: scale(0.90);
+      transform: translate(50%, -50%) scale(0.90);
     }
   }
 
   &-header {
     position: relative;
-    margin-bottom: 16px;
+  }
 
-    &__title {
-      line-height: 28px;
-      padding-right: 28px;
-      margin: 0;
-    }
+  &__title {
+    line-height: 28px;
+    padding: 16px 16px 0;
+    margin: 0;
   }
 
   &-body {
-    &:empty {
-      min-height: 28px;
-    }
+    padding: 16px;
   }
 
   .v-enter-from &,
@@ -161,7 +142,10 @@ const closeDialog = () => {
 
 @include screen-md {
   .cp-dialog {
-
+    &__title {
+      font-size: var(--text-heading-4-size);
+      line-height: var(--text-heading-4-height);
+    }
   }
 }
 </style>
