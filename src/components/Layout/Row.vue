@@ -4,13 +4,13 @@ import type * as CSS from 'csstype';
 import type { ColumnType } from './Column.vue';
 
 interface GutterType {
-  column?: number | string | null;
+  col?: number | string | null;
   row?: number | string | null;
 }
 
 interface Props {
   align?: CSS.Property.AlignItems;
-  column?: number | string | ColumnType;
+  col?: number | string | ColumnType;
   direction?: CSS.Property.FlexDirection;
   gutter?: number | string | GutterType;
   justify?: CSS.Property.JustifyContent;
@@ -19,29 +19,29 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { column, gutter } = props;
-const gutters: GutterType = { column: null, row: null };
+const { col, gutter } = props;
+const gutters: GutterType = { col: null, row: null };
 
 if (gutter) {
   if (typeof gutter === 'object') {
-    gutters.column = typeof gutter.column === 'number' ? `${gutter.column}px` : gutter.column;
+    gutters.col = typeof gutter.col === 'number' ? `${gutter.col}px` : gutter.col;
     gutters.row = typeof gutter.row === 'number' ? `${gutter.row}px` : gutter.row;
   } else if (typeof gutter === 'number') {
-    gutters.column = `${gutter}px`;
+    gutters.col = `${gutter}px`;
     gutters.row = `${gutter}px`;
   } else {
-    gutters.column = gutter;
+    gutters.col = gutter;
     gutters.row = gutter;
   }
 }
 
 const columnBreakpoints = reactive({
-  'data-cp-column': typeof column === 'object' ? column?.default : column ? column : undefined,
-  'data-cp-column-md': typeof column === 'object' ? column?.md : undefined,
+  'data-cp-col': typeof col === 'object' ? col?.default : col ? col : undefined,
+  'data-cp-col-md': typeof col === 'object' ? col?.md : undefined,
 });
 
 const rowStyle = reactive({
-  '--gutter-col': gutters.column,
+  '--gutter-col': gutters.col,
   '--gutter-row': gutters.row,
   'flex-direction': props.direction,
   'align-items': props.align,

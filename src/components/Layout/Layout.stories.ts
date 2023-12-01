@@ -77,7 +77,7 @@ export const RowStory: StoryRow = {
         'unsafe',
       ],
     },
-    column: {
+    col: {
       control: 'number',
     },
     direction: {
@@ -153,7 +153,7 @@ export const ColumnStory: StoryColumn = {
         'unsafe',
       ],
     },
-    column: {
+    col: {
       control: 'number',
     },
     order: {

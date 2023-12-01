@@ -8,17 +8,17 @@ export interface ColumnType {
 
 interface Props {
   align?: CSS.Property.AlignSelf;
-  column?: number | string | ColumnType;
+  col?: number | string | ColumnType;
   order?: CSS.Property.Order;
 }
 
 const props = defineProps<Props>();
 
-const { column } = props;
+const { col } = props;
 
 const columnBreakpoints = reactive({
-  'data-cp-column': typeof column === 'object' ? column?.default : column ? column : undefined,
-  'data-cp-column-md': typeof column === 'object' ? column?.md : undefined,
+  'data-cp-col': typeof col === 'object' ? col?.default : col ? col : undefined,
+  'data-cp-col-md': typeof col === 'object' ? col?.md : undefined,
 });
 
 const columnStyle = reactive({

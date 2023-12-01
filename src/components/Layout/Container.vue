@@ -10,12 +10,11 @@ const props = defineProps<Props>();
 const containerClass = reactive({
   'cp-container': true,
   'cp-container--fluid': props.fluid,
-  'cp-container--breakpoint-md': props.breakpoint === 'md',
 });
 </script>
 
 <template>
-  <div :class="containerClass">
+  <div :class="containerClass" :data-cp-breakpoint="breakpoint ? breakpoint : undefined">
     <slot></slot>
   </div>
 </template>
@@ -32,11 +31,11 @@ const containerClass = reactive({
 
 @include screen-md {
   .cp-container {
-    &:not([class^="cp-container--breakpoint"]):not([class^="cp-container--fluid"]) {
+    &:not([data-cp-breakpoint]):not([class^="cp-container--fluid"]) {
       max-width: 1320px;
     }
 
-    &--breakpoint-md {
+    &[data-cp-breakpoint="md"] {
       max-width: 1320px;
     }
   }

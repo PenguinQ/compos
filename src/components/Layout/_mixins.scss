@@ -1,5 +1,5 @@
 @mixin create-column($for: 'row', $size: '', $column: 12) {
-  $dataSelector: 'data-cp-column';
+  $dataSelector: 'data-cp-col';
   $childSelector: '> *';
 
   @if ($for == 'column') {
@@ -7,7 +7,7 @@
   }
 
   @if $size != '' {
-    $dataSelector: 'data-cp-column-#{$size}';
+    $dataSelector: 'data-cp-col-#{$size}';
   }
 
   .cp-#{$for}[#{$dataSelector}="auto"] #{$childSelector} {
