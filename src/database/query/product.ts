@@ -46,6 +46,7 @@ export const useQuery: any = (params: any) => {
 
   const {
     collection,
+    query,
     onError,
     onSuccess,
   } = params;
@@ -56,9 +57,44 @@ export const useQuery: any = (params: any) => {
     isSuccess: false,
   });
 
-  const query = queryRx({ collection });
+  const queryResult = queryRx({ collection, query });
 
-  query.then((result: any) => {
+  queryResult.then((result: any) => {
+    states.isLoading = false;
+    states.isSuccess = true;
+    states.data = result;
+
+    onSuccess && onSuccess();
+  }).catch((error: Error) => {
+    states.isLoading = false;
+    states.isError = true;
+    states.isSuccess = false;
+
+    onError && onError(error);
+  });
+
+  return toRefs(states);
+};
+
+export const useQueryOne: any = (params: any) => {
+  if (!params) return false;
+
+  const {
+    collection,
+    query,
+    onError,
+    onSuccess,
+  } = params;
+  const states = reactive({
+    data: null,
+    isError: false,
+    isLoading: true,
+    isSuccess: false,
+  });
+
+  const queryResult = queryRx({ collection, query });
+
+  queryResult.then((result: any) => {
     states.isLoading = false;
     states.isSuccess = true;
     states.data = result;
@@ -145,10 +181,10 @@ export const removeProduct = async (id: string) => {
   });
 };
 
-export const devPopulateProduct = async () => {
+export const setSampleData = async () => {
   const productObj = [];
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 1; i < 5; i++) {
     const id = i;
 
     productObj.push({

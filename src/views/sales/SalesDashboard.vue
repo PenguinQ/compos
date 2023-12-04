@@ -10,23 +10,8 @@ import QuantityEditor from '@components/QuantityEditor';
 import { Container, Row, Column } from '@components/Layout';
 import { Check, Eye, EyeFilled, ArrowDown } from '@icons';
 
-import {
-  // addProduct,
-  // removeProduct,
-  // updateProduct,
-  // getProduct,
-} from '@database';
-
-import {
-  getProducts,
-  getBundles,
-  addProduct,
-  removeProduct,
-  updateProduct,
-  devPopulateProduct,
-  useProducts,
-  useQuery,
-} from '@database/query/product';
+import { setSampleData } from '@database/query/product';
+import { useProducts } from '../products/hooks';
 
 const formData = reactive({
   id: '',
@@ -44,7 +29,7 @@ const products = ref<any>(null);
 
 onMounted(() => {
   // Populate sample data
-  devPopulateProduct();
+  setSampleData();
 });
 
 // onMounted(async () => {

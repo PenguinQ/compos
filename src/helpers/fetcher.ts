@@ -1,30 +1,42 @@
 import { db } from '@database';
 
-interface Params {
+interface QueryParams {
   collection: string;
   query?: object;
 }
 
-// Equals to defaultQueryFn in fleedu
-export const queryRx = async (params: Params) => {
-  const { collection, query } = params;
-  const findQuery = query ? query : {};
+interface MutateParams extends QueryParams {
+  data: object;
+};
 
+export const queryRx = async ({ collection, query = {} }: QueryParams) => {
   try {
-    return await db[collection].find(findQuery).exec();
-  } catch (error) {
-    console.log(error);
+    return await db[collection].find(query).exec();
+  } catch (error: unknown) {
+    throw new Error(error as string)
   }
 };
 
-// export const queryOneRx = async (params: any) => {
-//   const { data, collection, query } = params;
+export const queryOneRx = async ({ collection, query = {} }: QueryParams) => {
+  try {
+    return await db[collection].findOne(query).exec();
+  } catch (error: unknown) {
+    throw new Error(error as string);
+  }
+};
 
-//   try {
-//     const queryResult = await db[collection].findOne(query).exec();
-//   } catch (error) {
-//     throw new Error(error);
-//   } finally {
+export const mutateOne = async () => {
 
-//   }
-// };
+};
+
+export const mutateOneRx = async ({ collection, query, data }: MutateParams) => {
+  try {
+    return await db[collection].findOne(query).exec().then((result: any) => {
+      result.update({
+        $set: data,
+      });
+    });
+  } catch (error) {
+    throw new Error(error as string);
+  }
+};

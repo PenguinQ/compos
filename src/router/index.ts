@@ -10,7 +10,7 @@ const router = createRouter({
     },
     {
       path: '/',
-      redirect: '/sales',
+      redirect: '/product',
       component: () => import('../views/HomeView.vue'),
       children: [
         {
@@ -49,6 +49,12 @@ const router = createRouter({
               name: 'product-detail',
               meta: { title: 'ComPOS - Product Detail' },
               component: () => import('../views/products/ProductDetail.vue'),
+            },
+            {
+              path: '/product/edit/:id',
+              name: 'product-edit',
+              meta: { title: 'ComPOS - Product Edit' },
+              component: () => import('../views/products/ProductForm.vue'),
             },
           ],
         },

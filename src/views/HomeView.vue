@@ -8,5 +8,5 @@ import BottomNavigation from '@components/BottomNavigation';
 <template>
   <Header />
   <RouterView />
-  <BottomNavigation />
+  <!-- <BottomNavigation /> -->
 </template>

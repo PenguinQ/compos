@@ -1,8 +1,5 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-
-import { getProduct } from '@database/query/product';
 
 import Button from '@components/Button';
 import Text from '@components/Text';
@@ -11,28 +8,28 @@ import Textarea from '@components/Textarea';
 import QuantityEditor from '@components/QuantityEditor';
 import { Container, Row, Column } from '@components/Layout';
 
-const route = useRoute();
-const formData = reactive({
-  name: '',
-  description: '',
-  image: '',
-  by: '',
-  price: '',
-  stock: undefined,
-  sku: '',
-});
+import { useProductDetail, useTestDetail } from './hooks';
+
+const {
+  formData,
+  isLoading,
+  mutateProduct,
+} = useTestDetail();
 
 onMounted(() => {
-  console.log(route);
+
 });
 
-const handleSubmit = () => {
+const handleSubmit = (e: Event) => {
+  e.preventDefault();
 
+  mutateProduct();
 };
 </script>
 
 <template>
-  <form id="product-form" @submit="handleSubmit">
+  <div v-if="isLoading">Loading...</div>
+  <form v-else id="product-form" @submit="handleSubmit">
     <Container>
       <Row>
         <Column>
@@ -66,6 +63,7 @@ const handleSubmit = () => {
       </Row>
     </Container>
   </form>
+  <Button form="product-form" type="submit">Submit</Button>
 </template>
 
 <style lang="scss"></style>
