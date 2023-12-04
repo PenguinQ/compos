@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { reactive, ref, onMounted } from 'vue';
+
+import Button from '@components/Button';
 import Text from '@components/Text';
 import Textfield from '@components/Textfield';
 import Textarea from '@components/Textarea';
@@ -7,54 +10,88 @@ import QuantityEditor from '@components/QuantityEditor';
 import { Container, Row, Column } from '@components/Layout';
 import { Check, Eye, EyeFilled, ArrowDown } from '@icons';
 
-const testCallback = () => {
-  console.log('Test Callback');
-};
+import {
+  // addProduct,
+  // removeProduct,
+  // updateProduct,
+  // getProduct,
+} from '@database';
+
+import {
+  getProducts,
+  getBundles,
+  addProduct,
+  removeProduct,
+  updateProduct,
+  devPopulateProduct,
+  useProducts,
+  useQuery,
+} from '@database/query/product';
+
+const formData = reactive({
+  id: '',
+  name: '',
+  description: '',
+  image: '',
+  by: '',
+  price: 0,
+  stock: 0,
+  sku: '',
+});
+
+const { data, isLoading } = useProducts();
+const products = ref<any>(null);
+
+onMounted(() => {
+  // Populate sample data
+  devPopulateProduct();
+});
+
+// onMounted(async () => {
+//   console.log(data);
+
+//   const query = await getProducts();
+//   const populate = await devPopulateProduct();
+
+//   query.subscribe((product: any) => {
+//     products.value = product;
+//   });
+// });
 </script>
 
 <template>
+  <!-- {{ data.isLoading ? 'Loading' : data.reference }} -->
+  {{ data }}
+  {{ isLoading ? 'Loading' : 'Not Loading' }}
+  <!-- {{ data.data }} -->
   <Container>
     <Row>
-      <Column>Column 1</Column>
-      <Column>Column 2</Column>
-      <Column>Column 3</Column>
+      <Column>
+        <Textfield label="ID" v-model="formData.id" />
+        <Textfield label="Name" v-model="formData.name" />
+        <Textarea label="Description" v-model="formData.description" />
+        <Textfield label="Image" v-model="formData.image" />
+        <Textfield label="Price" v-model="formData.price" />
+        <QuantityEditor v-model="formData.stock" />
+        <Textfield label="SKU" v-model="formData.sku" />
+      </Column>
     </Row>
-    <hr/>
-    <Text heading="1">This is Sales Dashboard page</Text>
-    <Text heading="2">This is Sales Dashboard page</Text>
-    <Text heading="3">This is Sales Dashboard page</Text>
-    <Text heading="4">This is Sales Dashboard page</Text>
-    <Text heading="5">This is Sales Dashboard page</Text>
-    <Text heading="6">This is Sales Dashboard page</Text>
-    <Text body="large">This is Sales Dashboard page</Text>
-    <Text body="medium">This is Sales Dashboard page</Text>
-    <Text body="small">This is Sales Dashboard page</Text>
-    <Text body="micro">This is Sales Dashboard page</Text>
-    <Text body="medium">
-      External link inside {{ `<Text>` }} <Link to="https://www.google.com">Link Text</Link>
-    </Text>
-    <Text body="medium">
-      App link inside {{ `<Text>` }} <Link to="/sales/running">Link Text</Link>
-    </Text>
     <hr />
-    <Eye size="48px" />
-    <EyeFilled />
-    <ArrowDown />
-    <Check />
+    <Row>
+      <Column>
+        <Button @click="() => addProduct(formData)">Test Add</Button>
+      </Column>
+    </Row>
     <hr />
-    <Textfield />
-    <Textfield label="Textfield Label" />
-    <Textfield label="Textfield Label" message="Textarea message" />
-    <hr />
-    <Textarea />
-    <Textarea label="Textarea Label" />
-    <Textarea label="Textarea Label" message="Textarea message" />
-    <hr />
-    <QuantityEditor
-      @on-click-decrement="testCallback"
-      @on-click-increment="testCallback"
-    />
-    <hr />
+    <Row>
+      <Column>
+        <div v-for="product in products">
+          <Link :to="`/product/${product._data.id}`">{{ product._data.name }}</Link>
+        </div>
+        <!-- <Button @click="() => removeProduct(product._data.id)">Remove</Button>
+        <Button @click="() => updateProduct(product._data.id, formData)">Update</Button> -->
+      </Column>
+    </Row>
   </Container>
 </template>
 
