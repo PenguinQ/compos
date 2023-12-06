@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+import { monotonicFactory } from 'ulidx';
 import { reactive, toRefs } from 'vue';
 
 import { db } from '@database';
@@ -183,22 +185,87 @@ export const removeProduct = async (id: string) => {
 
 export const setSampleData = async () => {
   const productObj = [];
+  const ulid = monotonicFactory();
 
-  for (let i = 1; i < 5; i++) {
-    const id = i;
-
+  for (let i = 1; i < 21; i++) {
     productObj.push({
-      id: `${id}`,
-      name: `Product ${id}`,
-      description: `This is description for product ${id}`,
-      image: '',
+      id: ulid(),
+      name: `Product ${i}`,
+      description: `This is description for Product ${i}`,
+      image: `product_${i}_image_path`,
       by: '',
-      price: 10000 * id,
+      price: 10000 * i,
       stock: 0,
-      sku: '',
-      timestamp: new Date().toISOString(),
+      sku: 'a',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
   }
 
   return await db.product.bulkInsert(productObj);
+};
+
+export const createSampleBundle = async (data: any) => {
+  const ulid = monotonicFactory();
+  const slicedData = data.slice(0, 2);
+  const productID: string[] = [];
+  const productImage: string[] = [];
+  const productPrice: number[] = [];
+
+  slicedData.forEach((data: any) => {
+    productID.push(data.id)
+    productImage.push(data.image);
+    productPrice.push(data.price);
+  });
+
+  // console.log(productID.join(','));
+  // console.log(productImage.join(','));
+  // console.log(productPrice.reduce((a, b) => a + b, 0));
+
+  return await db.bundle.insert({
+    id: ulid(),
+    name: 'Bundle 1',
+    description: 'Bundle 1 description',
+    product_id: productID.join(','),
+    product_image: productImage.join(','),
+    price: productPrice.reduce((a, b) => a + b, 0),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  });
+
+  // const bundleObj = {
+  //   id: ulid(),
+  //   name: 'Bundle 1',
+  //   description: 'Description of Bundle 1',
+  //   product_id: {
+  //     type: 'string',
+  //   },
+  //   product_image: {
+  //     type: 'string',
+  //   },
+  //   price: {
+  //     type: 'integer',
+  //   },
+  //   created_at: {
+  //     type: 'date-time',
+  //   },
+  //   updated_at: {
+  //     type: 'date-time',
+  //   },
+  // };
+
+  // productObj.push({
+  //   id: ulid(),
+  //   name: `Product ${i}`,
+  //   description: `This is description for Product ${i}`,
+  //   image: '',
+  //   by: '',
+  //   price: 10000 * i,
+  //   stock: 0,
+  //   sku: 'a',
+  //   created_at: new Date().toISOString(),
+  //   updated_at: new Date().toISOString(),
+  // });
+
+  // return await db.bundle.insert();
 };

@@ -51,10 +51,28 @@ const router = createRouter({
               component: () => import('../views/products/ProductDetail.vue'),
             },
             {
+              path: '/product/add',
+              name: 'product-add',
+              meta: { title: 'ComPOS - Add Product' },
+              component: () => import('../views/products/ProductForm.vue'),
+            },
+            {
               path: '/product/edit/:id',
               name: 'product-edit',
               meta: { title: 'ComPOS - Product Edit' },
               component: () => import('../views/products/ProductForm.vue'),
+            },
+            {
+              path: '/product/bundle/:id',
+              name: 'product-bundle-detail',
+              meta: { title: 'ComPOS - Bundle Detail' },
+              component: () => import('../views/products/BundleDetail.vue'),
+            },
+            {
+              path: '/product/bundle/edit/:id',
+              name: 'product-bundle-edit',
+              meta: { title: 'ComPOS - Bundle Edit' },
+              component: () => import('../views/products/BundleForm.vue'),
             },
           ],
         },

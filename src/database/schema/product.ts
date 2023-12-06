@@ -5,7 +5,7 @@ export default {
   properties: {
     id: {
       type: 'string',
-      maxLength: 10000,
+      maxLength: 1000,
     },
     name: {
       type: 'string',
@@ -19,9 +19,6 @@ export default {
     by: {
       type: 'string',
     },
-    // category:{
-    //   type: 'string',
-    // },
     price: {
       type: 'integer',
     },
@@ -31,9 +28,18 @@ export default {
     sku: {
       type: 'string'
     },
-    timestamp: {
+    created_at: {
+      type: 'date-time',
+    },
+    updated_at: {
       type: 'date-time',
     },
   },
-  required: ['id', 'name', 'price', 'timestamp'],
+  required: [
+    'id',
+    'name',
+    'price',
+    'created_at',
+    'updated_at',
+  ],
 };

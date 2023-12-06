@@ -14,10 +14,11 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@vue/reactivity": "^3.3.9",
     "pinia": "^2.1.7",
     "rxdb": "^14.17.1",
     "rxjs": "^7.8.1",
+    "ulidx": "^2.2.1",
+    "uuid": "^9.0.1",
     "vue": "^3.3.4",
     "vue-router": "^4.2.4"
   },

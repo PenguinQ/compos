@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+import { monotonicFactory } from 'ulidx';
 import { db } from '@database';
 
 interface QueryParams {
@@ -6,10 +8,12 @@ interface QueryParams {
 }
 
 interface MutateParams extends QueryParams {
-  data: object;
+  data: any;
 };
 
 export const queryRx = async ({ collection, query = {} }: QueryParams) => {
+  if (!query) return false;
+
   try {
     return await db[collection].find(query).exec();
   } catch (error: unknown) {
@@ -17,7 +21,9 @@ export const queryRx = async ({ collection, query = {} }: QueryParams) => {
   }
 };
 
-export const queryOneRx = async ({ collection, query = {} }: QueryParams) => {
+export const queryOneRx = async ({ collection, query }: QueryParams) => {
+  if (!query) return false;
+
   try {
     return await db[collection].findOne(query).exec();
   } catch (error: unknown) {
@@ -25,17 +31,34 @@ export const queryOneRx = async ({ collection, query = {} }: QueryParams) => {
   }
 };
 
-export const mutateOne = async () => {
+export const mutateRx = async () => {
 
 };
 
 export const mutateOneRx = async ({ collection, query, data }: MutateParams) => {
   try {
-    return await db[collection].findOne(query).exec().then((result: any) => {
-      result.update({
-        $set: data,
+    if (query) {
+      return await db[collection].findOne(query).exec().then((result: any) => {
+        result.update({
+          $set: data,
+        });
       });
-    });
+    } else {
+      const ulid = monotonicFactory();
+
+      return await db.product.insert({
+        id: ulid(),
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        by: data.by,
+        price: parseInt(data.price as string),
+        stock: parseInt(data.stock as string),
+        sku: data.sku,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
   } catch (error) {
     throw new Error(error as string);
   }

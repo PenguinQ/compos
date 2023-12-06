@@ -1,36 +1,55 @@
-import { reactive, toRefs } from 'vue';
-import { queryRx, queryOneRx, mutateOneRx } from '@helpers/fetcher';
+import { reactive, toRef, toRefs, watch } from 'vue';
 
-// Equals to useQuery in vue-query
-export const useQueryTest = (params: any) => {
+export const useQuery = (params: any) => {
   if (!params) return false;
 
-  const { queryFn, onError, onSuccess } = params;
+  const { queryFn, queryKey, disabled, onError, onSuccess } = params;
+
   const states = reactive({
     data: null,
     isError: false,
-    isLoading: true,
+    isLoading: false,
     isSuccess: false,
   });
 
-  queryFn().then((result: any) => {
-    states.isLoading = false;
-    states.isSuccess = true;
-    states.data = result;
+  if (queryKey && queryKey.length) {
+    watch(
+      queryKey,
+      () => {
+        if (!disabled) {
+          query();
+        }
+      },
+    );
+  }
 
-    onSuccess && onSuccess(result);
-  }).catch((error: Error) => {
-    states.isLoading = false;
-    states.isError = true;
-    states.isSuccess = false;
+  const query = () => {
+    states.isLoading = true;
 
-    onError && onError(error);
-  });
+    queryFn().then((result: any) => {
+      states.isLoading = false;
+      states.isSuccess = true;
+      states.data = result;
+      onSuccess && onSuccess(result);
+    }).catch((error: Error) => {
+      states.isLoading = false;
+      states.isError = true;
+      states.isSuccess = false;
+      onError && onError(error);
+    });
+  }
 
-  return toRefs(states);
+  if (!disabled) {
+    query();
+  }
+
+  return {
+    refetch: query,
+    ...toRefs(states)
+  };
 };
 
-export const useMutationTest = (params: any) => {
+export const useMutation = (params: any) => {
   if (!params) return false;
 
   const { mutateFn, onError, onSuccess } = params;
@@ -57,118 +76,6 @@ export const useMutationTest = (params: any) => {
 
   return {
     mutate,
+    ...toRefs(states),
   };
-};
-
-export const useQuery = (params: any) => {
-  if (!params) return false;
-
-  const {
-    collection,
-    query,
-    onError,
-    onSuccess,
-  } = params;
-  const states = reactive({
-    data: null,
-    isError: false,
-    isLoading: true,
-    isSuccess: false,
-  });
-
-  const queryResult = queryRx({ collection, query });
-
-  queryResult.then((result: any) => {
-    states.isLoading = false;
-    states.isSuccess = true;
-    states.data = result;
-
-    onSuccess && onSuccess(states.data);
-  }).catch((error: Error) => {
-    states.isLoading = false;
-    states.isError = true;
-    states.isSuccess = false;
-
-    onError && onError(error);
-  });
-
-  return toRefs(states);
-};
-
-export const useQueryOne = (params: any) => {
-  if (!params) return false;
-
-  const {
-    collection,
-    query,
-    onError,
-    onSuccess,
-  } = params;
-  const states = reactive({
-    data: null,
-    isError: false,
-    isLoading: true,
-    isSuccess: false,
-  });
-
-  const queryResult = queryOneRx({ collection, query });
-
-  queryResult.then((result: any) => {
-    states.isLoading = false;
-    states.isSuccess = true;
-    states.data = result;
-
-    onSuccess && onSuccess(result);
-  }).catch((error: Error) => {
-    states.isLoading = false;
-    states.isError = true;
-    states.isSuccess = false;
-
-    onError && onError(error);
-  });
-
-  return toRefs(states);
-};
-
-export const useMutation = (params: any) => {
-  const {
-    collection,
-    query,
-    data,
-    onError,
-    onSuccess,
-  } = params;
-  const states = reactive({
-    isError: false,
-    isLoading: true,
-    isSuccess: false,
-  });
-
-  // const queryResult = queryOneRx({ collection, query });
-  // const queryResult = mutateOneRx({ collection, query, data });
-
-  const mutate = () => {
-    console.log(data);
-    // console.log(query);
-    // console.log(data)
-    // const queryResult = mutateOneRx({ collection, query, data });
-
-    // queryResult.then((result: any) => {
-    //   states.isLoading = false;
-    //   states.isSuccess = true;
-
-    //   onSuccess && onSuccess(result);
-    // }).catch((error: Error) => {
-    //   states.isLoading = false;
-    //   states.isError = true;
-    //   states.isSuccess = false;
-
-    //   onError && onError(error);
-    // });
-  };
-
-  return {
-    mutate,
-    ...toRefs(states)
-  }
 };

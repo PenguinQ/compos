@@ -4,6 +4,9 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 
+// Development
+import { setSampleData, createSampleBundle } from '@database/query/product';
+
 // Database Schema
 import {
   product,
@@ -34,6 +37,19 @@ export const initDB = async () => {
     bundle: {
       schema: bundle,
     },
+  });
+
+  // Development
+  setSampleData().then((productResult: any) => {
+    const { success, error } = productResult;
+
+    if (error && error.length) return false;
+
+    console.info('Sample product successfully created');
+
+    createSampleBundle(success).then((bundleResult: any) => {
+      console.info('Sample bundle successfully created');
+    });
   });
 };
 

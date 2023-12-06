@@ -8,13 +8,13 @@ import Textarea from '@components/Textarea';
 import QuantityEditor from '@components/QuantityEditor';
 import { Container, Row, Column } from '@components/Layout';
 
-import { useProductDetail, useTestDetail } from './hooks';
+import { useProductDetail } from './hooks';
 
 const {
   formData,
   isLoading,
   mutateProduct,
-} = useTestDetail();
+} = useProductDetail();
 
 onMounted(() => {
 
@@ -28,7 +28,7 @@ const handleSubmit = (e: Event) => {
 </script>
 
 <template>
-  <div v-if="isLoading">Loading...</div>
+  <Text v-if="isLoading">Loading...</Text>
   <form v-else id="product-form" @submit="handleSubmit">
     <Container>
       <Row>
