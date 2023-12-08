@@ -1,12 +1,18 @@
-import { reactive, toRef, toRefs, watch } from 'vue';
+import { reactive, toRefs, watch } from 'vue';
 
 export const useQuery = (params: any) => {
   if (!params) return false;
 
-  const { queryFn, queryKey, disabled, onError, onSuccess } = params;
+  const {
+    disabled,
+    queryFn,
+    queryKey,
+    onError,
+    onSuccess,
+  } = params;
 
   const states = reactive({
-    data: null,
+    data: {},
     isError: false,
     isLoading: false,
     isSuccess: false,
@@ -26,22 +32,39 @@ export const useQuery = (params: any) => {
   const query = () => {
     states.isLoading = true;
 
-    queryFn().then((result: any) => {
-      states.isLoading = false;
-      states.isSuccess = true;
-      states.data = result;
-      onSuccess && onSuccess(result);
+    queryFn().then((response: any) => {
+      const { subscribe, result } = response;
+
+      if (subscribe) {
+        result.subscribe((data: any) => {
+          states.isLoading = false;
+          states.isError = false;
+          states.isSuccess = true;
+
+          if (data) states.data = data;
+
+          onSuccess && onSuccess(data);
+        });
+      } else {
+        states.isLoading = false;
+        states.isError = false;
+        states.isSuccess = true;
+
+        if (result) states.data = result;
+
+        onSuccess && onSuccess(result);
+      }
+
     }).catch((error: Error) => {
       states.isLoading = false;
       states.isError = true;
       states.isSuccess = false;
+
       onError && onError(error);
     });
-  }
+  };
 
-  if (!disabled) {
-    query();
-  }
+  if (!disabled) query();
 
   return {
     refetch: query,
@@ -55,13 +78,16 @@ export const useMutation = (params: any) => {
   const { mutateFn, onError, onSuccess } = params;
   const states = reactive({
     isError: false,
-    isLoading: true,
+    isLoading: false,
     isSuccess: false,
   });
 
   const mutate = () => {
+    states.isLoading = true;
+
     mutateFn().then((result: any) => {
       states.isLoading = false;
+      states.isError = false;
       states.isSuccess = true;
 
       onSuccess && onSuccess(result);

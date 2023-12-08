@@ -1,24 +1,39 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onBeforeMount } from 'vue';
+import { useRoute } from 'vue-router';
 
 import Button from '@components/Button';
+import Text from '@components/Text';
 import Link from '@components/Link';
 
-import { useProductDetail } from './hooks';
+import { useProductDetail } from './hooks/ProductDetail.hook';
 
+const route = useRoute();
+const { params } = route;
 const {
-  data: product,
+  data,
+  refetch,
   isLoading,
+  isError,
+  isSuccess,
 } = useProductDetail();
 </script>
 
 <template>
-  <p>This is Product detail page</p>
-  <div v-if="isLoading">Loading...</div>
+  <Text heading="4">This is Product detail page</Text>
+  <div v-if="isLoading">Loading... {{ isLoading }}</div>
   <div v-else>
-    {{ product }}
-    <div>
-      <Link :to="`/product/edit/${product.id}`">Edit {{ product.name }}</Link>
+    <Button @click="refetch">Refetch</Button>
+    <div>Name: {{ data.name }}</div>
+    <div>Description{{ data.description }}</div>
+    <div>Image Path: {{ data.image }}</div>
+    <div>By: {{ data.by }}</div>
+    <div>Price: {{ data.price }}</div>
+    <div>Stock: {{ data.stock }}</div>
+    <div>Created At: {{ data.created_at }}</div>
+    <div>Updated At: {{ data.updated_at }}</div>
+    <div style="margin-top: 12px;">
+      <Link :to="`/product/edit/${data.id}`">Edit {{ data.name }}</Link>
     </div>
   </div>
 </template>

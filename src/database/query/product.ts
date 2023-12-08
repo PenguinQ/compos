@@ -183,7 +183,7 @@ export const removeProduct = async (id: string) => {
   });
 };
 
-export const setSampleData = async () => {
+export const createSampleProduct = async () => {
   const productObj = [];
   const ulid = monotonicFactory();
 
@@ -218,10 +218,6 @@ export const createSampleBundle = async (data: any) => {
     productPrice.push(data.price);
   });
 
-  // console.log(productID.join(','));
-  // console.log(productImage.join(','));
-  // console.log(productPrice.reduce((a, b) => a + b, 0));
-
   return await db.bundle.insert({
     id: ulid(),
     name: 'Bundle 1',
@@ -232,40 +228,4 @@ export const createSampleBundle = async (data: any) => {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   });
-
-  // const bundleObj = {
-  //   id: ulid(),
-  //   name: 'Bundle 1',
-  //   description: 'Description of Bundle 1',
-  //   product_id: {
-  //     type: 'string',
-  //   },
-  //   product_image: {
-  //     type: 'string',
-  //   },
-  //   price: {
-  //     type: 'integer',
-  //   },
-  //   created_at: {
-  //     type: 'date-time',
-  //   },
-  //   updated_at: {
-  //     type: 'date-time',
-  //   },
-  // };
-
-  // productObj.push({
-  //   id: ulid(),
-  //   name: `Product ${i}`,
-  //   description: `This is description for Product ${i}`,
-  //   image: '',
-  //   by: '',
-  //   price: 10000 * i,
-  //   stock: 0,
-  //   sku: 'a',
-  //   created_at: new Date().toISOString(),
-  //   updated_at: new Date().toISOString(),
-  // });
-
-  // return await db.bundle.insert();
 };

@@ -13,7 +13,7 @@ import { queryRx, queryOneRx, mutateOneRx } from '@helpers/fetcher';
  * $gt  = greater than
  * $gte = greater than and equal
  */
-export const useProducts = () => {
+export const useProduct = () => {
   const page = ref(1);
   const limit = ref(5);
   const selector = ref<any>({
@@ -82,14 +82,149 @@ export const useProducts = () => {
     }
   };
 
+  const removeID = ref<string | null>(null);
+
+  const {
+    mutate: mutateRemove,
+    isLoading: mutateRemoveLoading,
+  } = useMutation({
+    mutateFn: () => mutateOneRx({
+      method: 'delete',
+      collection: 'product',
+      query: {
+        selector: {
+          id: {
+            $eq: removeID.value,
+          },
+        },
+      },
+    }),
+    onError: (error: any) => {
+      console.log('Error mutate', error);
+    },
+    onSuccess: () => {
+      console.log('Success mutate');
+      refetch();
+    },
+  });
+
   return {
+    removeID,
     data,
     paginationData,
     page,
     isError,
     isLoading,
     isSuccess,
+    mutateRemoveLoading,
     nextPage,
+    mutateRemove,
+  };
+};
+
+export const useProductDetail = () => {
+  const route = useRoute();
+  const { params } = route;
+  const formData = reactive({
+    id: '',
+    name: '',
+    description: '',
+    image: '',
+    by: '',
+    price: undefined,
+    stock: undefined,
+    sku: '',
+  });
+
+  const {
+    data,
+    isError,
+    isLoading,
+    isSuccess,
+  } = useQuery({
+    queryFn: () => queryOneRx({
+      collection: 'product',
+      query: {
+        selector: {
+          id: {
+            $eq: params.id,
+          },
+        },
+      },
+    }),
+    disabled: params.id ? false : true,
+    onError: (error: any) => {
+      console.log('Error', error);
+    },
+    onSuccess: (result: any) => {
+      console.log('Success', result);
+      formData.id = result.id;
+      formData.name = result.name;
+      formData.description = result.description;
+      formData.image = result.image;
+      formData.by = result.by;
+      formData.price = result.price;
+      formData.stock = result.stock;
+      formData.sku = result.sku;
+    },
+  });
+
+  const mutateQuery = params.id ? {
+    selector: {
+      id: {
+        $eq: params.id,
+      },
+    },
+  } : undefined;
+
+  const {
+    mutate: mutateProduct,
+    isLoading: mutateProductLoading,
+  } = useMutation({
+    mutateFn: () => mutateOneRx({
+      collection: 'product',
+      method: 'put',
+      query: mutateQuery,
+      data: {
+        name: formData.name,
+        description: formData.description,
+        image: formData.image,
+        by: formData.by,
+        price: parseInt(formData.price as any),
+        stock: parseInt(formData.stock as any),
+        sku: formData.sku,
+      },
+    }),
+    onError: (error: any) => {
+      console.log('Error mutate', error);
+    },
+    onSuccess: () => {
+      console.log('Success mutate');
+    },
+  });
+
+  // export const addProduct = async (data: ProductData) => {
+  //   await db.product.insert({
+  //     id: data.id,
+  //     name: data.name,
+  //     description: data.description,
+  //     image: data.image,
+  //     by: data.by,
+  //     price: parseInt(data.price as string),
+  //     stock: data.stock,
+  //     sku: data.sku,
+  //     timestamp: new Date().toISOString(),
+  //   });
+  // };
+
+  return {
+    data,
+    formData,
+    isError,
+    isLoading,
+    isSuccess,
+    mutateProduct,
+    mutateProductLoading,
   };
 };
 
@@ -168,111 +303,6 @@ export const useBundle = () => {
     isLoading,
     isSuccess,
     nextPage,
-  };
-};
-
-export const useProductDetail = () => {
-  const route = useRoute();
-  const { params } = route;
-  const formData = reactive({
-    id: '',
-    name: '',
-    description: '',
-    image: '',
-    by: '',
-    price: undefined,
-    stock: undefined,
-    sku: '',
-  });
-
-  const {
-    data,
-    isError,
-    isLoading,
-    isSuccess,
-  } = useQuery({
-    queryFn: () => queryOneRx({
-      collection: 'product',
-      query: {
-        selector: {
-          id: {
-            $eq: params.id,
-          },
-        },
-      },
-    }),
-    disabled: params.id ? false : true,
-    onError: (error: any) => {
-      console.log('Error', error);
-    },
-    onSuccess: (result: any) => {
-      console.log('Success', result);
-      formData.id = result.id;
-      formData.name = result.name;
-      formData.description = result.description;
-      formData.image = result.image;
-      formData.by = result.by;
-      formData.price = result.price;
-      formData.stock = result.stock;
-      formData.sku = result.sku;
-    },
-  });
-
-  const mutateQuery = params.id ? {
-    selector: {
-      id: {
-        $eq: params.id,
-      },
-    },
-  } : undefined;
-
-  const {
-    mutate: mutateProduct,
-    isLoading: mutateProductLoading,
-  } = useMutation({
-    mutateFn: () => mutateOneRx({
-      collection: 'product',
-      query: mutateQuery,
-      data: {
-        name: formData.name,
-        description: formData.description,
-        image: formData.image,
-        by: formData.by,
-        price: parseInt(formData.price as any),
-        stock: parseInt(formData.stock as any),
-        sku: formData.sku,
-      },
-    }),
-    onError: (error: any) => {
-      console.log('Error mutate', error);
-    },
-    onSuccess: () => {
-      console.log('Success mutate');
-    },
-  });
-
-  // export const addProduct = async (data: ProductData) => {
-  //   await db.product.insert({
-  //     id: data.id,
-  //     name: data.name,
-  //     description: data.description,
-  //     image: data.image,
-  //     by: data.by,
-  //     price: parseInt(data.price as string),
-  //     stock: data.stock,
-  //     sku: data.sku,
-  //     timestamp: new Date().toISOString(),
-  //   });
-  // };
-
-  return {
-    data,
-    formData,
-    isError,
-    isLoading,
-    isSuccess,
-    mutateProduct,
-    mutateProductLoading,
   };
 };
 

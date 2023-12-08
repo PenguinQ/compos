@@ -42,7 +42,7 @@ const router = createRouter({
               path: '/product/list',
               name: 'product-list',
               meta: { title: 'ComPOS - Product List' },
-              component: () => import('../views/products/ProductList.vue'),
+              component: () => import('../views/products/Product.vue'),
             },
             {
               path: '/product/:id',

@@ -8,22 +8,22 @@ import Textarea from '@components/Textarea';
 import QuantityEditor from '@components/QuantityEditor';
 import { Container, Row, Column } from '@components/Layout';
 
-import { useProductDetail } from './hooks';
+import { useProductDetail } from './hooks/ProductDetail.hook';
 
 const {
+  productID,
   formData,
   isLoading,
-  mutateProduct,
+  mutateAddLoading,
+  mutateAdd,
+  mutateEditLoading,
+  mutateEdit,
 } = useProductDetail();
-
-onMounted(() => {
-
-});
 
 const handleSubmit = (e: Event) => {
   e.preventDefault();
 
-  mutateProduct();
+  productID ? mutateEdit() : mutateAdd();
 };
 </script>
 
@@ -63,7 +63,9 @@ const handleSubmit = (e: Event) => {
       </Row>
     </Container>
   </form>
-  <Button form="product-form" type="submit">Submit</Button>
+  <Button form="product-form" type="submit">
+    {{ mutateAddLoading ? 'Loading' : 'Submit' }}
+  </Button>
 </template>
 
 <style lang="scss"></style>

@@ -5,7 +5,7 @@ import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 
 // Development
-import { setSampleData, createSampleBundle } from '@database/query/product';
+import { createSampleProduct, createSampleBundle } from './query/product';
 
 // Database Schema
 import {
@@ -40,14 +40,14 @@ export const initDB = async () => {
   });
 
   // Development
-  setSampleData().then((productResult: any) => {
+  createSampleProduct().then((productResult: any) => {
     const { success, error } = productResult;
 
     if (error && error.length) return false;
 
     console.info('Sample product successfully created');
 
-    createSampleBundle(success).then((bundleResult: any) => {
+    createSampleBundle(success).then(() => {
       console.info('Sample bundle successfully created');
     });
   });

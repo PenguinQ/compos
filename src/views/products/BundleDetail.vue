@@ -2,9 +2,10 @@
 import { onMounted } from 'vue';
 
 import Button from '@components/Button';
+import Text from '@components/Text';
 import Link from '@components/Link';
 
-import { useBundleDetail } from './hooks';
+import { useBundleDetail } from './hooks/BundleDetail.hook';
 
 const {
   data,
@@ -13,7 +14,7 @@ const {
 </script>
 
 <template>
-  <p>This is Bundle detail page</p>
+  <Text heading="4">This is Product detail page</Text>
   <div v-if="isLoading">Loading...</div>
   <div v-else>
     {{ data }}

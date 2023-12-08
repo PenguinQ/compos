@@ -1,49 +1,74 @@
-import { v4 as uuidv4 } from 'uuid';
 import { monotonicFactory } from 'ulidx';
 import { db } from '@database';
 
 interface QueryParams {
   collection: string;
   query?: object;
+  subscribe?: boolean;
 }
 
 interface MutateParams extends QueryParams {
-  data: any;
+  data?: any;
+  method: 'post' | 'put' | 'delete';
 };
 
-export const queryRx = async ({ collection, query = {} }: QueryParams) => {
+export const queryRx = async ({ collection, query = {}, subscribe = false }: QueryParams) => {
   if (!query) return false;
 
   try {
-    return await db[collection].find(query).exec();
+    if (subscribe) {
+      return {
+        subscribe,
+        result: await db[collection].find(query).$,
+      }
+    }
+
+    return {
+      subscribe,
+      result: await db[collection].find(query).exec(),
+    }
   } catch (error: unknown) {
     throw new Error(error as string)
   }
 };
 
-export const queryOneRx = async ({ collection, query }: QueryParams) => {
+export const queryOneRx = async ({ collection, query, subscribe = false }: QueryParams) => {
   if (!query) return false;
 
   try {
-    return await db[collection].findOne(query).exec();
+    if (subscribe) {
+      return {
+        subscribe,
+        result: await db[collection].findOne(query).$,
+      }
+    }
+
+    return {
+      subscribe,
+      result: await db[collection].findOne(query).exec(),
+    }
+
   } catch (error: unknown) {
     throw new Error(error as string);
   }
 };
 
-export const mutateRx = async () => {
-
-};
-
-export const mutateOneRx = async ({ collection, query, data }: MutateParams) => {
+export const mutateRx = async ({ collection, query, data, method }: MutateParams) => {
   try {
     if (query) {
-      return await db[collection].findOne(query).exec().then((result: any) => {
-        result.update({
-          $set: data,
-        });
-      });
-    } else {
+      if (method === 'put') {
+        const collectionQuery = db[collection].find(query);
+
+        return await collectionQuery.update({ $set: {
+          updated_at: new Date().toISOString(),
+          ...data,
+        } });
+      } else if (method === 'delete') {
+        const collectionQuery = db[collection].find(query);
+
+        return await collectionQuery.remove();
+      }
+    } else if (method === 'post') {
       const ulid = monotonicFactory();
 
       return await db.product.insert({
