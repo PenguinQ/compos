@@ -1,33 +1,29 @@
-import { reactive, toRefs, watch } from 'vue';
+import {
+  ref,
+  reactive,
+  isRef,
+  toRefs,
+  watch,
+} from 'vue';
 
 export const useQuery = (params: any) => {
   if (!params) return false;
 
   const {
-    disabled,
+    enabled = true,
+    queryKey = [],
     queryFn,
-    queryKey,
     onError,
     onSuccess,
   } = params;
-
+  const enableQuery = isRef(enabled) ? enabled : ref(enabled);
+  const keyQuery = isRef(queryKey) ? queryKey : ref(queryKey);
   const states = reactive({
     data: {},
     isError: false,
     isLoading: false,
     isSuccess: false,
   });
-
-  if (queryKey && queryKey.length) {
-    watch(
-      queryKey,
-      () => {
-        if (!disabled) {
-          query();
-        }
-      },
-    );
-  }
 
   const query = () => {
     states.isLoading = true;
@@ -43,7 +39,7 @@ export const useQuery = (params: any) => {
 
           if (data) states.data = data;
 
-          onSuccess && onSuccess(data);
+          onSuccess && onSuccess(states.data);
         });
       } else {
         states.isLoading = false;
@@ -52,7 +48,7 @@ export const useQuery = (params: any) => {
 
         if (result) states.data = result;
 
-        onSuccess && onSuccess(result);
+        onSuccess && onSuccess(states.data);
       }
 
     }).catch((error: Error) => {
@@ -64,7 +60,15 @@ export const useQuery = (params: any) => {
     });
   };
 
-  if (!disabled) query();
+  watch(
+    keyQuery,
+    () => {
+      if (enableQuery.value) query();
+    },
+    { deep: true },
+  );
+
+  if (enableQuery.value) query();
 
   return {
     refetch: query,

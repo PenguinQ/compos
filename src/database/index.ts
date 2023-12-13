@@ -47,7 +47,7 @@ export const initDB = async () => {
 
     console.info('Sample product successfully created');
 
-    createSampleBundle(success).then(() => {
+    createSampleBundle(success).then((res) => {
       console.info('Sample bundle successfully created');
     });
   });

@@ -1,7 +1,7 @@
 import { ref, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useMutation } from '@database/hooks';
-import { queryProduct, mutateAddProduct, mutateEditProduct } from '@database/query/product';
+import { queryProduct, mutateProduct } from '@database/query/product';
 import { queryOneRx, mutateRx } from '@helpers/fetcher';
 
 export const useProductDetail = () => {
@@ -36,32 +36,42 @@ export const useProductDetail = () => {
         },
       },
     }),
-    enabled: params.id ? true : false,
+    disabled: params.id ? false : true,
     onError: (error: any) => {
       console.error('Failed to get the product detail.', error);
     },
     onSuccess: (result: any) => {
-      console.log('Success to get the product detail.', result);
+      // console.log('Success to get the product detail.', result);
 
-      if (params.id) {
-        formData.id = result.id;
-        formData.name = result.name;
-        formData.description = result.description;
-        formData.image = result.image;
-        formData.by = result.by;
-        formData.price = result.price;
-        formData.stock = result.stock;
-        formData.sku = result.sku;
-      }
+      formData.id = result.id;
+      formData.name = result.name;
+      formData.description = result.description;
+      formData.image = result.image;
+      formData.by = result.by;
+      formData.price = result.price;
+      formData.stock = result.stock;
+      formData.sku = result.sku;
     },
   });
+
+  const mutateQuery = params.id ? {
+    selector: {
+      id: {
+        $eq: params.id,
+      },
+    },
+  } : undefined;
 
   const {
     mutate: mutateEdit,
     isLoading: mutateEditLoading,
   } = useMutation({
-    mutateFn: () => mutateEditProduct({
-      id: params.id,
+    // mutateFn: () => mutateRx({
+    mutateFn: () => mutateProduct({
+      collection: 'product',
+      method: 'put',
+      params: params.id,
+      query: mutateQuery,
       data: {
         name: formData.name,
         description: formData.description,
@@ -76,7 +86,7 @@ export const useProductDetail = () => {
       console.error('Error mutating product detail.', error);
     },
     onSuccess: () => {
-      console.log('Success mutating product detail.');
+      // console.log('Success mutating product detail.');
     },
   });
 
@@ -94,7 +104,9 @@ export const useProductDetail = () => {
     mutate: mutateAdd,
     isLoading: mutateAddLoading,
   } = useMutation({
-    mutateFn: () => mutateAddProduct({
+    mutateFn: () => mutateRx({
+      collection: 'product',
+      method: 'post',
       data: {
         name: formData.name,
         description: formData.description,

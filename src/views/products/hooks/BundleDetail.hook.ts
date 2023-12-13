@@ -1,11 +1,15 @@
-import { ref, reactive } from 'vue';
+import { computed, ref, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useMutation } from '@database/hooks';
-import { queryOneRx, mutateRx } from '@helpers/fetcher';
+import { queryRx, queryOneRx, mutateRx } from '@helpers/fetcher';
 
 export const useBundleDetail = () => {
   const route = useRoute();
   const { params } = route;
+  const bundleAvailable = ref(true);
+  const runProductQuery = ref(false);
+  const enabled = computed(() => runProductQuery.value);
+  const productIDs = ref([]);
   const formData = reactive({
     id: '',
     name: '',
@@ -17,6 +21,8 @@ export const useBundleDetail = () => {
     sku: '',
   });
 
+  const testData = ref(null);
+
   const {
     data,
     refetch,
@@ -24,7 +30,9 @@ export const useBundleDetail = () => {
     isLoading,
     isSuccess,
   } = useQuery({
+    which: 'bundle detail',
     queryFn: () => queryOneRx({
+      subscribe: true,
       collection: 'bundle',
       query: {
         selector: {
@@ -36,10 +44,26 @@ export const useBundleDetail = () => {
     }),
     disabled: params.id ? false : true,
     onError: (error: any) => {
-      console.error('Failed to get the product detail.', error);
+      console.error('Failed to get the bundle detail.', error);
     },
-    onSuccess: (result: any) => {
-      console.log('Success to get the product detail.', result);
+    onSuccess: async (result: any) => {
+      console.log('Success to get the bundle detail.', result);
+
+      // testData.value = await result.populate('product_id');
+
+      // testData.value = product;
+
+      // console.log(product);
+
+      // DON'T REMOVE!
+      //
+      // if (result) {
+      //   const splittedID = result.product_id.split(',');
+
+      //   // Don't change the order, since the the product detail query listen to the productIDs values.
+      //   runProductQuery.value = true;
+      //   productIDs.value = splittedID;
+      // }
 
       // formData.id = result.id;
       // formData.name = result.name;
@@ -51,6 +75,40 @@ export const useBundleDetail = () => {
       // formData.sku = result.sku;
     },
   });
+
+  // DON'T REMOVE!
+  // const {
+  //   data: productData,
+  //   refetch: productRefetch,
+  //   isError: productError,
+  //   isLoading: productLoading,
+  //   isSuccess: productSuccess,
+  // } = useQuery({
+  //   queryKey: [productIDs],
+  //   queryFn: () => queryRx({
+  //     collection: 'product',
+  //     query: {
+  //       selector: {
+  //         id: {
+  //           $in: productIDs.value,
+  //         },
+  //       },
+  //     },
+  //   }),
+  //   enabled,
+  //   onError: (error: any) => {
+  //     console.error('Failed to get the product detail.', error);
+  //   },
+  //   onSuccess: (result: any) => {
+  //     console.log('Success to get the bundle product detail.', result);
+
+  //     const filtered = result.filter((res: any) => res.stock === 0);
+
+  //     if (filtered.length) {
+  //       bundleAvailable.value = false;
+  //     }
+  //   },
+  // });
 
   const mutateQuery = params.id ? {
     selector: {
@@ -101,7 +159,7 @@ export const useBundleDetail = () => {
     isLoading: mutateAddLoading,
   } = useMutation({
     mutateFn: () => mutateRx({
-      collection: 'product',
+      collection: 'bundle',
       method: 'post',
       data: {
         name: formData.name,
@@ -123,8 +181,14 @@ export const useBundleDetail = () => {
   });
 
   return {
+    bundleAvailable,
     bundleID: params.id,
     data,
+    testData,
+    // productData,
+    // productLoading,
+    // productError,
+    // productSuccess,
     formData,
     isError,
     isLoading,

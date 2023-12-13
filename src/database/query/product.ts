@@ -1,9 +1,6 @@
-import { v4 as uuidv4 } from 'uuid';
-import { monotonicFactory } from 'ulidx';
 import { reactive, toRefs } from 'vue';
-
+import { monotonicFactory } from 'ulidx';
 import { db } from '@database';
-import { queryRx } from '@helpers/fetcher';
 
 interface ProductData {
   id: string;
@@ -15,150 +12,6 @@ interface ProductData {
   stock?: number;
   sku?: string;
   timestamp: Date;
-};
-
-// Hooks
-export const useProducts = () => {
-  const {
-    data,
-    isError,
-    isLoading,
-    isSuccess,
-  } = useQuery({
-    collection: 'product',
-    onError: (error: string) => {
-      console.log('Error', error);
-    },
-    onSuccess: () => {
-      console.log('Success');
-    },
-  });
-
-  return {
-    data,
-    isError,
-    isLoading,
-    isSuccess
-  };
-};
-
-// Equals to useQuery in vue-query
-export const useQuery: any = (params: any) => {
-  if (!params) return false;
-
-  const {
-    collection,
-    query,
-    onError,
-    onSuccess,
-  } = params;
-  const states = reactive({
-    data: null,
-    isError: false,
-    isLoading: true,
-    isSuccess: false,
-  });
-
-  const queryResult = queryRx({ collection, query });
-
-  queryResult.then((result: any) => {
-    states.isLoading = false;
-    states.isSuccess = true;
-    states.data = result;
-
-    onSuccess && onSuccess();
-  }).catch((error: Error) => {
-    states.isLoading = false;
-    states.isError = true;
-    states.isSuccess = false;
-
-    onError && onError(error);
-  });
-
-  return toRefs(states);
-};
-
-export const useQueryOne: any = (params: any) => {
-  if (!params) return false;
-
-  const {
-    collection,
-    query,
-    onError,
-    onSuccess,
-  } = params;
-  const states = reactive({
-    data: null,
-    isError: false,
-    isLoading: true,
-    isSuccess: false,
-  });
-
-  const queryResult = queryRx({ collection, query });
-
-  queryResult.then((result: any) => {
-    states.isLoading = false;
-    states.isSuccess = true;
-    states.data = result;
-
-    onSuccess && onSuccess();
-  }).catch((error: Error) => {
-    states.isLoading = false;
-    states.isError = true;
-    states.isSuccess = false;
-
-    onError && onError(error);
-  });
-
-  return toRefs(states);
-};
-
-export const getProducts = async (subscribe = true) => {
-  // Example
-  // const query = myCollection
-  //   .find({
-  //     selector: {
-  //       age: {
-  //         $gt: 18
-  //       }
-  //     }
-  //   });
-
-  if (subscribe) {
-    return await db.product.find({}).$
-  }
-
-  return await db.product.find().exec();
-};
-
-export const getProduct = async (id: string) => {
-    return await db.product.findOne(id).exec();
-};
-
-export const getBundles = async (subscribe = true) => {
-  if (subscribe) {
-    return await db.bundle.find().$
-  }
-
-  return await db.bundle.find().exec();
-};
-
-export const getBundle = async () => {
-
-};
-
-export const addProduct = async (data: ProductData) => {
-  await db.product.insert({
-    id: data.id,
-    name: data.name,
-    description: data.description,
-    image: data.image,
-    by: data.by,
-    price: parseInt(data.price as string),
-    stock: data.stock,
-    sku: data.sku,
-    timestamp: new Date().toISOString(),
-  });
 };
 
 export const updateProduct = async (id: string, data: ProductData) => {
@@ -190,13 +43,14 @@ export const createSampleProduct = async () => {
   for (let i = 1; i < 21; i++) {
     productObj.push({
       id: ulid(),
+      active: true,
       name: `Product ${i}`,
       description: `This is description for Product ${i}`,
       image: `product_${i}_image_path`,
       by: '',
       price: 10000 * i,
-      stock: 0,
-      sku: 'a',
+      stock: i < 3 ? i : 0,
+      sku: '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
@@ -208,24 +62,121 @@ export const createSampleProduct = async () => {
 export const createSampleBundle = async (data: any) => {
   const ulid = monotonicFactory();
   const slicedData = data.slice(0, 2);
+  const productArr: any = [];
   const productID: string[] = [];
-  const productImage: string[] = [];
-  const productPrice: number[] = [];
+  let available: boolean = true;
+  // const productImage: string[] = [];
+  // const productPrice: number[] = [];
 
   slicedData.forEach((data: any) => {
-    productID.push(data.id)
-    productImage.push(data.image);
-    productPrice.push(data.price);
+    available = data.stock !== 0;
+    productID.push(data.id);
+    productArr.push({
+      id: data.id,
+      name: data.name,
+      image: data.image,
+      price: data.price,
+      stock: data.stock,
+    });
   });
+
+  // const available = productArr.filter((product: any) => product.stock === 0);
 
   return await db.bundle.insert({
     id: ulid(),
+    active: available,
     name: 'Bundle 1',
     description: 'Bundle 1 description',
-    product_id: productID.join(','),
-    product_image: productImage.join(','),
-    price: productPrice.reduce((a, b) => a + b, 0),
+    product_id: productID,
+    product: productArr,
+    price: productArr.reduce((acc: any, curr: any) => acc + curr.price, 0),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   });
 };
+
+export const queryProduct = async () => {
+
+};
+
+export const mutateAddProduct = async ({ data }: any) => {
+  try {
+    const ulid = monotonicFactory();
+
+    return await db.product.insert({
+      id: ulid(),
+      name: data.name,
+      description: data.description,
+      image: data.image,
+      by: data.by,
+      price: parseInt(data.price as string),
+      stock: parseInt(data.stock as string),
+      sku: data.sku,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error.message;
+    }
+
+    throw error;
+  }
+};
+
+export const mutateEditProduct = async ({ id, data }: any) => {
+  try {
+    const product = db.product.findOne({
+      selector: {
+        id: {
+          $eq: id,
+        },
+      },
+    });
+
+    const productUpdate = await product.update({
+      $set: {
+        updated_at: new Date().toISOString(),
+        ...data,
+      },
+    });
+
+    // Update any bundle items related contain the product after updating product data.
+    if (productUpdate) {
+      const isActive = data.stock !== 0 ? true : false;
+
+      const bundle = db.bundle.find({
+        selector: {
+          product: {
+            $elemMatch: {
+              id: id,
+            },
+          },
+        },
+      });
+
+      /**
+       * Bundle price are automatically summed from product of each price,
+       * unless the user set fixed price, so there's no need to query the product.
+       *
+       * Fixed product price are always the same even though individual product
+       * price are changed.
+       */
+      await bundle.update({
+        $set: {
+          active: isActive,
+          updated_at: new Date().toISOString(),
+        },
+      });
+    }
+
+    return productUpdate;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error.message;
+    }
+
+    throw error;
+  }
+};
+

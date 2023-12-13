@@ -7,20 +7,54 @@ export default {
       type: 'string',
       maxLength: 1000,
     },
+    active: {
+      type: 'boolean',
+    },
     name: {
       type: 'string',
     },
     description: {
       type: 'string',
     },
+    product: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+          },
+          name: {
+            type: 'string',
+          },
+          image: {
+            type: 'string',
+          },
+          price: {
+            type: 'integer',
+          },
+          stock: {
+            type: 'integer',
+          },
+        },
+      },
+    },
     product_id: {
-      type: 'string',
+      ref: 'product',
+      type: 'array',
+      items: {
+        type: 'string',
+      },
     },
     product_image: {
       type: 'string',
     },
     price: {
       type: 'integer',
+    },
+    fixed_price: {
+      type: 'boolean',
+      default: false,
     },
     created_at: {
       type: 'date-time',
@@ -33,7 +67,7 @@ export default {
     'id',
     'product_id',
     'name',
-    'price',
+    'product',
     'created_at',
     'updated_at',
   ],

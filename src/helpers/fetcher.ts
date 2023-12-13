@@ -5,6 +5,7 @@ interface QueryParams {
   collection: string;
   query?: object;
   subscribe?: boolean;
+  params?: string;
 }
 
 interface MutateParams extends QueryParams {
@@ -68,21 +69,23 @@ export const mutateRx = async ({ collection, query, data, method }: MutateParams
 
         return await collectionQuery.remove();
       }
-    } else if (method === 'post') {
-      const ulid = monotonicFactory();
+    } else {
+      if (method === 'post') {
+        const ulid = monotonicFactory();
 
-      return await db.product.insert({
-        id: ulid(),
-        name: data.name,
-        description: data.description,
-        image: data.image,
-        by: data.by,
-        price: parseInt(data.price as string),
-        stock: parseInt(data.stock as string),
-        sku: data.sku,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
+        return await db.product.insert({
+          id: ulid(),
+          name: data.name,
+          description: data.description,
+          image: data.image,
+          by: data.by,
+          price: parseInt(data.price as string),
+          stock: parseInt(data.stock as string),
+          sku: data.sku,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      }
     }
   } catch (error) {
     throw new Error(error as string);

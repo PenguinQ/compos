@@ -15,7 +15,6 @@ const {
   refetch,
   isLoading,
   isError,
-  isSuccess,
 } = useProductDetail();
 </script>
 
@@ -23,7 +22,6 @@ const {
   <Text heading="4">This is Product detail page</Text>
   <div v-if="isLoading">Loading... {{ isLoading }}</div>
   <div v-else>
-    <Button @click="refetch">Refetch</Button>
     <div>Name: {{ data.name }}</div>
     <div>Description{{ data.description }}</div>
     <div>Image Path: {{ data.image }}</div>

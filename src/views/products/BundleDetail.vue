@@ -8,27 +8,37 @@ import Link from '@components/Link';
 import { useBundleDetail } from './hooks/BundleDetail.hook';
 
 const {
+  bundleAvailable,
+  refetch,
   data,
+  testData,
   isLoading,
+  isError,
 } = useBundleDetail();
 </script>
 
 <template>
-  <Text heading="4">This is Product detail page</Text>
+  <Text heading="4">This is Bundle detail page</Text>
+  {{ isError }}
   <div v-if="isLoading">Loading...</div>
   <div v-else>
-    {{ data }}
-    <div>
+    <Text>
       <Link :to="`/product/bundle/edit/${data.id}`">Edit {{ data.name }}</Link>
-    </div>
+    </Text>
+
+    <!-- Bundle Availability Ticker -->
+    <Text v-if="!bundleAvailable">
+      Bundle not available since one of the product has no stock.
+    </Text>
+
+    <Text heading="5">Bundle Object</Text>
+    <pre>
+      {{ data }}
+    </pre>
+    <pre>
+      {{ testData }}
+    </pre>
   </div>
-  <!-- <div v-if="isLoading">Loading...</div>
-  <div v-else>
-    {{ product }}
-    <div>
-      <Link :to="`/product/edit/${product.id}`">Edit {{ product.name }}</Link>
-    </div>
-  </div> -->
 </template>
 
 <style lang="scss"></style>

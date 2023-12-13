@@ -7,6 +7,9 @@ export default {
       type: 'string',
       maxLength: 1000,
     },
+    active: {
+      type: 'boolean',
+    },
     name: {
       type: 'string',
     },
@@ -14,7 +17,7 @@ export default {
       type: 'string',
     },
     image: {
-      type: 'string',
+      type: 'array',
     },
     by: {
       type: 'string',
@@ -24,6 +27,27 @@ export default {
     },
     stock: {
       type: 'integer',
+    },
+    variant: {
+      type: 'array',
+      uniqueItems: true,
+      items: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+          },
+          image: {
+            type: 'array',
+          },
+          price: {
+            type: 'integer',
+          },
+          stock: {
+            type: 'integer',
+          },
+        },
+      },
     },
     sku: {
       type: 'string'
