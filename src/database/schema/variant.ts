@@ -7,41 +7,30 @@ export default {
       type: 'string',
       maxLength: 1000,
     },
-    active: {
-      type: 'boolean',
-    },
     name: {
       type: 'string',
     },
-    description: {
+    product_id: {
+      ref: 'product',
       type: 'string',
     },
-    product: {
+    product_name: {
+      type: 'string',
+    },
+    image: {
       type: 'array',
       items: {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-          },
-          variant_id: {
-            type: 'string',
-          },
-        },
+        type: 'string',
       },
-    },
-    product_image: {
-      type: 'string',
-    },
-    product_variant: {
-      type: 'string',
     },
     price: {
       type: 'integer',
     },
-    fixed_price: {
-      type: 'boolean',
-      default: false,
+    stock: {
+      type: 'integer',
+    },
+    sku: {
+      type: 'string'
     },
     created_at: {
       type: 'date-time',
@@ -52,9 +41,11 @@ export default {
   },
   required: [
     'id',
+    'product_id',
     'name',
-    'product',
+    'price',
+    'stock',
     'created_at',
-    'upudated_at',
+    'updated_at',
   ],
 };

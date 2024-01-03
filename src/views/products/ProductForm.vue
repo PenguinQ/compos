@@ -25,12 +25,29 @@ const handleSubmit = (e: Event) => {
 
   productID ? mutateEdit() : mutateAdd();
 };
+
+const testData = reactive({
+  variant: [
+    {
+      name: 'Test 1'
+    },
+    {
+      name: 'Test 2'
+    },
+  ]
+});
 </script>
 
 <template>
   <Text v-if="isLoading">Loading...</Text>
   <form v-else id="product-form" @submit="handleSubmit">
     <Container>
+      <pre>
+        {{ formData }}
+      </pre>
+      <pre>
+        {{ testData }}
+      </pre>
       <Row>
         <Column>
           <Textfield label="Name" v-model="formData.name" />
@@ -39,6 +56,14 @@ const handleSubmit = (e: Event) => {
       <Row>
         <Column>
           <Textarea label="Description" v-model="formData.description" />
+        </Column>
+      </Row>
+      <Row>
+        <!-- <Column :key="index" v-for="(test, index) in testData.variant">
+          <Textfield label="Variant Name" v-model="test.name" />
+        </Column> -->
+        <Column :key="`variant-${index}`" v-for="(variant, index) in formData.variant">
+          <Textfield label="Variant Name" v-model="variant.name" />
         </Column>
       </Row>
       <!-- Image

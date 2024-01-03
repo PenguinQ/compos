@@ -1,13 +1,19 @@
 import { ref, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useMutation } from '@database/hooks';
-import { queryProduct, mutateAddProduct, mutateEditProduct } from '@database/query/product';
+import {
+  getProductDetail,
+  queryProduct,
+  mutateAddProduct,
+  mutateEditProduct
+} from '@database/query/product';
 import { queryOneRx, mutateRx } from '@helpers/fetcher';
+import { detailNormalizer } from '../normalizer/ProductDetail.normalizer';
 
 export const useProductDetail = () => {
   const route = useRoute();
   const { params } = route;
-  const formData = reactive({
+  const formData= reactive<any>({
     id: '',
     name: '',
     description: '',
@@ -15,6 +21,7 @@ export const useProductDetail = () => {
     by: '',
     price: null,
     stock: null,
+    variant: [],
     sku: '',
   });
 
@@ -25,16 +32,9 @@ export const useProductDetail = () => {
     isLoading,
     isSuccess,
   } = useQuery({
-    queryFn: () => queryOneRx({
-      collection: 'product',
-      // subscribe: true,
-      query: {
-        selector: {
-          id: {
-            $eq: params.id,
-          },
-        },
-      },
+    queryFn: () => getProductDetail({
+      id: params.id,
+      normalizer: detailNormalizer,
     }),
     enabled: params.id ? true : false,
     onError: (error: any) => {
@@ -52,6 +52,16 @@ export const useProductDetail = () => {
         formData.price = result.price;
         formData.stock = result.stock;
         formData.sku = result.sku;
+        // formData.variant = result.variant;
+
+        result.variant?.forEach((variant: any) => {
+          formData.variant.push({
+            name: variant.name,
+            price: variant.price,
+            image: variant.image,
+            stock: variant.stock,
+          });
+        });
       }
     },
   });
@@ -69,6 +79,7 @@ export const useProductDetail = () => {
         by: formData.by,
         price: parseInt(formData.price as any),
         stock: parseInt(formData.stock as any),
+        variant: formData.variant,
         sku: formData.sku,
       },
     }),
@@ -87,6 +98,7 @@ export const useProductDetail = () => {
     formData.by = '';
     formData.price = null;
     formData.stock = null;
+    formData.variant = [];
     formData.sku = '';
   };
 

@@ -10,6 +10,7 @@ import { createSampleProduct, createSampleBundle } from './query/product';
 // Database Schema
 import {
   product,
+  variant,
   bundle,
 } from './schema';
 
@@ -34,6 +35,9 @@ export const initDB = async () => {
     product: {
       schema: product,
     },
+    variant: {
+      schema: variant,
+    },
     bundle: {
       schema: bundle,
     },
@@ -41,13 +45,13 @@ export const initDB = async () => {
 
   // Development
   createSampleProduct().then((productResult: any) => {
-    const { success, error } = productResult;
+    const { bundle, result } = productResult;
 
-    if (error && error.length) return false;
+    if (result.error && result.error.length) return false;
 
     console.info('Sample product successfully created');
 
-    createSampleBundle(success).then((res) => {
+    createSampleBundle(result.success, bundle).then((res: any) => {
       console.info('Sample bundle successfully created');
     });
   });

@@ -48,7 +48,6 @@ export const queryOneRx = async ({ collection, query, subscribe = false }: Query
       subscribe,
       result: await db[collection].findOne(query).exec(),
     }
-
   } catch (error: unknown) {
     throw new Error(error as string);
   }

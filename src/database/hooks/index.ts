@@ -50,7 +50,6 @@ export const useQuery = (params: any) => {
 
         onSuccess && onSuccess(states.data);
       }
-
     }).catch((error: Error) => {
       states.isLoading = false;
       states.isError = true;

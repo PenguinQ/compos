@@ -18,6 +18,9 @@ export default {
     },
     image: {
       type: 'array',
+      items: {
+        type: 'string',
+      },
     },
     by: {
       type: 'string',
@@ -28,25 +31,36 @@ export default {
     stock: {
       type: 'integer',
     },
+    // variant: {
+    //   type: 'array',
+    //   uniqueItems: true,
+    //   items: {
+    //     type: 'object',
+    //     properties: {
+    //       name: {
+    //         type: 'string',
+    //       },
+    //       image: {
+    //         type: 'array',
+    //         items: {
+    //           type: 'string',
+    //         },
+    //       },
+    //       price: {
+    //         type: 'integer',
+    //       },
+    //       stock: {
+    //         type: 'integer',
+    //       },
+    //     },
+    //   },
+    // },
     variant: {
       type: 'array',
+      ref: 'variant',
       uniqueItems: true,
       items: {
-        type: 'object',
-        properties: {
-          name: {
-            type: 'string',
-          },
-          image: {
-            type: 'array',
-          },
-          price: {
-            type: 'integer',
-          },
-          stock: {
-            type: 'integer',
-          },
-        },
+        type: 'string',
       },
     },
     sku: {
@@ -62,8 +76,13 @@ export default {
   required: [
     'id',
     'name',
-    'price',
     'created_at',
     'updated_at',
+    // 'price',
   ],
 };
+
+/**
+ * 1. If variant exist and it doesn't have a price, it will follow the default price of the product
+ * 2. If variant exist and have a price, the default price will be ignored.
+ */

@@ -22,6 +22,12 @@ const {
   <Text heading="4">This is Product detail page</Text>
   <div v-if="isLoading">Loading... {{ isLoading }}</div>
   <div v-else>
+    <div style="margin-top: 12px;">
+      <Link :to="`/product/edit/${data.id}`">Edit {{ data.name }}</Link>
+    </div>
+    <pre>
+      {{ data }}
+    </pre>
     <div>Name: {{ data.name }}</div>
     <div>Description{{ data.description }}</div>
     <div>Image Path: {{ data.image }}</div>
@@ -30,9 +36,6 @@ const {
     <div>Stock: {{ data.stock }}</div>
     <div>Created At: {{ data.created_at }}</div>
     <div>Updated At: {{ data.updated_at }}</div>
-    <div style="margin-top: 12px;">
-      <Link :to="`/product/edit/${data.id}`">Edit {{ data.name }}</Link>
-    </div>
   </div>
 </template>
 

@@ -1,7 +1,9 @@
 import { computed, ref, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useMutation } from '@database/hooks';
+import { getBundleDetail } from '@database/query/bundle';
 import { queryRx, queryOneRx, mutateRx } from '@helpers/fetcher';
+import { bundleDetailNormalizer } from '../normalizer/BundleDetail.normalizer';
 
 export const useBundleDetail = () => {
   const route = useRoute();
@@ -30,17 +32,9 @@ export const useBundleDetail = () => {
     isLoading,
     isSuccess,
   } = useQuery({
-    which: 'bundle detail',
-    queryFn: () => queryOneRx({
-      subscribe: true,
-      collection: 'bundle',
-      query: {
-        selector: {
-          id: {
-            $eq: params.id,
-          },
-        },
-      },
+    queryFn: () => getBundleDetail({
+      id: params.id,
+      normalizer: bundleDetailNormalizer,
     }),
     disabled: params.id ? false : true,
     onError: (error: any) => {
