@@ -11,6 +11,8 @@ export const detailNormalizer = (data: any) => {
   variant?.forEach((v: any) => {
     productVariant.push({
       id: v.id || '',
+      active: v.active || false,
+      product_id: v.product_id || '',
       name: v.name || '',
       image: v.image || [],
       price: v.price || 0,
@@ -20,6 +22,7 @@ export const detailNormalizer = (data: any) => {
 
   return {
     id: product.id || '',
+    active: product.active || false,
     name: product.name || '',
     description: product.description || '',
     image: product.image || [],

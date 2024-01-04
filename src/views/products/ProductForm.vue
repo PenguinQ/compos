@@ -25,65 +25,45 @@ const handleSubmit = (e: Event) => {
 
   productID ? mutateEdit() : mutateAdd();
 };
-
-const testData = reactive({
-  variant: [
-    {
-      name: 'Test 1'
-    },
-    {
-      name: 'Test 2'
-    },
-  ]
-});
 </script>
 
 <template>
   <Text v-if="isLoading">Loading...</Text>
   <form v-else id="product-form" @submit="handleSubmit">
     <Container>
-      <pre>
-        {{ formData }}
-      </pre>
-      <pre>
-        {{ testData }}
-      </pre>
       <Row>
         <Column>
-          <Textfield label="Name" v-model="formData.name" />
+          <pre>
+            {{ formData }}
+          </pre>
         </Column>
-      </Row>
-      <Row>
         <Column>
-          <Textarea label="Description" v-model="formData.description" />
-        </Column>
-      </Row>
-      <Row>
-        <!-- <Column :key="index" v-for="(test, index) in testData.variant">
-          <Textfield label="Variant Name" v-model="test.name" />
-        </Column> -->
-        <Column :key="`variant-${index}`" v-for="(variant, index) in formData.variant">
-          <Textfield label="Variant Name" v-model="variant.name" />
-        </Column>
-      </Row>
-      <!-- Image
-        <Row>
-          <Column>
+          <Row>
+            <Textfield label="Name" v-model="formData.name" />
             <Textarea label="Description" v-model="formData.description" />
-          </Column>
-        </Row>
-      -->
-      <Row>
-        <Column>
-          <Textfield label="By" v-model="formData.by" />
-        </Column>
-      </Row>
-      <Row>
-        <Column>
-          <Textfield label="Price" v-model="formData.price" />
-        </Column>
-        <Column>
-          <QuantityEditor v-model="formData.stock" />
+          </Row>
+          <br />
+          <Row>
+            <Column :key="`variant-${index}`" v-for="(variant, index) in formData.variant">
+              <Textfield label="Variant Name" v-model="variant.name" />
+              <Textfield label="Price" v-model="variant.price" />
+              <QuantityEditor v-model="variant.stock" />
+            </Column>
+          </Row>
+          <br />
+          <Row>
+            <Column>
+              <Textfield label="By" v-model="formData.by" />
+            </Column>
+          </Row>
+          <Row>
+            <Column>
+              <Textfield label="Price" v-model="formData.price" />
+            </Column>
+            <Column>
+              <QuantityEditor v-model="formData.stock" />
+            </Column>
+          </Row>
         </Column>
       </Row>
     </Container>

@@ -31,30 +31,6 @@ export default {
     stock: {
       type: 'integer',
     },
-    // variant: {
-    //   type: 'array',
-    //   uniqueItems: true,
-    //   items: {
-    //     type: 'object',
-    //     properties: {
-    //       name: {
-    //         type: 'string',
-    //       },
-    //       image: {
-    //         type: 'array',
-    //         items: {
-    //           type: 'string',
-    //         },
-    //       },
-    //       price: {
-    //         type: 'integer',
-    //       },
-    //       stock: {
-    //         type: 'integer',
-    //       },
-    //     },
-    //   },
-    // },
     variant: {
       type: 'array',
       ref: 'variant',
@@ -78,7 +54,6 @@ export default {
     'name',
     'created_at',
     'updated_at',
-    // 'price',
   ],
 };
 

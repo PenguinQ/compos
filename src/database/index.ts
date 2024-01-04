@@ -49,7 +49,7 @@ export const initDB = async () => {
 
     if (result.error && result.error.length) return false;
 
-    console.info('Sample product successfully created');
+    console.info('Sample product successfully created', result);
 
     createSampleBundle(result.success, bundle).then((res: any) => {
       console.info('Sample bundle successfully created');

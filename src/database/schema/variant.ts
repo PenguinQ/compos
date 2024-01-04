@@ -7,14 +7,14 @@ export default {
       type: 'string',
       maxLength: 1000,
     },
+    active: {
+      type: 'boolean',
+    },
     name: {
       type: 'string',
     },
     product_id: {
       ref: 'product',
-      type: 'string',
-    },
-    product_name: {
       type: 'string',
     },
     image: {

@@ -15,6 +15,7 @@ export const getBundleDetail = async ({ id, normalizer }: any) => {
 
         const {
           id: v_id,
+          active,
           name,
           image,
           price,
@@ -27,6 +28,7 @@ export const getBundleDetail = async ({ id, normalizer }: any) => {
 
         return {
           id: v_id,
+          active,
           name,
           product_id: p_id,
           product_name: p_name,
@@ -42,6 +44,7 @@ export const getBundleDetail = async ({ id, normalizer }: any) => {
 
         return {
           id: detail.id,
+          active: detail.active,
           name: detail.name,
           image: detail.image,
           price: detail.price,
@@ -52,7 +55,7 @@ export const getBundleDetail = async ({ id, normalizer }: any) => {
       }
     })).catch((error: unknown) => {
       throw new Error(error as string);
-    })
+    });
 
     return {
       result: normalizer({

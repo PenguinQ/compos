@@ -27,14 +27,11 @@ export default {
           variant_id: {
             type: 'string',
           },
+          active: {
+            type: 'boolean',
+          },
         },
       },
-    },
-    product_image: {
-      type: 'string',
-    },
-    product_variant: {
-      type: 'string',
     },
     price: {
       type: 'integer',

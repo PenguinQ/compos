@@ -7,7 +7,6 @@ import {
   mutateAddProduct,
   mutateEditProduct
 } from '@database/query/product';
-import { queryOneRx, mutateRx } from '@helpers/fetcher';
 import { detailNormalizer } from '../normalizer/ProductDetail.normalizer';
 
 export const useProductDetail = () => {
@@ -52,10 +51,11 @@ export const useProductDetail = () => {
         formData.price = result.price;
         formData.stock = result.stock;
         formData.sku = result.sku;
-        // formData.variant = result.variant;
 
         result.variant?.forEach((variant: any) => {
           formData.variant.push({
+            id: variant.id,
+            product_id: variant.product_id,
             name: variant.name,
             price: variant.price,
             image: variant.image,

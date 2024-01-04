@@ -7,11 +7,15 @@
 export const bundleDetailNormalizer = (data: any) => {
   const bundleData = data || {};
   let product: any = [];
+  let total_price = bundleData.fixed_price ? bundleData.price : 0;
 
   if (bundleData.product.length) {
     bundleData.product.forEach((p: any) => {
+      if (!bundleData.fixed_price) total_price += p.price;
+
       product.push({
         id: p.id || '',
+        active: p.active || false,
         name: p.name || '',
         product_id: p.product_id || undefined,
         product_name: p.product_name || undefined,
@@ -27,9 +31,8 @@ export const bundleDetailNormalizer = (data: any) => {
     name: bundleData.name || '',
     description: bundleData.description || '',
     active: bundleData.active || false,
-    price: bundleData.price || 0,
+    price: total_price,
     fixed_price: bundleData.fixed_price || false,
-    stock: bundleData.stock || 0,
     product,
   }
 };
