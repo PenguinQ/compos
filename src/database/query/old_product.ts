@@ -95,38 +95,10 @@ export const mutateEditProduct = async ({ id, data }: any) => {
       },
     }).exec();
 
-    const updateBundles = async ({ id, stock, isVariant = false }: any) => {
-      const queryIdentifier = isVariant ? 'variant_id' : 'id';
-      const queryBundles = await db.bundle.find({
-        selector: {
-          product: {
-            $elemMatch: {
-              [queryIdentifier]: id,
-            },
-          }
-        },
-      }).exec();
-
-      await queryBundles.map(async (bundle: any) => {
-        await bundle.incrementalModify((prev: any) => {
-          const index = prev.product.findIndex((data: any) => data[queryIdentifier] === id);
-
-          prev.product[index].active = stock >= 1 ? true : false;
-
-          const inactive = prev.product.filter((data: any) => data.active === false);
-
-          prev.active = inactive.length ? false : true;
-
-          return prev;
-        });
-      });
-    };
-
     // 1. Update flow if product has variants
     if (variants.length) {
       const is_stocked = variants.filter((variant: any) => parseInt(variant.stock) !== 0).length;
 
-      // 1.1 Update the product detail.
       await queryProduct.update({
         $set: {
           active: is_stocked ? true : false,
@@ -141,7 +113,6 @@ export const mutateEditProduct = async ({ id, data }: any) => {
         },
       });
 
-      // 1.2 Looping to update every variants detail.
       await variants.map(async (variant: any) => {
         const {
           id: v_id,
@@ -160,8 +131,7 @@ export const mutateEditProduct = async ({ id, data }: any) => {
           }
         }).exec();
 
-        // 1.2.1 Update current variant detail.
-        await queryVariant.update({
+        const queryUpdateVariant = await queryVariant.update({
           $set: {
             active: parseInt(v_stock) > 0 ? true : false,
             name: v_name,
@@ -173,14 +143,124 @@ export const mutateEditProduct = async ({ id, data }: any) => {
           },
         });
 
-        // 1.2.1 Update any bundle that contains current variant as one of it's product.
-        await updateBundles({ id: v_id, stock: parseInt(v_stock), isVariant: true });
+        const { stock: updated_stock } = queryUpdateVariant;
+
+        const queryBundles = await db.bundle.find({
+          selector: {
+            product: {
+              $elemMatch: {
+                variant_id: v_id,
+              },
+            }
+          },
+        }).exec();
+
+        await queryBundles.map(async (bundle: any) => {
+          await bundle.incrementalModify((prev: any) => {
+            const index = prev.product.findIndex((data: any) => data.variant_id === v_id);
+
+            prev.product[index].active = updated_stock >= 1 ? true : false;
+
+            const inactive = prev.product.filter((data: any) => data.active === false);
+
+            prev.active = inactive.length === prev.product.length ? false : true;
+
+            return prev;
+          });
+        });
       });
+
+      // 1.1 Promise to update variants, and any bundle that include the variants.
+      // const variantPromise = variants.map(async (variant: any) => {
+      //   const {
+      //     id: v_id,
+      //     name: v_name,
+      //     image: v_image,
+      //     price: v_price,
+      //     stock: v_stock,
+      //     sku: v_sku,
+      //   } = variant;
+
+      //   // 1.1.1 Find the variant based on the variant id
+      //   const queryVariant = await db.variant.findOne({
+      //     selector: {
+      //       id: {
+      //         $eq: v_id,
+      //       },
+      //     }
+      //   }).exec();
+
+      //   // 1.1.2 Update the variant detail
+      //   const queryUpdate = await queryVariant.update({
+      //     $set: {
+      //       active: parseInt(v_stock) > 0 ? true : false,
+      //       name: v_name,
+      //       image: v_image,
+      //       price: parseInt(v_price),
+      //       stock: parseInt(v_stock),
+      //       sku: v_sku,
+      //       updated_at: new Date().toISOString(),
+      //     },
+      //   });
+
+      //   // 1.1.3 Update any bundle that has current variant as one of it's product.
+      //   if (queryUpdate) {
+      //     const { stock: new_stock } = queryUpdate;
+
+      //     const queryBundle = db.bundle.find({
+      //       selector: {
+      //         product: {
+      //           $elemMatch: {
+      //             variant_id: v_id,
+      //           },
+      //         }
+      //       },
+      //     });
+
+      //     const bundleExec = await queryBundle.exec();
+
+      //     await Promise.allSettled(bundleExec.map(async (bundle: any) => {
+      //       await bundle.incrementalModify((oldData: any) => {
+      //         const index = oldData.product.findIndex((data: any) => data.variant_id === v_id);
+
+      //         oldData.product[index].active = new_stock >= 1 ? true : false;
+
+      //         const inactive = oldData.product.filter((data: any) => data.active === false);
+
+      //         oldData.active = !inactive.length ? true : false;
+
+      //         return oldData;
+      //       });
+      //     })).catch((error: unknown) => {
+      //       throw new Error(error as string);
+      //     });
+      //   }
+      // });
+
+      // // 1.2 Promise to update product active status related to the variants.
+      // const productPromise = new Promise<void>((resolve) => {
+      //   const stocked = variants.filter((variant: any) => parseInt(variant.stock) !== 0);
+
+      //   if (stocked.length) {
+      //     queryProduct.incrementalUpdate({ $set: { active: true } });
+      //   } else {
+      //     queryProduct.incrementalUpdate({ $set: { active: false } });
+      //   }
+
+      //   resolve();
+      // });
+
+      // const promises = [...variantPromise, productPromise];
+
+      // // 1.3 Run all promises (variantPromise, and productPromise)
+      // await Promise.allSettled(promises).catch((error: unknown) => {
+      //   throw new Error(error as string);
+      // });
     }
     // 2. Update flow if product has no variants.
     else {
       // 2.1 Update the product detail.
-      await queryProduct.update({
+      const queryUpdateProduct = await queryProduct.update({
         $set: {
           active: parseInt(stock) >= 1 ? true : false,
           name,
@@ -194,8 +274,31 @@ export const mutateEditProduct = async ({ id, data }: any) => {
         },
       });
 
-      // 1.2.1 Update any bundle that contains current product as one of it's product.
-      await updateBundles({ id, stock: parseInt(stock) });
+      const { stock: updated_stock } = queryUpdateProduct;
+
+      const queryBundles = await db.bundle.find({
+        selector: {
+          product: {
+            $elemMatch: {
+              id,
+            },
+          }
+        },
+      }).exec();
+
+      await queryBundles.map(async (bundle: any) => {
+        await bundle.incrementalModify((prev: any) => {
+          const index = prev.product.findIndex((data: any) => data.id === id);
+
+          prev.product[index].active = updated_stock >= 1 ? true : false;
+
+          const inactive = prev.product.filter((data: any) => data.active === false);
+
+          prev.active = inactive.length === prev.product.length ? false : true;
+
+          return prev;
+        });
+      });
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -206,13 +309,6 @@ export const mutateEditProduct = async ({ id, data }: any) => {
   }
 };
 
-/**
- * **************************
- * FOR DEVELOPMENT PURPOSES *
- * **************************
- *
- * Functions to create sample products.
- */
 export const createSampleProduct = async () => {
   const productObj = [];
   const ulid = monotonicFactory();
@@ -314,13 +410,6 @@ export const createSampleProduct = async () => {
   };
 };
 
-/**
- * **************************
- * FOR DEVELOPMENT PURPOSES *
- * **************************
- *
- * Functions to create sample bundles.
- */
 export const createSampleBundle = async (data: any, bundle: any) => {
   const ulid = monotonicFactory();
   const productArr: any = [];
@@ -355,3 +444,31 @@ export const createSampleBundle = async (data: any, bundle: any) => {
     }
   ]);
 };
+
+
+
+    // const updateBundle = async ({ stock, selector, variant = false, id }: any) => {
+    //   const queryBundle = db.bundle.find({
+    //     selector: {
+    //       product: selector,
+    //     },
+    //   });
+
+    //   const bundleExec = await queryBundle.exec();
+
+    //   await Promise.allSettled(bundleExec.map(async (bundle: any) => {
+    //     await bundle.incrementalModify((oldData: any) => {
+    //       const index = oldData.product.findIndex((data: any) => data[variant ? 'variant_id' : 'id'] === id);
+
+    //       oldData.product[index].active = stock >= 1 ? true : false;
+
+    //       const inactive = oldData.product.filter((data: any) => data.active === false);
+
+    //       oldData.active = !inactive.length ? true : false;
+
+    //       return oldData;
+    //     });
+    //   })).catch((error: unknown) => {
+    //     throw new Error(error as string);
+    //   });
+    // };
