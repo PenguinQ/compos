@@ -6,6 +6,8 @@ export const getBundleDetail = async ({ id, normalizer }: any) => {
     const bundle = await db.bundle.findOne({ selector: { id } }).exec();
     const { product } = bundle;
 
+    console.log(bundle);
+
     const productList = await Promise.all(product.map(async (prod: any) => {
       const { id, variant_id } = prod;
 

@@ -1,23 +1,21 @@
 import { addRxPlugin, createRxDatabase } from 'rxdb';
-import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
+import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
+import type { Database, DatabaseCollection } from './types';
 
 // Development
 import { createSampleProduct, createSampleBundle } from './query/product';
 
 // Database Schema
-import {
-  product,
-  variant,
-  bundle,
-} from './schema';
+import { product, variant, bundle } from './schema';
 
-export let db: any;
+export let db: Database;
 
 const createDB = async () => {
-  db = await createRxDatabase({
+  db = await createRxDatabase<DatabaseCollection>({
     name: 'compos',
     // storage: getRxStorageDexie(),
     storage: getRxStorageMemory(), // Use storage memory during development mode, change to Dexie later
@@ -28,6 +26,7 @@ const createDB = async () => {
 export const initDB = async () => {
   addRxPlugin(RxDBDevModePlugin);
   addRxPlugin(RxDBUpdatePlugin);
+  addRxPlugin(RxDBAttachmentsPlugin);
 
   if (!db) await createDB();
 

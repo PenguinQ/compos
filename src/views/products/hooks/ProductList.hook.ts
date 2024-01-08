@@ -1,6 +1,7 @@
 import { ref, reactive } from 'vue';
 import { useQuery, useMutation } from '@database/hooks';
 import { queryRx, mutateRx } from '@helpers/fetcher';
+import { mutateDeleteProduct } from '@database/query/product';
 
 /**
  * -------------------------
@@ -33,7 +34,7 @@ export const useProduct = () => {
       query: {
         selector: selector.value,
         sort: [
-          { id: 'asc' },
+          { id: 'desc' },
         ],
         limit: 5,
       },
@@ -95,6 +96,21 @@ export const useProduct = () => {
     },
   });
 
+  const {
+    mutate: mutateDelete,
+    isLoading: mutateDeleteLoading,
+  } = useMutation({
+    mutateFn: () => mutateDeleteProduct(deleteID.value),
+    onError: (error: unknown) => {
+      console.log(error);
+    },
+    onSuccess: () => {
+      const index = products.value.findIndex((data: any) => data.id === deleteID.value);
+
+      products.value.splice(index, 1);
+    },
+  });
+
   const nextPage = () => {
     if (!stopQuery.value) refetch();
   };
@@ -106,8 +122,10 @@ export const useProduct = () => {
     isError,
     isLoading,
     isSuccess,
-    mutateRemoveLoading,
+    mutateDelete,
+    mutateDeleteLoading,
     mutateRemove,
+    mutateRemoveLoading,
     nextPage,
   };
 };

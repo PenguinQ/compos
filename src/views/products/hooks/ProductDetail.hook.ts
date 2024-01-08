@@ -12,17 +12,18 @@ import { detailNormalizer } from '../normalizer/ProductDetail.normalizer';
 export const useProductDetail = () => {
   const route = useRoute();
   const { params } = route;
-  const formData= reactive<any>({
+  const formData = reactive<any>({
     id: '',
     name: '',
     description: '',
-    image: '',
+    image: [],
     by: '',
-    price: null,
-    stock: null,
+    price: 0,
+    stock: 0,
     variant: [],
     sku: '',
   });
+  const removeVariantID: string[] = [];
 
   const {
     data,
@@ -81,6 +82,7 @@ export const useProductDetail = () => {
         stock: parseInt(formData.stock as any),
         variant: formData.variant,
         sku: formData.sku,
+        removeVariantID,
       },
     }),
     onError: (error: any) => {
@@ -94,10 +96,10 @@ export const useProductDetail = () => {
   const resetForm = () => {
     formData.name = '';
     formData.description = '';
-    formData.image = '';
+    formData.image = [];
     formData.by = '';
-    formData.price = null;
-    formData.stock = null;
+    formData.price = 0;
+    formData.stock = 0;
     formData.variant = [];
     formData.sku = '';
   };
@@ -112,6 +114,7 @@ export const useProductDetail = () => {
         description: formData.description,
         image: formData.image,
         by: formData.by,
+        variant: formData.variant,
         price: parseInt(formData.price as any),
         stock: parseInt(formData.stock as any),
         sku: formData.sku,
@@ -126,7 +129,25 @@ export const useProductDetail = () => {
     },
   });
 
+  const addVariant = () => {
+    formData.variant.push({
+      name: '',
+      image: [],
+      price: 0,
+      stock: 0,
+    });
+  };
+
+  const removeVariant = (index: number, id: string) => {
+    if (id) removeVariantID.push(id);
+    formData.variant.splice(index, 1);
+  };
+
   return {
+    addVariant,
+    removeVariant,
+    removeVariantID,
+    // Add Related
     productID: params.id,
     data,
     formData,

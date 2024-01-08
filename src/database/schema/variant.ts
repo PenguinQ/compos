@@ -7,15 +7,19 @@ export default {
       type: 'string',
       maxLength: 1000,
     },
+    product_id: {
+      ref: 'product',
+      type: 'string',
+    },
     active: {
       type: 'boolean',
     },
     name: {
       type: 'string',
     },
-    product_id: {
-      ref: 'product',
-      type: 'string',
+    attachment: {
+      encrypted: false,
+      compression: 'gzip',
     },
     image: {
       type: 'array',

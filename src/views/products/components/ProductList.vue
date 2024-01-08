@@ -12,6 +12,8 @@ const {
   deleteID,
   products,
   isLoading,
+  mutateDelete,
+  mutateDeleteLoading,
   mutateRemove,
   nextPage,
 } = useProduct();
@@ -19,7 +21,7 @@ const {
 const handleDelete = (id: string) => {
   deleteID.value = id;
 
-  if (deleteID.value) mutateRemove();
+  if (deleteID.value) mutateDelete();
 };
 </script>
 

@@ -1,18 +1,7 @@
 import { reactive, toRefs } from 'vue';
+import { createBlob } from 'rxdb';
 import { monotonicFactory } from 'ulidx';
 import { db } from '@database';
-
-interface ProductData {
-  id: string;
-  name: string;
-  description?: string;
-  image?: string;
-  by?: string;
-  price: unknown;
-  stock?: number;
-  sku?: string;
-  timestamp: Date;
-};
 
 export const getProductDetail = async ({ id, normalizer }: any) => {
   try {
@@ -27,44 +16,80 @@ export const getProductDetail = async ({ id, normalizer }: any) => {
   }
 };
 
-export const updateProduct = async (id: string, data: ProductData) => {
-  await db.product.findOne(id).exec().then((prod: any) => {
-    prod.update({
-      $set: {
-        name: data.name,
-        description: data.description,
-        image: data.image,
-        by: data.by,
-        price: parseInt(data.price as string),
-        stock: data.stock,
-        sku: data.sku,
-      },
-    });
-  });
-};
-
-export const removeProduct = async (id: string) => {
-  await db.product.findOne(id).exec().then((prod: any) => {
-    prod.remove();
-  });
-};
-
 export const mutateAddProduct = async ({ data }: any) => {
   try {
     const ulid = monotonicFactory();
+    const product_id = 'PRD_' + ulid();
+    const {
+      name,
+      description,
+      image,
+      by,
+      price,
+      stock,
+      sku,
+      variant,
+    } = data;
 
-    return await db.product.insert({
-      id: ulid(),
-      name: data.name,
-      description: data.description,
-      image: data.image,
-      by: data.by,
-      price: parseInt(data.price as string),
-      stock: parseInt(data.stock as string),
-      sku: data.sku,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
+    if (variant.length) {
+      let product_active = true;
+      const variant_array: any = [];
+      const variant_ids: string[] = [];
+
+      variant.map((v: any) => {
+        const id = 'VAR_' + ulid();
+
+        variant_ids.push(id);
+        variant_array.push({
+          id,
+          product_id: product_id,
+          active: parseInt(v.stock) >= 1 ? true : false,
+          name: v.name,
+          image: v.image,
+          price: parseInt(v.price),
+          stock: parseInt(v.stock),
+          sku: v.sku,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      });
+
+      const inactiveVariant = variant_array.filter((v: any) => v.active === false);
+
+      if (inactiveVariant.length === variant_array.length) {
+        product_active = false;
+      }
+
+      await db.product.insert({
+        id: product_id,
+        active: product_active,
+        name,
+        description,
+        image,
+        by,
+        variant: variant_ids,
+        price: 0,
+        stock: 0,
+        sku: data.sku,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      await db.variant.bulkInsert(variant_array);
+    } else {
+      await db.product.insert({
+        id: product_id,
+        active: parseInt(stock) >= 1 ? true : false,
+        name,
+        description,
+        image,
+        by,
+        price: parseInt(price as string),
+        stock: parseInt(stock as string),
+        sku,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
   } catch (error) {
     if (error instanceof Error) {
       throw error.message;
@@ -84,7 +109,8 @@ export const mutateEditProduct = async ({ id, data }: any) => {
       price,
       stock,
       sku,
-      variant: variants
+      variant: variants,
+      removeVariantID,
     } = data;
 
     const queryProduct = await db.product.findOne({
@@ -94,6 +120,44 @@ export const mutateEditProduct = async ({ id, data }: any) => {
         },
       },
     }).exec();
+
+    const removeVariant = async (variantsID: string[]) => {
+      await variantsID.map(async (id: string) => {
+        const queryVariant = await db.variant.findOne(id).exec();
+        await queryVariant.remove();
+        await queryProduct.incrementalModify((prev: any) => {
+          const index = prev.variant.indexOf(id);
+
+          prev.variant.splice(index, 1);
+
+          return prev;
+        });
+
+        const queryBundles = await db.bundle.find({
+          selector: {
+            product: {
+              $elemMatch: {
+                variant_id: id,
+              },
+            }
+          },
+        }).exec();
+
+        await queryBundles.map(async (bundle: any) => {
+          await bundle.incrementalModify((prev: any) => {
+            const index = prev.product.findIndex((data: any) => data.variant_id === id);
+
+            prev.product.splice(index, 1);
+
+            const inactive = prev.product.filter((data: any) => data.active === false);
+
+            prev.active = inactive.length ? false : true;
+
+            return prev;
+          });
+        });
+      });
+    };
 
     const updateBundles = async ({ id, stock, isVariant = false }: any) => {
       const queryIdentifier = isVariant ? 'variant_id' : 'id';
@@ -124,9 +188,30 @@ export const mutateEditProduct = async ({ id, data }: any) => {
 
     // 1. Update flow if product has variants
     if (variants.length) {
+      /**
+       * 1.1 Check if the product already exist in a bundle.
+       *
+       * If there are any bundle that contain the product without variant, throw error until the product removed from
+       * every bundle.
+       */
+      const queryBundles = await db.bundle.find({
+        selector: {
+          product: {
+            $elemMatch: {
+              id,
+              variant_id: undefined,
+            },
+          }
+        },
+      }).exec();
+
+      if (queryBundles.length) {
+        throw `Cannot add new variant into this product since this product already included in some bundle, please remove it from the bundle first.`;
+      }
+
+      // 1.2 Update the product detail.
       const is_stocked = variants.filter((variant: any) => parseInt(variant.stock) !== 0).length;
 
-      // 1.1 Update the product detail.
       await queryProduct.update({
         $set: {
           active: is_stocked ? true : false,
@@ -141,7 +226,17 @@ export const mutateEditProduct = async ({ id, data }: any) => {
         },
       });
 
-      // 1.2 Looping to update every variants detail.
+      /**
+       * 1.3 Check if there are any variant removed.
+       *
+       * If there are any deleted variant id in the array, remove variant from the collection and the product,
+       * then remove the variant from any bundle.
+       */
+      if (removeVariantID.length) {
+        await removeVariant(removeVariantID);
+      }
+
+      // 1.4 Looping to update every variants detail.
       await variants.map(async (variant: any) => {
         const {
           id: v_id,
@@ -152,32 +247,67 @@ export const mutateEditProduct = async ({ id, data }: any) => {
           sku: v_sku,
         } = variant;
 
-        const queryVariant = await db.variant.findOne({
-          selector: {
-            id: {
-              $eq: v_id,
-            },
-          }
-        }).exec();
+        // 1.4.1 Update variant detail if it's originally has an id.
+        if (v_id) {
+          const queryVariant = await db.variant.findOne({
+            selector: {
+              id: {
+                $eq: v_id,
+              },
+            }
+          }).exec();
 
-        // 1.2.1 Update current variant detail.
-        await queryVariant.update({
-          $set: {
-            active: parseInt(v_stock) > 0 ? true : false,
+          // 1.4.1.1 Update current variant detail.
+          await queryVariant.update({
+            $set: {
+              active: parseInt(v_stock) > 0 ? true : false,
+              name: v_name,
+              image: v_image,
+              price: parseInt(v_price),
+              stock: parseInt(v_stock),
+              sku: v_sku,
+              updated_at: new Date().toISOString(),
+            },
+          });
+
+          // 1.4.1.2 Update any bundle that contains current variant as one of it's product.
+          await updateBundles({ id: v_id, stock: parseInt(v_stock), isVariant: true });
+        }
+        // 1.4.2 Add new variant since it's doesnt have an id.
+        else {
+          // 1.4.2.1 Create new variant and added it to collection.
+          const ulid = monotonicFactory();
+
+          const variant_id = 'VAR_' + ulid();
+
+          await db.variant.insert({
+            id: variant_id,
+            product_id: id,
+            active: v_stock >= 1 ? true : false,
             name: v_name,
             image: v_image,
             price: parseInt(v_price),
             stock: parseInt(v_stock),
             sku: v_sku,
+            created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-          },
-        });
+          });
 
-        // 1.2.1 Update any bundle that contains current variant as one of it's product.
-        await updateBundles({ id: v_id, stock: parseInt(v_stock), isVariant: true });
+          // 1.4.2.2 Add currently added variant into list of variant on current product.
+          await queryProduct.incrementalModify((prev: any) => {
+            prev.variant.push(variant_id);
+
+            return prev;
+          });
+        }
       });
     }
-    // 2. Update flow if product has no variants.
+    /**
+     * 2. Update flow if product has no variants.
+     *
+     * This also run when product has actual variants, BUT if those variants are removed in
+     * the editing proces.
+     */
     else {
       // 2.1 Update the product detail.
       await queryProduct.update({
@@ -194,9 +324,101 @@ export const mutateEditProduct = async ({ id, data }: any) => {
         },
       });
 
+      /**
+       * 2.2 Check if there are any variant removed.
+       *
+       * If there are any deleted variant id in the array, remove variant from the collection and the product,
+       * then remove the variant from any bundle.
+       */
+      if (removeVariantID.length) {
+        await removeVariant(removeVariantID);
+      }
+
       // 1.2.1 Update any bundle that contains current product as one of it's product.
       await updateBundles({ id, stock: parseInt(stock) });
     }
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error.message;
+    }
+
+    throw error;
+  }
+};
+
+export const mutateDeleteProduct = async (id: string) => {
+  try {
+    const queryProduct = await db.product.findOne(id).exec();
+    const { variant } = queryProduct;
+
+    const removeFromBundles = async (bundles: []) => {
+      bundles.map(async (bundle: any) => {
+        await bundle.incrementalModify((prev: any) => {
+          const index = prev.product.findIndex((data: any) => data.id === id);
+
+          prev.product.splice(index, 1);
+
+          if (prev.product.length) {
+            const inactive = prev.product.filter((data: any) => data.active === false);
+
+            prev.active = inactive.length ? false : true;
+          } else {
+            prev.active = false;
+          }
+
+          return prev;
+        });
+      });
+    };
+
+    // 1. Delete flow for product with variant.
+    if (variant.length) {
+      // 1.1 Remove the product.
+      await queryProduct.remove();
+
+      // 1.2 Get list of variant of current product and delete it.
+      const queryVariant = await db.variant.find({
+        selector: {
+          product_id: id,
+        },
+      });
+
+      await queryVariant.remove();
+
+      // 1.3 Get list of bundle that contain current deleted product id and as one of it's product.
+      const queryBundle = await db.bundle.find({
+        selector: {
+          product: {
+            $elemMatch: {
+              id,
+            }
+          }
+        }
+      }).exec();
+
+      // 1.4 Recursively delete current product variant in each bundle that has the same id with currently deleted product id.
+      await removeFromBundles(queryBundle);
+    }
+    // 2. Delete flow for product without variant.
+    else {
+      // 2.1 Remove the product
+      await queryProduct.remove();
+
+      // 2.2 Get list of bundle that contain current deleted product as one of it's product.
+      const queryBundle = await db.bundle.find({
+        selector: {
+          product: {
+            $elemMatch: {
+              id,
+              variant_id: undefined,
+            },
+          },
+        },
+      }).exec();
+
+      // 2.3 Recursively delete current deleted product id from list of product on each bundle.
+      await removeFromBundles(queryBundle);
+    };
   } catch (error) {
     if (error instanceof Error) {
       throw error.message;
@@ -221,7 +443,7 @@ export const createSampleProduct = async () => {
   let bundle_available = true;
 
   for (let i = 1; i < 21; i++) {
-    const productID = ulid();
+    const productID = 'PRD_' + ulid();
     const obj: any = {
       id: productID,
       active: true,
@@ -334,7 +556,7 @@ export const createSampleBundle = async (data: any, bundle: any) => {
 
   return await db.bundle.bulkInsert([
     {
-      id: ulid(),
+      id: 'BND_' + ulid(),
       active: available,
       name: 'Bundle 1',
       description: 'Bundle 1 description',
@@ -344,7 +566,7 @@ export const createSampleBundle = async (data: any, bundle: any) => {
       updated_at: new Date().toISOString(),
     },
     {
-      id: ulid(),
+      id: 'BND_' + ulid(),
       active: available,
       name: 'Bundle 2',
       description: 'Bundle 2 description',

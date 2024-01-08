@@ -36,10 +36,6 @@ export default {
     price: {
       type: 'integer',
     },
-    fixed_price: {
-      type: 'boolean',
-      default: false,
-    },
     created_at: {
       type: 'date-time',
     },
@@ -55,3 +51,5 @@ export default {
     'upudated_at',
   ],
 };
+
+// If price is filled, the price will be fixed, if not, it will sum the prices of the product.

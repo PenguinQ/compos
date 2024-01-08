@@ -16,6 +16,10 @@ export default {
     description: {
       type: 'string',
     },
+    attachment: {
+      encrypted: false,
+      compression: 'gzip',
+    },
     image: {
       type: 'array',
       items: {
@@ -25,12 +29,6 @@ export default {
     by: {
       type: 'string',
     },
-    price: {
-      type: 'integer',
-    },
-    stock: {
-      type: 'integer',
-    },
     variant: {
       type: 'array',
       ref: 'variant',
@@ -38,6 +36,12 @@ export default {
       items: {
         type: 'string',
       },
+    },
+    price: {
+      type: 'integer',
+    },
+    stock: {
+      type: 'integer',
     },
     sku: {
       type: 'string'
@@ -56,8 +60,3 @@ export default {
     'updated_at',
   ],
 };
-
-/**
- * 1. If variant exist and it doesn't have a price, it will follow the default price of the product
- * 2. If variant exist and have a price, the default price will be ignored.
- */
