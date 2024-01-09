@@ -15,40 +15,20 @@ const {
   productID,
   formData,
   isLoading,
-  addVariant,
-  removeVariant,
-  mutateAddLoading,
+  imagePreview,
+  handleAddImage,
+  handleAddVariant,
+  handleRemoveVariant,
   mutateAdd,
-  mutateEditLoading,
+  mutateAddLoading,
   mutateEdit,
+  mutateEditLoading,
 } = useProductDetail();
 
 const handleSubmit = (e: Event) => {
   e.preventDefault();
 
   productID ? mutateEdit() : mutateAdd();
-};
-
-const handleFileChange = (e: any) => {
-  const files = e.target.files;
-  const reader = new FileReader();
-  const blobArray = [];
-
-  [...files].forEach((element: any) => {
-    const { type } = element
-
-    console.log(element)
-    const blob = createBlob(element, type);
-
-    console.log(blob);
-
-    // reader.onload = () => {
-    //   console.log(reader.result);
-    // }
-    // reader.readAsDataURL(blob);
-    // console.log(createBlob('wkwkwk', 'text/plain'));
-  });
-
 };
 </script>
 
@@ -67,17 +47,27 @@ const handleFileChange = (e: any) => {
           <Row>
             <Textfield label="Name" v-model="formData.name" />
             <Textarea label="Description" v-model="formData.description" />
-            <input type="file" @change="handleFileChange" multiple accept=".jpg, .jpeg, .png, .gif" />
-            <img src="" />
           </Row>
           <br />
-          <Button @click="addVariant">Add Variant</Button>
+          <div>
+            <div style="display: flex; gap: 8px;">
+              <img
+                v-if="imagePreview"
+                :src="imagePreview"
+                style="width: 100px; height: 100px; object-fit: contain;"
+              />
+            </div>
+            <br />
+            <input type="file" accept=".jpg, .jpeg, .png, .gif" @change="handleAddImage" />
+          </div>
+          <br />
+          <Button @click="handleAddVariant">Add Variant</Button>
           <Row>
             <Column col="6" :key="`variant-${index}`" v-for="(variant, index) in formData.variant">
               <Textfield label="Variant Name" v-model="variant.name" />
               <Textfield label="Price" v-model="variant.price" />
               <QuantityEditor v-model="variant.stock" />
-              <Button @click="removeVariant(index, variant.id)">Remove Variant</Button>
+              <Button @click="handleRemoveVariant(index, variant.id)">Remove Variant</Button>
             </Column>
           </Row>
           <br />

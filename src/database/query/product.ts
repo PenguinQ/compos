@@ -31,6 +31,7 @@ export const mutateAddProduct = async ({ data }: any) => {
       variant,
     } = data;
 
+    // 1. Add flow if there's variant.
     if (variant.length) {
       let product_active = true;
       const variant_array: any = [];
@@ -75,13 +76,15 @@ export const mutateAddProduct = async ({ data }: any) => {
         updated_at: new Date().toISOString(),
       });
       await db.variant.bulkInsert(variant_array);
-    } else {
-      await db.product.insert({
+    }
+    // 2. Add flow if there's no variant.
+    else {
+      const product = await db.product.insert({
         id: product_id,
         active: parseInt(stock) >= 1 ? true : false,
         name,
         description,
-        image,
+        // image,
         by,
         price: parseInt(price as string),
         stock: parseInt(stock as string),
@@ -89,6 +92,21 @@ export const mutateAddProduct = async ({ data }: any) => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
+
+      console.log(product);
+
+      if (image) {
+        const { type } = image;
+        const imageBlob = createBlob(image, type);
+
+        const attachment = await product.putAttachment({
+          id: product_id + '_IMAGE',
+          data: imageBlob,
+          type,
+        });
+
+        console.log(attachment);
+      }
     }
   } catch (error) {
     if (error instanceof Error) {

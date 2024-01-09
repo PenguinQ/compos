@@ -2,6 +2,7 @@ import { addRxPlugin, createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
+import { wrappedAttachmentsCompressionStorage } from 'rxdb/plugins/attachments-compression';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 import type { Database, DatabaseCollection } from './types';
@@ -15,10 +16,15 @@ import { product, variant, bundle } from './schema';
 export let db: Database;
 
 const createDB = async () => {
+  const compressedStorage = wrappedAttachmentsCompressionStorage({
+    // storage: getRxStorageDexie(),
+    storage: getRxStorageMemory(),
+  });
+
   db = await createRxDatabase<DatabaseCollection>({
     name: 'compos',
     // storage: getRxStorageDexie(),
-    storage: getRxStorageMemory(), // Use storage memory during development mode, change to Dexie later
+    storage: compressedStorage, // Use storage memory during development mode, change to Dexie later
     eventReduce: true,
   });
 };

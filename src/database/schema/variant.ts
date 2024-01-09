@@ -17,10 +17,6 @@ export default {
     name: {
       type: 'string',
     },
-    attachment: {
-      encrypted: false,
-      compression: 'gzip',
-    },
     image: {
       type: 'array',
       items: {
@@ -42,6 +38,10 @@ export default {
     updated_at: {
       type: 'date-time',
     },
+  },
+  attachment: {
+    encrypted: false,
+    compression: 'gzip',
   },
   required: [
     'id',
