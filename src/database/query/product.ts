@@ -6,10 +6,24 @@ import { db } from '@database';
 export const getProductDetail = async ({ id, normalizer }: any) => {
   try {
     const product = await db.product.findOne({ selector: { id } }).exec();
+    const product_attachments = await product.allAttachments();
     const variant = await product.populate('variant');
+    const productBlob: any = [];
+
+    const getProductBlob = product_attachments.map(async (attachment: any) => {
+      const data = await attachment.getData();
+
+      productBlob.push(data);
+    });
+
+    await Promise.allSettled(getProductBlob);
 
     return {
-      result: normalizer({ product, variant }),
+      result: normalizer({
+        product,
+        product_attachments: productBlob,
+        variant,
+      }),
     };
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -93,19 +107,16 @@ export const mutateAddProduct = async ({ data }: any) => {
         updated_at: new Date().toISOString(),
       });
 
-      console.log(product);
-
       if (image) {
         const { type } = image;
         const imageBlob = createBlob(image, type);
 
-        const attachment = await product.putAttachment({
+        // NOTES: Change the id later.
+        await product.putAttachment({
           id: product_id + '_IMAGE',
           data: imageBlob,
           type,
         });
-
-        console.log(attachment);
       }
     }
   } catch (error) {

@@ -28,6 +28,7 @@ const {
     <pre>
       {{ data }}
     </pre>
+    <img v-for="image in data.image" :src="image" />
     <div>Name: {{ data.name }}</div>
     <div>Description{{ data.description }}</div>
     <div>Image Path: {{ data.image }}</div>

@@ -15,9 +15,9 @@ const {
   productID,
   formData,
   isLoading,
-  imagePreview,
   handleAddImage,
   handleAddVariant,
+  handleAddVariantImage,
   handleRemoveVariant,
   mutateAdd,
   mutateAddLoading,
@@ -37,23 +37,26 @@ const handleSubmit = (e: Event) => {
   <form v-else id="product-form" @submit="handleSubmit">
     <Container>
       <Row>
-        <Column>
+        <Column col="6">
           <Text heading="4">formData</Text>
-          <pre>
+          <pre style="overflow: auto;">
             {{ formData }}
           </pre>
+          <br />
+          <Button form="product-form" type="submit">
+            {{ mutateAddLoading ? 'Loading' : 'Submit' }}
+          </Button>
         </Column>
-        <Column>
-          <Row>
-            <Textfield label="Name" v-model="formData.name" />
-            <Textarea label="Description" v-model="formData.description" />
-          </Row>
+        <Column col="6">
+          <Textfield label="Name" v-model="formData.name" />
+          <br />
+          <Textarea label="Description" v-model="formData.description" />
           <br />
           <div>
             <div style="display: flex; gap: 8px;">
               <img
-                v-if="imagePreview"
-                :src="imagePreview"
+                v-if="productID ? formData.image[0] : formData.image_preview"
+                :src="productID ? formData.image[0] : formData.image_preview"
                 style="width: 100px; height: 100px; object-fit: contain;"
               />
             </div>
@@ -61,15 +64,30 @@ const handleSubmit = (e: Event) => {
             <input type="file" accept=".jpg, .jpeg, .png, .gif" @change="handleAddImage" />
           </div>
           <br />
+          <hr />
+          <br />
           <Button @click="handleAddVariant">Add Variant</Button>
           <Row>
             <Column col="6" :key="`variant-${index}`" v-for="(variant, index) in formData.variant">
+              <div>
+                <div style="display: flex; gap: 8px;">
+                  <img
+                    v-if="variant.image_preview"
+                    :src="variant.image_preview"
+                    style="width: 100px; height: 100px; object-fit: contain;"
+                  />
+                </div>
+                <br />
+                <input type="file" accept=".jpg, .jpeg, .png, .gif" @change="handleAddVariantImage($event, index)" />
+              </div>
               <Textfield label="Variant Name" v-model="variant.name" />
               <Textfield label="Price" v-model="variant.price" />
               <QuantityEditor v-model="variant.stock" />
               <Button @click="handleRemoveVariant(index, variant.id)">Remove Variant</Button>
             </Column>
           </Row>
+          <br />
+          <hr />
           <br />
           <Row>
             <Column>
@@ -88,9 +106,6 @@ const handleSubmit = (e: Event) => {
       </Row>
     </Container>
   </form>
-  <Button form="product-form" type="submit">
-    {{ mutateAddLoading ? 'Loading' : 'Submit' }}
-  </Button>
 </template>
 
 <style lang="scss"></style>

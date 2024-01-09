@@ -17,13 +17,13 @@ export const useProductDetail = () => {
     name: '',
     description: '',
     image: null,
+    image_preview: '',
     by: '',
     price: 0,
     stock: 0,
     variant: [],
     sku: '',
   });
-  const imagePreview: Ref = ref('');
   const removeVariantID: string[] = [];
 
   const {
@@ -134,18 +134,16 @@ export const useProductDetail = () => {
     /**
      * Single file handling
      */
-    imagePreview.value = '';
     formData.image = [];
+    formData.image_preview = '';
 
     const target = e.target as HTMLInputElement;
     const file: File = (target.files as FileList)[0];
     const reader = new FileReader();
 
-    console.log(typeof file, file);
-
     reader.onload = () => {
       formData.image = file;
-      imagePreview.value = reader.result;
+      formData.image_preview = reader.result;
     };
 
     reader.readAsDataURL(file);
@@ -171,10 +169,27 @@ export const useProductDetail = () => {
     // });
   };
 
+  const handleAddVariantImage = (e: Event, index: number) => {
+    formData.variant[index].image = [];
+    formData.variant[index].image_preview = '';
+
+    const target = e.target as HTMLInputElement;
+    const file: File = (target.files as FileList)[0];
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      formData.variant[index].image = file;
+      formData.variant[index].image_preview = reader.result;
+    }
+
+    reader.readAsDataURL(file);
+  };
+
   const handleAddVariant = () => {
     formData.variant.push({
       name: '',
       image: [],
+      image_preview: '',
       price: 0,
       stock: 0,
     });
@@ -191,12 +206,12 @@ export const useProductDetail = () => {
     productID: params.id,
     data,
     formData,
-    imagePreview,
     isError,
     isLoading,
     isSuccess,
     handleAddImage,
     handleAddVariant,
+    handleAddVariantImage,
     handleRemoveVariant,
     refetch,
     mutateAddLoading,

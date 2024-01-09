@@ -5,7 +5,8 @@
  * @returns formatted object for product detail page.
  */
 export const detailNormalizer = (data: any) => {
-  const { product, variant } = data || {};
+  const { product, product_attachments, variant } = data || {};
+  const productAttachments: string[] = []
   let productVariant: any = [];
 
   variant?.forEach((v: any) => {
@@ -20,12 +21,16 @@ export const detailNormalizer = (data: any) => {
     })
   });
 
+  product_attachments.map((attachment: any) => {
+    productAttachments.push(URL.createObjectURL(attachment));
+  });
+
   return {
     id: product.id || '',
     active: product.active || false,
     name: product.name || '',
     description: product.description || '',
-    image: product.image || [],
+    image: productAttachments || [],
     by: product.by || '',
     price: product.price || 0,
     stock: product.stock || 0,

@@ -50,8 +50,8 @@ export default {
     },
   },
   attachments: {
-    compression: 'gzip',
     encrypted: false,
+    compression: 'deflate',
   },
   required: [
     'id',
