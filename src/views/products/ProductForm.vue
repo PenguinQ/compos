@@ -67,7 +67,7 @@ const imageStyle: any = {
           <div>
             <div style="display: flex; gap: 8px;">
               <div :key="index" v-for="(image, index) in formData.image">
-                <img :src="image" :style="imageStyle" />
+                <img :src="image.path" :style="imageStyle" />
                 <button type="button" @click="handleRemoveImage(index, image.id)">Remove Image</button>
               </div>
               <div :key="index" v-for="(image, index) in formData.new_image.preview">
@@ -91,7 +91,7 @@ const imageStyle: any = {
               <div>
                 <div style="display: flex; gap: 8px;">
                   <div :key="imageIndex" v-for="(image, imageIndex) in variant.image">
-                    <img :src="image" :style="imageStyle" />
+                    <img :src="image.path" :style="imageStyle" />
                     <button type="button" @click="handleRemoveVariantImage(index, imageIndex, image.id)">
                       Remove Image
                     </button>

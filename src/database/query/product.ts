@@ -9,7 +9,7 @@ export const getProductDetail = async ({ id, normalizer }: any) => {
     const queryProductAttachments   = await queryProduct.allAttachments();
     const queryVariants             = await queryProduct.populate('variant');
 
-    // Get product detail.
+    // 1. Set product detail data.
     const { ...productData }            = queryProduct.toJSON();
     const product_attachments: object[] = [];
     const product_data                  = { attachment: product_attachments, ...productData };
@@ -21,7 +21,7 @@ export const getProductDetail = async ({ id, normalizer }: any) => {
       product_attachments.push({ id, data });
     }
 
-    // Get variant detail.
+    // 2. Set variant detail data.
     const variant_data = [];
 
     for (const variant of queryVariants) {

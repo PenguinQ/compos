@@ -44,5 +44,5 @@ export const detailNormalizer = (data: any) => {
     stock      : product.stock || 0,
     sku        : product.sku || '',
     variant    : product_variants,
-  }
+  };
 };
