@@ -5,25 +5,42 @@ import { db } from '@database';
 
 export const getProductDetail = async ({ id, normalizer }: any) => {
   try {
-    const product = await db.product.findOne({ selector: { id } }).exec();
-    const product_attachments = await product.allAttachments();
-    const variant = await product.populate('variant');
-    const productBlob: any = [];
+    const queryProduct              = await db.product.findOne({ selector: { id } }).exec();
+    const queryProductAttachments   = await queryProduct.allAttachments();
+    const queryVariants             = await queryProduct.populate('variant');
 
-    const getProductBlob = product_attachments.map(async (attachment: any) => {
-      const data = await attachment.getData();
+    // Get product detail.
+    const { ...productData }            = queryProduct.toJSON();
+    const product_attachments: object[] = [];
+    const product_data                  = { attachment: product_attachments, ...productData };
 
-      productBlob.push(data);
-    });
+    for (const attachment of queryProductAttachments) {
+      const { id } = attachment;
+      const data   = await attachment.getData();
 
-    await Promise.allSettled(getProductBlob);
+      product_attachments.push({ id, data });
+    }
+
+    // Get variant detail.
+    const variant_data = [];
+
+    for (const variant of queryVariants) {
+      const { ...variantData }      = variant.toJSON();
+      const queryVariantAttachments = await variant.allAttachments();
+      const variant_attachments     = [];
+
+      for (const attachment of queryVariantAttachments) {
+        const { id } = attachment;
+        const data   = await attachment.getData();
+
+        variant_attachments.push({ id, data });
+      }
+
+      variant_data.push({ attachment: variant_attachments, ...variantData });
+    }
 
     return {
-      result: normalizer({
-        product,
-        product_attachments: productBlob,
-        variant,
-      }),
+      result: normalizer({ product: product_data, variant: variant_data }),
     };
   } catch (error: unknown) {
     throw new Error(error as string);
@@ -32,12 +49,12 @@ export const getProductDetail = async ({ id, normalizer }: any) => {
 
 export const mutateAddProduct = async ({ data }: any) => {
   try {
-    const ulid = monotonicFactory();
+    const ulid       = monotonicFactory();
     const product_id = 'PRD_' + ulid();
     const {
       name,
       description,
-      image,
+      new_image,
       by,
       price,
       stock,
@@ -47,26 +64,27 @@ export const mutateAddProduct = async ({ data }: any) => {
 
     // 1. Add flow if there's variant.
     if (variant.length) {
-      let product_active = true;
-      const variant_array: any = [];
-      const variant_ids: string[] = [];
+      let product_active             = true;
+      const variant_array: any       = [];
+      const variant_ids: string[]    = [];
+      const variant_attachments: any = [];
 
       variant.map((v: any) => {
-        const id = 'VAR_' + ulid();
+        const variant_id = 'VAR_' + ulid();
 
-        variant_ids.push(id);
         variant_array.push({
-          id,
+          id        : variant_id,
           product_id: product_id,
-          active: parseInt(v.stock) >= 1 ? true : false,
-          name: v.name,
-          image: v.image,
-          price: parseInt(v.price),
-          stock: parseInt(v.stock),
-          sku: v.sku,
+          active    : parseInt(v.stock) >= 1 ? true : false,
+          name      : v.name,
+          price     : parseInt(v.price),
+          stock     : parseInt(v.stock),
+          sku       : v.sku,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
+        variant_ids.push(variant_id);
+        variant_attachments.push(v.new_image);
       });
 
       const inactiveVariant = variant_array.filter((v: any) => v.active === false);
@@ -75,47 +93,80 @@ export const mutateAddProduct = async ({ data }: any) => {
         product_active = false;
       }
 
-      await db.product.insert({
-        id: product_id,
-        active: product_active,
+      // Insert product
+      const productQuery = await db.product.insert({
+        id         : product_id,
+        active     : product_active,
+        variant    : variant_ids,
+        price      : 0,
+        stock      : 0,
+        sku        : data.sku,
+        created_at : new Date().toISOString(),
+        updated_at : new Date().toISOString(),
         name,
         description,
-        image,
         by,
-        variant: variant_ids,
-        price: 0,
-        stock: 0,
-        sku: data.sku,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       });
-      await db.variant.bulkInsert(variant_array);
+
+      // Insert attachments of the product.
+      const product_attachments = new_image;
+
+      if (product_attachments.length) {
+        await product_attachments.map(async (attachment: File) => {
+          const attachmentID = `IMG_${ulid()}`;
+          const { type }     = attachment;
+          const imageBlob    = createBlob(attachment as any, type);
+
+          await productQuery.putAttachment({ id: attachmentID, data: imageBlob, type });
+        });
+      }
+
+      // Insert product variants
+      const variantQuery = await db.variant.bulkInsert(variant_array);
+      const { success: variants }  = variantQuery;
+
+      // Insert attachments of each variants.
+      if (variants.length) {
+        await variants.map(async (variant: any, index: number) => {
+          const variant_attachment = variant_attachments[index];
+
+          if (variant_attachment.length) {
+            await variant_attachment.map(async (attachment: File) => {
+              const attachmentID = `IMG_${ulid()}`;
+              const { type }     = attachment;
+              const imageBlob    = createBlob(attachment as any, type);
+
+              await variant.putAttachment({ id: attachmentID, data: imageBlob, type });
+            });
+          }
+        });
+      }
     }
     // 2. Add flow if there's no variant.
     else {
-      const product = await db.product.insert({
-        id: product_id,
-        active: parseInt(stock) >= 1 ? true : false,
+      const productQuery = await db.product.insert({
+        id         : product_id,
+        active     : parseInt(stock) >= 1 ? true : false,
+        price      : parseInt(price as string),
+        stock      : parseInt(stock as string),
+        created_at : new Date().toISOString(),
+        updated_at : new Date().toISOString(),
+        variant,
         name,
         description,
-        // image,
         by,
-        price: parseInt(price as string),
-        stock: parseInt(stock as string),
         sku,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       });
 
-      if (image) {
-        const { type } = image;
-        const imageBlob = createBlob(image, type);
+      const product_attachments = new_image;
 
-        // NOTES: Change the id later.
-        await product.putAttachment({
-          id: product_id + '_IMAGE',
-          data: imageBlob,
-          type,
+      if (product_attachments.length) {
+        await product_attachments.map(async (attachment: File) => {
+          const attachmentID = `IMG_${ulid()}`;
+          const { type }     = attachment;
+          const imageBlob    = createBlob(attachment as any, type);
+
+          await productQuery.putAttachment({ id: attachmentID, data: imageBlob, type });
         });
       }
     }
@@ -139,7 +190,9 @@ export const mutateEditProduct = async ({ id, data }: any) => {
       stock,
       sku,
       variant: variants,
-      removeVariantID,
+      deleted_image_id,
+      deleted_variant_id,
+      deleted_variant_image_id,
     } = data;
 
     const queryProduct = await db.product.findOne({
@@ -246,7 +299,7 @@ export const mutateEditProduct = async ({ id, data }: any) => {
           active: is_stocked ? true : false,
           name,
           description,
-          image,
+          // image,
           price: 0,
           stock: 0,
           by,
@@ -261,8 +314,8 @@ export const mutateEditProduct = async ({ id, data }: any) => {
        * If there are any deleted variant id in the array, remove variant from the collection and the product,
        * then remove the variant from any bundle.
        */
-      if (removeVariantID.length) {
-        await removeVariant(removeVariantID);
+      if (deleted_variant_id.length) {
+        await removeVariant(deleted_variant_id);
       }
 
       // 1.4 Looping to update every variants detail.
@@ -270,7 +323,7 @@ export const mutateEditProduct = async ({ id, data }: any) => {
         const {
           id: v_id,
           name: v_name,
-          image: v_image,
+          // image: v_image,
           price: v_price,
           stock: v_stock,
           sku: v_sku,
@@ -291,7 +344,7 @@ export const mutateEditProduct = async ({ id, data }: any) => {
             $set: {
               active: parseInt(v_stock) > 0 ? true : false,
               name: v_name,
-              image: v_image,
+              // image: v_image,
               price: parseInt(v_price),
               stock: parseInt(v_stock),
               sku: v_sku,
@@ -344,7 +397,7 @@ export const mutateEditProduct = async ({ id, data }: any) => {
           active: parseInt(stock) >= 1 ? true : false,
           name,
           description,
-          image,
+          // image,
           by,
           price: parseInt(price),
           stock: parseInt(stock),
@@ -353,14 +406,26 @@ export const mutateEditProduct = async ({ id, data }: any) => {
         },
       });
 
+      if (image) {
+        const { type } = image;
+        const imageBlob = createBlob(image, type);
+
+        // NOTES: Change the id later.
+        await queryProduct.putAttachment({
+          id: id + '_IMAGE',
+          data: imageBlob,
+          type,
+        });
+      }
+
       /**
        * 2.2 Check if there are any variant removed.
        *
        * If there are any deleted variant id in the array, remove variant from the collection and the product,
        * then remove the variant from any bundle.
        */
-      if (removeVariantID.length) {
-        await removeVariant(removeVariantID);
+      if (deleted_variant_id.length) {
+        await removeVariant(deleted_variant_id);
       }
 
       // 1.2.1 Update any bundle that contains current product as one of it's product.
@@ -478,7 +543,6 @@ export const createSampleProduct = async () => {
       active: true,
       name: `Product ${i}`,
       description: `This is description for Product ${i}`,
-      image: [`product_${i}_image_1_path`],
       by: '',
       price: i === 1 ? 0 : 10000 * i,
       stock: i < 3 ? i : 0,
@@ -501,10 +565,6 @@ export const createSampleProduct = async () => {
           product_id: productID,
           active: true,
           name: 'Variant 1',
-          image: [
-            `product_${i}_variant_1_image_1_path`,
-            `product_${i}_variant_1_image_2_path`
-          ],
           price: 100000,
           stock: 1,
           sku: '',
@@ -516,10 +576,6 @@ export const createSampleProduct = async () => {
           product_id: productID,
           active: true,
           name: 'Variant 2',
-          image: [
-            `product_${i}_variant_2_image_1_path`,
-            `product_${i}_variant_2_image_2_path`
-          ],
           price: 200000,
           stock: 2,
           sku: '',

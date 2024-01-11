@@ -5,36 +5,44 @@
  * @returns formatted object for product detail page.
  */
 export const detailNormalizer = (data: any) => {
-  const { product, product_attachments, variant } = data || {};
-  const productAttachments: string[] = []
-  let productVariant: any = [];
+  const { product, variant }           = data || {};
+  const product_attachments: string[]  = [];
+  const product_variants: any          = [];
 
-  variant?.forEach((v: any) => {
-    productVariant.push({
-      id: v.id || '',
-      active: v.active || false,
-      product_id: v.product_id || '',
-      name: v.name || '',
-      image: v.image || [],
-      price: v.price || 0,
-      stock: v.stock || 0,
-    })
-  });
+  if (variant.length) {
+    variant.forEach((v: any) => {
+      const variant_attachments: string [] = [];
 
-  product_attachments.map((attachment: any) => {
-    productAttachments.push(URL.createObjectURL(attachment));
-  });
+      if (v.attachment.length) {
+        v.attachment.map((att: any) => variant_attachments.push(URL.createObjectURL(att.data)));
+      }
+
+      product_variants.push({
+        id        : v.id || '',
+        active    : v.active || false,
+        product_id: v.product_id || '',
+        name      : v.name || '',
+        image     : variant_attachments || [],
+        price     : v.price || 0,
+        stock     : v.stock || 0,
+      });
+    });
+  }
+
+  if (product.attachment.length) {
+    product.attachment.map((att: any) => product_attachments.push(URL.createObjectURL(att.data)));
+  }
 
   return {
-    id: product.id || '',
-    active: product.active || false,
-    name: product.name || '',
+    id         : product.id || '',
+    active     : product.active || false,
+    name       : product.name || '',
     description: product.description || '',
-    image: productAttachments || [],
-    by: product.by || '',
-    price: product.price || 0,
-    stock: product.stock || 0,
-    sku: product.sku || '',
-    variant: productVariant,
+    image      : product_attachments || [],
+    by         : product.by || '',
+    price      : product.price || 0,
+    stock      : product.stock || 0,
+    sku        : product.sku || '',
+    variant    : product_variants,
   }
 };

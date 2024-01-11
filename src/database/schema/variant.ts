@@ -17,12 +17,6 @@ export default {
     name: {
       type: 'string',
     },
-    image: {
-      type: 'array',
-      items: {
-        type: 'string',
-      },
-    },
     price: {
       type: 'integer',
     },
@@ -39,7 +33,7 @@ export default {
       type: 'date-time',
     },
   },
-  attachment: {
+  attachments: {
     encrypted: false,
     compression: 'gzip',
   },

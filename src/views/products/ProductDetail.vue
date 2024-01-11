@@ -1,21 +1,11 @@
 <script setup lang="ts">
-import { onBeforeMount } from 'vue';
-import { useRoute } from 'vue-router';
-
 import Button from '@components/Button';
 import Text from '@components/Text';
 import Link from '@components/Link';
 
 import { useProductDetail } from './hooks/ProductDetail.hook';
 
-const route = useRoute();
-const { params } = route;
-const {
-  data,
-  refetch,
-  isLoading,
-  isError,
-} = useProductDetail();
+const { data, isLoading } = useProductDetail();
 </script>
 
 <template>
@@ -28,15 +18,6 @@ const {
     <pre>
       {{ data }}
     </pre>
-    <img v-for="image in data.image" :src="image" />
-    <div>Name: {{ data.name }}</div>
-    <div>Description{{ data.description }}</div>
-    <div>Image Path: {{ data.image }}</div>
-    <div>By: {{ data.by }}</div>
-    <div>Price: {{ data.price }}</div>
-    <div>Stock: {{ data.stock }}</div>
-    <div>Created At: {{ data.created_at }}</div>
-    <div>Updated At: {{ data.updated_at }}</div>
   </div>
 </template>
 

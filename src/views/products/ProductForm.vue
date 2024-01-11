@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue';
 
-import { createBlob } from 'rxdb';
 import Button from '@components/Button';
 import Text from '@components/Text';
 import Textfield from '@components/Textfield';
@@ -9,9 +8,10 @@ import Textarea from '@components/Textarea';
 import QuantityEditor from '@components/QuantityEditor';
 import { Container, Row, Column } from '@components/Layout';
 
-import { useProductDetail } from './hooks/ProductDetail.hook';
+import { useProductForm } from './hooks/ProductForm.hook';
 
 const {
+  imgVariantRefs,
   productID,
   formData,
   isLoading,
@@ -19,16 +19,25 @@ const {
   handleAddVariant,
   handleAddVariantImage,
   handleRemoveVariant,
+  handleRemoveVariantImage,
+  handleRemoveImage,
   mutateAdd,
   mutateAddLoading,
   mutateEdit,
   mutateEditLoading,
-} = useProductDetail();
+} = useProductForm();
 
 const handleSubmit = (e: Event) => {
   e.preventDefault();
 
   productID ? mutateEdit() : mutateAdd();
+};
+
+const imageStyle: any = {
+  display: 'block',
+  width: '100px',
+  height: '100px',
+  objectFit: 'contain',
 };
 </script>
 
@@ -47,6 +56,9 @@ const handleSubmit = (e: Event) => {
             {{ mutateAddLoading ? 'Loading' : 'Submit' }}
           </Button>
         </Column>
+
+        <!--  -->
+
         <Column col="6">
           <Textfield label="Name" v-model="formData.name" />
           <br />
@@ -54,31 +66,50 @@ const handleSubmit = (e: Event) => {
           <br />
           <div>
             <div style="display: flex; gap: 8px;">
-              <img
-                v-if="productID ? formData.image[0] : formData.image_preview"
-                :src="productID ? formData.image[0] : formData.image_preview"
-                style="width: 100px; height: 100px; object-fit: contain;"
-              />
+              <div :key="index" v-for="(image, index) in formData.image">
+                <img :src="image" :style="imageStyle" />
+                <button type="button" @click="handleRemoveImage(index, image.id)">Remove Image</button>
+              </div>
+              <div :key="index" v-for="(image, index) in formData.new_image.preview">
+                <img :src="image" :style="imageStyle" />
+                <button type="button" @click="handleRemoveImage(index)">Remove Image</button>
+              </div>
             </div>
             <br />
-            <input type="file" accept=".jpg, .jpeg, .png, .gif" @change="handleAddImage" />
+            <input type="file" accept=".jpg, .jpeg, .png, .gif" multiple @change="handleAddImage" />
           </div>
+
+          <!--  -->
           <br />
           <hr />
           <br />
+          <!--  -->
+
           <Button @click="handleAddVariant">Add Variant</Button>
           <Row>
             <Column col="6" :key="`variant-${index}`" v-for="(variant, index) in formData.variant">
               <div>
                 <div style="display: flex; gap: 8px;">
-                  <img
-                    v-if="variant.image_preview"
-                    :src="variant.image_preview"
-                    style="width: 100px; height: 100px; object-fit: contain;"
-                  />
+                  <div :key="imageIndex" v-for="(image, imageIndex) in variant.image">
+                    <img :src="image" :style="imageStyle" />
+                    <button type="button" @click="handleRemoveVariantImage(index, imageIndex, image.id)">
+                      Remove Image
+                    </button>
+                  </div>
+                  <div :key="imageIndex" v-for="(image, imageIndex) in variant.new_image.preview">
+                    <img :src="image" :style="imageStyle" />
+                    <button type="button" @click="handleRemoveVariantImage(index, imageIndex)">
+                      Remove Image
+                    </button>
+                  </div>
                 </div>
                 <br />
-                <input type="file" accept=".jpg, .jpeg, .png, .gif" @change="handleAddVariantImage($event, index)" />
+                <input
+                  type="file"
+                  accept=".jpg, .jpeg, .png, .gif"
+                  multiple
+                  @change="handleAddVariantImage($event, index)"
+                />
               </div>
               <Textfield label="Variant Name" v-model="variant.name" />
               <Textfield label="Price" v-model="variant.price" />
@@ -86,9 +117,13 @@ const handleSubmit = (e: Event) => {
               <Button @click="handleRemoveVariant(index, variant.id)">Remove Variant</Button>
             </Column>
           </Row>
+
+          <!--  -->
           <br />
           <hr />
           <br />
+          <!--  -->
+
           <Row>
             <Column>
               <Textfield label="By" v-model="formData.by" />

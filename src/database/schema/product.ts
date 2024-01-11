@@ -16,12 +16,6 @@ export default {
     description: {
       type: 'string',
     },
-    image: {
-      type: 'array',
-      items: {
-        type: 'string',
-      },
-    },
     by: {
       type: 'string',
     },
