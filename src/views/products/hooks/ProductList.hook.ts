@@ -34,7 +34,7 @@ export const useProduct = () => {
       query: {
         selector: selector.value,
         sort: [
-          { id: 'desc' },
+          { id: 'asc' },
         ],
         limit: 5,
       },

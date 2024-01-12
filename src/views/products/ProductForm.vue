@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue';
-
 import Button from '@components/Button';
 import Text from '@components/Text';
 import Textfield from '@components/Textfield';
@@ -11,7 +9,6 @@ import { Container, Row, Column } from '@components/Layout';
 import { useProductForm } from './hooks/ProductForm.hook';
 
 const {
-  imgVariantRefs,
   productID,
   formData,
   isLoading,

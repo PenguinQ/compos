@@ -23,10 +23,8 @@ export const useProductForm = () => {
       preview: [],
     },
   });
-  const imgVariantRefs = ref<any>([]);
-  const deleted_image_id: string[]         = [];
-  const deleted_variant_id: string[]       = [];
-  const deleted_variant_image_id: string[] = [];
+  const deleted_image_id: string[]   = [];
+  const deleted_variant_id: string[] = [];
 
   // Get product detail hooks.
   const {
@@ -59,13 +57,14 @@ export const useProductForm = () => {
 
         result.variant?.forEach((v: any) => {
           formData.variant.push({
-            id        : v.id,
-            product_id: v.product_id,
-            name      : v.name,
-            image     : v.image,
-            price     : v.price,
-            stock     : v.stock,
-            new_image : { data: [], preview: [] },
+            id              : v.id,
+            product_id      : v.product_id,
+            name            : v.name,
+            image           : v.image,
+            price           : v.price,
+            stock           : v.stock,
+            new_image       : { data: [], preview: [] },
+            deleted_image_id: []
           });
         });
       }
@@ -77,22 +76,32 @@ export const useProductForm = () => {
     mutate: mutateEdit,
     isLoading: mutateEditLoading,
   } = useMutation({
-    mutateFn: () => mutateEditProduct({
-      id: params.id,
-      data: {
-        name       : formData.name,
-        description: formData.description,
-        image      : formData.image,
-        by         : formData.by,
-        price      : parseInt(formData.price as any),
-        stock      : parseInt(formData.stock as any),
-        variant    : formData.variant,
-        sku        : formData.sku,
-        deleted_image_id,
-        deleted_variant_id,
-        deleted_variant_image_id,
-      },
-    }),
+    mutateFn: () => {
+      const variantData = formData.variant.map((v: any) => {
+        const { new_image, ...rest } = v;
+
+        return {
+          new_image: toRaw(new_image.data),
+          ...rest,
+        };
+      })
+
+      return mutateEditProduct({
+        id: params.id,
+        data: {
+          name       : formData.name,
+          description: formData.description,
+          by         : formData.by,
+          price      : parseInt(formData.price as any),
+          stock      : parseInt(formData.stock as any),
+          variant    : variantData,
+          sku        : formData.sku,
+          new_image  : toRaw(formData.new_image.data),
+          deleted_image_id,
+          deleted_variant_id,
+        },
+      });
+    },
     onError: (error: string) => {
       console.error('Error mutating product detail.', error);
     },
@@ -184,22 +193,23 @@ export const useProductForm = () => {
 
   const handleAddVariant = async () => {
     formData.variant.push({
-      name     : '',
-      price    : 0,
-      stock    : 0,
-      new_image: { data: [], preview: [] },
+      name            : '',
+      price           : 0,
+      stock           : 0,
+      new_image       : { data: [], preview: [] },
+      deleted_image_id: [],
     });
   };
 
   const handleRemoveVariant = (index: number, id: string) => {
-    if (id) deleted_variant_id.push(id);
+    id && deleted_variant_id.push(id);
     formData.variant.splice(index, 1);
   };
 
   const handleRemoveImage = (index: number, id?: string) => {
     if (id) {
-      console.log(id);
       deleted_image_id.push(id);
+      formData.image.splice(index, 1);
     } else {
       formData.new_image.data.splice(index, 1);
       formData.new_image.preview.splice(index, 1);
@@ -208,19 +218,15 @@ export const useProductForm = () => {
 
   const handleRemoveVariantImage = (index: number, imageIndex: number, id?: string) => {
     if (id) {
-      console.log(id);
-      deleted_variant_image_id.push(id);
+      formData.variant[index].deleted_image_id.push(id);
+      formData.variant[index].image.splice(imageIndex, 1);
     } else {
-      const variantImage = formData.variant[index].new_image;
-
-      variantImage.data.splice(imageIndex, 1);
-      variantImage.preview.splice(imageIndex, 1);
+      formData.variant[index].new_image.data.splice(imageIndex, 1);
+      formData.variant[index].new_image.preview.splice(imageIndex, 1);
     }
   };
 
   return {
-    imgVariantRefs,
-    //
     productID: params.id,
     data,
     formData,

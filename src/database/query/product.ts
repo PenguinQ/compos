@@ -1,6 +1,6 @@
-import { reactive, toRefs } from 'vue';
 import { createBlob } from 'rxdb';
 import { monotonicFactory } from 'ulidx';
+
 import { db } from '@database';
 
 export const getProductDetail = async ({ id, normalizer }: any) => {
@@ -181,18 +181,18 @@ export const mutateAddProduct = async ({ data }: any) => {
 
 export const mutateEditProduct = async ({ id, data }: any) => {
   try {
+    const ulid = monotonicFactory();
     const {
       name,
       description,
-      image,
       by,
       price,
       stock,
       sku,
-      variant: variants,
+      new_image,
       deleted_image_id,
+      variant: variants,
       deleted_variant_id,
-      deleted_variant_image_id,
     } = data;
 
     const queryProduct = await db.product.findOne({
@@ -204,8 +204,9 @@ export const mutateEditProduct = async ({ id, data }: any) => {
     }).exec();
 
     const removeVariant = async (variantsID: string[]) => {
-      await variantsID.map(async (id: string) => {
+      variantsID.map(async (id: string) => {
         const queryVariant = await db.variant.findOne(id).exec();
+
         await queryVariant.remove();
         await queryProduct.incrementalModify((prev: any) => {
           const index = prev.variant.indexOf(id);
@@ -261,18 +262,45 @@ export const mutateEditProduct = async ({ id, data }: any) => {
 
           const inactive = prev.product.filter((data: any) => data.active === false);
 
-          prev.active = inactive.length ? false : true;
+          prev.active     = inactive.length ? false : true;
+          prev.updated_at = new Date().toISOString();
 
           return prev;
         });
       });
     };
 
-    // 1. Update flow if product has variants
+    const updateImages = async (new_image: [], deleted_image: [], query: any) => {
+      if (new_image.length) {
+        new_image.map(async (attachment: File) => {
+          const attachmentID = `IMG_${ulid()}`;
+          const { type }     = attachment;
+          const imageBlob    = createBlob(attachment as any, type);
+
+          await query.putAttachment({ id: attachmentID, data: imageBlob, type });
+        });
+      }
+
+      // 1.4 Delete any images if there's any.
+      if (deleted_image.length) {
+        deleted_image.map(async (id: string) => {
+          const attachment = query.getAttachment(id);
+
+          await attachment.remove();
+        });
+      }
+    };
+
+    /**
+     * --------------------------------------
+     * 1. Update flow if product has variants
+     * --------------------------------------
+     */
     if (variants.length) {
       /**
+       * ---------------------------------------------------
        * 1.1 Check if the product already exist in a bundle.
-       *
+       * ---------------------------------------------------
        * If there are any bundle that contain the product without variant, throw error until the product removed from
        * every bundle.
        */
@@ -291,7 +319,11 @@ export const mutateEditProduct = async ({ id, data }: any) => {
         throw `Cannot add new variant into this product since this product already included in some bundle, please remove it from the bundle first.`;
       }
 
-      // 1.2 Update the product detail.
+      /**
+       * ------------------------------
+       * 1.2 Update the product detail.
+       * ------------------------------
+       */
       const is_stocked = variants.filter((variant: any) => parseInt(variant.stock) !== 0).length;
 
       await queryProduct.update({
@@ -299,7 +331,6 @@ export const mutateEditProduct = async ({ id, data }: any) => {
           active: is_stocked ? true : false,
           name,
           description,
-          // image,
           price: 0,
           stock: 0,
           by,
@@ -309,27 +340,43 @@ export const mutateEditProduct = async ({ id, data }: any) => {
       });
 
       /**
-       * 1.3 Check if there are any variant removed.
-       *
+       * --------------------------
+       * 1.3 Update product images.
+       * --------------------------
+       */
+      await updateImages(new_image, deleted_image_id, queryProduct);
+
+      /**
+       * -------------------------------------------
+       * 1.4 Check if there are any variant removed.
+       * -------------------------------------------
        * If there are any deleted variant id in the array, remove variant from the collection and the product,
        * then remove the variant from any bundle.
        */
-      if (deleted_variant_id.length) {
-        await removeVariant(deleted_variant_id);
-      }
+      deleted_variant_id.length && await removeVariant(deleted_variant_id);
 
-      // 1.4 Looping to update every variants detail.
+      /**
+       * -------------------------------------------
+       * 1.5 Iterate and update each variant detail.
+       * -------------------------------------------
+       */
       await variants.map(async (variant: any) => {
         const {
           id: v_id,
           name: v_name,
-          // image: v_image,
           price: v_price,
           stock: v_stock,
           sku: v_sku,
+          new_image: v_new_image,
+          deleted_image_id: v_deleted_image,
         } = variant;
 
-        // 1.4.1 Update variant detail if it's originally has an id.
+        /**
+         * ------------------------------------
+         * 1.5.1 Check for existing variant ID.
+         * ------------------------------------
+         * If current variant iteration has existing ID (or variant currently exist), update the detail.
+         */
         if (v_id) {
           const queryVariant = await db.variant.findOne({
             selector: {
@@ -339,12 +386,15 @@ export const mutateEditProduct = async ({ id, data }: any) => {
             }
           }).exec();
 
-          // 1.4.1.1 Update current variant detail.
+          /**
+           * --------------------------------------------------
+           * 1.5.1.1 Update current iteration variation detail.
+           * --------------------------------------------------
+           */
           await queryVariant.update({
             $set: {
               active: parseInt(v_stock) > 0 ? true : false,
               name: v_name,
-              // image: v_image,
               price: parseInt(v_price),
               stock: parseInt(v_stock),
               sku: v_sku,
@@ -352,22 +402,41 @@ export const mutateEditProduct = async ({ id, data }: any) => {
             },
           });
 
-          // 1.4.1.2 Update any bundle that contains current variant as one of it's product.
+          /**
+           * --------------------------------------------------
+           * 1.5.1.2 Update current iteration variation images.
+           * --------------------------------------------------
+           */
+          await updateImages(v_new_image, v_deleted_image, queryVariant);
+
+          /**
+           * -----------------------------------------------------------------------------------------
+           * 1.5.1.3 Update any bundle that contains current variant iteration as one of it's product.
+           * -----------------------------------------------------------------------------------------
+           */
           await updateBundles({ id: v_id, stock: parseInt(v_stock), isVariant: true });
         }
-        // 1.4.2 Add new variant since it's doesnt have an id.
+        /**
+         * --------------------------------
+         * 1.5.2 Doesn't have a variant ID.
+         * --------------------------------
+         * If current variant iteration doesn't have an ID, create new variant for the product.
+         */
         else {
-          // 1.4.2.1 Create new variant and added it to collection.
+          /**
+           * ---------------------------
+           * 1.5.2.1 Create new variant.
+           * ---------------------------
+           */
           const ulid = monotonicFactory();
 
           const variant_id = 'VAR_' + ulid();
 
-          await db.variant.insert({
+          const queryVariant = await db.variant.insert({
             id: variant_id,
             product_id: id,
             active: v_stock >= 1 ? true : false,
             name: v_name,
-            image: v_image,
             price: parseInt(v_price),
             stock: parseInt(v_stock),
             sku: v_sku,
@@ -375,7 +444,18 @@ export const mutateEditProduct = async ({ id, data }: any) => {
             updated_at: new Date().toISOString(),
           });
 
-          // 1.4.2.2 Add currently added variant into list of variant on current product.
+          /**
+           * --------------------------------------------
+           * 1.5.2.2 Add images to newly created variant.
+           * --------------------------------------------
+           */
+          await updateImages(v_new_image, [], queryVariant);
+
+          /**
+           * ----------------------------------------------------------------------------
+           * 1.5.2.3 Add currently added variant into list of variant on current product.
+           * ----------------------------------------------------------------------------
+           */
           await queryProduct.incrementalModify((prev: any) => {
             prev.variant.push(variant_id);
 
@@ -385,50 +465,51 @@ export const mutateEditProduct = async ({ id, data }: any) => {
       });
     }
     /**
+     * ------------------------------------------
      * 2. Update flow if product has no variants.
-     *
-     * This also run when product has actual variants, BUT if those variants are removed in
-     * the editing proces.
+     * ------------------------------------------
+     * This also run when product has actual variants, BUT if those variants are removed in the editing process.
      */
     else {
-      // 2.1 Update the product detail.
+      /**
+       * ------------------------------
+       * 2.1 Update the product detail.
+       * ------------------------------
+       */
       await queryProduct.update({
         $set: {
-          active: parseInt(stock) >= 1 ? true : false,
+          active    : parseInt(stock) >= 1 ? true : false,
+          price     : parseInt(price),
+          stock     : parseInt(stock),
+          updated_at: new Date().toISOString(),
           name,
           description,
-          // image,
           by,
-          price: parseInt(price),
-          stock: parseInt(stock),
           sku,
-          updated_at: new Date().toISOString(),
         },
       });
 
-      if (image) {
-        const { type } = image;
-        const imageBlob = createBlob(image, type);
-
-        // NOTES: Change the id later.
-        await queryProduct.putAttachment({
-          id: id + '_IMAGE',
-          data: imageBlob,
-          type,
-        });
-      }
+      /**
+       * ------------------------------
+       * 2.2 Update the product images.
+       * ------------------------------
+       */
+      await updateImages(new_image, deleted_image_id, queryProduct);
 
       /**
-       * 2.2 Check if there are any variant removed.
-       *
+       * -------------------------------------------
+       * 2.3 Check if there are any variant removed.
+       * -------------------------------------------
        * If there are any deleted variant id in the array, remove variant from the collection and the product,
        * then remove the variant from any bundle.
        */
-      if (deleted_variant_id.length) {
-        await removeVariant(deleted_variant_id);
-      }
+      deleted_variant_id.length && await removeVariant(deleted_variant_id);
 
-      // 1.2.1 Update any bundle that contains current product as one of it's product.
+      /**
+       * ---------------------------------------------------------------------------
+       * 2.4 Update any bundle that contains current product as one of it's product.
+       * ---------------------------------------------------------------------------
+       */
       await updateBundles({ id, stock: parseInt(stock) });
     }
   } catch (error) {
@@ -443,7 +524,7 @@ export const mutateEditProduct = async ({ id, data }: any) => {
 export const mutateDeleteProduct = async (id: string) => {
   try {
     const queryProduct = await db.product.findOne(id).exec();
-    const { variant } = queryProduct;
+    const { variant }  = queryProduct;
 
     const removeFromBundles = async (bundles: []) => {
       bundles.map(async (bundle: any) => {
@@ -465,12 +546,24 @@ export const mutateDeleteProduct = async (id: string) => {
       });
     };
 
-    // 1. Delete flow for product with variant.
+    /**
+     * ----------------------------------------
+     * 1. Delete flow for product with variant.
+     * ----------------------------------------
+     */
     if (variant.length) {
-      // 1.1 Remove the product.
+      /**
+       * -----------------------
+       * 1.1 Remove the product.
+       * -----------------------
+       */
       await queryProduct.remove();
 
-      // 1.2 Get list of variant of current product and delete it.
+      /**
+       * ----------------------------------------------
+       * 1.2 Get variants of the product and delete it.
+       * ----------------------------------------------
+       */
       const queryVariant = await db.variant.find({
         selector: {
           product_id: id,
@@ -479,7 +572,11 @@ export const mutateDeleteProduct = async (id: string) => {
 
       await queryVariant.remove();
 
-      // 1.3 Get list of bundle that contain current deleted product id and as one of it's product.
+      /**
+       * -------------------------------------------------------------------------------
+       * 1.3 Get list of bundle that contain the deleted product as one of it's product.
+       * -------------------------------------------------------------------------------
+       */
       const queryBundle = await db.bundle.find({
         selector: {
           product: {
@@ -490,15 +587,31 @@ export const mutateDeleteProduct = async (id: string) => {
         }
       }).exec();
 
-      // 1.4 Recursively delete current product variant in each bundle that has the same id with currently deleted product id.
-      await removeFromBundles(queryBundle);
+      /**
+       * ------------------------------------------------------------------------
+       * 1.4 Recursively delete currently deleted product variant in each bundle.
+       * ------------------------------------------------------------------------
+       */
+      queryBundle.length && await removeFromBundles(queryBundle);
     }
-    // 2. Delete flow for product without variant.
+    /**
+     * -------------------------------------------
+     * 2. Delete flow for product without variant.
+     * -------------------------------------------
+     */
     else {
-      // 2.1 Remove the product
+      /**
+       * -----------------------
+       * 2.1 Remove the product.
+       * -----------------------
+       */
       await queryProduct.remove();
 
-      // 2.2 Get list of bundle that contain current deleted product as one of it's product.
+      /**
+       * -------------------------------------------------------------------------------
+       * 2.2 Get list of bundle that contain the deleted product as one of it's product.
+       * -------------------------------------------------------------------------------
+       */
       const queryBundle = await db.bundle.find({
         selector: {
           product: {
@@ -510,7 +623,11 @@ export const mutateDeleteProduct = async (id: string) => {
         },
       }).exec();
 
-      // 2.3 Recursively delete current deleted product id from list of product on each bundle.
+      /**
+       * ----------------------------------------------------------------
+       * 2.3 Recursively delete currently deleted product in each bundle.
+       * ----------------------------------------------------------------
+       */
       await removeFromBundles(queryBundle);
     };
   } catch (error) {
@@ -523,11 +640,10 @@ export const mutateDeleteProduct = async (id: string) => {
 };
 
 /**
- * **************************
- * FOR DEVELOPMENT PURPOSES *
- * **************************
- *
- * Functions to create sample products.
+ * -------------------------
+ * DEVELOPMENT MODE FUNCTION
+ * -------------------------
+ * Create sample products.
  */
 export const createSampleProduct = async () => {
   const productObj = [];
@@ -622,11 +738,10 @@ export const createSampleProduct = async () => {
 };
 
 /**
- * **************************
- * FOR DEVELOPMENT PURPOSES *
- * **************************
- *
- * Functions to create sample bundles.
+ * -------------------------
+ * DEVELOPMENT MODE FUNCTION
+ * -------------------------
+ * Create sample bundles.
  */
 export const createSampleBundle = async (data: any, bundle: any) => {
   const ulid = monotonicFactory();
