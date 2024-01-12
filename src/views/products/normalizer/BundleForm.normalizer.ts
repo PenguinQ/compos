@@ -1,10 +1,4 @@
-/**
- * Bundle detail normalizers
- *
- * @param data constructed object of buidle details from Rx Query results.
- * @returns formatted object for bundle detail page.
- */
-export const bundleDetailNormalizer = (data: any) => {
+export const bundleFormNormalizer = (data: any) => {
   const bundle_data = data || {};
   let product: any = [];
   let total_product_price = 0;
@@ -40,6 +34,7 @@ export const bundleDetailNormalizer = (data: any) => {
     description: bundle_data.description || '',
     active: bundle_data.active || false,
     price: bundle_data.price,
+    fixed_price: bundle_data.fixed_price || false,
     product,
     total_product_price,
   }

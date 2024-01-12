@@ -6,7 +6,7 @@ import {
   watch,
 } from 'vue';
 
-export const useQuery = (params: any) => {
+export const useQuery = (params: any): any => {
   if (!params) return false;
 
   const {
@@ -75,7 +75,7 @@ export const useQuery = (params: any) => {
   };
 };
 
-export const useMutation = (params: any) => {
+export const useMutation = (params: any): any => {
   if (!params) return false;
 
   const { mutateFn, onError, onSuccess } = params;

@@ -9,22 +9,22 @@ export const useProductForm = () => {
   const route = useRoute();
   const { params } = route;
   const formData = reactive<any>({
-    id         : '',
-    name       : '',
-    description: '',
-    image      : [],
-    by         : '',
-    price      : 0,
-    stock      : 0,
-    variant    : [],
-    sku        : '',
-    new_image  : {
+    id             : '',
+    name           : '',
+    description    : '',
+    image          : [],
+    by             : '',
+    price          : 0,
+    stock          : 0,
+    variant        : [],
+    sku            : '',
+    deleted_image  : [],
+    deleted_variant: [],
+    new_image      : {
       data   : [],
       preview: [],
     },
   });
-  const deleted_image_id: string[]   = [];
-  const deleted_variant_id: string[] = [];
 
   // Get product detail hooks.
   const {
@@ -57,14 +57,14 @@ export const useProductForm = () => {
 
         result.variant?.forEach((v: any) => {
           formData.variant.push({
-            id              : v.id,
-            product_id      : v.product_id,
-            name            : v.name,
-            image           : v.image,
-            price           : v.price,
-            stock           : v.stock,
-            new_image       : { data: [], preview: [] },
-            deleted_image_id: []
+            id           : v.id,
+            product_id   : v.product_id,
+            name         : v.name,
+            image        : v.image,
+            price        : v.price,
+            stock        : v.stock,
+            new_image    : { data: [], preview: [] },
+            deleted_image: []
           });
         });
       }
@@ -89,16 +89,16 @@ export const useProductForm = () => {
       return mutateEditProduct({
         id: params.id,
         data: {
-          name       : formData.name,
-          description: formData.description,
-          by         : formData.by,
-          price      : parseInt(formData.price as any),
-          stock      : parseInt(formData.stock as any),
-          variant    : variantData,
-          sku        : formData.sku,
-          new_image  : toRaw(formData.new_image.data),
-          deleted_image_id,
-          deleted_variant_id,
+          name           : formData.name,
+          description    : formData.description,
+          by             : formData.by,
+          price          : parseInt(formData.price as any),
+          stock          : parseInt(formData.stock as any),
+          variant        : variantData,
+          sku            : formData.sku,
+          new_image      : toRaw(formData.new_image.data),
+          deleted_image  : formData.deleted_image,
+          deleted_variant: formData.deleted_variant,
         },
       });
     },
@@ -193,22 +193,22 @@ export const useProductForm = () => {
 
   const handleAddVariant = async () => {
     formData.variant.push({
-      name            : '',
-      price           : 0,
-      stock           : 0,
-      new_image       : { data: [], preview: [] },
-      deleted_image_id: [],
+      name         : '',
+      price        : 0,
+      stock        : 0,
+      new_image    : { data: [], preview: [] },
+      deleted_image: [],
     });
   };
 
   const handleRemoveVariant = (index: number, id: string) => {
-    id && deleted_variant_id.push(id);
+    id && formData.deleted_variant.push(id);
     formData.variant.splice(index, 1);
   };
 
   const handleRemoveImage = (index: number, id?: string) => {
     if (id) {
-      deleted_image_id.push(id);
+      formData.deleted_image.push(id);
       formData.image.splice(index, 1);
     } else {
       formData.new_image.data.splice(index, 1);
@@ -218,7 +218,7 @@ export const useProductForm = () => {
 
   const handleRemoveVariantImage = (index: number, imageIndex: number, id?: string) => {
     if (id) {
-      formData.variant[index].deleted_image_id.push(id);
+      formData.variant[index].deleted_image.push(id);
       formData.variant[index].image.splice(imageIndex, 1);
     } else {
       formData.variant[index].new_image.data.splice(imageIndex, 1);

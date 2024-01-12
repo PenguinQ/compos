@@ -1,78 +1,84 @@
 import { db } from '@database';
-import { VARIANT_PREFIX } from '@database/constant';
 
 export const getBundleDetail = async ({ id, normalizer }: any) => {
   try {
     const bundle = await db.bundle.findOne({ selector: { id } }).exec();
-    const { product } = bundle;
+    const { product: products, ...bundleData } = bundle.toJSON();
+    const product_list: any = [];
 
-    console.log(bundle);
-
-    const productList = await Promise.all(product.map(async (prod: any) => {
-      const { id, variant_id } = prod;
+    for (const product of products) {
+      const { id, variant_id } = product;
 
       if (variant_id) {
-        const variant_detail = await db.variant.findOne({ selector: { id: variant_id } }).exec();
-        const product_detail = await variant_detail.populate('product_id');
+        const queryVariant               = await db.variant.findOne({ selector: { id: variant_id } }).exec();
+        const queryVariantAttachment     = await queryVariant.allAttachments();
+        const queryProduct               = await queryVariant.populate('product_id');
+        const { id: p_id, name: p_name } = queryProduct.toJSON();
+        const { ...variantData }         = queryVariant.toJSON();
+        const variant_attachments        = [];
 
-        const {
-          id: v_id,
-          active,
-          name,
-          image,
-          price,
-          stock,
-          sku,
-          created_at,
-          updated_at,
-        } = variant_detail;
-        const { id: p_id, name: p_name } = product_detail;
+        for (const attachment of queryVariantAttachment) {
+          const { id } = attachment;
+          const data   = await attachment.getData();
 
-        return {
-          id: v_id,
-          active,
-          name,
-          product_id: p_id,
+          variant_attachments.push({ id, data });
+        }
+
+        product_list.push({
+          product_id  : p_id,
           product_name: p_name,
-          image,
-          price,
-          stock,
-          sku,
-          created_at,
-          updated_at,
-        };
+          attachment: variant_attachments,
+          ...variantData,
+        });
       } else {
-        const detail = await db.product.findOne({ selector: { id } }).exec();
+        const queryProduct           = await db.product.findOne({ selector: { id } }).exec();
+        const queryProductAttachment = await queryProduct.allAttachments();
+        const { ...productData }     = queryProduct.toJSON();
+        const product_attachments    = [];
 
-        return {
-          id: detail.id,
-          active: detail.active,
-          name: detail.name,
-          image: detail.image,
-          price: detail.price,
-          stock: detail.stock,
-          created_at: detail.created_at,
-          updated_at: detail.updated_at,
-        };
+        for (const attachment of queryProductAttachment) {
+          const { id } = attachment;
+          const data   = await attachment.getData();
+
+          product_attachments.push({ id, data });
+        }
+
+        product_list.push({ attachment: product_attachments, ...productData });
       }
-    })).catch((error: unknown) => {
-      throw new Error(error as string);
-    });
+    }
 
     return {
-      result: normalizer({
-        id: bundle.id,
-        name: bundle.name,
-        active: bundle.active,
-        description: bundle.description,
-        fixed_price: bundle.fixed_price,
-        price: bundle.price,
-        created_at: bundle.created_at,
-        updated_at: bundle.updated_at,
-        product: productList || [],
-      }),
+      result: normalizer({ product: product_list, ...bundleData }),
     };
-  } catch (error: unknown) {
-    throw new Error(error as string);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error.message;
+    }
+
+    throw error;
+  }
+};
+
+export const mutateAddBundle = (data: any) => {
+  try {
+    console.log(data);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error.message;
+    }
+
+    throw error;
+  }
+};
+
+export const mutateEditBundle = ({ id, data }: any) => {
+  try {
+    console.log(id, data);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error.message;
+    }
+
+    throw error;
   }
 };
