@@ -3,6 +3,76 @@ import { monotonicFactory } from 'ulidx';
 
 import { db } from '@database';
 
+export const testMutate = async (id: string) => {
+  try {
+    const queryProduct = await db.product.findOne(id).exec();
+
+    await queryProduct.update({
+      $set: {
+        name: 'halo',
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getProductList = async ({ query, normalizer }: any) => {
+  try {
+    const queryProduct = await db.product.find(query).$;
+
+    const productAccumulator = async (data: any) =>{
+      const tempData: object[] = [];
+
+      for (const product of data) {
+        const queryProductAttachments = await product.allAttachments();
+        const { ...productData }      = product.toJSON();
+        let product_attachment        = undefined;
+
+        if (queryProductAttachments.length) {
+          product_attachment = await queryProductAttachments[0].getData();
+        }
+
+        tempData.push({ attachment: product_attachment, ...productData });
+      }
+
+      return tempData;
+    }
+
+    // NOTES: DON'T REMOVE (NON-OBSERVER METHOD)
+    // const product_list = [];
+    //
+    // for (const product of queryProduct) {
+    //   const queryProductAttachments = await product.allAttachments();
+    //   const { ...productData }      = product.toJSON();
+    //   let product_attachment        = undefined;
+
+    //   if (queryProductAttachments.length) {
+    //     product_attachment = await queryProductAttachments[0].getData();
+    //   }
+
+    //   product_list.push({ attachment: product_attachment, ...productData });
+    // }
+
+    // return {
+    //   result: normalizer(product_list),
+    // };
+
+    return {
+      subscribe: true,
+      result: queryProduct,
+      accumulator: productAccumulator,
+      normalizer,
+    };
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error.message;
+    }
+
+    throw error;
+  }
+};
+
 export const getProductDetail = async ({ id, normalizer }: any) => {
   try {
     const queryProduct              = await db.product.findOne({ selector: { id } }).exec();
@@ -693,7 +763,7 @@ export const createSampleProduct = async () => {
   let bundle_price = 0;
   let bundle_available = true;
 
-  for (let i = 1; i < 21; i++) {
+  for (let i = 1; i < 100; i++) {
     const productID = 'PRD_' + ulid();
     const obj: any = {
       id: productID,

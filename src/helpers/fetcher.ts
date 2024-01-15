@@ -1,3 +1,4 @@
+import type { RxDocument } from 'rxdb';
 import { monotonicFactory } from 'ulidx';
 import { db } from '@database';
 
@@ -6,6 +7,7 @@ interface QueryParams {
   query?: object;
   subscribe?: boolean;
   params?: string;
+  normalizer?: (result: RxDocument[]) => void;
 }
 
 interface MutateParams extends QueryParams {
@@ -13,20 +15,26 @@ interface MutateParams extends QueryParams {
   method: 'post' | 'put' | 'delete';
 };
 
-export const queryRx = async ({ collection, query = {}, subscribe = false }: QueryParams) => {
+export const queryRx = async ({ collection, query = {}, subscribe = false, normalizer }: QueryParams) => {
   if (!query) return false;
 
   try {
+    let queryCollection: any;
+
     if (subscribe) {
+      queryCollection = await db[collection].find(query).$
+
       return {
         subscribe,
-        result: await db[collection].find(query).$,
+        result: normalizer ? normalizer(queryCollection) : queryCollection,
       }
     }
 
+    queryCollection = await db[collection].find(query).exec();
+
     return {
       subscribe,
-      result: await db[collection].find(query).exec(),
+      result: normalizer ? normalizer(queryCollection) : queryCollection,
     }
   } catch (error: unknown) {
     throw new Error(error as string)

@@ -32,12 +32,19 @@ export const useQuery = (params: any): any => {
       const { subscribe, result } = response;
 
       if (subscribe) {
-        result.subscribe((data: any) => {
+        const { normalizer, accumulator } = response;
+
+        result.subscribe(async (data: any) => {
           states.isLoading = false;
           states.isError = false;
           states.isSuccess = true;
 
-          if (data) states.data = data;
+          if (data) {
+            const accumulator_data = accumulator ? await accumulator(data) : data;
+            const normalized_data  = normalizer ? normalizer(accumulator_data) : accumulator_data;
+
+            states.data = normalized_data;
+          }
 
           onSuccess && onSuccess(states.data);
         });
