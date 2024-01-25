@@ -13,7 +13,7 @@ type HandlePaginationSelector = {
 type HandlePagination = {
   collection: string;
   selector: HandlePaginationSelector;
-  sort: any;
+  sort: object[];
 }
 
 export default async ({ collection, sort, selector }: HandlePagination): Promise<HandlePaginationReturn> => {

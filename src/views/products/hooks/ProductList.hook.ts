@@ -2,43 +2,14 @@ import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { queryRx, mutateRx } from '@helpers/fetcher';
 import { useQuery, useMutation } from '@/database/hooks';
-import { getProductList, mutateDeleteProduct, testMutate } from '@/database/query/product';
+import { getProductList, mutateDeleteProduct } from '@/database/query/product';
 
 import { productListNormalizer } from '../normalizer/ProductList.normalizer';
 
-/**
- * -------------------------
- * Mango Selector References
- * -------------------------
- * $lt  = less than
- * $lte = less than and equal
- * $ne  = not equal
- * $gt  = greater than
- * $gte = greater than and equal
- */
 export const useProductList = () => {
   const router = useRouter();
-  const limit = ref(10);
-  // NOTES: DON'T REMOVE (NON-OBSERVER METHOD)
-  const querySelector: any = ref({ id: { $gte: '' } });
-  // const products: any = ref([]);
-  const stopRefetch = ref(false);
-  const pagination_id = reactive({
-    first: '',
-    last: '',
-  });
-
-  const query = reactive<any>({
-    selector: { id: { $gte: '' } },
-    sort: [{ id: 'desc' }],
-    limit: 10,
-    skip: 0,
-  });
-  const pagination = reactive<any>({
-    first_id: '',
-    last_id: '',
-    current_page: 1,
-  });
+  const stop_refetch = ref(false);
+  const page = ref(1);
 
   const {
     data,
@@ -47,12 +18,9 @@ export const useProductList = () => {
     isError: productsError,
   } = useQuery({
     queryFn: () => getProductList({
-      query: {
-        selector: query.selector,
-        sort: query.sort,
-        limit: query.limit,
-        skip: query.skip,
-      },
+      sort: 'desc',
+      limit: 10,
+      page: page.value,
       normalizer: productListNormalizer,
     }),
     onError: (error: string) => {
@@ -61,81 +29,35 @@ export const useProductList = () => {
     onSuccess: (response: any) => {
       console.log('[SUCCESS] Product list page:', response);
 
-      // NOTES: DON'T REMOVE (NON-OBSERVER METHOD)
-      if (response.products.length) {
-        pagination.first_id = response.products[0].id;
-        pagination.last_id  = response.products[response.products.length - 1].id;
+      const { products } = response;
 
-        /**
-         * "created_at $ne = ''" are used to force return any results from query since somehow
-         * when using ULID as unique identifier and sorting descending "id" doesn't return
-         * any next expected data for pagination.
-         *
-         * Check for this in the future.
-         */
-        // querySelector.value = {
-        //   created_at: { $ne: '' },
-        //   id: { $lt: pagination_id.last },
-        // };
-
-        // products.value.push(...response);
-      } else {
-        stopRefetch.value = true;
-      }
+      if (!products.length) stop_refetch.value = true;
     },
   });
 
-  const toPrevPage = (e: Event, first?: boolean) => {
+  const toPrevPage = (e: Event, toFirst?: boolean) => {
     const { first_page } = data.value;
 
-    pagination.current_page -= 1;
-
-    if (first) {
+    if (toFirst) {
+      page.value = 1;
     } else {
-      query.selector = { id: { $gt: pagination.last_id } };
-      query.skip = query.limit * pagination.current_page;
-
-      console.log(query.skip);
+      page.value -= 1;
     }
 
     !first_page && productsRefetch();
   };
 
-  const toNextPage = (e: Event, last?: boolean) => {
-    const { last_page } = data.value;
+  const toNextPage = (e: Event, toLast?: boolean) => {
+    const { last_page, total_page } = data.value;
 
-    pagination.current_page += 1;
-
-    if (last) {
-
+    if (toLast) {
+      page.value = total_page;
     } else {
-      query.selector = { id: { $lt: pagination.last_id } };
-      query.skip = 0;
+      page.value += 1;
     }
 
     !last_page && productsRefetch();
   };
-
-  const testID = ref('');
-
-  const testUpdate = (e: Event, id: string) => {
-    e.stopPropagation();
-    testID.value = id;
-    testFunc();
-  };
-
-  const {
-    mutate: testFunc,
-    isLoading: testMutateLoading,
-  } = useMutation({
-    mutateFn: () => testMutate(testID.value),
-    onError: (error: string) => {
-
-    },
-    onSuccess: (response: any) => {
-
-    },
-  });
 
   return {
     data,
@@ -143,7 +65,6 @@ export const useProductList = () => {
     productsError,
     toNextPage,
     toPrevPage,
-    testUpdate,
   };
 };
 

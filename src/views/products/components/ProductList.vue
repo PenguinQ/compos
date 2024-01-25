@@ -19,7 +19,6 @@ const {
   productsError,
   toNextPage,
   toPrevPage,
-  testUpdate,
 } = useProductList();
 
 onMounted(() => {

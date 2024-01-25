@@ -3,38 +3,42 @@ import { monotonicFactory } from 'ulidx';
 
 import { db } from '@database';
 import { compressImage, handlePagination } from '../utils';
-import type { Images } from '../types/product';
+import type { GetProductDetail, Images } from '../types/product';
 
-export const testMutate = async (id: string) => {
+/**
+ * -------------------------
+ * Mango Selector References
+ * -------------------------
+ * $lt  = less than
+ * $lte = less than and equal
+ * $ne  = not equal
+ * $gt  = greater than
+ * $gte = greater than and equal
+ */
+
+export const getProductList = async ({ page, sort, limit, normalizer }: GetProductDetail) => {
   try {
-    const queryProduct = await db.product.findOne(id).exec();
-
-    await queryProduct.update({
-      $set: {
-        name: 'halo',
-      },
-    });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const getProductList = async ({ query, normalizer }: any) => {
-  try {
-    const queryProduct = await db.product.find(query).$;
+    const queryCount   = await db.product.count().exec();
+    const queryProduct = await db.product.find({
+      limit,
+      selector: { id: { $gte: '' } },
+      sort: [{ id: sort }],
+      skip: page > 1 ? (page - 1) * limit : 0,
+    }).$;
+    const total_page   = Math.ceil(queryCount / limit);
 
     const preprocessor = async (data: any) =>{
       const result: object[] = [];
-      const first_id = data[0] ? data[0].id : '';
-      const last_id  = data[data.length - 1] ? data[data.length - 1].id : '';
+      const first_id         = data[0] ? data[0].id : '';
+      const last_id          = data[data.length - 1] ? data[data.length - 1].id : '';
 
       const { first_page, last_page } = await handlePagination({
         collection: 'product',
         selector: {
-          first: first_id ? { id: { $gt: first_id } } : undefined,
-          last: last_id ? { id: { $lt: last_id } } : undefined,
+          first: first_id ? sort === 'desc' ? { id: { $gt: first_id } } : { id: { $lt: first_id } } : undefined,
+          last: last_id ? sort === 'desc' ? { id: { $lt: last_id } } : { id: { $gt: last_id } } : undefined,
         },
-        sort: [{ id: 'desc' }],
+        sort: [{ id: sort }],
       });
 
       for (const product of data) {
@@ -57,6 +61,8 @@ export const getProductList = async ({ query, normalizer }: any) => {
       return {
         first_page,
         last_page,
+        total_page,
+        count: queryCount,
         products: result,
       };
     };

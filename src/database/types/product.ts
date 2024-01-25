@@ -12,3 +12,10 @@ export type Images = {
   thumbnail: ImagesThumbnail | undefined,
   macrograph: ImagesMacrograph[],
 }
+
+export type GetProductDetail = {
+  page: number;
+  sort: string;
+  limit: number;
+  normalizer: (data: any) => void;
+}
