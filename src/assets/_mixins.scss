@@ -5,7 +5,7 @@ $screen-xl: 1200px;
 $screen-xxl: 1400px;
 
 @mixin screen-sm {
-  @media (min-width: $screen-md) {
+  @media (min-width: $screen-sm) {
     @content;
   }
 };
@@ -17,19 +17,19 @@ $screen-xxl: 1400px;
 };
 
 @mixin screen-lg {
-  @media (min-width: $screen-md) {
+  @media (min-width: $screen-lg) {
     @content;
   }
 };
 
 @mixin screen-xl {
-  @media (min-width: $screen-md) {
+  @media (min-width: $screen-xl) {
     @content;
   }
 };
 
 @mixin screen-xxl {
-  @media (min-width: $screen-md) {
+  @media (min-width: $screen-xxl) {
     @content;
   }
 };

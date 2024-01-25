@@ -29,10 +29,10 @@ export const useQuery = (params: any): any => {
     states.isLoading = true;
 
     queryFn().then((response: any) => {
-      const { subscribe, result } = response;
+      const { observe, result } = response;
 
-      if (subscribe) {
-        const { normalizer, accumulator } = response;
+      if (observe) {
+        const { normalizer, preprocessor } = response;
 
         result.subscribe(async (data: any) => {
           states.isLoading = false;
@@ -40,7 +40,7 @@ export const useQuery = (params: any): any => {
           states.isSuccess = true;
 
           if (data) {
-            const accumulator_data = accumulator ? await accumulator(data) : data;
+            const accumulator_data = preprocessor ? await preprocessor(data) : data;
             const normalized_data  = normalizer ? normalizer(accumulator_data) : accumulator_data;
 
             states.data = normalized_data;

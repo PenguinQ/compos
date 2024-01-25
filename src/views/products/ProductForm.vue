@@ -65,7 +65,7 @@ const imageStyle: any = {
             <div style="display: flex; gap: 8px;">
               <div :key="index" v-for="(image, index) in formData.image">
                 <img :src="image.path" :style="imageStyle" />
-                <button type="button" @click="handleRemoveImage(index, image.id)">Remove Image</button>
+                <button type="button" @click="handleRemoveImage(index, image.id, image.path)">Remove Image</button>
               </div>
               <div :key="index" v-for="(image, index) in formData.new_image.preview">
                 <img :src="image" :style="imageStyle" />
@@ -73,7 +73,7 @@ const imageStyle: any = {
               </div>
             </div>
             <br />
-            <input type="file" accept=".jpg, .jpeg, .png, .gif" multiple @change="handleAddImage" />
+            <input type="file" accept=".jpg, .jpeg, .png, .webp" @change="handleAddImage" />
           </div>
 
           <!--  -->

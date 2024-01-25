@@ -29,7 +29,7 @@ export const formDetailNormalizer = (data: any) => {
   if (product.attachment.length) {
     product.attachment.map((att: any) => product_attachments.push({
       id: att.id,
-      path: URL.createObjectURL(att.data)
+      path: data,
     }));
   }
 

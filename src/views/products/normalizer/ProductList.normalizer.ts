@@ -1,20 +1,30 @@
 import type { RxDocument } from 'rxdb'
 
-export const productListNormalizer = (data: RxDocument[]) => {
-  const products = data || [];
-  const productList: object[] = [];
+type Data = {
+  first_page: boolean;
+  last_page: boolean;
+  products: RxDocument[];
+}
 
-  products.map((product: any) => {
-    const { id, variant, name, attachment } = product;
-    let product_image = attachment ? URL.createObjectURL(attachment) : '';
+export const productListNormalizer = (data: Data) => {
+  const { first_page, last_page, products: products_data } = data;
+  const products = products_data || [];
+  const product_list: object[] = [];
 
-    productList.push({
+  for (const product of products) {
+    const { id, variant, name, attachment } = product as any;
+
+    product_list.push({
       id,
       name,
       variant: variant.length,
-      image: product_image,
+      image: attachment || '',
     });
-  });
+  }
 
-  return productList;
+  return {
+    first_page,
+    last_page,
+    products: product_list,
+  };
 };

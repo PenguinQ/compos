@@ -24,6 +24,7 @@ const createDB = async () => {
   db = await createRxDatabase<DatabaseCollection>({
     name: 'compos',
     // storage: getRxStorageDexie(),
+    // storage: compressedStorage, // Use storage memory during development mode, change to Dexie later
     storage: compressedStorage, // Use storage memory during development mode, change to Dexie later
     eventReduce: true,
   });

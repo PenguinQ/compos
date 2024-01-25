@@ -1,5 +1,6 @@
 import { ref, reactive, toRaw } from 'vue';
 import { useRoute } from 'vue-router';
+import Compressor from 'compressorjs';
 
 import { useQuery, useMutation } from '@database/hooks';
 import { getProductDetail, mutateAddProduct, mutateEditProduct } from '@database/query/product';
@@ -24,7 +25,9 @@ export const useProductForm = () => {
       data   : [],
       preview: [],
     },
+    base64_image: [],
   });
+  const revokedBlob = [];
 
   // Get product detail hooks.
   const {
@@ -43,7 +46,7 @@ export const useProductForm = () => {
       console.error('Failed to get the product detail.', error);
     },
     onSuccess: (result: any) => {
-      console.info('Success to get the product detail.');
+      console.info('[SUCCESS] Product Form Page.');
 
       if (params.id) {
         formData.id          = result.id;
@@ -130,6 +133,7 @@ export const useProductForm = () => {
           name       : formData.name,
           description: formData.description,
           new_image  : toRaw(formData.new_image.data),
+          base64_image: toRaw(formData.base64_image),
           by         : formData.by,
           variant    : variantData,
           price      : parseInt(formData.price as any),
@@ -159,19 +163,88 @@ export const useProductForm = () => {
     formData.new_image   = { data: [], preview: [] };
   };
 
+  const compressImage = (img: HTMLImageElement, type: string) => {
+    const canvas = document.createElement('canvas');
+    let width = img.width;
+    let height = img.height;
+
+    if (width > height) {
+      if (width > 600) {
+        height = Math.round(height *= 600 / width);
+        width = 600;
+      }
+    } else {
+      if (height > 600) {
+        width = Math.round(width *= 600 / height);
+        height = 600;
+      }
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext('2d');
+    context?.drawImage(img, 0, 0, width, height);
+
+    return canvas.toDataURL(type, 0.7);
+  };
+
+  // const processImage = (img: File) => {
+  //   const reader = new FileReader();
+  //   const { type } = img;
+
+  //   reader.readAsArrayBuffer(img);
+
+  //   reader.onload = (e: Event) => {
+  //     const blob = new Blob([(e.target as any).result]);
+  //     const blobUrl = URL.createObjectURL(blob);
+
+  //     const image = new Image();
+  //     image.src = blobUrl;
+
+  //     image.onload = () => {
+  //       const compressedImg = compressImage(image, type);
+  //     };
+  //   };
+  // };
+
   const handleAddImage = (e: Event) => {
     const target = e.target as HTMLInputElement;
     const files = target.files as FileList;
 
     [...files].forEach((file: File) => {
-      const reader = new FileReader();
+      // new Compressor(file, {
+      //   quality: 0.8,
+      //   maxWidth: 800,
+      //   maxHeight: 800,
+      //   mimeType: 'image/webp',
+      //   convertTypes: ['image/png','image/webp'],
+      //   success: (result: any) => {
+      //     console.log('Compressed:', result);
 
-      reader.onload = () => {
-        formData.new_image.data.push(file);
-        formData.new_image.preview.push(reader.result);
-      };
+      //     // Push base64 string
+      //     // const reader = new FileReader();
 
-      reader.readAsDataURL(file);
+      //     // reader.onload = () => {
+      //     //   formData.base64_image.push(reader.result);
+      //     // };
+
+      //     // reader.readAsDataURL(result);
+
+      //     formData.new_image.data.push(result);
+      //   },
+      // });
+
+      // const reader = new FileReader();
+
+      // reader.onload = () => {
+      //   formData.new_image.data.push(file);
+      //   formData.new_image.preview.push(reader.result);
+      // };
+
+      // reader.readAsDataURL(file);
+
+      formData.new_image.data.push(file);
     });
   };
 
@@ -206,8 +279,9 @@ export const useProductForm = () => {
     formData.variant.splice(index, 1);
   };
 
-  const handleRemoveImage = (index: number, id?: string) => {
+  const handleRemoveImage = (index: number, id?: string, path?: string) => {
     if (id) {
+      revokedBlob.push(path);
       formData.deleted_image.push(id);
       formData.image.splice(index, 1);
     } else {

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { onUnmounted } from 'vue';
+
 import Button from '@components/Button';
 import Text from '@components/Text';
 import Link from '@components/Link';
@@ -6,6 +8,14 @@ import Link from '@components/Link';
 import { useProductDetail } from './hooks/ProductDetail.hook';
 
 const { data, isLoading } = useProductDetail();
+
+onUnmounted(() => {
+  const { image } = data.value;
+
+  image.forEach((url: string) => {
+    // URL.revokeObjectURL(url);
+  });
+})
 </script>
 
 <template>
@@ -16,8 +26,9 @@ const { data, isLoading } = useProductDetail();
       <Link :to="`/product/edit/${data.id}`">Edit {{ data.name }}</Link>
     </div>
     <pre>
-      {{ data }}
+      <!-- {{ data }} -->
     </pre>
+    <img v-for="image in data.image" :src="image" />
   </div>
 </template>
 

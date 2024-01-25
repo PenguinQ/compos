@@ -18,65 +18,102 @@ import { productListNormalizer } from '../normalizer/ProductList.normalizer';
  */
 export const useProductList = () => {
   const router = useRouter();
-  const limit = ref(5);
+  const limit = ref(10);
   // NOTES: DON'T REMOVE (NON-OBSERVER METHOD)
-  // const querySelector: any = ref({ id: { $gte: '' } });
+  const querySelector: any = ref({ id: { $gte: '' } });
   // const products: any = ref([]);
-  // const stopRefetch = ref(false);
+  const stopRefetch = ref(false);
+  const pagination_id = reactive({
+    first: '',
+    last: '',
+  });
+
+  const query = reactive<any>({
+    selector: { id: { $gte: '' } },
+    sort: [{ id: 'desc' }],
+    limit: 10,
+    skip: 0,
+  });
+  const pagination = reactive<any>({
+    first_id: '',
+    last_id: '',
+    current_page: 1,
+  });
 
   const {
-    data: products,
+    data,
     refetch: productsRefetch,
     isLoading: productsLoading,
     isError: productsError,
   } = useQuery({
-    queryKey: [limit],
     queryFn: () => getProductList({
       query: {
-        selector: {
-          id: {
-            $gte: '',
-          },
-        },
-        sort: [{ id: 'asc' }],
-        limit: limit.value,
+        selector: query.selector,
+        sort: query.sort,
+        limit: query.limit,
+        skip: query.skip,
       },
       normalizer: productListNormalizer,
     }),
     onError: (error: string) => {
-      console.log('Error:', error);
+      console.log('[ERROR] Failed to get product list:', error);
     },
-    onSuccess: (response: any[]) => {
-      console.log('Response:', response);
+    onSuccess: (response: any) => {
+      console.log('[SUCCESS] Product list page:', response);
 
       // NOTES: DON'T REMOVE (NON-OBSERVER METHOD)
-      // if (response.length) {
-      //   const last_id = response[response.length - 1].id;
+      if (response.products.length) {
+        pagination.first_id = response.products[0].id;
+        pagination.last_id  = response.products[response.products.length - 1].id;
 
-      //   /**
-      //    * "created_at $ne = ''" are used to force return any results from query since somehow
-      //    * when using ULID as unique identifier and sorting descending "id" doesn't return
-      //    * any next expected data for pagination.
-      //    *
-      //    * Check for this in the future.
-      //    */
-      //   querySelector.value = {
-      //     created_at: { $ne: '' },
-      //     id: { $lt: last_id },
-      //   };
+        /**
+         * "created_at $ne = ''" are used to force return any results from query since somehow
+         * when using ULID as unique identifier and sorting descending "id" doesn't return
+         * any next expected data for pagination.
+         *
+         * Check for this in the future.
+         */
+        // querySelector.value = {
+        //   created_at: { $ne: '' },
+        //   id: { $lt: pagination_id.last },
+        // };
 
-      //   products.value.push(...response);
-      // } else {
-      //   stopRefetch.value = true;
-      // }
+        // products.value.push(...response);
+      } else {
+        stopRefetch.value = true;
+      }
     },
   });
 
-  const nextPage = () => {
-    // NOTES: DON'T REMOVE (NON-OBSERVER METHOD)
-    // if (!stopRefetch.value) productsRefetch();
+  const toPrevPage = (e: Event, first?: boolean) => {
+    const { first_page } = data.value;
 
-    limit.value += 5;
+    pagination.current_page -= 1;
+
+    if (first) {
+    } else {
+      query.selector = { id: { $gt: pagination.last_id } };
+      query.skip = query.limit * pagination.current_page;
+
+      console.log(query.skip);
+    }
+
+    !first_page && productsRefetch();
+  };
+
+  const toNextPage = (e: Event, last?: boolean) => {
+    const { last_page } = data.value;
+
+    pagination.current_page += 1;
+
+    if (last) {
+
+    } else {
+      query.selector = { id: { $lt: pagination.last_id } };
+      query.skip = 0;
+    }
+
+    !last_page && productsRefetch();
   };
 
   const testID = ref('');
@@ -101,10 +138,11 @@ export const useProductList = () => {
   });
 
   return {
-    products,
+    data,
     productsLoading,
     productsError,
-    nextPage,
+    toNextPage,
+    toPrevPage,
     testUpdate,
   };
 };

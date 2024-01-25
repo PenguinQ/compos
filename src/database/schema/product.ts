@@ -16,6 +16,9 @@ export default {
     description: {
       type: 'string',
     },
+    base64_image: {
+      type: 'string',
+    },
     by: {
       type: 'string',
     },
@@ -45,7 +48,7 @@ export default {
   },
   attachments: {
     encrypted: false,
-    compression: 'deflate',
+    compression: 'gzip',
   },
   required: [
     'id',

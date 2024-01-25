@@ -21,10 +21,10 @@ export const useProductDetail = () => {
       normalizer: detailNormalizer,
     }),
     onError: (error: string) => {
-      console.error('Failed to get the product detail.', error);
+      console.error('[ERROR] Failed to get the product detail.', error);
     },
     onSuccess: (result: any) => {
-      console.info('Success to get the product detail.');
+      console.info('[SUCCESS] Product detail page');
     },
   });
 

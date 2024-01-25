@@ -30,7 +30,8 @@ export const detailNormalizer = (data: any) => {
   }
 
   if (product.attachment.length) {
-    product.attachment.map((att: any) => product_attachments.push(URL.createObjectURL(att.data)));
+    // product.attachment.map((att: any) => product_attachments.push(URL.createObjectURL(att.data)));
+    product.attachment.map((att: any) => product_attachments.push(att.data));
   }
 
   return {

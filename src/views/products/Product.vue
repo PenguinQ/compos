@@ -12,8 +12,8 @@ const router = useRouter();
 <template>
   <ProductList />
   <hr />
-  <BundleList />
-  <hr />
+  <!-- <BundleList /> -->
+  <!-- <hr /> -->
   <Button @click="router.push('/product/add')">Go to Add Product Page</Button>
 </template>
 
