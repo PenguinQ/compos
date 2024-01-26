@@ -14,7 +14,7 @@ export const detailNormalizer = (data: any) => {
       const variant_attachments: string [] = [];
 
       if (v.attachment.length) {
-        v.attachment.map((att: any) => variant_attachments.push(URL.createObjectURL(att.data)));
+        v.attachment.map((att: any) => variant_attachments.push(att.data));
       }
 
       product_variants.push({
@@ -30,7 +30,6 @@ export const detailNormalizer = (data: any) => {
   }
 
   if (product.attachment.length) {
-    // product.attachment.map((att: any) => product_attachments.push(URL.createObjectURL(att.data)));
     product.attachment.map((att: any) => product_attachments.push(att.data));
   }
 

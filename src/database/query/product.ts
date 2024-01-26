@@ -1,9 +1,9 @@
-import { blobToBase64String, createBlob } from 'rxdb';
+import { RxAttachment, RxDocument, blobToBase64String, createBlob } from 'rxdb';
 import { monotonicFactory } from 'ulidx';
 
 import { db } from '@database';
-import { compressImage, handlePagination } from '../utils';
-import type { GetProductDetail, Images } from '../types/product';
+import { compressProductImage, handlePagination } from '../utils';
+import type { GetProductDetail } from '../types/product';
 
 /**
  * -------------------------
@@ -47,12 +47,15 @@ export const getProductList = async ({ page, sort, limit, normalizer }: GetProdu
         let product_attachment   = '';
 
         if (queryAttachments.length) {
-          const thumbnail        = queryAttachments.filter((att: any) => att.id.startsWith('IMG_THUMB_'));
-          const attachment       = await thumbnail[0].getData();
-          const attachmentString = await blobToBase64String(attachment);
-          const { type }         = attachment;
+          const thumbnail = queryAttachments.filter((att: any) => att.id.startsWith('THUMB_'));
 
-          product_attachment = `data:${type};base64,${attachmentString}`;
+          if (thumbnail.length) {
+            const attachment       = await thumbnail[0].getData();
+            const attachmentString = await blobToBase64String(attachment);
+            const { type }         = attachment;
+
+            product_attachment = `data:${type};base64,${attachmentString}`;
+          }
         }
 
         result.push({ attachment: product_attachment, ...productData });
@@ -73,34 +76,6 @@ export const getProductList = async ({ page, sort, limit, normalizer }: GetProdu
       preprocessor,
       normalizer,
     };
-
-    /**
-     * -------------------
-     * Non-observer method
-     * -------------------
-     */
-    // const queryProduct = await db.product.find(query).exec();
-    // const product_list = [];
-
-    // for (const product of queryProduct) {
-    //   const queryProductAttachments = await product.allAttachments();
-    //   const { ...productData }      = product.toJSON();
-    //   let product_attachment        = undefined;
-
-    //   if (queryProductAttachments.length) {
-    //     const attachment       = await queryProductAttachments[0].getData();
-    //     const attachmentString = await blobToBase64String(attachment);
-    //     const { type }         = attachment;
-
-    //     product_attachment = `data:${type};base64,${attachmentString}`;
-    //   }
-
-    //   product_list.push({ attachment: product_attachment, ...productData });
-    // }
-
-    // return {
-    //   result: normalizer(product_list),
-    // };
   } catch (error) {
     if (error instanceof Error) {
       throw error.message;
@@ -125,20 +100,14 @@ export const getProductDetail = async ({ id, normalizer }: any) => {
     const product_attachments: object[] = [];
     const product_data                  = { attachment: product_attachments, ...productData };
 
-    const blobTo64 = (blob: any) => {
-      return new Promise((resolve, _) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-      });
-    };
+    const images = queryProductAttachments.filter((att: any) => att.id.startsWith('IMG_'));
 
-    for (const attachment of queryProductAttachments) {
-      const { id } = attachment;
-      const data   = await attachment.getData();
-      const base64 = await blobTo64(data);
+    for (const image of images) {
+      const { id, type } = image;
+      const image_data   = await image.getData();
+      const image_base64 = await blobToBase64String(image_data);
 
-      product_attachments.push({ id, data: base64 });
+      product_attachments.push({ id, data: `data:${type};base64,${image_base64}` });
     }
 
     /**
@@ -153,11 +122,14 @@ export const getProductDetail = async ({ id, normalizer }: any) => {
       const queryVariantAttachments = await variant.allAttachments();
       const variant_attachments     = [];
 
-      for (const attachment of queryVariantAttachments) {
-        const { id } = attachment;
-        const data   = await attachment.getData();
+      const images = queryVariantAttachments.filter((att: any) => att.id.startsWith('IMG_'));
 
-        variant_attachments.push({ id, data });
+      for (const image of images) {
+        const { id, type } = image;
+        const image_data   = await image.getData();
+        const image_base64 = await blobToBase64String(image_data);
+
+        variant_attachments.push({ id, data: `data:${type};base64,${image_base64}` });
       }
 
       variant_data.push({ attachment: variant_attachments, ...variantData });
@@ -183,13 +155,21 @@ export const mutateAddProduct = async ({ data }: any) => {
       name,
       description,
       new_image,
-      base64_image,
       by,
       price,
       stock,
       sku,
       variant,
     } = data;
+
+    const addImages = async (images: any[], doc: RxDocument) => {
+      for (const image of images) {
+        const { id, data } = image;
+        const { type }     = data;
+
+        await doc.putAttachment({ id, data, type });
+      }
+    };
 
     /**
      * ---------------------------------
@@ -227,11 +207,18 @@ export const mutateAddProduct = async ({ data }: any) => {
       }
 
       /**
-       * -----------------------
-       * 1.1 Insert the product.
-       * -----------------------
+       * ---------------------
+       * 1.1. Compress images.
+       * ---------------------
        */
-      const productQuery = await db.product.insert({
+      const { thumbnail, macrograph } = await compressProductImage(new_image);
+
+      /**
+       * ---------------------------------------------------
+       * 1.2. Insert the product and it's image attachments.
+       * ---------------------------------------------------
+       */
+      const queryProduct = await db.product.insert({
         id         : product_id,
         active     : product_active,
         variant    : variant_ids,
@@ -245,24 +232,9 @@ export const mutateAddProduct = async ({ data }: any) => {
         by,
       });
 
-      /**
-       * ------------------------------
-       * 1.2 Insert the product images.
-       * ------------------------------
-       */
-      const product_attachments = new_image;
+      if (thumbnail.length) await addImages(thumbnail, queryProduct);
 
-      if (product_attachments.length) {
-        await product_attachments.map(async (attachment: File) => {
-          console.log(attachment);
-
-          const attachmentID = `IMG_${ulid()}`;
-          const { type }     = attachment;
-          // const imageBlob    = createBlob(attachment as any, type);
-
-          await productQuery.putAttachment({ id: attachmentID, data: attachment, type });
-        });
-      }
+      if (macrograph.length) await addImages(macrograph, queryProduct);
 
       /**
        * --------------------------------
@@ -278,17 +250,15 @@ export const mutateAddProduct = async ({ data }: any) => {
        * ---------------------------------------
        */
       if (variants.length) {
-        await variants.map(async (variant: any, index: number) => {
+        for (const [index, variant] of variants.entries()) {
           if (variant_attachments[index].length) {
-            await variant_attachments[index].map(async (attachment: File) => {
-              const attachmentID = `IMG_${ulid()}`;
-              const { type }     = attachment;
-              const imageBlob    = createBlob(attachment as any, type);
+            const { thumbnail, macrograph } = await compressProductImage(variant_attachments[index]);
 
-              await variant.putAttachment({ id: attachmentID, data: imageBlob, type });
-            });
+            if (thumbnail.length) await addImages(thumbnail, variant);
+
+            if (macrograph.length) await addImages(macrograph, variant);
           }
-        });
+        }
       }
     }
     /**
@@ -302,37 +272,20 @@ export const mutateAddProduct = async ({ data }: any) => {
        * 2.1. Compress images.
        * ---------------------
        */
-      let images: Images = { thumbnail: undefined, macrograph: [] };
-
-      if (new_image.length) {
-        for (const [index, image] of new_image.entries()) {
-          const image_ulid = ulid();
-
-          if (index === 0) {
-            const product_thumbnail = await compressImage({ image, quality: 0.8, dimension: 360 });
-
-            images.thumbnail = { id: `IMG_THUMB_${image_ulid}`, data: product_thumbnail };
-          }
-
-          const product_image = await compressImage({ image, quality: 0.8, dimension: 800 });
-
-          images.macrograph.push({ id: `IMG_${image_ulid}`, data: product_image })
-        }
-      }
+      const { thumbnail, macrograph } = await compressProductImage(new_image);
 
       /**
        * ---------------------------------------------------
        * 2.2. Insert the product and it's image attachments.
        * ---------------------------------------------------
        */
-      const productQuery = await db.product.insert({
+      const queryProduct = await db.product.insert({
         id         : product_id,
         active     : parseInt(stock) >= 1 ? true : false,
         price      : parseInt(price as string),
         stock      : parseInt(stock as string),
         created_at : new Date().toISOString(),
         updated_at : new Date().toISOString(),
-        base64_image,
         variant,
         name,
         description,
@@ -340,21 +293,9 @@ export const mutateAddProduct = async ({ data }: any) => {
         sku,
       });
 
-      if (images.thumbnail) {
-        const { id, data } = images.thumbnail;
-        const { type } = data;
+      if (thumbnail.length) await addImages(thumbnail, queryProduct);
 
-        await productQuery.putAttachment({ id, data, type });
-      }
-
-      if (images.macrograph.length) {
-        for (const image of images.macrograph) {
-          const { id, data  } = image;
-          const { type } = data;
-
-          await productQuery.putAttachment({ id, data, type });
-        }
-      }
+      if (macrograph.length) await addImages(macrograph, queryProduct);
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -367,7 +308,6 @@ export const mutateAddProduct = async ({ data }: any) => {
 
 export const mutateEditProduct = async ({ id, data }: any) => {
   try {
-    const ulid = monotonicFactory();
     const {
       name,
       description,
@@ -390,10 +330,11 @@ export const mutateEditProduct = async ({ id, data }: any) => {
     }).exec();
 
     const removeVariant = async (variantsID: string[]) => {
-      variantsID.map(async (id: string) => {
+      for (const id of variantsID) {
         const queryVariant = await db.variant.findOne(id).exec();
 
         await queryVariant.remove();
+
         await queryProduct.incrementalModify((prev: any) => {
           const index = prev.variant.indexOf(id);
 
@@ -412,7 +353,7 @@ export const mutateEditProduct = async ({ id, data }: any) => {
           },
         }).exec();
 
-        await queryBundles.map(async (bundle: any) => {
+        for (const bundle of queryBundles) {
           await bundle.incrementalModify((prev: any) => {
             const index = prev.product.findIndex((data: any) => data.variant_id === id);
 
@@ -424,8 +365,8 @@ export const mutateEditProduct = async ({ id, data }: any) => {
 
             return prev;
           });
-        });
-      });
+        }
+      }
     };
 
     const updateBundles = async ({ id, stock, isVariant = false }: any) => {
@@ -440,7 +381,7 @@ export const mutateEditProduct = async ({ id, data }: any) => {
         },
       }).exec();
 
-      await queryBundles.map(async (bundle: any) => {
+      for (const bundle of queryBundles) {
         await bundle.incrementalModify((prev: any) => {
           const index = prev.product.findIndex((data: any) => data[queryIdentifier] === id);
 
@@ -453,26 +394,40 @@ export const mutateEditProduct = async ({ id, data }: any) => {
 
           return prev;
         });
-      });
+      }
     };
 
-    const updateImages = async (new_image: File[], deleted_image: string[], query: any) => {
-      if (new_image.length) {
-        new_image.map(async (attachment: File) => {
-          const attachmentID = `IMG_${ulid()}`;
-          const { type }     = attachment;
-          const imageBlob    = createBlob(attachment as any, type);
+    const getThumbnail = (id: string, query: RxDocument) => {
+      const thumbnail_id = `THUMB_${id.split('_')[1]}`;
+      const thumbnail    = query.getAttachment(thumbnail_id);
 
-          await query.putAttachment({ id: attachmentID, data: imageBlob, type });
-        });
+      return thumbnail;
+    };
+
+    const addImages = async (images: any[], doc: RxDocument) => {
+      for (const image of images) {
+        const { id, data } = image;
+        const { type }     = data;
+
+        await doc.putAttachment({ id, data, type });
       }
+    };
 
-      if (deleted_image.length) {
-        deleted_image.map(async (id: string) => {
-          const attachment = query.getAttachment(id);
+    const removeImages = async (images: string[], doc: RxDocument) => {
+      for (const id of images) {
+        const image     = doc.getAttachment(id);
+        const thumbnail = getThumbnail(id, doc);
 
-          await attachment.remove();
-        });
+        if (image) await image.remove();
+        if (thumbnail) await thumbnail.remove();
+      }
+    };
+
+    const removeCurrentImage = async (query: RxDocument) => {
+      const images = query.allAttachments();
+
+      for (const image of images) {
+        await image.remove();
       }
     };
 
@@ -529,7 +484,18 @@ export const mutateEditProduct = async ({ id, data }: any) => {
        * 1.3 Update product images.
        * --------------------------
        */
-      await updateImages(new_image, deleted_image, queryProduct);
+      if (new_image.length) {
+        const { thumbnail, macrograph } = await compressProductImage(new_image);
+        const images                    = queryProduct.allAttachments();
+
+        if (images.length) await removeCurrentImage(queryProduct);
+
+        if (thumbnail.length) await addImages(thumbnail, queryProduct);
+
+        if (macrograph) await addImages(macrograph, queryProduct);
+      }
+
+      if (deleted_image.length) await removeImages(deleted_image, queryProduct);
 
       /**
        * -------------------------------------------
@@ -545,7 +511,7 @@ export const mutateEditProduct = async ({ id, data }: any) => {
        * 1.5 Iterate and update each variant detail.
        * -------------------------------------------
        */
-      await variants.map(async (variant: any) => {
+      for (const variant of variants) {
         const {
           id           : v_id,
           name         : v_name,
@@ -592,7 +558,18 @@ export const mutateEditProduct = async ({ id, data }: any) => {
            * 1.5.1.2 Update current iteration variation images.
            * --------------------------------------------------
            */
-          await updateImages(v_new_image, v_deleted_image, queryVariant);
+          if (v_new_image.length) {
+            const images = queryVariant.allAttachments();
+            const { thumbnail, macrograph } = await compressProductImage(v_new_image);
+
+            if (images.length) await removeCurrentImage(queryVariant);
+
+            if (thumbnail.length) await addImages(thumbnail, queryVariant);
+
+            if (macrograph) await addImages(macrograph, queryVariant);
+          }
+
+          if (v_deleted_image.length) await removeImages(v_deleted_image, queryVariant);
 
           /**
            * -----------------------------------------------------------------------------------------
@@ -634,7 +611,13 @@ export const mutateEditProduct = async ({ id, data }: any) => {
            * 1.5.2.2 Add images to newly created variant.
            * --------------------------------------------
            */
-          await updateImages(v_new_image, [], queryVariant);
+          if (v_new_image.length) {
+            const { thumbnail, macrograph } = await compressProductImage(v_new_image);
+
+            if (thumbnail.length) await addImages(thumbnail, queryVariant);
+
+            if (macrograph) await addImages(macrograph, queryVariant);
+          }
 
           /**
            * ----------------------------------------------------------------------------
@@ -647,7 +630,7 @@ export const mutateEditProduct = async ({ id, data }: any) => {
             return prev;
           });
         }
-      });
+      }
     }
     /**
      * ------------------------------------------
@@ -679,7 +662,18 @@ export const mutateEditProduct = async ({ id, data }: any) => {
        * 2.2 Update the product images.
        * ------------------------------
        */
-      await updateImages(new_image, deleted_image, queryProduct);
+      if (new_image.length) {
+        const images = queryProduct.allAttachments();
+        const { thumbnail, macrograph } = await compressProductImage(new_image);
+
+        if (images.length) await removeCurrentImage(queryProduct);
+
+        if (thumbnail.length) await addImages(thumbnail, queryProduct);
+
+        if (macrograph) await addImages(macrograph, queryProduct);
+      }
+
+      if (deleted_image.length) await removeImages(deleted_image, queryProduct);
 
       /**
        * -------------------------------------------

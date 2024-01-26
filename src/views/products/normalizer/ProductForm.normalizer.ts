@@ -8,10 +8,7 @@ export const formDetailNormalizer = (data: any) => {
       const variant_attachments: object[] = [];
 
       if (v.attachment.length) {
-        v.attachment.map((att: any) => variant_attachments.push({
-          id: att.id,
-          path: URL.createObjectURL(att.data),
-        }));
+        v.attachment.map((att: any) => variant_attachments.push({ id: att.id, path: att.data }));
       }
 
       product_variants.push({
@@ -27,10 +24,7 @@ export const formDetailNormalizer = (data: any) => {
   }
 
   if (product.attachment.length) {
-    product.attachment.map((att: any) => product_attachments.push({
-      id: att.id,
-      path: data,
-    }));
+    product.attachment.map((att: any) => product_attachments.push({ id: att.id, path: att.data }));
   }
 
   return {

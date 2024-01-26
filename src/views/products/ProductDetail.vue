@@ -26,7 +26,7 @@ onUnmounted(() => {
       <Link :to="`/product/edit/${data.id}`">Edit {{ data.name }}</Link>
     </div>
     <pre>
-      <!-- {{ data }} -->
+      {{ data }}
     </pre>
     <img v-for="image in data.image" :src="image" />
   </div>

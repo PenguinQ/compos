@@ -24,7 +24,7 @@ export const useProductDetail = () => {
       console.error('[ERROR] Failed to get the product detail.', error);
     },
     onSuccess: (result: any) => {
-      console.info('[SUCCESS] Product detail page');
+      console.info('[SUCCESS] Product detail page', result);
     },
   });
 
