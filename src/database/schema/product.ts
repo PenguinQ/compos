@@ -12,11 +12,9 @@ export default {
     },
     name: {
       type: 'string',
+      maxLength: 1000,
     },
     description: {
-      type: 'string',
-    },
-    base64_image: {
       type: 'string',
     },
     by: {

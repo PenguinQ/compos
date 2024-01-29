@@ -1,29 +1,12 @@
-import { computed, ref, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useMutation } from '@database/hooks';
 import { getBundleDetail } from '@database/query/bundle';
-import { queryRx, queryOneRx, mutateRx } from '@helpers/fetcher';
+import { mutateRx } from '@helpers/fetcher';
 import { bundleDetailNormalizer } from '../normalizer/BundleDetail.normalizer';
 
 export const useBundleDetail = () => {
   const route = useRoute();
   const { params } = route;
-  const bundleAvailable = ref(true);
-  const runProductQuery = ref(false);
-  const enabled = computed(() => runProductQuery.value);
-  const productIDs = ref([]);
-  const formData = reactive({
-    id: '',
-    name: '',
-    description: '',
-    image: '',
-    by: '',
-    price: null,
-    stock: null,
-    sku: '',
-  });
-
-  const testData = ref(null);
 
   const {
     data,
@@ -36,37 +19,11 @@ export const useBundleDetail = () => {
       id: params.id,
       normalizer: bundleDetailNormalizer,
     }),
-    disabled: params.id ? false : true,
-    onError: (error: any) => {
-      console.error('Failed to get the bundle detail.', error);
+    onError: (error: string) => {
+      console.error('[ERROR] Failed to get the bundle detail.', error);
     },
-    onSuccess: async (result: any) => {
-      console.log('Success to get the bundle detail.', result);
-
-      // testData.value = await result.populate('product_id');
-
-      // testData.value = product;
-
-      // console.log(product);
-
-      // DON'T REMOVE!
-      //
-      // if (result) {
-      //   const splittedID = result.product_id.split(',');
-
-      //   // Don't change the order, since the the product detail query listen to the productIDs values.
-      //   runProductQuery.value = true;
-      //   productIDs.value = splittedID;
-      // }
-
-      // formData.id = result.id;
-      // formData.name = result.name;
-      // formData.description = result.description;
-      // formData.image = result.image;
-      // formData.by = result.by;
-      // formData.price = result.price;
-      // formData.stock = result.stock;
-      // formData.sku = result.sku;
+    onSuccess: async (response: any) => {
+      console.log('[SUCCESS] Bundle detail page.', response);
     },
   });
 
@@ -175,22 +132,11 @@ export const useBundleDetail = () => {
   });
 
   return {
-    bundleAvailable,
     bundleID: params.id,
     data,
-    testData,
-    // productData,
-    // productLoading,
-    // productError,
-    // productSuccess,
-    formData,
     isError,
     isLoading,
     isSuccess,
     refetch,
-    mutateAddLoading,
-    mutateAdd,
-    mutateEditLoading,
-    mutateEdit,
   };
 };

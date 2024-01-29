@@ -1,5 +1,5 @@
-const debounce = (callback: any, delay = 300) => {
-  let timeout: ReturnType <typeof setTimeout>;
+export default (callback: (...args: any) => void, delay = 300) => {
+  let timeout: ReturnType<typeof setTimeout>;
 
   return (...args: any) => {
     clearTimeout(timeout);
@@ -9,5 +9,3 @@ const debounce = (callback: any, delay = 300) => {
     }, delay);
   };
 };
-
-export default debounce;

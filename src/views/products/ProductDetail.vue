@@ -7,7 +7,13 @@ import Link from '@components/Link';
 
 import { useProductDetail } from './hooks/ProductDetail.hook';
 
-const { data, isLoading } = useProductDetail();
+const {
+  data,
+  isError,
+  isLoading,
+  deleteProduct,
+  deleteProductLoading,
+} = useProductDetail();
 
 onUnmounted(() => {
   const { image } = data.value;
@@ -25,6 +31,7 @@ onUnmounted(() => {
     <div style="margin-top: 12px;">
       <Link :to="`/product/edit/${data.id}`">Edit {{ data.name }}</Link>
     </div>
+    <Button @click="deleteProduct">Delete Product</Button>
     <pre>
       {{ data }}
     </pre>

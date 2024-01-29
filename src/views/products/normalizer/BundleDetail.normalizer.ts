@@ -6,30 +6,23 @@
  */
 export const bundleDetailNormalizer = (data: any) => {
   const bundle_data = data || {};
-  let product: any = [];
+  const { product } = bundle_data;
+  let product_list: any = [];
   let total_product_price = 0;
 
-  if (bundle_data.product.length) {
-    bundle_data.product.forEach((p: any) => {
-      const product_attachments: string[] = [];
+  if (product && product.length) {
+    product.map((prd: any) => {
+      total_product_price += prd.price;
 
-      if (p.attachment.length) {
-        const attachment = p.attachment[0];
-
-        product_attachments.push(URL.createObjectURL(attachment.data));
-      }
-
-      total_product_price += p.price;
-
-      product.push({
-        id: p.id || '',
-        active: p.active || false,
-        name: p.name || '',
-        product_id: p.product_id || undefined,
-        product_name: p.product_name || undefined,
-        image: product_attachments || [],
-        price: p.price || 0,
-        stock: p.stock || 0,
+      product_list.push({
+        id: prd.id || '',
+        active: prd.active || false,
+        name: prd.name || '',
+        product_id: prd.product_id || undefined,
+        product_name: prd.product_name || undefined,
+        image: prd.image[0] || '',
+        price: prd.price || 0,
+        stock: prd.stock || 0,
       })
     });
   }
@@ -40,7 +33,7 @@ export const bundleDetailNormalizer = (data: any) => {
     description: bundle_data.description || '',
     active: bundle_data.active || false,
     price: bundle_data.price,
-    product,
+    product: product_list,
     total_product_price,
   }
 };

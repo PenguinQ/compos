@@ -1,8 +1,9 @@
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { queryRx, mutateRx } from '@helpers/fetcher';
-import { useQuery, useMutation } from '@/database/hooks';
-import { getProductList, mutateDeleteProduct } from '@/database/query/product';
+import { useQuery, useMutation } from '@database/hooks';
+import { getProductList, mutateDeleteProduct } from '@database/query/product';
+import { debounce } from '@helpers';
 
 import { productListNormalizer } from '../normalizer/ProductList.normalizer';
 
@@ -10,6 +11,8 @@ export const useProductList = () => {
   const router = useRouter();
   const stop_refetch = ref(false);
   const page = ref(1);
+  const total_page = ref();
+  const search_query = ref('');
 
   const {
     data,
@@ -17,9 +20,11 @@ export const useProductList = () => {
     isLoading: productsLoading,
     isError: productsError,
   } = useQuery({
+    queryKey: [search_query],
     queryFn: () => getProductList({
-      sort: 'desc',
-      limit: 10,
+      search_query: search_query.value,
+      sort: 'asc',
+      limit: 2,
       page: page.value,
       normalizer: productListNormalizer,
     }),
@@ -27,12 +32,22 @@ export const useProductList = () => {
       console.log('[ERROR] Failed to get product list:', error);
     },
     onSuccess: (response: any) => {
-      console.log('[SUCCESS] Product list page:', response);
+      console.log('[SUCCESS] Product list:', response);
 
-      const { products } = response;
+      const { total_page: total, products } = response;
+
+      total_page.value = total;
 
       if (!products.length) stop_refetch.value = true;
     },
+  });
+
+  const handleSearch = debounce((e: Event) => {
+    const target = e.target as HTMLInputElement;
+
+    page.value = 1;
+
+    search_query.value = target.value;
   });
 
   const toPrevPage = (e: Event, toFirst?: boolean) => {
@@ -61,10 +76,14 @@ export const useProductList = () => {
 
   return {
     data,
+    search_query,
+    page,
+    total_page,
     productsLoading,
     productsError,
     toNextPage,
     toPrevPage,
+    handleSearch,
   };
 };
 

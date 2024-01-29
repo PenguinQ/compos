@@ -1,103 +1,90 @@
 import { ref, reactive } from 'vue';
 import { useQuery, useMutation } from '@database/hooks';
-import { queryRx, mutateRx } from '@helpers/fetcher';
+import { getBundleList } from '@database/query/bundle';
+import { debounce } from '@helpers';
+
+import { bundleListNormalizer } from '../normalizer/BundleList.normalizer';
 
 export const useBundle = () => {
-  const selector = ref<any>({
-    id: {
-      $gte: ''
-    },
-  });
-  const bundles = ref([]);
   const deleteID = ref<string | null>(null);
-  const stopQuery = ref(false);
+  const search_query = ref('');
+  const page = ref(1);
+  const total_page = ref();
+  const stop_refetch = ref(false);
+
   const {
     data,
-    refetch,
-    isError,
-    isLoading,
-    isSuccess,
+    refetch: bundlesRefetch,
+    isError: bundlesError,
+    isLoading: bundlesLoading,
+    isSuccess: bundlesSuccess,
   } = useQuery({
-    queryFn: () => queryRx({
-      collection: 'bundle',
-      query: {
-        selector: selector.value,
-        sort: [
-          { id: 'desc' },
-        ],
-        limit: 5,
-      },
+    queryKey: [search_query],
+    queryFn: () => getBundleList({
+      search_query: search_query.value,
+      sort: 'asc',
+      limit: 12,
+      page: page.value,
+      normalizer: bundleListNormalizer,
     }),
-    onError: (error: any) => {
-      console.log('Failed to get bundles data', error);
+    onError: (error: string) => {
+      console.log('[ERROR] Failed to get bundle list:', error);
     },
-    onSuccess: (result: any) => {
-      if (result.length) {
-        const lastID = result[result.length - 1]._data.id;
+    onSuccess: (response: any) => {
+      console.log('[SUCCESS] Bundle list:', response);
 
-        selector.value = {
-          /**
-           * "created_at $ne = ''" are used to force return any results from query since somehow
-           * when using ULID as unique identifier and sorting descending "id" doesn't return
-           * any next expected data for pagination.
-           *
-           * Check for this in the future.
-           */
-          created_at: {
-            $ne: '',
-          },
-          id: {
-            $lt: lastID,
-          },
-        };
+      const { total_page: total, bundles } = response;
 
-        bundles.value.push(...result);
-      } else {
-        stopQuery.value = true;
-      }
+      total_page.value = total;
+
+      if (!bundles.length) stop_refetch.value = true;
     },
   });
 
-  const {
-    mutate: mutateRemove,
-    isLoading: mutateRemoveLoading,
-  } = useMutation({
-    mutateFn: () => mutateRx({
-      method: 'delete',
-      collection: 'bundle',
-      query: {
-        selector: {
-          id: {
-            $eq: deleteID.value,
-          },
-        },
-      },
-    }),
-    onError: (error: any) => {
-      console.log('Failed to remove product.', error);
-    },
-    onSuccess: () => {
-      console.log('Success to remove product');
+  const handleSearch = debounce((e: Event) => {
+    const target = e.target as HTMLInputElement;
 
-      const index = bundles.value.findIndex((data: any) => data.id === deleteID.value);
+    page.value = 1;
 
-      bundles.value.splice(index, 1);
-    },
+    search_query.value = target.value;
   });
 
-  const nextPage = () => {
-    if (!stopQuery.value) refetch();
+  const toPrevPage = (e: Event, toFirst?: boolean) => {
+    const { first_page } = data.value;
+
+    if (toFirst) {
+      page.value = 1;
+    } else {
+      page.value -= 1;
+    }
+
+    !first_page && bundlesRefetch();
+  };
+
+  const toNextPage = (e: Event, toLast?: boolean) => {
+    const { last_page, total_page } = data.value;
+
+    if (toLast) {
+      page.value = total_page;
+    } else {
+      page.value += 1;
+    }
+
+    !last_page && bundlesRefetch();
   };
 
   return {
     deleteID,
     data,
-    bundles,
-    isError,
-    isLoading,
-    isSuccess,
-    mutateRemoveLoading,
-    mutateRemove,
-    nextPage,
+    search_query,
+    page,
+    total_page,
+    bundlesRefetch,
+    bundlesError,
+    bundlesLoading,
+    bundlesSuccess,
+    handleSearch,
+    toNextPage,
+    toPrevPage,
   };
 };

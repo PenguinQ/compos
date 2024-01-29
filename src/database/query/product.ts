@@ -1,9 +1,27 @@
-import { RxAttachment, RxDocument, blobToBase64String, createBlob } from 'rxdb';
+import { blobToBase64String } from 'rxdb';
 import { monotonicFactory } from 'ulidx';
+import type { RxDocument } from 'rxdb';
 
 import { db } from '@database';
+
 import { compressProductImage, handlePagination } from '../utils';
-import type { GetProductDetail } from '../types/product';
+import type { GetProductList } from '../types/product';
+
+const getThumbnail = (id: string, query: RxDocument) => {
+  const thumbnail_id = `THUMB_${id.split('_')[1]}`;
+  const thumbnail    = query.getAttachment(thumbnail_id);
+
+  return thumbnail;
+};
+
+const addImages = async (images: any[], doc: RxDocument) => {
+  for (const image of images) {
+    const { id, data } = image;
+    const { type }     = data;
+
+    await doc.putAttachment({ id, data, type });
+  }
+};
 
 /**
  * -------------------------
@@ -15,50 +33,91 @@ import type { GetProductDetail } from '../types/product';
  * $gt  = greater than
  * $gte = greater than and equal
  */
-
-export const getProductList = async ({ page, sort, limit, normalizer }: GetProductDetail) => {
+export const getProductList = async ({ search_query, page, sort, limit, normalizer }: GetProductList) => {
   try {
-    const queryCount   = await db.product.count().exec();
-    const queryProduct = await db.product.find({
-      limit,
-      selector: { id: { $gte: '' } },
-      sort: [{ id: sort }],
-      skip: page > 1 ? (page - 1) * limit : 0,
+    const query_selector = search_query ? { name: { $regex: `.*${search_query}.*`, $options: 'i' } } : { id: { $gte: '' } };
+    const query_skip     = page > 1 ? (page - 1) * limit : 0;
+    const query_limit    = limit;
+    const query_sort     = [{ id: sort }];
+    let queryCount: number;
+
+    /**
+     * ----------------------------
+     * 1. Count number of products.
+     * ----------------------------
+     * If search query is provided, count manually from the results of find() because RxDB doesn't
+     * allow non-fully-indexed count queries.
+     *
+     * Ref: https://rxdb.info/rx-query.html#allowslowcount
+     */
+    if (search_query) {
+      const _searchQuery = await db.product.find({ selector: query_selector }).exec();
+
+      queryCount = _searchQuery.length;
+    } else {
+      queryCount = await db.product.count().exec();
+    }
+
+    const _queryProduct = await db.product.find({
+      selector: query_selector,
+      skip: query_skip,
+      limit: query_limit,
+      sort: query_sort,
     }).$;
     const total_page   = Math.ceil(queryCount / limit);
 
-    const preprocessor = async (data: any) =>{
+    /**
+     * ------------------------
+     * 2. Results preprocessor.
+     * ------------------------
+     * Custom function that thrown into useQuery since observed query doesn't return list of
+     * RxDocument, so the processing need to be do at later stage.
+     */
+    const preprocessor = async (data: RxDocument<any>) =>{
       const result: object[] = [];
       const first_id         = data[0] ? data[0].id : '';
       const last_id          = data[data.length - 1] ? data[data.length - 1].id : '';
+      let first_selector: object | undefined = first_id ? sort === 'desc' ? { id: { $gt: first_id } } : { id: { $lt: first_id } } : undefined;
+      let last_selector: object | undefined  = last_id ? sort === 'desc' ? { id: { $lt: last_id } } : { id: { $gt: last_id } } : undefined;
 
+      if (first_id && last_id && search_query) {
+        const query_object = { name: { $regex: `.*${search_query}.*`, $options: 'i' } };
+
+        if (sort === 'desc') {
+          first_selector = { id: { $gt: first_id }, ...query_object };
+          last_selector = { id: { $lt: last_id }, ...query_object };
+        } else {
+          first_selector = { id: { $lt: first_id }, ...query_object };
+          last_selector = { id: { $gt: last_id }, ...query_object };
+        }
+      }
+
+      /**
+       * -------------------------------------------------------
+       * 2.1 Get the current page position from current queries.
+       * -------------------------------------------------------
+       */
       const { first_page, last_page } = await handlePagination({
         collection: 'product',
-        selector: {
-          first: first_id ? sort === 'desc' ? { id: { $gt: first_id } } : { id: { $lt: first_id } } : undefined,
-          last: last_id ? sort === 'desc' ? { id: { $lt: last_id } } : { id: { $gt: last_id } } : undefined,
-        },
+        selector: { first: first_selector, last: last_selector },
         sort: [{ id: sort }],
       });
 
       for (const product of data) {
-        const queryAttachments   = await product.allAttachments();
         const { ...productData } = product.toJSON();
-        let product_attachment   = '';
+        const images             = product.allAttachments();
+        const thumbnail          = images.filter((att: any) => att.id.startsWith('THUMB_'));
+        let product_image        = '';
 
-        if (queryAttachments.length) {
-          const thumbnail = queryAttachments.filter((att: any) => att.id.startsWith('THUMB_'));
+        if (thumbnail.length) {
+          const attachment       = await thumbnail[0].getData();
+          const attachmentString = await blobToBase64String(attachment);
+          const { type }         = attachment;
 
-          if (thumbnail.length) {
-            const attachment       = await thumbnail[0].getData();
-            const attachmentString = await blobToBase64String(attachment);
-            const { type }         = attachment;
-
-            product_attachment = `data:${type};base64,${attachmentString}`;
-          }
+          product_image = `data:${type};base64,${attachmentString}`;
         }
 
-        result.push({ attachment: product_attachment, ...productData });
+        result.push({ image: product_image, ...productData });
       }
 
       return {
@@ -71,7 +130,7 @@ export const getProductList = async ({ page, sort, limit, normalizer }: GetProdu
     };
 
     return {
-      result: queryProduct,
+      result: _queryProduct,
       observe: true,
       preprocessor,
       normalizer,
@@ -85,29 +144,33 @@ export const getProductList = async ({ page, sort, limit, normalizer }: GetProdu
   }
 };
 
+type PD_I = {
+  id: string;
+  data: string;
+}
+
 export const getProductDetail = async ({ id, normalizer }: any) => {
   try {
-    const queryProduct              = await db.product.findOne({ selector: { id } }).exec();
-    const queryProductAttachments   = await queryProduct.allAttachments();
-    const queryVariants             = await queryProduct.populate('variant');
+    const _queryProduct              = await db.product.findOne({ selector: { id } }).exec();
+    const _queryVariants             = await _queryProduct.populate('variant');
 
     /**
      * ---------------------------
      * 1. Set product detail data.
      * ---------------------------
      */
-    const { ...productData }            = queryProduct.toJSON();
-    const product_attachments: object[] = [];
-    const product_data                  = { attachment: product_attachments, ...productData };
-
-    const images = queryProductAttachments.filter((att: any) => att.id.startsWith('IMG_'));
+    const { ...productData }     = _queryProduct.toJSON();
+    const product_attachments    = _queryProduct.allAttachments();
+    const images                 = product_attachments.filter((att: any) => att.id.startsWith('IMG_'));
+    const product_images: PD_I[] = [];
+    const product_data           = { image: product_images, ...productData };
 
     for (const image of images) {
       const { id, type } = image;
       const image_data   = await image.getData();
       const image_base64 = await blobToBase64String(image_data);
 
-      product_attachments.push({ id, data: `data:${type};base64,${image_base64}` });
+      product_images.push({ id, data: `data:${type};base64,${image_base64}` });
     }
 
     /**
@@ -117,22 +180,22 @@ export const getProductDetail = async ({ id, normalizer }: any) => {
      */
     const variant_data = [];
 
-    for (const variant of queryVariants) {
-      const { ...variantData }      = variant.toJSON();
-      const queryVariantAttachments = await variant.allAttachments();
-      const variant_attachments     = [];
+    for (const variant of _queryVariants) {
+      const { ...variantData }  = variant.toJSON();
+      const variant_attachments = variant.allAttachments();
+      const images              = variant_attachments.filter((att: any) => att.id.startsWith('IMG_'));
+      const variant_images      = [];
 
-      const images = queryVariantAttachments.filter((att: any) => att.id.startsWith('IMG_'));
 
       for (const image of images) {
         const { id, type } = image;
         const image_data   = await image.getData();
         const image_base64 = await blobToBase64String(image_data);
 
-        variant_attachments.push({ id, data: `data:${type};base64,${image_base64}` });
+        variant_images.push({ id, data: `data:${type};base64,${image_base64}` });
       }
 
-      variant_data.push({ attachment: variant_attachments, ...variantData });
+      variant_data.push({ image: variant_images, ...variantData });
     }
 
     return {
@@ -161,15 +224,6 @@ export const mutateAddProduct = async ({ data }: any) => {
       sku,
       variant,
     } = data;
-
-    const addImages = async (images: any[], doc: RxDocument) => {
-      for (const image of images) {
-        const { id, data } = image;
-        const { type }     = data;
-
-        await doc.putAttachment({ id, data, type });
-      }
-    };
 
     /**
      * ---------------------------------
@@ -321,13 +375,23 @@ export const mutateEditProduct = async ({ id, data }: any) => {
       deleted_variant,
     } = data;
 
-    const queryProduct = await db.product.findOne({
-      selector: {
-        id: {
-          $eq: id,
-        },
-      },
-    }).exec();
+    const removeImages = async (images: string[], doc: RxDocument) => {
+      for (const id of images) {
+        const image     = doc.getAttachment(id);
+        const thumbnail = getThumbnail(id, doc);
+
+        if (image) await image.remove();
+        if (thumbnail) await thumbnail.remove();
+      }
+    };
+
+    const removeCurrentImage = async (query: RxDocument) => {
+      const images = query.allAttachments();
+
+      for (const image of images) {
+        await image.remove();
+      }
+    };
 
     const removeVariant = async (variantsID: string[]) => {
       for (const id of variantsID) {
@@ -397,39 +461,13 @@ export const mutateEditProduct = async ({ id, data }: any) => {
       }
     };
 
-    const getThumbnail = (id: string, query: RxDocument) => {
-      const thumbnail_id = `THUMB_${id.split('_')[1]}`;
-      const thumbnail    = query.getAttachment(thumbnail_id);
-
-      return thumbnail;
-    };
-
-    const addImages = async (images: any[], doc: RxDocument) => {
-      for (const image of images) {
-        const { id, data } = image;
-        const { type }     = data;
-
-        await doc.putAttachment({ id, data, type });
-      }
-    };
-
-    const removeImages = async (images: string[], doc: RxDocument) => {
-      for (const id of images) {
-        const image     = doc.getAttachment(id);
-        const thumbnail = getThumbnail(id, doc);
-
-        if (image) await image.remove();
-        if (thumbnail) await thumbnail.remove();
-      }
-    };
-
-    const removeCurrentImage = async (query: RxDocument) => {
-      const images = query.allAttachments();
-
-      for (const image of images) {
-        await image.remove();
-      }
-    };
+    const queryProduct = await db.product.findOne({
+      selector: {
+        id: {
+          $eq: id,
+        },
+      },
+    }).exec();
 
     /**
      * --------------------------------------
@@ -702,11 +740,11 @@ export const mutateEditProduct = async ({ id, data }: any) => {
 
 export const mutateDeleteProduct = async (id: string) => {
   try {
-    const queryProduct = await db.product.findOne(id).exec();
-    const { variant }  = queryProduct;
+    const _queryProduct = await db.product.findOne(id).exec();
+    const { variant }   = _queryProduct;
 
-    const removeFromBundles = async (bundles: []) => {
-      bundles.map(async (bundle: any) => {
+    const removeFromBundles = async (bundles: RxDocument[]) => {
+      for (const bundle of bundles) {
         await bundle.incrementalModify((prev: any) => {
           const index = prev.product.findIndex((data: any) => data.id === id);
 
@@ -722,7 +760,7 @@ export const mutateDeleteProduct = async (id: string) => {
 
           return prev;
         });
-      });
+      }
     };
 
     /**
@@ -736,27 +774,27 @@ export const mutateDeleteProduct = async (id: string) => {
        * 1.1 Remove the product.
        * -----------------------
        */
-      await queryProduct.remove();
+      await _queryProduct.remove();
 
       /**
        * ----------------------------------------------
        * 1.2 Get variants of the product and delete it.
        * ----------------------------------------------
        */
-      const queryVariant = await db.variant.find({
+      const _queryVariant = await db.variant.find({
         selector: {
           product_id: id,
         },
       });
 
-      await queryVariant.remove();
+      await _queryVariant.remove();
 
       /**
        * -------------------------------------------------------------------------------
        * 1.3 Get list of bundle that contain the deleted product as one of it's product.
        * -------------------------------------------------------------------------------
        */
-      const queryBundle = await db.bundle.find({
+      const _queryBundle = await db.bundle.find({
         selector: {
           product: {
             $elemMatch: {
@@ -771,7 +809,7 @@ export const mutateDeleteProduct = async (id: string) => {
        * 1.4 Recursively delete currently deleted product variant in each bundle.
        * ------------------------------------------------------------------------
        */
-      queryBundle.length && await removeFromBundles(queryBundle);
+      _queryBundle.length && await removeFromBundles(_queryBundle);
     }
     /**
      * -------------------------------------------
@@ -784,14 +822,14 @@ export const mutateDeleteProduct = async (id: string) => {
        * 2.1 Remove the product.
        * -----------------------
        */
-      await queryProduct.remove();
+      await _queryProduct.remove();
 
       /**
        * -------------------------------------------------------------------------------
        * 2.2 Get list of bundle that contain the deleted product as one of it's product.
        * -------------------------------------------------------------------------------
        */
-      const queryBundle = await db.bundle.find({
+      const _queryBundle = await db.bundle.find({
         selector: {
           product: {
             $elemMatch: {
@@ -807,7 +845,7 @@ export const mutateDeleteProduct = async (id: string) => {
        * 2.3 Recursively delete currently deleted product in each bundle.
        * ----------------------------------------------------------------
        */
-      await removeFromBundles(queryBundle);
+      await removeFromBundles(_queryBundle);
     };
   } catch (error) {
     if (error instanceof Error) {

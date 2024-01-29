@@ -1,14 +1,15 @@
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { useQuery } from '@database/hooks';
-import { getProductDetail } from '@database/query/product';
+import { useQuery, useMutation } from '@/database/hooks';
+import { getProductDetail, mutateDeleteProduct } from '@/database/query/product';
 import { detailNormalizer } from '../normalizer/ProductDetail.normalizer';
 
 export const useProductDetail = () => {
   const route = useRoute();
   const { params } = route;
+  const delete_id = ref('');
 
-  // Get product detail hooks.
   const {
     data,
     refetch,
@@ -24,8 +25,22 @@ export const useProductDetail = () => {
       console.error('[ERROR] Failed to get the product detail.', error);
     },
     onSuccess: (result: any) => {
-      console.info('[SUCCESS] Product detail page', result);
+      console.log('[SUCCESS] Product detail page', result);
     },
+  });
+
+  const {
+    mutate: deleteProduct,
+    isLoading: deleteProductLoading,
+    isError: deletepProductError,
+  } = useMutation({
+    mutateFn: () => mutateDeleteProduct(params.id as string),
+    onError: (error: string) => {
+      console.log('[ERROR] Failed to delete the product', error);
+    },
+    onSuccess: (result: any) => {
+      console.log('[SUCCESS] Deleting the product', result);
+    }
   });
 
   return {
@@ -35,5 +50,8 @@ export const useProductDetail = () => {
     isLoading,
     isSuccess,
     refetch,
+    deleteProduct,
+    deleteProductLoading,
+    deletepProductError,
   };
 };
