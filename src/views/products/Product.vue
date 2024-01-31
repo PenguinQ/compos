@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-
-import Button from '@components/Button';
+import { Tab, Tabs } from '@components/Tabs';
 
 import ProductList from './components/ProductList.vue';
 import BundleList from './components/BundleList.vue';
-
-const router = useRouter();
 </script>
 
 <template>
-  <ProductList />
-  <hr />
-  <BundleList />
-  <!-- <hr /> -->
-  <Button @click="router.push('/product/add')">Go to Add Product Page</Button>
+  <div style="background-color: var(--color-disabled-border); height: 40px;">
+    <strong>Spacer</strong>
+  </div>
+  <Tabs grow grow-panel>
+    <Tab title="Product" padding="16px">
+      <ProductList />
+    </Tab>
+    <Tab title="Bundle" padding="16px" lazy>
+      <BundleList />
+    </Tab>
+  </Tabs>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss"></style>

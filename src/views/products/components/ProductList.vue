@@ -1,69 +1,73 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { useProductList } from '../hooks/ProductList.hook';
 
-import Button, { ButtonGroup } from '@components/Button';
-import Link from '@components/Link';
+import Button from '@components/Button';
 import Text from '@components/Text';
-import Textfield from '@components/Textfield';
 import Label from '@components/Label';
-import { Tabs, Tab } from '@components/Tabs';
-import {
-  ChevronDoubleRight,
-  ChevronDoubleLeft,
-  ChevronLeft,
-  ChevronRight,
-} from '@icons';
+import { Shimmer } from '@components/Loader';
+import EmptyState from '@components/EmptyState';
 
-import NoImage from '../assets/no_image.svg';
+import PageControl from './PageControl.vue';
+
+import Error from '@assets/illustration/error.svg';
+import NoImage from '@assets/illustration/no_image.svg'
+import NotFound from '@assets/illustration/not_found.svg'
 
 // const keep = ref(false); // For keep alive testing
 const router = useRouter();
 const {
   data,
-  search_query,
   page,
   total_page,
-  productsLoading,
   productsError,
+  productsLoading,
+  productsRefetch,
   toNextPage,
   toPrevPage,
   handleSearch,
 } = useProductList();
-
-onMounted(() => {
-
-});
 </script>
 
 <template>
-  <div class="product-pagination">
-    <Button @click="toPrevPage($event, true)" :disabled="data.first_page ? true : false">
-      <ChevronDoubleLeft size="18" color="var(--color-white)" />
-    </Button>
-    <Button @click="toPrevPage" :disabled="data.first_page ? true : false">
-      <ChevronLeft size="18" color="var(--color-white)" />
-    </Button>
-    <div class="product-pagination__detail">
-      <Text>Page {{ page }} of {{ total_page }}</Text>
-    </div>
-    <Button @click="toNextPage" :disabled="data.last_page ? true : false">
-      <ChevronRight size="18" color="var(--color-white)" />
-    </Button>
-    <Button @click="toNextPage($event, true)" :disabled="data.last_page ? true : false">
-      <ChevronDoubleRight size="18" color="var(--color-white)" />
-    </Button>
-  </div>
-  <Text v-if="productsError">Products Error...</Text>
+  <EmptyState
+    v-if="productsError"
+    :image="Error"
+    title="Oops..."
+    description="Looks like there's some thing wrong, please try again."
+    margin="80px 0"
+  >
+    <template #action>
+      <Button @click="productsRefetch">Try Again</Button>
+    </template>
+  </EmptyState>
   <template v-else>
-    <div style="padding: 0 16px;">
-      <Textfield placeholder="Search" @input="handleSearch" />
-    </div>
-    <div class="product-grid">
+    <PageControl
+      searchPlaceholder="Search"
+      :pagination="data.products?.length ? true : false"
+      :paginationDisabled="productsLoading"
+      :paginationPage="page"
+      :paginationTotalPage="total_page"
+      :paginationFirstPage="data.first_page"
+      :paginationLastPage="data.last_page"
+      @search="handleSearch"
+      @clickPaginationFirst="toPrevPage($event, true)"
+      @clickPaginationPrev="toPrevPage"
+      @clickPaginationNext="toNextPage"
+      @clickPaginationLast="toNextPage($event, true)"
+    />
+
+    <Shimmer v-if="productsLoading" class="product-shimmer" animate />
+    <EmptyState
+      v-else-if="!data.products.length"
+      :image="NotFound"
+      title="No results found..."
+      description="Try other search key to find what you're looking for."
+      margin="80px 0"
+    />
+    <div v-else class="product-grid">
       <div class="product" v-for="product in data.products" @click="router.push(`/product/${product.id}`)">
-        <!-- <div class="product__container"> -->
           <div class="product__image">
             <img
               :src="product.image ? product.image : NoImage"
@@ -84,12 +88,26 @@ onMounted(() => {
             <Label v-if="product.variant">{{ product.variant }} variants</Label>
             <Label v-else variant="outline">No variant</Label>
           </div>
-        <!-- </div> -->
       </div>
     </div>
+
+    <PageControl
+      :search="false"
+      :pagination="data.products?.length ? true : false"
+      :paginationDisabled="productsLoading"
+      :paginationPage="page"
+      :paginationTotalPage="total_page"
+      :paginationFirstPage="data.first_page"
+      :paginationLastPage="data.last_page"
+      @clickPaginationFirst="toPrevPage($event, true)"
+      @clickPaginationPrev="toPrevPage"
+      @clickPaginationNext="toNextPage"
+      @clickPaginationLast="toNextPage($event, true)"
+    />
+
+    <!-- Should be FAB -->
+    <Button @click="router.push('/product/add')">Add Product</Button>
   </template>
-<!-- {{ keep }}
-<Button @click="keep = true">Keep Alive</Button> -->
 </template>
 
 <style lang="scss" scoped>
@@ -97,50 +115,9 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  padding: 16px;
-}
 
-.product-pagination {
-  display: flex;
-  align-items: center;
-
-  > .cp-button {
-    border-radius: 0;
-    margin-right: -1px;
-
-    &:first-child {
-      border-top-left-radius: 8px;
-      border-bottom-left-radius: 8px;
-    }
-
-    &:last-child {
-      border-top-right-radius: 8px;
-      border-bottom-right-radius: 8px;
-    }
-
-    &:active {
-      transform: none;
-    }
-  }
-
-  &__detail {
-    width: 100px;
-    display: flex;
-    align-self: stretch;
-    align-items: center;
-    flex-shrink: 0;
-    border: 1px solid var(--color-black);
-    padding: 4px 8px;
-
-    .cp-text {
-      width: 100%;
-      text-align: center;
-      margin: 0;
-    }
-
-    + .cp-button {
-      margin-right: 0;
-    }
+  + .page-control {
+    margin-top: 16px;
   }
 }
 
@@ -182,9 +159,18 @@ onMounted(() => {
   }
 }
 
+.product-shimmer {
+  width: calc(50% - 6px);
+  height: 260px;
+}
+
 @include screen-md {
   .product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .product-shimmer {
+    width: calc(33.33333% - 6px);
   }
 }
 
@@ -192,11 +178,19 @@ onMounted(() => {
   .product-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+
+  .product-shimmer {
+    width: calc(25% - 6px);
+  }
 }
 
 @include screen-xl {
   .product-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .product-shimmer {
+    width: calc(20% - 6px);
   }
 }
 </style>

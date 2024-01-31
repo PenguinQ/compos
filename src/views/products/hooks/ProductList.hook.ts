@@ -1,4 +1,4 @@
-import { ref, reactive } from 'vue';
+import { ref, inject, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { queryRx, mutateRx } from '@helpers/fetcher';
 import { useQuery, useMutation } from '@database/hooks';
@@ -13,6 +13,7 @@ export const useProductList = () => {
   const page = ref(1);
   const total_page = ref();
   const search_query = ref('');
+  const { scrollToTop } = inject<any>('tab-panel');
 
   const {
     data,
@@ -24,7 +25,7 @@ export const useProductList = () => {
     queryFn: () => getProductList({
       search_query: search_query.value,
       sort: 'asc',
-      limit: 2,
+      limit: 10,
       page: page.value,
       normalizer: productListNormalizer,
     }),
@@ -60,6 +61,8 @@ export const useProductList = () => {
     }
 
     !first_page && productsRefetch();
+
+    scrollToTop();
   };
 
   const toNextPage = (e: Event, toLast?: boolean) => {
@@ -72,6 +75,8 @@ export const useProductList = () => {
     }
 
     !last_page && productsRefetch();
+
+    scrollToTop();
   };
 
   return {
@@ -79,8 +84,9 @@ export const useProductList = () => {
     search_query,
     page,
     total_page,
-    productsLoading,
     productsError,
+    productsLoading,
+    productsRefetch,
     toNextPage,
     toPrevPage,
     handleSearch,

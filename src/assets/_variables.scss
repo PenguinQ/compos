@@ -58,6 +58,14 @@
   --text-body-medium-height: 18px;
   --text-body-small-height: 16px;
   --text-body-micro-height: 14px;
+
+  // Transition
+  --transition-duration-very-fast: 200ms;
+  --transition-duration-fast: 240ms;
+  --transition-duration-normal: 280ms;
+  --transition-duration-slow: 320ms;
+  --transition-duration-very-slow: 360ms;
+  --transition-timing-function: cubic-bezier(0.63, 0.01, 0.29, 1);
 }
 
 @include screen-md {

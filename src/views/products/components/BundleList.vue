@@ -1,21 +1,19 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 
-import Button from '@components/Button';
-import Link from '@components/Link';
-import Text from '@components/Text';
-import Textfield from '@components/Textfield';
-import Label from '@components/Label';
-import {
-  ChevronDoubleRight,
-  ChevronDoubleLeft,
-  ChevronLeft,
-  ChevronRight,
-} from '@icons';
-
 import { useBundle } from '../hooks/BundleList.hook';
 
-import NoImage from '../assets/no_image.svg';
+import Button from '@components/Button';
+import Text from '@components/Text';
+import Label from '@components/Label';
+import { Shimmer } from '@components/Loader';
+import EmptyState from '@components/EmptyState';
+
+import PageControl from './PageControl.vue';
+
+import Error from '@assets/illustration/error.svg';
+import NoImage from '@assets/illustration/no_image.svg'
+import NotFound from '@assets/illustration/not_found.svg'
 
 const router = useRouter();
 const {
@@ -24,43 +22,49 @@ const {
   total_page,
   bundlesError,
   bundlesLoading,
+  bundlesRefetch,
   handleSearch,
   toPrevPage,
   toNextPage,
 } = useBundle();
-
-// const handleDelete = (id: string) => {
-//   deleteID.value = id;
-
-//   if (deleteID.value) mutateRemove();
-// };
 </script>
 
 <template>
-  <div class="product-pagination">
-    <Button @click="toPrevPage($event, true)" :disabled="data.first_page ? true : false">
-      <ChevronDoubleLeft size="18" color="var(--color-white)" />
-    </Button>
-    <Button @click="toPrevPage" :disabled="data.first_page ? true : false">
-      <ChevronLeft size="18" color="var(--color-white)" />
-    </Button>
-    <div class="product-pagination__detail">
-      <Text>Page {{ page }} of {{ total_page }}</Text>
-    </div>
-    <Button @click="toNextPage" :disabled="data.last_page ? true : false">
-      <ChevronRight size="18" color="var(--color-white)" />
-    </Button>
-    <Button @click="toNextPage($event, true)" :disabled="data.last_page ? true : false">
-      <ChevronDoubleRight size="18" color="var(--color-white)" />
-    </Button>
-  </div>
-  <Text v-if="bundlesError">Products Error...</Text>
-  <div style="padding: 0 16px;">
-    <Textfield placeholder="Search" @input="handleSearch" />
-  </div>
-  <Text v-if="bundlesLoading">Bundles Loading...</Text>
+  <EmptyState
+    v-if="bundlesError"
+    :image="Error"
+    title="Oops..."
+    description="Looks like there's some thing wrong, please try again."
+    margin="80px 0"
+  >
+    <template #action>
+      <Button @click="bundlesRefetch">Try Again</Button>
+    </template>
+  </EmptyState>
   <template v-else>
-    <div class="product-grid">
+    <PageControl
+      searchPlaceholder="Search"
+      :pagination="data.bundles?.length ? true : false"
+      :paginationDisabled="bundlesLoading"
+      :paginationPage="page"
+      :paginationTotalPage="total_page"
+      :paginationFirstPage="data.first_page"
+      :paginationLastPage="data.last_page"
+      @search="handleSearch"
+      @clickPaginationFirst="toPrevPage($event, true)"
+      @clickPaginationPrev="toPrevPage"
+      @clickPaginationNext="toNextPage"
+      @clickPaginationLast="toNextPage($event, true)"
+    />
+    <Shimmer v-if="bundlesLoading" class="product-shimmer" animate />
+    <EmptyState
+      v-else-if="!data.bundles.length"
+      :image="NotFound"
+      title="No results found..."
+      description="Try other search key to find what you're looking for."
+      margin="80px 0"
+    />
+    <div v-else class="product-grid">
       <div class="product" v-for="bundle in data.bundles" @click="router.push(`/product/bundle/${bundle.id}`)">
         <div class="product__image">
           <template v-if="bundle.image.length">
@@ -86,6 +90,20 @@ const {
         </div>
       </div>
     </div>
+
+    <PageControl
+      :search="false"
+      :pagination="data.bundles?.length ? true : false"
+      :paginationDisabled="bundlesLoading"
+      :paginationPage="page"
+      :paginationTotalPage="total_page"
+      :paginationFirstPage="data.first_page"
+      :paginationLastPage="data.last_page"
+      @clickPaginationFirst="toPrevPage($event, true)"
+      @clickPaginationPrev="toPrevPage"
+      @clickPaginationNext="toNextPage"
+      @clickPaginationLast="toNextPage($event, true)"
+    />
   </template>
 </template>
 
@@ -95,50 +113,6 @@ const {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   padding: 16px;
-}
-
-.product-pagination {
-  display: flex;
-  align-items: center;
-
-  > .cp-button {
-    border-radius: 0;
-    margin-right: -1px;
-
-    &:first-child {
-      border-top-left-radius: 8px;
-      border-bottom-left-radius: 8px;
-    }
-
-    &:last-child {
-      border-top-right-radius: 8px;
-      border-bottom-right-radius: 8px;
-    }
-
-    &:active {
-      transform: none;
-    }
-  }
-
-  &__detail {
-    width: 100px;
-    display: flex;
-    align-self: stretch;
-    align-items: center;
-    flex-shrink: 0;
-    border: 1px solid var(--color-black);
-    padding: 4px 8px;
-
-    .cp-text {
-      width: 100%;
-      text-align: center;
-      margin: 0;
-    }
-
-    + .cp-button {
-      margin-right: 0;
-    }
-  }
 }
 
 .product {
@@ -185,9 +159,18 @@ const {
   }
 }
 
+.product-shimmer {
+  width: calc(50% - 6px);
+  height: 260px;
+}
+
 @include screen-md {
   .product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .product-shimmer {
+    width: calc(33.33333% - 6px);
   }
 }
 
@@ -195,11 +178,19 @@ const {
   .product-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+
+  .product-shimmer {
+    width: calc(25% - 6px);
+  }
 }
 
 @include screen-xl {
   .product-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .product-shimmer {
+    width: calc(20% - 6px);
   }
 }
 </style>
