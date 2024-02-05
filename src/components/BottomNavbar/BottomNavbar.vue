@@ -1,22 +1,19 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="cp-header">Header</div>
+  <div class="cp-bottom-navbar">
+    <slot />
+  </div>
 </template>
 
 <style lang="scss">
-.cp-header {
-  height: 50px;
+.cp-bottom-navbar {
   color: var(--color-white);
   background-color: var(--color-black);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid var(--color-white);
-  position: sticky;
-  top: 0;
-  right: 0;
-  left: 0;
+  position: relative;
   z-index: 1000;
 }
 </style>

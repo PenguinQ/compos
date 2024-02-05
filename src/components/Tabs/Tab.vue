@@ -8,10 +8,11 @@ import type * as CSS from 'csstype';
 export type Props = {
   active?: boolean;
   index?: number;
-  grow?: boolean;
   lazy?: boolean;
   title: string;
   padding?: CSS.Property.Padding;
+  controlProps?: object;
+  panelProps?: object;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -46,26 +47,37 @@ watch(
 );
 
 const scrollToTop = () => {
-  if (props.grow) {
-    if (tab.value) tab.value.scrollTop = 0;
-  } else {
-    if (typeof window !== 'undefined') window.scrollTo(0, 0);
-  }
+  if (typeof window !== 'undefined') window.scrollTo(0, 0);
+  // if (tab.value) tab.value.scrollTop = 0;
 }
 
 defineExpose({ ref: tab });
 
-provide('tab-panel', { scrollToTop })
+provide('tab-panel', { scrollToTop });
 </script>
 
 <template>
   <template v-if="lazy">
-    <div v-if="lazy_tab" ref="tab" class="cp-panel" v-bind="$attrs" :style="panel_style">
+    <div
+      ref="tab"
+      v-if="lazy_tab"
+      v-bind="{...($attrs.root as object), ...panelProps}"
+      class="cp-tabs-panel cp-panel"
+      role="tabpanel"
+      :style="panel_style"
+    >
       <slot />
     </div>
   </template>
   <template v-else>
-    <div v-show="active" ref="tab" class="cp-panel" v-bind="$attrs" :style="panel_style">
+    <div
+      ref="tab"
+      v-show="active"
+      v-bind="{...($attrs.root as object), ...panelProps}"
+      class="cp-tabs-panel cp-panel"
+      role="tabpanel"
+      :style="panel_style"
+    >
       <slot />
     </div>
   </template>

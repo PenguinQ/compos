@@ -33,7 +33,7 @@ defineEmits([
 <template>
   <div
     class="pagination"
-    :data-cp-disabled="disabled ? true : !page && !total_page ? true : false"
+    :data-cp-disabled="disabled ? true : !page && !total_page ? true : undefined"
   >
     <Button
       @click="$emit('clickFirst')"

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 import Button from '@components/Button';
 
-const router = useRoute();
+const router = useRouter();
 </script>
 
 <template>

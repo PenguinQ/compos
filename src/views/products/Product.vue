@@ -1,15 +1,16 @@
 <script setup lang="ts">
+import Navbar, { NavbarAction } from '@components/Navbar';
 import { Tab, Tabs } from '@components/Tabs';
-
 import ProductList from './components/ProductList.vue';
 import BundleList from './components/BundleList.vue';
 </script>
 
 <template>
-  <div style="background-color: var(--color-disabled-border); height: 40px;">
-    <strong>Spacer</strong>
-  </div>
-  <Tabs grow grow-panel>
+  <Navbar title="Product">
+    <NavbarAction>Edit</NavbarAction>
+    <NavbarAction>Save</NavbarAction>
+  </Navbar>
+  <Tabs grow>
     <Tab title="Product" padding="16px">
       <ProductList />
     </Tab>
@@ -19,4 +20,13 @@ import BundleList from './components/BundleList.vue';
   </Tabs>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.cp-navbar {
+  position: sticky;
+  top: 0;
+}
+
+.cp-tabs {
+  position: sticky;
+}
+</style>

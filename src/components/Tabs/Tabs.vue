@@ -2,20 +2,30 @@
 export default { inheritAttrs: false };
 </script>
 <script setup lang="ts">
-import { reactive, ref, useSlots, watch, onBeforeMount, onMounted } from 'vue';
+import {
+  reactive,
+  ref,
+  toRef,
+  toRefs,
+  useSlots,
+  watch,
+  onBeforeMount,
+  onMounted,
+  getCurrentInstance,
+} from 'vue';
 import type { Slots, VNode } from 'vue'
 import type { Props as TabProps } from './Tab.vue';
 
 type Props = {
   grow?: boolean;
-  growPanel?: boolean;
   modelValue?: number | string,
-  sticky?: number | string;
+  sticky?: boolean;
+  controlProps?: object;
+  panelProps?: object;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   grow: false,
-  growPanel: false,
 });
 
 const emits = defineEmits(['update:modelValue']);
@@ -25,7 +35,10 @@ const tabs_container = ref();
 const tabs = ref<VNode[]>([]);
 const panel_height = ref<string>('');
 const active_index = ref<number>(0);
+const scope_id = ref<string | null | undefined>('');
 const tabs_class = reactive({
+  'cp-tabs-controls': true,
+  'cp-tabs-controls--grow': props.grow,
   'cp-tabs': true,
   'cp-tabs--grow': props.grow,
   'cp-tabs--sticky': props.sticky,
@@ -35,6 +48,8 @@ const tab_style = reactive({
 });
 
 onBeforeMount(() => {
+  scope_id.value = getCurrentInstance()?.vnode.scopeId;
+
   if (slots.default) {
     tabs.value = slots.default().filter((slot: any) => slot.type.__name === 'Tab');
   }
@@ -43,11 +58,11 @@ onBeforeMount(() => {
 });
 
 onMounted(() => {
-  if (props.growPanel) {
-    const { top, height } = tabs_container.value.getBoundingClientRect();
-    const space = `${top + height}px`;
+  if (props.sticky) {
+    const { top } = tabs_container.value.getBoundingClientRect();
+    const space = `${top}px`;
 
-    panel_height.value = `calc(100vh - ${space})`;
+    tabs_container.value.style.top = space;
   }
 });
 
@@ -68,13 +83,21 @@ const handleTab = (index: number) => {
 </script>
 
 <template>
-  <div ref="tabs_container" v-if="$slots.default" :class="tabs_class" :style="tab_style">
+  <div
+    ref="tabs_container"
+    v-if="$slots.default"
+    v-bind:[`${scope_id}`]="''"
+    v-bind="$attrs"
+    :class="tabs_class"
+    :style="tab_style"
+  >
     <button
       v-for="(tab, index) in tabs"
-      class="cp-tab"
-      role="tab"
+      v-bind="{ ...controlProps, ...tab.props?.controlProps}"
       :key="index"
       :data-cp-active="active_index === index ? true : undefined"
+      class="cp-tabs-control cp-tab"
+      role="tab"
       @click="handleTab(index)"
     >
       <component v-if="(tab.children as TabProps).title" :is="(tab.children as TabProps).title" />
@@ -83,16 +106,14 @@ const handleTab = (index: number) => {
       </template>
     </button>
   </div>
-  <div class="cp-tabs-panels">
+  <div v-bind="$attrs" class="cp-tabs-panels">
     <component
       v-for="(tab, index) in tabs"
+      v-bind="{ root: panelProps }"
       :is="tab"
       :key="index"
       :active="active_index === index"
       :index="index"
-      :style="{ height: panel_height }"
-      :grow="growPanel"
-      role="tabpanel"
     />
   </div>
 </template>
