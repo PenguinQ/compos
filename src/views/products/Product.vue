@@ -6,11 +6,11 @@ import BundleList from './components/BundleList.vue';
 </script>
 
 <template>
-  <Navbar title="Product">
+  <Navbar title="Product Management">
     <NavbarAction>Edit</NavbarAction>
     <NavbarAction>Save</NavbarAction>
   </Navbar>
-  <Tabs grow>
+  <Tabs grow sticky>
     <Tab title="Product" padding="16px">
       <ProductList />
     </Tab>

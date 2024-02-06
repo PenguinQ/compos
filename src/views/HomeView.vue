@@ -10,57 +10,14 @@ import {
   Basket,
   BasketFill,
 } from '@icons';
-
-const toggle = ref(true);
 </script>
 
 <template>
   <div class="page">
-    <button @click="() => toggle = !toggle">Test</button>
-    <div ref="wrapper" class="page__wrapper">
-      <Tabs
-        grow
-        :controlProps="{
-          'data-control-global': toggle ? true : undefined,
-        }"
-        :panelProps="{
-          'data-panel-global': toggle ? true : undefined,
-        }"
-      >
-        <Tab
-          padding="16px"
-          data-berak
-          :title="toggle ? 'Sales' : 'Not Sales'"
-          :controlProps="{
-            'data-cp-control': 'sales',
-            onClick: () => console.log('Sales control'),
-          }"
-          :panelProps="{
-            class: toggle ? 'berak' : '',
-            'data-cp-panel': 'sales',
-            onClick: () => console.log('Sales tab'),
-          }"
-        >
-          Sales
-        </Tab>
-        <Tab
-          title="Product"
-          padding="16px"
-          :controlProps="{
-            'data-cp-control': 'product',
-            onClick: () => console.log('Product control'),
-          }"
-          :panelProps="{
-            'data-cp-panel': 'product',
-            onClick: () => console.log('Product tab'),
-          }"
-        >
-          Product
-        </Tab>
-      </Tabs>
+    <div class="page__view">
+      <RouterView />
     </div>
-    <!-- <RouterView /> -->
-    <!-- <BottomNavbar class="page__bottomNav">
+    <BottomNavbar class="page__navigation">
       <BottomNavbarButton
         title="Sales"
         :icon="($route.name as string).startsWith('sales') ? BasketFill : Basket"
@@ -68,29 +25,31 @@ const toggle = ref(true);
         @click="$router.push('/sales')"
       />
       <BottomNavbarButton
-        title="Product"
+        title="Product Management"
         :icon="($route.name as string).startsWith('product') ? ArchiveFill : Archive"
         :active="($route.name as string).startsWith('product')"
         @click="$router.push('/product')"
       />
-    </BottomNavbar> -->
+    </BottomNavbar>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    "view"
+    "navigation";
 
-  &__wrapper {
-    flex-grow: 1;
-    overflow-x: hidden;
-    overflow-y: auto;
+  &__view {
+    grid-area: view;
   }
 
-  &__bottomNav {
-    flex-shrink: 0;
+  &__navigation {
+    grid-area: navigation;
+    align-self: end;
     position: sticky;
     bottom: 0;
   }

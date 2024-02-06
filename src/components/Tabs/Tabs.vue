@@ -1,26 +1,29 @@
 <script lang="ts">
-export default { inheritAttrs: false };
+export default { name: 'Tabs', inheritAttrs: false };
 </script>
 <script setup lang="ts">
 import {
   reactive,
   ref,
-  toRef,
-  toRefs,
-  useSlots,
   watch,
   onBeforeMount,
   onMounted,
   getCurrentInstance,
 } from 'vue';
-import type { Slots, VNode } from 'vue'
+import type { VNode } from 'vue'
 import type { Props as TabProps } from './Tab.vue';
+
+type TabSlot = VNode & {
+  name?: string;
+}
 
 type Props = {
   grow?: boolean;
   modelValue?: number | string,
   sticky?: boolean;
+  controlContainerProps?: object;
   controlProps?: object;
+  panelContainerProps?: object;
   panelProps?: object;
 }
 
@@ -30,18 +33,13 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emits = defineEmits(['update:modelValue']);
 
-const slots: Slots = useSlots();
 const tabs_container = ref();
-const tabs = ref<VNode[]>([]);
-const panel_height = ref<string>('');
 const active_index = ref<number>(0);
 const scope_id = ref<string | null | undefined>('');
 const tabs_class = reactive({
   'cp-tabs-controls': true,
   'cp-tabs-controls--grow': props.grow,
-  'cp-tabs': true,
-  'cp-tabs--grow': props.grow,
-  'cp-tabs--sticky': props.sticky,
+  'cp-tabs-controls--sticky': props.sticky,
 });
 const tab_style = reactive({
   top: props.sticky,
@@ -49,10 +47,6 @@ const tab_style = reactive({
 
 onBeforeMount(() => {
   scope_id.value = getCurrentInstance()?.vnode.scopeId;
-
-  if (slots.default) {
-    tabs.value = slots.default().filter((slot: any) => slot.type.__name === 'Tab');
-  }
 
   if (props.modelValue) active_index.value = parseInt(props.modelValue as string);
 });
@@ -87,28 +81,26 @@ const handleTab = (index: number) => {
     ref="tabs_container"
     v-if="$slots.default"
     v-bind:[`${scope_id}`]="''"
-    v-bind="$attrs"
+    v-bind="controlContainerProps"
     :class="tabs_class"
     :style="tab_style"
   >
     <button
-      v-for="(tab, index) in tabs"
+      v-for="(tab, index) in $slots.default().filter((slot) => (slot.type as TabSlot).name === 'Tab')"
       v-bind="{ ...controlProps, ...tab.props?.controlProps}"
       :key="index"
-      :data-cp-active="active_index === index ? true : undefined"
-      class="cp-tabs-control cp-tab"
+      class="cp-tabs-control"
       role="tab"
+      :data-cp-active="active_index === index ? true : undefined"
       @click="handleTab(index)"
     >
       <component v-if="(tab.children as TabProps).title" :is="(tab.children as TabProps).title" />
-      <template v-else>
-        {{ (tab.props as TabProps).title }}
-      </template>
+      <template v-else>{{ (tab.props as TabProps).title }}</template>
     </button>
   </div>
-  <div v-bind="$attrs" class="cp-tabs-panels">
+  <div v-if="$slots.default" v-bind="panelContainerProps" class="cp-tabs-panels">
     <component
-      v-for="(tab, index) in tabs"
+      v-for="(tab, index) in $slots.default().filter((slot) => (slot.type as TabSlot).name === 'Tab')"
       v-bind="{ root: panelProps }"
       :is="tab"
       :key="index"
@@ -119,7 +111,7 @@ const handleTab = (index: number) => {
 </template>
 
 <style lang="scss">
-.cp-tabs {
+.cp-tabs-controls {
   display: flex;
 
   &::-webkit-scrollbar {
@@ -139,45 +131,15 @@ const handleTab = (index: number) => {
   &--sticky {
     position: sticky;
   }
-}
 
-.cp-tab {
-  color: var(--color-white);
-  font-size: var(--text-body-medium-size);
-  line-height: var(--text-body-medium-height);
-  font-weight: 600;
-  background-color: var(--color-black);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  position: relative;
-  cursor: pointer;
-  padding: 14px 32px;
-
-  &::before {
-    content: "";
-    width: 0;
-    height: 2px;
-    position: absolute;
-    bottom: 0;
-    background-color: var(--color-white);
-    transition: width var(--transition-duration-very-fast) var(--transition-timing-function);
-  }
-
-  &[data-cp-active] {
-    &:before {
+  &--grow {
+    .cp-tabs-control {
       width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      flex: 1 1 auto;
     }
-  }
-
-  .cp-tabs--grow & {
-    width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    flex: 1 1 auto;
   }
 }
 </style>

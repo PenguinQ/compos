@@ -1,4 +1,4 @@
-import { ref, inject, reactive } from 'vue';
+import { ref, reactive } from 'vue';
 import { useQuery, useMutation } from '@database/hooks';
 import { getBundleList } from '@database/query/bundle';
 import { debounce } from '@helpers';
@@ -11,7 +11,6 @@ export const useBundle = () => {
   const page = ref(1);
   const total_page = ref();
   const stop_refetch = ref(false);
-  const { scrollToTop } = inject<any>('tab-panel');
 
   const {
     data,
@@ -60,8 +59,6 @@ export const useBundle = () => {
     }
 
     !first_page && bundlesRefetch();
-
-    scrollToTop();
   };
 
   const toNextPage = (e: Event, toLast?: boolean) => {
@@ -74,8 +71,6 @@ export const useBundle = () => {
     }
 
     !last_page && bundlesRefetch();
-
-    scrollToTop();
   };
 
   return {

@@ -13,7 +13,6 @@ export const useProductList = () => {
   const page = ref(1);
   const total_page = ref();
   const search_query = ref('');
-  const { scrollToTop } = inject<any>('tab-panel');
 
   const {
     data,
@@ -61,8 +60,6 @@ export const useProductList = () => {
     }
 
     !first_page && productsRefetch();
-
-    scrollToTop();
   };
 
   const toNextPage = (e: Event, toLast?: boolean) => {
@@ -75,8 +72,6 @@ export const useProductList = () => {
     }
 
     !last_page && productsRefetch();
-
-    scrollToTop();
   };
 
   return {
