@@ -18,7 +18,7 @@ import {
       <RouterView />
     </div>
     <BottomNavbar class="page__navigation">
-      <BottomNavbarButton
+      <!-- <BottomNavbarButton
         title="Sales"
         :icon="($route.name as string).startsWith('sales') ? BasketFill : Basket"
         :active="($route.name as string).startsWith('sales')"
@@ -28,6 +28,16 @@ import {
         title="Product Management"
         :icon="($route.name as string).startsWith('product') ? ArchiveFill : Archive"
         :active="($route.name as string).startsWith('product')"
+        @click="$router.push('/product')"
+      /> -->
+      <BottomNavbarButton
+        title="Sales"
+        :icon="BasketFill"
+        @click="$router.push('/sales')"
+      />
+      <BottomNavbarButton
+        title="Product Management"
+        :icon="ArchiveFill"
         @click="$router.push('/product')"
       />
     </BottomNavbar>
@@ -43,13 +53,16 @@ import {
     "view"
     "navigation";
 
+  > * {
+    min-width: 0;
+  }
+
   &__view {
     grid-area: view;
   }
 
   &__navigation {
     grid-area: navigation;
-    align-self: end;
     position: sticky;
     bottom: 0;
   }

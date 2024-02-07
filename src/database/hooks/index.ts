@@ -6,7 +6,21 @@ import {
   watch,
 } from 'vue';
 
-export const useQuery = (params: any): any => {
+type QueryParams = {
+  enabled?: boolean;
+  queryKey?: [],
+  queryFn: () => Promise<void>;
+  onError?: (response: Error) => void;
+  onSuccess?: (response: object) => void;
+}
+
+type MutateParams = {
+  mutateFn: () => Promise<void>;
+  onError?: (response: Error) => void;
+  onSuccess?: (response: object) => void;
+}
+
+export const useQuery = (params: QueryParams) => {
   if (!params) return false;
 
   const {
@@ -36,8 +50,8 @@ export const useQuery = (params: any): any => {
 
         result.subscribe(async (data: any) => {
           if (data) {
-            const accumulator_data = preprocessor ? await preprocessor(data) : data;
-            const normalized_data  = normalizer ? normalizer(accumulator_data) : accumulator_data;
+            const processed_data = preprocessor ? await preprocessor(data) : data;
+            const normalized_data  = normalizer ? normalizer(processed_data) : processed_data;
 
             states.isError = false;
             states.isSuccess = true;
@@ -81,7 +95,7 @@ export const useQuery = (params: any): any => {
   };
 };
 
-export const useMutation = (params: any): any => {
+export const useMutation = (params: MutateParams) => {
   if (!params) return false;
 
   const { mutateFn, onError, onSuccess } = params;

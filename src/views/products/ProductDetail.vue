@@ -14,14 +14,6 @@ const {
   deleteProduct,
   deleteProductLoading,
 } = useProductDetail();
-
-onUnmounted(() => {
-  const { image } = data.value;
-
-  image.forEach((url: string) => {
-    // URL.revokeObjectURL(url);
-  });
-})
 </script>
 
 <template>

@@ -151,8 +151,8 @@ type PD_I = {
 
 export const getProductDetail = async ({ id, normalizer }: any) => {
   try {
-    const _queryProduct              = await db.product.findOne({ selector: { id } }).exec();
-    const _queryVariants             = await _queryProduct.populate('variant');
+    const _queryProduct  = await db.product.findOne({ selector: { id } }).exec();
+    const _queryVariants = await _queryProduct.populate('variant');
 
     /**
      * ---------------------------

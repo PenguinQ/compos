@@ -98,10 +98,15 @@ const handleTab = (index: number) => {
       <template v-else>{{ (tab.props as TabProps).title }}</template>
     </button>
   </div>
-  <div v-if="$slots.default" v-bind="panelContainerProps" class="cp-tabs-panels">
+  <div
+    v-if="$slots.default"
+    v-bind="panelContainerProps"
+    v-bind:[`${scope_id}`]="''"
+    class="cp-tabs-panels"
+  >
     <component
       v-for="(tab, index) in $slots.default().filter((slot) => (slot.type as TabSlot).name === 'Tab')"
-      v-bind="{ root: panelProps }"
+      v-bind="{ root: panelProps, scope_id }"
       :is="tab"
       :key="index"
       :active="active_index === index"

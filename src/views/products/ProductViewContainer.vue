@@ -3,7 +3,6 @@
 </script>
 
 <template>
-  <!-- Without Keep Alive -->
   <RouterView />
 
   <!-- With Keep Alive -->

@@ -3,12 +3,17 @@ import Navbar, { NavbarAction } from '@components/Navbar';
 import { Tab, Tabs } from '@components/Tabs';
 import ProductList from './components/ProductList.vue';
 import BundleList from './components/BundleList.vue';
+
+import { Eye } from '@icons';
 </script>
 
 <template>
   <Navbar title="Product Management">
-    <NavbarAction>Edit</NavbarAction>
-    <NavbarAction>Save</NavbarAction>
+    <Eye color="#FFF" />
+    <template #action>
+      <NavbarAction backgroundColor="var(--color-blue-4)">Edit</NavbarAction>
+      <NavbarAction backgroundColor="var(--color-red-4)"><Eye color="#FFF" /></NavbarAction>
+    </template>
   </Navbar>
   <Tabs grow sticky>
     <Tab title="Product" padding="16px">
