@@ -18,7 +18,8 @@ export default {
       type: 'string',
     },
     price: {
-      type: 'integer',
+      type: 'number',
+      minimum: 0,
     },
     stock: {
       type: 'integer',

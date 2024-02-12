@@ -11,20 +11,25 @@ import type { Database, DatabaseCollection } from './types';
 import { createSampleProduct, createSampleBundle } from './query/product';
 
 // Database Schema
-import { product, variant, bundle } from './schema';
+import {
+  sales,
+  order,
+  product,
+  variant,
+  bundle,
+} from './schema';
 
 export let db: Database;
 
 const createDB = async () => {
   const compressedStorage = wrappedAttachmentsCompressionStorage({
     // storage: getRxStorageDexie(),
-    storage: getRxStorageMemory(),
+    storage: getRxStorageMemory(), // Use storage memory during development mode, change to Dexie later
   });
 
   db = await createRxDatabase<DatabaseCollection>({
     name: 'compos',
     // storage: getRxStorageDexie(),
-    // storage: compressedStorage, // Use storage memory during development mode, change to Dexie later
     storage: compressedStorage, // Use storage memory during development mode, change to Dexie later
     eventReduce: true,
   });
@@ -38,6 +43,12 @@ export const initDB = async () => {
   if (!db) await createDB();
 
   await db.addCollections({
+    sales: {
+      schema: sales,
+    },
+    order: {
+      schema: order,
+    },
     product: {
       schema: product,
     },

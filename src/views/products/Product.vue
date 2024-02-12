@@ -1,20 +1,11 @@
 <script setup lang="ts">
-import Navbar, { NavbarAction } from '@components/Navbar';
+import Navbar from '@components/Navbar';
 import { Tab, Tabs } from '@components/Tabs';
 import ProductList from './components/ProductList.vue';
 import BundleList from './components/BundleList.vue';
-
-import { Eye } from '@icons';
 </script>
 
 <template>
-  <Navbar title="Product Management">
-    <Eye color="#FFF" />
-    <template #action>
-      <NavbarAction backgroundColor="var(--color-blue-4)">Edit</NavbarAction>
-      <NavbarAction backgroundColor="var(--color-red-4)"><Eye color="#FFF" /></NavbarAction>
-    </template>
-  </Navbar>
   <Tabs grow sticky>
     <Tab title="Product" padding="16px">
       <ProductList />
@@ -26,6 +17,14 @@ import { Eye } from '@icons';
 </template>
 
 <style lang="scss" scoped>
+.cp-tabs-controls {
+  // margin: -16px -16px 0 -16px;
+}
+
+.cp-tabs-panels {
+  // margin: 0 -16px;
+}
+
 .cp-navbar {
   position: sticky;
   top: 0;

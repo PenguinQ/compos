@@ -4,6 +4,8 @@ import {
   isRef,
   toRefs,
   watch,
+  onBeforeUnmount,
+  onUnmounted,
 } from 'vue';
 
 type QueryParams = {
@@ -38,6 +40,7 @@ export const useQuery = (params: QueryParams) => {
     isLoading: false,
     isSuccess: false,
   });
+  const subscribedResult = ref<any>(null);
 
   const query = () => {
     states.isLoading = true;
@@ -48,7 +51,8 @@ export const useQuery = (params: QueryParams) => {
       if (observe) {
         const { normalizer, preprocessor } = response;
 
-        result.subscribe(async (data: any) => {
+        subscribedResult.value = result.subscribe(async (data: any) => {
+        // result.subscribe(async (data: any) => {
           if (data) {
             const processed_data = preprocessor ? await preprocessor(data) : data;
             const normalized_data  = normalizer ? normalizer(processed_data) : processed_data;
@@ -78,6 +82,10 @@ export const useQuery = (params: QueryParams) => {
       onError && onError(error);
     });
   };
+
+  onBeforeUnmount(() => {
+    if (subscribedResult.value) subscribedResult.value.unsubscribe();
+  });
 
   watch(
     keyQuery,

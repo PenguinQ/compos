@@ -1,16 +1,23 @@
 <script setup lang="ts">
+import { reactive } from 'vue';
 import { ArrowLeftShort } from '@icons';
 
-type Props = {
+export type Props = {
   title: string;
+  sticky?: boolean;
   onBack?: () => void;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+const navbarClass = reactive({
+  'cp-navbar': true,
+  'cp-navbar--sticky': props.sticky,
+});
 </script>
 
 <template>
-  <nav class="cp-navbar">
+  <nav :class="navbarClass">
     <button
       v-if="$props.onBack"
       class="cp-navbar__back"
@@ -79,6 +86,12 @@ defineProps<Props>();
     &:last-child {
       margin-right: -16px;
     }
+  }
+
+  &--sticky {
+    position: sticky;
+    top: 0;
+    z-index: 50;
   }
 }
 

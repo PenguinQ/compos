@@ -13,12 +13,13 @@ import {
 </script>
 
 <template>
-  <div class="page">
+  <RouterView />
+  <!-- <div class="page">
     <div class="page__view">
       <RouterView />
     </div>
     <BottomNavbar class="page__navigation">
-      <!-- <BottomNavbarButton
+      <BottomNavbarButton
         title="Sales"
         :icon="($route.name as string).startsWith('sales') ? BasketFill : Basket"
         :active="($route.name as string).startsWith('sales')"
@@ -29,19 +30,9 @@ import {
         :icon="($route.name as string).startsWith('product') ? ArchiveFill : Archive"
         :active="($route.name as string).startsWith('product')"
         @click="$router.push('/product')"
-      /> -->
-      <BottomNavbarButton
-        title="Sales"
-        :icon="BasketFill"
-        @click="$router.push('/sales')"
-      />
-      <BottomNavbarButton
-        title="Product Management"
-        :icon="ArchiveFill"
-        @click="$router.push('/product')"
       />
     </BottomNavbar>
-  </div>
+  </div> -->
 </template>
 
 <style lang="scss" scoped>
@@ -65,6 +56,7 @@ import {
     grid-area: navigation;
     position: sticky;
     bottom: 0;
+    margin-top: 16px;
   }
 }
 </style>

@@ -7,36 +7,32 @@ export default {
       type: 'string',
       maxLength: 1000,
     },
-    active: {
-      type: 'boolean',
-    },
     name: {
       type: 'string',
       maxLength: 1000,
     },
-    description: {
-      type: 'string',
-    },
-    by: {
-      type: 'string',
-    },
-    variant: {
+    product: {
       type: 'array',
-      ref: 'variant',
+      ref: 'product',
+      uniqueItems: true,
+      items: {
+        type: 'string', // Can be product, variant, or bundle id.
+      },
+    },
+    order: {
+      type: 'array',
+      ref: 'order',
       uniqueItems: true,
       items: {
         type: 'string',
       },
     },
-    price: {
+    income: {
       type: 'number',
       minimum: 0,
     },
-    stock: {
-      type: 'integer',
-    },
-    sku: {
-      type: 'string'
+    finished: {
+      type: 'boolean',
     },
     created_at: {
       type: 'date-time',
@@ -45,13 +41,11 @@ export default {
       type: 'date-time',
     },
   },
-  attachments: {
-    encrypted: false,
-    compression: 'gzip',
-  },
   required: [
     'id',
     'name',
+    'product',
+    'finished',
     'created_at',
     'updated_at',
   ],

@@ -34,7 +34,8 @@ export default {
       },
     },
     price: {
-      type: 'integer',
+      type: 'number',
+      minimum: 0,
     },
     created_at: {
       type: 'date-time',
