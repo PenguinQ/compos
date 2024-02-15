@@ -18,6 +18,7 @@ export default {
       items: {
         type: 'string', // Can be product, variant, or bundle id.
       },
+      default: [],
     },
     order: {
       type: 'array',
@@ -26,19 +27,24 @@ export default {
       items: {
         type: 'string',
       },
+      default: [],
     },
     income: {
       type: 'number',
       minimum: 0,
+      default: 0,
     },
     finished: {
       type: 'boolean',
+      default: false,
     },
     created_at: {
       type: 'date-time',
+      default: new Date().toISOString(),
     },
     updated_at: {
       type: 'date-time',
+      default: new Date().toISOString(),
     },
   },
   required: [

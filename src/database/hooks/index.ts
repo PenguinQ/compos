@@ -5,7 +5,6 @@ import {
   toRefs,
   watch,
   onBeforeUnmount,
-  onUnmounted,
 } from 'vue';
 
 type QueryParams = {
@@ -52,7 +51,6 @@ export const useQuery = (params: QueryParams) => {
         const { normalizer, preprocessor } = response;
 
         subscribedResult.value = result.subscribe(async (data: any) => {
-        // result.subscribe(async (data: any) => {
           if (data) {
             const processed_data = preprocessor ? await preprocessor(data) : data;
             const normalized_data  = normalizer ? normalizer(processed_data) : processed_data;
