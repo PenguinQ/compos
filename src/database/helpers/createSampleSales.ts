@@ -28,6 +28,7 @@ export default async (products: string[]) => {
       id: sales_id,
       name: `Sales ${index + 1}`,
       product: products,
+      finished: index === (products_array.length - 1) ? true : false,
     });
   }
 

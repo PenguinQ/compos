@@ -1,14 +1,14 @@
 import type { SalesDoc } from '@/database/types';
 
-type Data = {
+export type ListNormalizer = {
   first_page: boolean;
   last_page: boolean;
   total_page: number;
   count: number;
-  sales: SalesDoc[];
+  sales: SalesDoc[] | object[];
 };
 
-export const salesListNormalizer = (data: Data) => {
+export const salesListNormalizer = (data: ListNormalizer) => {
   const {
     first_page,
     last_page,
@@ -16,7 +16,7 @@ export const salesListNormalizer = (data: Data) => {
     count,
     sales: sales_data,
   } = data;
-  const sales = sales_data || [];
+  const sales = (sales_data || []) as SalesDoc[];
   const sales_list: object[] = [];
 
   for (const sale of sales) {

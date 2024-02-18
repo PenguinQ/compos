@@ -1,11 +1,11 @@
 import { ref } from 'vue';
-import { useQuery } from '@database/hooks';
-import { getSalesList } from '@database/query/sales';
+import { useQuery } from '@/database/hooks';
+import { getSalesList } from '@/database/query/sales';
 import { debounce } from '@helpers';
 
 import { salesListNormalizer } from '../normalizer/SalesDashboard.normalizer';
 
-export const useSalesList = () => {
+export const useSalesList = (status: 'running' | 'finished' = 'running') => {
   const page = ref(1);
   const total_page = ref(1);
   const search_query = ref('');
@@ -19,13 +19,14 @@ export const useSalesList = () => {
   } = useQuery({
     queryKey: [search_query],
     queryFn: () => getSalesList({
-      search_query: search_query.value,
+      status,
+      search_query: search_query.value.trim(),
       sort: 'desc',
-      limit: 2,
+      limit: 1,
       page: page.value,
       normalizer: salesListNormalizer,
     }),
-    onError: (error: string) => {
+    onError: (error: Error) => {
       console.log('[ERROR] Failed to get sales list:', error);
     },
     onSuccess: (response: any) => {

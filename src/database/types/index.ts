@@ -1,4 +1,4 @@
-import { RxDatabase, RxCollection } from 'rxdb';
+import type { RxDatabase, RxCollection } from 'rxdb';
 
 export type SalesDoc = {
   id: string;

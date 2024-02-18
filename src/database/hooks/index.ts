@@ -6,14 +6,23 @@ import {
   watch,
   onBeforeUnmount,
 } from 'vue';
+import type { Ref } from 'vue';
 
 type QueryParams = {
   enabled?: boolean;
-  queryKey?: [],
+  queryKey?: Ref<string>[],
   queryFn: () => Promise<void>;
   onError?: (response: Error) => void;
   onSuccess?: (response: object) => void;
 }
+
+type QueryReturns = {
+  data: Ref<any>;
+  isError: Ref<boolean>;
+  isLoading: Ref<boolean>;
+  isSuccess: Ref<boolean>;
+  refetch: () => void;
+};
 
 type MutateParams = {
   mutateFn: () => Promise<void>;
@@ -21,8 +30,8 @@ type MutateParams = {
   onSuccess?: (response: object) => void;
 }
 
-export const useQuery = (params: QueryParams) => {
-  if (!params) return false;
+export const useQuery = (params: QueryParams): QueryReturns => {
+  if (!params) return false as any;
 
   const {
     enabled = true,
@@ -31,15 +40,15 @@ export const useQuery = (params: QueryParams) => {
     onError,
     onSuccess,
   } = params;
-  const enableQuery = isRef(enabled) ? enabled : ref(enabled);
-  const keyQuery = isRef(queryKey) ? queryKey : ref(queryKey);
+  const query_enabled = isRef(enabled) ? enabled : ref(enabled);
+  const query_key = isRef(queryKey) ? queryKey : ref(queryKey);
   const states = reactive({
     data: {},
     isError: false,
     isLoading: false,
     isSuccess: false,
   });
-  const subscribedResult = ref<any>(null);
+  const subscribed_result = ref<any>(null);
 
   const query = () => {
     states.isLoading = true;
@@ -50,7 +59,7 @@ export const useQuery = (params: QueryParams) => {
       if (observe) {
         const { normalizer, preprocessor } = response;
 
-        subscribedResult.value = result.subscribe(async (data: any) => {
+        subscribed_result.value = result.subscribe(async (data: any) => {
           if (data) {
             const processed_data = preprocessor ? await preprocessor(data) : data;
             const normalized_data  = normalizer ? normalizer(processed_data) : processed_data;
@@ -82,18 +91,18 @@ export const useQuery = (params: QueryParams) => {
   };
 
   onBeforeUnmount(() => {
-    if (subscribedResult.value) subscribedResult.value.unsubscribe();
+    if (subscribed_result.value) subscribed_result.value.unsubscribe();
   });
 
   watch(
-    keyQuery,
+    query_key,
     () => {
-      if (enableQuery.value) query();
+      if (query_enabled.value) query();
     },
     { deep: true },
   );
 
-  if (enableQuery.value) query();
+  if (query_enabled.value) query();
 
   return {
     refetch: query,

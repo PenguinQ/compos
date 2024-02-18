@@ -2,16 +2,26 @@ import { monotonicFactory } from 'ulidx';
 import type { RxDocument } from 'rxdb';
 
 import { db } from '../';
-import { getPaginationSelector, handlePagination } from '../utils';
 import { SALES_ID_PREFIX } from '../constants';
+import type { ListNormalizer } from '@/views/sales/normalizer/SalesDashboard.normalizer';
+
+import { getPaginationSelector, handlePagination } from '../utils';
 
 type QueryParams = {
   limit: number;
   observe?: boolean;
   page: number;
   search_query?: string;
+  status: 'running' | 'finished';
   sort: 'asc' | 'desc';
-  normalizer?: (object: any) => void;
+  normalizer?: (data: ListNormalizer) => void;
+};
+
+type SalesListReturns = {
+  result?: object | void;
+  observe?: boolean;
+  preprocessor?: (data: any) => void;
+  normalizer?: (data: object) => void;
 };
 
 /**
@@ -20,15 +30,22 @@ type QueryParams = {
  * -------------------------
  */
 export const getSalesList = async ({
+  status,
   search_query,
   page,
   sort,
   limit,
   normalizer,
   observe = false,
-}: QueryParams) => {
+}: QueryParams): Promise<SalesListReturns | any> => {
   try {
-    const query_selector = search_query ? { name: { $regex: `.*${search_query}.*`, $options: 'i' } } : { id: { $gt: '' } };
+    const query_selector = search_query ? {
+      name: { $regex: `.*${search_query}.*`, $options: 'i' },
+      finished: { $eq: status === 'running' ? false : true },
+    } : {
+      id: { $gt: '' },
+      finished: { $eq: status === 'running' ? false : true },
+    };
     const query_skip     = page > 1 ? (page - 1) * limit  : 0;
     const query_limit    = limit;
     const query_sort     = [{ id: sort }];
@@ -39,7 +56,13 @@ export const getSalesList = async ({
 
       sales_count = _searchQuery.length;
     } else {
-      sales_count = await db.sales.count().exec();
+      const _searchQuery = await db.sales.find({
+        selector: {
+          finished: { $eq: status === 'running' ? false : true },
+        },
+      }).exec();
+
+      sales_count = _searchQuery.length;
     }
 
     const _queryConstruct = db.sales.find({
@@ -58,12 +81,14 @@ export const getSalesList = async ({
      * ---------------------
      */
     if (observe) {
-      const preprocessor = async (data: RxDocument<any>) => {
+      const preprocessor = async (data: RxDocument<any>[]) => {
         const { first_selector, last_selector } = getPaginationSelector({
           data,
-          query   : search_query,
-          queryKey: 'name',
           sort,
+          query: {
+            name: { $regex: `.*${search_query}.*`, $options: 'i' },
+            finished: { $eq: status === 'running' ? false : true },
+          },
         });
         const { first_page, last_page } = await handlePagination({
           collection: 'sales',
@@ -98,9 +123,11 @@ export const getSalesList = async ({
      * -------------------------
      */
     const { first_selector, last_selector } = getPaginationSelector({
-      data    : _querySales as RxDocument<any>[],
-      query   : search_query,
-      queryKey: 'name',
+      data : _querySales as RxDocument<any>[],
+      query: {
+        name: { $regex: `.*${search_query}.*`, $options: 'i' },
+        finished: { $eq: status === 'running' ? false : true },
+      },
       sort,
     });
     const { first_page, last_page } = await handlePagination({

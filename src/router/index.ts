@@ -21,13 +21,19 @@ const router = createRouter({
       children: [
         {
           path: '/sales',
-          redirect: '/sales/dashboard',
-          // component: () => import('../views/sales/SalesViewContainer.vue'),
-          components: {
-            default: () => import('../views/sales/SalesViewContainer.vue'),
-            Navbar: () => import('../views/TestNavbar.vue'),
-          },
+          redirect: '/sales/list',
+          component: () => import('../views/sales/SalesViewContainer.vue'),
+          // components: {
+          //   default: () => import('../views/sales/SalesViewContainer.vue'),
+          //   Navbar: () => import('../views/TestNavbar.vue'),
+          // },
           children: [
+            {
+              path: '/sales/list',
+              name: 'sales-list',
+              meta: { title: 'Sales - ComPOS' },
+              component: () => import('../views/sales/SalesMainView.vue'),
+            },
             {
               path: '/sales/dashboard',
               name: 'sales-dashboard',
