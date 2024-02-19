@@ -1,13 +1,13 @@
 import { ref, inject, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { queryRx, mutateRx } from '@helpers/fetcher';
-import { useQuery, useMutation } from '@database/hooks';
-import { getProductList, mutateDeleteProduct } from '@database/query/product';
+import { useQuery, useMutation } from '@/database/hooks';
+import getProductList from '@/database/query/product/getProductList';
 import { debounce } from '@helpers';
 
 import { productListNormalizer } from '../normalizer/ProductList.normalizer';
 
-export const useProductList = () => {
+export const useProductList = (type: 'product' | 'bundle' = 'product') => {
   const router = useRouter();
   const stop_refetch = ref(false);
   const page = ref(1);
@@ -22,13 +22,14 @@ export const useProductList = () => {
   } = useQuery({
     queryKey: [search_query],
     queryFn: () => getProductList({
+      observe: true,
       search_query: search_query.value,
       sort: 'asc',
       limit: 10,
       page: page.value,
       normalizer: productListNormalizer,
     }),
-    onError: (error: string) => {
+    onError: (error: Error) => {
       console.log('[ERROR] Failed to get product list:', error);
     },
     onSuccess: (response: any) => {

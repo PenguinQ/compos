@@ -15,6 +15,7 @@ import Error from '@assets/illustration/error.svg';
 import NoImage from '@assets/illustration/no_image.svg'
 import NotFound from '@assets/illustration/not_found.svg'
 
+// const keep = ref(false); // For keep alive testing
 const router = useRouter();
 const {
   data,
@@ -44,12 +45,12 @@ const {
   <template v-else>
     <PageControl
       searchPlaceholder="Search"
-      :pagination="data?.products.length ? true : false"
+      :pagination="data.products?.length ? true : false"
       :paginationDisabled="productsLoading"
       :paginationPage="page"
       :paginationTotalPage="total_page"
-      :paginationFirstPage="data?.first_page"
-      :paginationLastPage="data?.last_page"
+      :paginationFirstPage="data.first_page"
+      :paginationLastPage="data.last_page"
       @search="handleSearch"
       @clickPaginationFirst="toPrevPage($event, true)"
       @clickPaginationPrev="toPrevPage"
@@ -92,12 +93,12 @@ const {
 
     <PageControl
       :search="false"
-      :pagination="data?.products.length ? true : false"
+      :pagination="data.products?.length ? true : false"
       :paginationDisabled="productsLoading"
       :paginationPage="page"
       :paginationTotalPage="total_page"
-      :paginationFirstPage="data?.first_page"
-      :paginationLastPage="data?.last_page"
+      :paginationFirstPage="data.first_page"
+      :paginationLastPage="data.last_page"
       @clickPaginationFirst="toPrevPage($event, true)"
       @clickPaginationPrev="toPrevPage"
       @clickPaginationNext="toNextPage"

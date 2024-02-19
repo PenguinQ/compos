@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import { onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useProductDetail } from './hooks/ProductDetail.hook';
 
 import Navbar, { NavbarAction } from '@components/Navbar';
 import Button from '@components/Button';
+import EmptyState from '@components/EmptyState';
 import Text from '@components/Text';
 import Link from '@components/Link';
-
-import { useProductDetail } from './hooks/ProductDetail.hook';
 import { PencilSquare, Trash } from '@icons';
 
+import { PRODUCT_DETAIL } from './constants';
+import Error from '@assets/illustration/error.svg';
+
+const router = useRouter();
 const {
   data,
+  refetch,
   isError,
   isLoading,
   deleteProduct,
@@ -19,25 +24,42 @@ const {
 </script>
 
 <template>
-  <Navbar :title="`${data.name}`" sticky>
-    <template #action>
-      <NavbarAction backgroundColor="var(--color-blue-3)"><PencilSquare color="#FFF" /></NavbarAction>
-      <NavbarAction backgroundColor="var(--color-red-3)"><Trash color="#FFF" /></NavbarAction>
+  <Navbar :title="data ? data.name : ''" sticky>
+    <template v-if="!isError && !isLoading" #action>
+      <NavbarAction
+        backgroundColor="var(--color-blue-3)"
+        @click="router.push(`/product/edit/${data.id}`)"
+      >
+        <PencilSquare color="#FFF" />
+      </NavbarAction>
+      <NavbarAction
+        backgroundColor="var(--color-red-3)"
+        @click="deleteProduct"
+      >
+        <Trash color="#FFF" />
+      </NavbarAction>
     </template>
   </Navbar>
-  {{ data }}
-  <Text heading="4">This is Product detail page</Text>
-  <div v-if="isLoading">Loading... {{ isLoading }}</div>
-  <div v-else>
-    <div style="margin-top: 12px;">
-      <Link :to="`/product/edit/${data.id}`">Edit {{ data.name }}</Link>
-    </div>
-    <Button @click="deleteProduct">Delete Product</Button>
-    <pre>
-      {{ data }}
-    </pre>
-    <img v-for="image in data.image" :src="image" />
-  </div>
+  <EmptyState
+    v-if="isError"
+    :image="Error"
+    :title="PRODUCT_DETAIL.ERROR_TITLE"
+    :description="PRODUCT_DETAIL.ERROR_DESCRIPTION"
+    margin="80px 0"
+  >
+    <template #action>
+      <Button @click="refetch">Try Again</Button>
+    </template>
+  </EmptyState>
+  <template v-else>
+    <Text v-if="isLoading">Loading...</Text>
+    <template v-else>
+      <pre style="overflow: auto;">
+        {{ data }}
+      </pre>
+      <img style="width: 100px; height: 100px; object-fit: contain;" v-for="image in data.image" :src="image" />
+    </template>
+  </template>
 </template>
 
 <style lang="scss"></style>

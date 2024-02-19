@@ -2,7 +2,8 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useQuery, useMutation } from '@/database/hooks';
-import { getProductDetail, mutateDeleteProduct } from '@/database/query/product';
+import { mutateDeleteProduct } from '@/database/query/product';
+import getProductDetail from '@/database/query/product/getProductDetail';
 import { detailNormalizer } from '../normalizer/ProductDetail.normalizer';
 
 export const useProductDetail = () => {
@@ -18,14 +19,14 @@ export const useProductDetail = () => {
     isSuccess,
   } = useQuery({
     queryFn: () => getProductDetail({
-      id: params.id,
+      id: params.id as string,
       normalizer: detailNormalizer,
     }),
-    onError: (error: string) => {
+    onError: (error: Error) => {
       console.error('[ERROR] Failed to get the product detail.', error);
     },
-    onSuccess: (result: any) => {
-      console.log('[SUCCESS] Product detail page', result);
+    onSuccess: (response: any) => {
+      console.log('[SUCCESS] Product detail page', response);
     },
   });
 
@@ -35,11 +36,11 @@ export const useProductDetail = () => {
     isError: deletepProductError,
   } = useMutation({
     mutateFn: () => mutateDeleteProduct(params.id as string),
-    onError: (error: string) => {
+    onError: (error: Error) => {
       console.log('[ERROR] Failed to delete the product', error);
     },
-    onSuccess: (result: any) => {
-      console.log('[SUCCESS] Deleting the product', result);
+    onSuccess: (response: any) => {
+      console.log('[SUCCESS] Deleting the product', response);
     }
   });
 

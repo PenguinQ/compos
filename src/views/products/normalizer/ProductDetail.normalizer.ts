@@ -8,7 +8,7 @@ type Variant = {
   stock: number;
 }
 
-type Detail = {
+type DetailNormalizerReturns = {
   id: string;
   active: boolean;
   name: string;
@@ -19,14 +19,14 @@ type Detail = {
   stock: number;
   sku: string;
   variant: Variant[];
-}
+};
 
-export const detailNormalizer = (data: any): Detail => {
+export const detailNormalizer = (data: any): DetailNormalizerReturns => {
   const { product, variant }        = data || {};
   const product_images: string[]    = [];
   const product_variants: Variant[] = [];
 
-  if (variant.length) {
+  if (variant?.length) {
     variant.forEach((v: any) => {
       const variant_images: string[] = [];
 
@@ -44,18 +44,18 @@ export const detailNormalizer = (data: any): Detail => {
     });
   }
 
-  product.image.map((att: any) => product_images.push(att.data));
+  product?.image.map((att: any) => product_images.push(att.data));
 
   return {
-    id         : product.id || '',
-    active     : product.active || false,
-    name       : product.name || '',
-    description: product.description || '',
+    id         : product?.id || '',
+    active     : product?.active || false,
+    name       : product?.name || '',
+    description: product?.description || '',
     image      : product_images || [],
-    by         : product.by || '',
-    price      : product.price || 0,
-    stock      : product.stock || 0,
-    sku        : product.sku || '',
+    by         : product?.by || '',
+    price      : product?.price || 0,
+    stock      : product?.stock || 0,
+    sku        : product?.sku || '',
     variant    : product_variants,
   };
 };

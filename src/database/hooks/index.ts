@@ -11,9 +11,9 @@ import type { Ref } from 'vue';
 type QueryParams = {
   enabled?: boolean;
   queryKey?: Ref<string>[],
-  queryFn: () => Promise<void>;
+  queryFn: () => Promise<any>;
   onError?: (response: Error) => void;
-  onSuccess?: (response: object) => void;
+  onSuccess?: (response: object | undefined) => void;
 }
 
 type QueryReturns = {
@@ -30,6 +30,13 @@ type MutateParams = {
   onSuccess?: (response: object) => void;
 }
 
+type MutateReturns = {
+  mutate: () => void;
+  isError: Ref<boolean>;
+  isLoading: Ref<boolean>;
+  isSuccess: Ref<boolean>;
+}
+
 export const useQuery = (params: QueryParams): QueryReturns => {
   if (!params) return false as any;
 
@@ -43,7 +50,7 @@ export const useQuery = (params: QueryParams): QueryReturns => {
   const query_enabled = isRef(enabled) ? enabled : ref(enabled);
   const query_key = isRef(queryKey) ? queryKey : ref(queryKey);
   const states = reactive({
-    data: {},
+    data: undefined,
     isError: false,
     isLoading: false,
     isSuccess: false,
@@ -110,8 +117,8 @@ export const useQuery = (params: QueryParams): QueryReturns => {
   };
 };
 
-export const useMutation = (params: MutateParams) => {
-  if (!params) return false;
+export const useMutation = (params: MutateParams): MutateReturns => {
+  if (!params) return false as any;
 
   const { mutateFn, onError, onSuccess } = params;
   const states = reactive({

@@ -27,13 +27,17 @@ export default {
       items: {
         type: 'string',
       },
+      default: [],
     },
     price: {
       type: 'number',
       minimum: 0,
+      default: 0,
     },
     stock: {
       type: 'integer',
+      minimum: 0,
+      default: 0,
     },
     sku: {
       type: 'string'
