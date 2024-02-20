@@ -7,8 +7,7 @@ import { debounce } from '@helpers';
 
 import { productListNormalizer } from '../normalizer/ProductList.normalizer';
 
-export const useProductList = (type: 'product' | 'bundle' = 'product') => {
-  const router = useRouter();
+export const useProductList = () => {
   const stop_refetch = ref(false);
   const page = ref(1);
   const total_page = ref();

@@ -40,11 +40,9 @@ export default {
     },
     created_at: {
       type: 'date-time',
-      default: new Date().toISOString(),
     },
     updated_at: {
       type: 'date-time',
-      default: new Date().toISOString(),
     },
   },
   required: [

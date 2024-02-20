@@ -32,10 +32,12 @@ export default {
           },
         },
       },
+      default: [],
     },
     price: {
       type: 'number',
       minimum: 0,
+      default: 0,
     },
     created_at: {
       type: 'date-time',

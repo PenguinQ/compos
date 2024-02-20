@@ -1,7 +1,7 @@
 import { monotonicFactory } from 'ulidx';
 
-import { db } from '../';
-import { SALES_ID_PREFIX } from '../constants';
+import { db } from '@/database';
+import { SALES_ID_PREFIX } from '@/database/constants';
 
 export default async (products: string[]) => {
   const ulid = monotonicFactory();
@@ -29,6 +29,8 @@ export default async (products: string[]) => {
       name: `Sales ${index + 1}`,
       product: products,
       finished: index === (products_array.length - 1) ? true : false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
   }
 

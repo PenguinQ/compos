@@ -1,15 +1,42 @@
-import { ref, reactive, toRaw } from 'vue';
+import { reactive, toRaw } from 'vue';
 import { useRoute } from 'vue-router';
-import Compressor from 'compressorjs';
 
-import { useQuery, useMutation } from '@database/hooks';
-import { getProductDetail, mutateAddProduct, mutateEditProduct } from '@database/query/product';
+import { useQuery, useMutation } from '@/database/hooks';
+import { mutateAddProduct } from '@database/query/product';
+import getProductDetail from '@/database/query/product/getProductDetail';
+import mutateEditProduct from '@/database/query/product/mutateEditProduct';
 import { formDetailNormalizer } from '../normalizer/ProductForm.normalizer';
+
+type FormDataVariant = {
+  id?: string;
+  product_id?: string;
+  name: string;
+  image?: string[];
+  price: number;
+  stock: number;
+  new_image?: any;
+  deleted_image?: string[];
+};
+
+type FormData = {
+  id: string;
+  name: string;
+  description: string;
+  image: string[];
+  by: string;
+  price?: number;
+  stock?: number;
+  variant: FormDataVariant[];
+  sku: string;
+  deleted_image: string[];
+  deleted_variant: string[];
+  new_image: any;
+};
 
 export const useProductForm = () => {
   const route = useRoute();
   const { params } = route;
-  const formData = reactive<any>({
+  const formData = reactive<FormData>({
     id             : '',
     name           : '',
     description    : '',
@@ -25,9 +52,7 @@ export const useProductForm = () => {
       data   : [],
       preview: [],
     },
-    base64_image: [],
   });
-  const revokedBlob = [];
 
   // Get product detail hooks.
   const {
@@ -38,11 +63,11 @@ export const useProductForm = () => {
     isSuccess,
   } = useQuery({
     queryFn: () => getProductDetail({
-      id: params.id,
+      id: params.id as string,
       normalizer: formDetailNormalizer,
     }),
     enabled: params.id ? true : false,
-    onError: (error: string) => {
+    onError: (error: Error) => {
       console.error('Failed to get the product detail.', error);
     },
     onSuccess: (result: any) => {
@@ -90,7 +115,7 @@ export const useProductForm = () => {
       })
 
       return mutateEditProduct({
-        id: params.id,
+        id: params.id as string,
         data: {
           name           : formData.name,
           description    : formData.description,
@@ -105,7 +130,7 @@ export const useProductForm = () => {
         },
       });
     },
-    onError: (error: string) => {
+    onError: (error: Error) => {
       console.error('Error mutating product detail.', error);
     },
     onSuccess: () => {
@@ -133,7 +158,6 @@ export const useProductForm = () => {
           name       : formData.name,
           description: formData.description,
           new_image  : toRaw(formData.new_image.data),
-          base64_image: toRaw(formData.base64_image),
           by         : formData.by,
           variant    : variantData,
           price      : parseInt(formData.price as any),
@@ -142,7 +166,7 @@ export const useProductForm = () => {
         },
       });
     },
-    onError: (error: string) => {
+    onError: (error: Error) => {
       console.error('Error adding new product.', error);
     },
     onSuccess: () => {
@@ -163,87 +187,11 @@ export const useProductForm = () => {
     formData.new_image   = { data: [], preview: [] };
   };
 
-  const compressImage = (img: HTMLImageElement, type: string) => {
-    const canvas = document.createElement('canvas');
-    let width = img.width;
-    let height = img.height;
-
-    if (width > height) {
-      if (width > 600) {
-        height = Math.round(height *= 600 / width);
-        width = 600;
-      }
-    } else {
-      if (height > 600) {
-        width = Math.round(width *= 600 / height);
-        height = 600;
-      }
-    }
-
-    canvas.width = width;
-    canvas.height = height;
-
-    const context = canvas.getContext('2d');
-    context?.drawImage(img, 0, 0, width, height);
-
-    return canvas.toDataURL(type, 0.7);
-  };
-
-  // const processImage = (img: File) => {
-  //   const reader = new FileReader();
-  //   const { type } = img;
-
-  //   reader.readAsArrayBuffer(img);
-
-  //   reader.onload = (e: Event) => {
-  //     const blob = new Blob([(e.target as any).result]);
-  //     const blobUrl = URL.createObjectURL(blob);
-
-  //     const image = new Image();
-  //     image.src = blobUrl;
-
-  //     image.onload = () => {
-  //       const compressedImg = compressImage(image, type);
-  //     };
-  //   };
-  // };
-
   const handleAddImage = (e: Event) => {
     const target = e.target as HTMLInputElement;
     const files = target.files as FileList;
 
     [...files].forEach((file: File) => {
-      // new Compressor(file, {
-      //   quality: 0.8,
-      //   maxWidth: 800,
-      //   maxHeight: 800,
-      //   mimeType: 'image/webp',
-      //   convertTypes: ['image/png','image/webp'],
-      //   success: (result: any) => {
-      //     console.log('Compressed:', result);
-
-      //     // Push base64 string
-      //     // const reader = new FileReader();
-
-      //     // reader.onload = () => {
-      //     //   formData.base64_image.push(reader.result);
-      //     // };
-
-      //     // reader.readAsDataURL(result);
-
-      //     formData.new_image.data.push(result);
-      //   },
-      // });
-
-      // const reader = new FileReader();
-
-      // reader.onload = () => {
-      //   formData.new_image.data.push(file);
-      //   formData.new_image.preview.push(reader.result);
-      // };
-
-      // reader.readAsDataURL(file);
-
       formData.new_image.data.push(file);
     });
   };
@@ -266,10 +214,10 @@ export const useProductForm = () => {
 
   const handleAddVariant = async () => {
     formData.variant.push({
-      name         : '',
-      price        : 0,
-      stock        : 0,
-      new_image    : { data: [], preview: [] },
+      name: '',
+      price: 0,
+      stock: 0,
+      new_image: { data: [], preview: [] },
       deleted_image: [],
     });
   };
@@ -281,7 +229,6 @@ export const useProductForm = () => {
 
   const handleRemoveImage = (index: number, id?: string, path?: string) => {
     if (id) {
-      revokedBlob.push(path);
       formData.deleted_image.push(id);
       formData.image.splice(index, 1);
     } else {
@@ -292,8 +239,8 @@ export const useProductForm = () => {
 
   const handleRemoveVariantImage = (index: number, imageIndex: number, id?: string) => {
     if (id) {
-      formData.variant[index].deleted_image.push(id);
-      formData.variant[index].image.splice(imageIndex, 1);
+      formData.variant[index].deleted_image?.push(id);
+      formData.variant[index].image?.splice(imageIndex, 1);
     } else {
       formData.variant[index].new_image.data.splice(imageIndex, 1);
       formData.variant[index].new_image.preview.splice(imageIndex, 1);

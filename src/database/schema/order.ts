@@ -26,16 +26,21 @@ export default {
           price: {
             type: 'number',
             minimum: 0,
+            default: 0,
           },
           quantity: {
             type: 'integer',
+            minimum: 0,
+            default: 0,
           },
         },
       },
+      default: [],
     },
     price: {
       type: 'number',
       minimum: 0,
+      default: 0,
     },
     created_at: {
       type: 'date-time',

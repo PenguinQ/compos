@@ -4,6 +4,34 @@ import type { RxDocument } from 'rxdb';
 import { db } from '@/database';
 import { compressProductImage } from '@/database/utils';
 
+type MutateEditProductVariant = {
+  id: string;
+  name: string;
+  price?: number;
+  stock?: number;
+  sku?: string;
+  new_image?: File[];
+  deleted_image?: string[],
+};
+
+type MutateEditProductData = {
+  name: string;
+  description?: string;
+  by?: string;
+  price?: number;
+  stock?: number;
+  sku?: string;
+  new_image?: File[];
+  variant?: MutateEditProductVariant[];
+  deleted_image?: string[];
+  deleted_variant?: string[];
+};
+
+type MutateEditProductParams = {
+  id: string;
+  data: MutateEditProductData;
+};
+
 const getThumbnail = (id: string, query: RxDocument<any>) => {
   const thumbnail_id = `THUMB_${id.split('_')[1]}`;
   const thumbnail    = query.getAttachment(thumbnail_id);
@@ -20,19 +48,19 @@ const addImages = async (images: any[], doc: RxDocument<any>) => {
   }
 };
 
-export default async ({ id, data }: any) => {
+export default async ({ id, data }: MutateEditProductParams) => {
   try {
     const {
       name,
-      description,
       by,
-      price,
-      stock,
+      description,
       sku,
-      new_image,
-      variant: variants,
-      deleted_image,
-      deleted_variant,
+      price             = 0,
+      stock             = 0,
+      new_image         = [],
+      variant: variants = [],
+      deleted_image     = [],
+      deleted_variant   = [],
     } = data;
 
     const removeImages = async (images: string[], doc: RxDocument<any>) => {
@@ -48,19 +76,17 @@ export default async ({ id, data }: any) => {
     const removeCurrentImage = async (query: RxDocument<any>) => {
       const images = query.allAttachments();
 
-      for (const image of images) {
-        await image.remove();
-      }
+      for (const image of images) await image.remove();
     };
 
-    const removeVariant = async (variantsID: string[]) => {
+    const removeVariant = async (variantsID: string[], product: RxDocument<any>) => {
       for (const id of variantsID) {
         const _queryVariant = await db.variant.findOne(id).exec();
 
         if (_queryVariant) {
           await _queryVariant.remove();
 
-          await _queryProduct.incrementalModify((prev: any) => {
+          await product.incrementalModify((prev: any) => {
             const index = prev.variant.indexOf(id);
 
             prev.variant.splice(index, 1);
@@ -69,8 +95,7 @@ export default async ({ id, data }: any) => {
           });
         }
 
-
-        const queryBundles = await db.bundle.find({
+        const _queryBundles = await db.bundle.find({
           selector: {
             product: {
               $elemMatch: {
@@ -80,7 +105,7 @@ export default async ({ id, data }: any) => {
           },
         }).exec();
 
-        for (const bundle of queryBundles) {
+        for (const bundle of _queryBundles) {
           await bundle.incrementalModify((prev: any) => {
             const index = prev.product.findIndex((data: any) => data.variant_id === id);
 
@@ -96,21 +121,29 @@ export default async ({ id, data }: any) => {
       }
     };
 
-    const updateBundles = async ({ id, stock, isVariant = false }: any) => {
-      const queryIdentifier = isVariant ? 'variant_id' : 'id';
-      const queryBundles = await db.bundle.find({
+    const updateBundles = async ({
+      id,
+      stock,
+      isVariant = false
+    }: {
+      id: string;
+      stock: number;
+      isVariant?: boolean;
+    }) => {
+      const queryKey = isVariant ? 'variant_id' : 'id';
+      const _queryBundles = await db.bundle.find({
         selector: {
           product: {
             $elemMatch: {
-              [queryIdentifier]: id,
+              [queryKey]: id,
             },
           }
         },
       }).exec();
 
-      for (const bundle of queryBundles) {
+      for (const bundle of _queryBundles) {
         await bundle.incrementalModify((prev: any) => {
-          const index = prev.product.findIndex((data: any) => data[queryIdentifier] === id);
+          const index = prev.product.findIndex((data: any) => data[queryKey] === id);
 
           prev.product[index].active = stock >= 1 ? true : false;
 
@@ -173,14 +206,14 @@ export default async ({ id, data }: any) => {
 
       await _queryProduct.update({
         $set: {
-          updated_at: new Date().toISOString(),
-          active    : is_stocked ? true : false,
           name,
           description,
-          price: 0,
-          stock: 0,
           by,
           sku,
+          active     : is_stocked ? true : false,
+          price      : 0,
+          stock      : 0,
+          updated_at : new Date().toISOString(),
         },
       });
 
@@ -193,11 +226,9 @@ export default async ({ id, data }: any) => {
         const { thumbnail, macrograph } = await compressProductImage(new_image);
         const images                    = _queryProduct.allAttachments();
 
-        if (images.length) await removeCurrentImage(_queryProduct);
-
+        if (images.length)    await removeCurrentImage(_queryProduct);
         if (thumbnail.length) await addImages(thumbnail, _queryProduct);
-
-        if (macrograph) await addImages(macrograph, _queryProduct);
+        if (macrograph)       await addImages(macrograph, _queryProduct);
       }
 
       if (deleted_image.length) await removeImages(deleted_image, _queryProduct);
@@ -209,7 +240,7 @@ export default async ({ id, data }: any) => {
        * If there are any deleted variant id in the array, remove variant from the collection and the product,
        * then remove the variant from any bundle.
        */
-      deleted_variant.length && await removeVariant(deleted_variant);
+      if (deleted_variant.length) await removeVariant(deleted_variant, _queryProduct);
 
       /**
        * -------------------------------------------
@@ -218,13 +249,13 @@ export default async ({ id, data }: any) => {
        */
       for (const variant of variants) {
         const {
-          id           : v_id,
-          name         : v_name,
-          price        : v_price,
-          stock        : v_stock,
-          sku          : v_sku,
-          new_image    : v_new_image,
-          deleted_image: v_deleted_image,
+          id: v_id,
+          name: v_name,
+          sku: v_sku,
+          price: v_price                 = 0,
+          stock: v_stock                 = 0,
+          new_image: v_new_image         = [],
+          deleted_image: v_deleted_image = [],
         } = variant;
 
         /**
@@ -242,9 +273,7 @@ export default async ({ id, data }: any) => {
             }
           }).exec();
 
-          if (!_queryVariant) {
-            throw `Cannot find product variant with id ${id}, operation cancelled.`;
-          }
+          if (!_queryVariant) throw `Cannot find product variant with id ${id}, operation cancelled.`;
 
           /**
            * --------------------------------------------------
@@ -253,10 +282,10 @@ export default async ({ id, data }: any) => {
            */
           await _queryVariant.update({
             $set: {
-              active    : parseInt(v_stock) > 0 ? true : false,
+              active    : v_stock > 0 ? true : false,
               name      : v_name,
-              price     : parseInt(v_price),
-              stock     : parseInt(v_stock),
+              price     : v_price,
+              stock     : v_stock,
               sku       : v_sku,
               updated_at: new Date().toISOString(),
             },
@@ -271,11 +300,9 @@ export default async ({ id, data }: any) => {
             const images = _queryVariant.allAttachments();
             const { thumbnail, macrograph } = await compressProductImage(v_new_image);
 
-            if (images.length) await removeCurrentImage(_queryVariant);
-
+            if (images.length)    await removeCurrentImage(_queryVariant);
             if (thumbnail.length) await addImages(thumbnail, _queryVariant);
-
-            if (macrograph) await addImages(macrograph, _queryVariant);
+            if (macrograph)       await addImages(macrograph, _queryVariant);
           }
 
           if (v_deleted_image.length) await removeImages(v_deleted_image, _queryVariant);
@@ -285,7 +312,7 @@ export default async ({ id, data }: any) => {
            * 1.5.1.3 Update any bundle that contains current variant iteration as one of it's product.
            * -----------------------------------------------------------------------------------------
            */
-          await updateBundles({ id: v_id, stock: parseInt(v_stock), isVariant: true });
+          await updateBundles({ id: v_id, stock: v_stock, isVariant: true });
         }
         /**
          * --------------------------------
@@ -308,9 +335,9 @@ export default async ({ id, data }: any) => {
             product_id: id,
             active    : v_stock >= 1 ? true : false,
             name      : v_name,
-            price     : parseInt(v_price),
-            stock     : parseInt(v_stock),
+            price     : v_price,
             sku       : v_sku,
+            stock     : v_stock,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
@@ -324,8 +351,7 @@ export default async ({ id, data }: any) => {
             const { thumbnail, macrograph } = await compressProductImage(v_new_image);
 
             if (thumbnail.length) await addImages(thumbnail, _queryVariant);
-
-            if (macrograph) await addImages(macrograph, _queryVariant);
+            if (macrograph)       await addImages(macrograph, _queryVariant);
           }
 
           /**
@@ -355,14 +381,14 @@ export default async ({ id, data }: any) => {
        */
       await _queryProduct.update({
         $set: {
-          active    : parseInt(stock) >= 1 ? true : false,
-          price     : parseInt(price),
-          stock     : parseInt(stock),
-          updated_at: new Date().toISOString(),
           name,
           description,
           by,
           sku,
+          active    : stock >= 1 ? true : false,
+          price     : price,
+          stock     : stock,
+          updated_at: new Date().toISOString(),
         },
       });
 
@@ -375,9 +401,9 @@ export default async ({ id, data }: any) => {
         const images = _queryProduct.allAttachments();
         const { thumbnail, macrograph } = await compressProductImage(new_image);
 
-        if (images.length) await removeCurrentImage(_queryProduct);
+        if (images.length)    await removeCurrentImage(_queryProduct);
         if (thumbnail.length) await addImages(thumbnail, _queryProduct);
-        if (macrograph) await addImages(macrograph, _queryProduct);
+        if (macrograph)       await addImages(macrograph, _queryProduct);
       }
 
       if (deleted_image.length) await removeImages(deleted_image, _queryProduct);
@@ -389,14 +415,14 @@ export default async ({ id, data }: any) => {
        * If there are any deleted variant id in the array, remove variant from the collection and the product,
        * then remove the variant from any bundle.
        */
-      deleted_variant.length && await removeVariant(deleted_variant);
+      deleted_variant.length && await removeVariant(deleted_variant, _queryProduct);
 
       /**
        * ---------------------------------------------------------------------------
        * 2.4 Update any bundle that contains current product as one of it's product.
        * ---------------------------------------------------------------------------
        */
-      await updateBundles({ id, stock: parseInt(stock) });
+      await updateBundles({ id, stock });
     }
   } catch (error) {
     if (error instanceof Error) {

@@ -79,7 +79,7 @@ export default async ({
           sort,
           query: {
             name: { $regex: `.*${search_query}.*`, $options: 'i' },
-            active: active ? { $eq: active } : undefined,
+            ...(active !== undefined && { active: { $eq: active } }),
           },
         });
         const { first_page, last_page } = await handlePagination({
@@ -89,10 +89,10 @@ export default async ({
         });
 
         for (const product of data) {
-          const { ...productData } = product.toJSON();
-          const images             = product.allAttachments();
-          const thumbnail          = images.filter((att: any) => att.id.startsWith('THUMB_'));
-          let product_image        = '';
+          const product_json = product.toJSON();
+          const images       = product.allAttachments();
+          const thumbnail    = images.filter((att: any) => att.id.startsWith('THUMB_'));
+          let product_image  = '';
 
           if (thumbnail.length) {
             const attachment       = await thumbnail[0].getData();
@@ -102,7 +102,7 @@ export default async ({
             product_image = `data:${type};base64,${attachmentString}`;
           }
 
-          product_data.push({ image: product_image, ...productData });
+          product_data.push({ image: product_image, ...product_json });
         }
 
         return {
@@ -142,10 +142,10 @@ export default async ({
     });
 
     for (const product of _queryProduct as RxDocument<any>[]) {
-      const { ...productData } = product.toJSON();
-      const images             = product.allAttachments();
-      const thumbnail          = images.filter((att: any) => att.id.startsWith('THUMB_'));
-      let product_image        = '';
+      const product_json = product.toJSON();
+      const images       = product.allAttachments();
+      const thumbnail    = images.filter((att: any) => att.id.startsWith('THUMB_'));
+      let product_image  = '';
 
       if (thumbnail.length) {
         const attachment       = await thumbnail[0].getData();
@@ -155,11 +155,11 @@ export default async ({
         product_image = `data:${type};base64,${attachmentString}`;
       }
 
-      product_data.push({ image: product_image, ...productData });
+      product_data.push({ image: product_image, ...product_json });
     }
 
     const raw_data = {
-      product   : product_data,
+      products  : product_data,
       count     : product_count,
       first_page,
       last_page,
