@@ -44,12 +44,12 @@ const {
   <template v-else>
     <PageControl
       searchPlaceholder="Search"
-      :pagination="data.bundles?.length ? true : false"
+      :pagination="data?.bundles.length ? true : false"
       :paginationDisabled="bundlesLoading"
       :paginationPage="page"
       :paginationTotalPage="total_page"
-      :paginationFirstPage="data.first_page"
-      :paginationLastPage="data.last_page"
+      :paginationFirstPage="data?.first_page"
+      :paginationLastPage="data?.last_page"
       @search="handleSearch"
       @clickPaginationFirst="toPrevPage($event, true)"
       @clickPaginationPrev="toPrevPage"
@@ -93,12 +93,12 @@ const {
 
     <PageControl
       :search="false"
-      :pagination="data.bundles?.length ? true : false"
+      :pagination="data?.bundles.length ? true : false"
       :paginationDisabled="bundlesLoading"
       :paginationPage="page"
       :paginationTotalPage="total_page"
-      :paginationFirstPage="data.first_page"
-      :paginationLastPage="data.last_page"
+      :paginationFirstPage="data?.first_page"
+      :paginationLastPage="data?.last_page"
       @clickPaginationFirst="toPrevPage($event, true)"
       @clickPaginationPrev="toPrevPage"
       @clickPaginationNext="toNextPage"

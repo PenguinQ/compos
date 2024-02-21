@@ -1,6 +1,6 @@
-import { ref, reactive } from 'vue';
-import { useQuery, useMutation } from '@database/hooks';
-import { getBundleList } from '@database/query/bundle';
+import { ref } from 'vue';
+import { useQuery } from '@database/hooks';
+import getBundleList from '@/database/query/bundle/getBundleList';
 import { debounce } from '@helpers';
 
 import { bundleListNormalizer } from '../normalizer/BundleList.normalizer';
@@ -21,9 +21,10 @@ export const useBundle = () => {
   } = useQuery({
     queryKey: [search_query],
     queryFn: () => getBundleList({
+      observe: true,
       search_query: search_query.value,
-      sort: 'asc',
-      limit: 10,
+      sort: 'desc',
+      limit: 1,
       page: page.value,
       normalizer: bundleListNormalizer,
     }),

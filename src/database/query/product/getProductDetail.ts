@@ -1,7 +1,9 @@
 import { blobToBase64String } from 'rxdb';
+import type { RxDocument, RxAttachment } from 'rxdb';
 
 import { db } from '@/database';
 import { IMAGE_ID_PREFIX } from '@/database/constants';
+import { ProductDoc, VariantDoc } from '@/database/types';
 
 type GetProductDetailParams = {
   id: string;
@@ -10,15 +12,11 @@ type GetProductDetailParams = {
 
 export default async ({ id, normalizer }: GetProductDetailParams) => {
   try {
-    const _queryProduct  = await db.product.findOne({ selector: { id } }).exec();
+    const _queryProduct = await db.product.findOne({ selector: { id } }).exec();
 
-    if (!_queryProduct) {
-      return {
-        result: normalizer ? normalizer(undefined) : undefined,
-      };
-    }
+    if (!_queryProduct) throw { code: 404, message: 'Product not found.' };
 
-    const _queryVariants = await _queryProduct.populate('variant');
+    const _queryVariants: RxDocument<VariantDoc>[] = await _queryProduct.populate('variant');
 
     /**
      * ---------------------------
@@ -27,7 +25,7 @@ export default async ({ id, normalizer }: GetProductDetailParams) => {
      */
     const product_json        = _queryProduct.toJSON();
     const product_attachments = _queryProduct.allAttachments();
-    const images              = product_attachments.filter((att: any) => att.id.startsWith(IMAGE_ID_PREFIX));
+    const images              = product_attachments.filter((att: RxAttachment<ProductDoc>) => att.id.startsWith(IMAGE_ID_PREFIX));
     const product_images: any = [];
     const product_data        = { image: product_images, ...product_json };
 
@@ -49,7 +47,7 @@ export default async ({ id, normalizer }: GetProductDetailParams) => {
     for (const variant of _queryVariants) {
       const variant_json        = variant.toJSON();
       const variant_attachments = variant.allAttachments();
-      const images              = variant_attachments.filter((att: any) => att.id.startsWith(IMAGE_ID_PREFIX));
+      const images              = variant_attachments.filter((att: RxAttachment<VariantDoc>) => att.id.startsWith(IMAGE_ID_PREFIX));
       const variant_images      = [];
 
 

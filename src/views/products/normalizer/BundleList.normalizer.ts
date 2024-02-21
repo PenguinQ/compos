@@ -1,20 +1,25 @@
-import type { RxDocument } from 'rxdb'
+import type { RxDocument } from 'rxdb';
+import type { BundleDoc } from '@/database/types';
 
-type Data = {
+interface Bundle extends BundleDoc {
+  image?: string[];
+}
+
+type NormalizerParams = {
   first_page: boolean;
   last_page: boolean;
   total_page: number;
   count: number;
-  bundles: RxDocument[];
-}
+  bundles: RxDocument<Bundle>[];
+};
 
-export const bundleListNormalizer = (data: Data) => {
+export const bundleListNormalizer = (data: NormalizerParams) => {
   const { first_page, last_page, total_page, count, bundles: bundles_data } = data;
   const bundles = bundles_data || [];
   const bundle_list: object[] = [];
 
   for (const bundle of bundles) {
-    const { id, name, image, product } = bundle as any;
+    const { id, name, image, product } = bundle;
 
     bundle_list.push({
       id,

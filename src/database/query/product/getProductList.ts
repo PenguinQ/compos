@@ -69,9 +69,9 @@ export default async ({
     const product_data: object[] = [];
 
     /**
-     * ---------------------
-     * 1. Observable queries
-     * ---------------------
+     * ----------------------
+     * 1. Observable queries.
+     * ----------------------
      */
     if (observe) {
       const preprocessor = async (data: RxDocument<any>[]) => {
@@ -124,9 +124,9 @@ export default async ({
     }
 
     /**
-     * -------------------------
-     * 2. Non-observable queries
-     * -------------------------
+     * --------------------------
+     * 2. Non-observable queries.
+     * --------------------------
      */
     const { first_selector, last_selector } = getPaginationSelector({
       data: _queryProduct as RxDocument<any>[],

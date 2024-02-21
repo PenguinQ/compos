@@ -1,29 +1,58 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
 import Button from '@components/Button';
 import Text from '@components/Text';
-import Link from '@components/Link';
+import EmptyState from '@components/EmptyState';
+import { Shimmer } from '@components/Loader';
+import Navbar, { NavbarAction } from '@components/Navbar';
+import { PencilSquare, Trash } from '@icons';
+
+import Error from '@assets/illustration/error.svg';
 
 import { useBundleDetail } from './hooks/BundleDetail.hook';
 
+const router = useRouter();
 const {
   data,
   isLoading,
   isError,
+  refetch,
 } = useBundleDetail();
 </script>
 
 <template>
-  <Text heading="4">Bundle detail page</Text>
-  <Text v-if="isError">Error</Text>
+  <Navbar :title="data ? data.name : ''" sticky>
+    <template v-if="!isError && !isLoading" #action>
+      <NavbarAction
+        backgroundColor="var(--color-blue-3)"
+        @click="router.push(`/bundle/edit/${data.id}`)"
+      >
+        <PencilSquare color="#FFF" />
+      </NavbarAction>
+      <NavbarAction
+        backgroundColor="var(--color-red-3)"
+        @click="() => {}"
+      >
+        <Trash color="#FFF" />
+      </NavbarAction>
+    </template>
+  </Navbar>
+  <EmptyState
+    v-if="isError"
+    :image="Error"
+    title="Oops..."
+    description="Looks like there's some thing wrong, please try again."
+    margin="80px 0"
+  >
+    <template #action>
+      <Button @click="refetch">Try Again</Button>
+    </template>
+  </EmptyState>
   <template v-else>
-    <Text v-if="isLoading">Loading...</Text>
+    <Shimmer v-if="isLoading" width="100%" height="50px" animate />
     <template v-else>
-      <Text>
-        <Link :to="`/product/bundle/edit/${data.id}`">Edit {{ data.name }}</Link>
-      </Text>
-      <pre>
+      <pre style="overflow: auto;">
         {{ data }}
       </pre>
     </template>

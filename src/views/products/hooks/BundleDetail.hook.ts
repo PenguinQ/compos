@@ -1,7 +1,6 @@
 import { useRoute } from 'vue-router';
-import { useQuery, useMutation } from '@database/hooks';
-import { getBundleDetail } from '@database/query/bundle';
-import { mutateRx } from '@helpers/fetcher';
+import { useQuery, useMutation } from '@/database/hooks';
+import getBundleDetail from '@/database/query/bundle/getBundleDetail';
 import { bundleDetailNormalizer } from '../normalizer/BundleDetail.normalizer';
 
 export const useBundleDetail = () => {
@@ -19,7 +18,7 @@ export const useBundleDetail = () => {
       id: params.id,
       normalizer: bundleDetailNormalizer,
     }),
-    onError: (error: string) => {
+    onError: (error: Error) => {
       console.error('[ERROR] Failed to get the bundle detail.', error);
     },
     onSuccess: async (response: any) => {
@@ -61,75 +60,75 @@ export const useBundleDetail = () => {
   //   },
   // });
 
-  const mutateQuery = params.id ? {
-    selector: {
-      id: {
-        $eq: params.id,
-      },
-    },
-  } : undefined;
+  // const mutateQuery = params.id ? {
+  //   selector: {
+  //     id: {
+  //       $eq: params.id,
+  //     },
+  //   },
+  // } : undefined;
 
-  const {
-    mutate: mutateEdit,
-    isLoading: mutateEditLoading,
-  } = useMutation({
-    mutateFn: () => mutateRx({
-      collection: 'bundle',
-      method: 'put',
-      query: mutateQuery,
-      data: {
-        name: formData.name,
-        description: formData.description,
-        image: formData.image,
-        by: formData.by,
-        price: parseInt(formData.price as any),
-        stock: parseInt(formData.stock as any),
-        sku: formData.sku,
-      },
-    }),
-    onError: (error: any) => {
-      console.error('Error mutating bundle detail.', error);
-    },
-    onSuccess: () => {
-      console.log('Success mutating bundle detail.');
-    },
-  });
+  // const {
+  //   mutate: mutateEdit,
+  //   isLoading: mutateEditLoading,
+  // } = useMutation({
+  //   mutateFn: () => mutateRx({
+  //     collection: 'bundle',
+  //     method: 'put',
+  //     query: mutateQuery,
+  //     data: {
+  //       name: formData.name,
+  //       description: formData.description,
+  //       image: formData.image,
+  //       by: formData.by,
+  //       price: parseInt(formData.price as any),
+  //       stock: parseInt(formData.stock as any),
+  //       sku: formData.sku,
+  //     },
+  //   }),
+  //   onError: (error: any) => {
+  //     console.error('Error mutating bundle detail.', error);
+  //   },
+  //   onSuccess: () => {
+  //     console.log('Success mutating bundle detail.');
+  //   },
+  // });
 
-  const resetForm = () => {
-    formData.name = '';
-    formData.description = '';
-    formData.image = '';
-    formData.by = '';
-    formData.price = null;
-    formData.stock = null;
-    formData.sku = '';
-  };
+  // const resetForm = () => {
+  //   formData.name = '';
+  //   formData.description = '';
+  //   formData.image = '';
+  //   formData.by = '';
+  //   formData.price = null;
+  //   formData.stock = null;
+  //   formData.sku = '';
+  // };
 
-  const {
-    mutate: mutateAdd,
-    isLoading: mutateAddLoading,
-  } = useMutation({
-    mutateFn: () => mutateRx({
-      collection: 'bundle',
-      method: 'post',
-      data: {
-        name: formData.name,
-        description: formData.description,
-        image: formData.image,
-        by: formData.by,
-        price: parseInt(formData.price as any),
-        stock: parseInt(formData.stock as any),
-        sku: formData.sku,
-      },
-    }),
-    onError: (error: any) => {
-      console.error('Error adding new bundle.', error);
-    },
-    onSuccess: () => {
-      console.log('Success adding new bundle.');
-      resetForm();
-    },
-  });
+  // const {
+  //   mutate: mutateAdd,
+  //   isLoading: mutateAddLoading,
+  // } = useMutation({
+  //   mutateFn: () => mutateRx({
+  //     collection: 'bundle',
+  //     method: 'post',
+  //     data: {
+  //       name: formData.name,
+  //       description: formData.description,
+  //       image: formData.image,
+  //       by: formData.by,
+  //       price: parseInt(formData.price as any),
+  //       stock: parseInt(formData.stock as any),
+  //       sku: formData.sku,
+  //     },
+  //   }),
+  //   onError: (error: any) => {
+  //     console.error('Error adding new bundle.', error);
+  //   },
+  //   onSuccess: () => {
+  //     console.log('Success adding new bundle.');
+  //     resetForm();
+  //   },
+  // });
 
   return {
     bundleID: params.id,
