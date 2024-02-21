@@ -2,16 +2,23 @@ import { reactive, toRaw } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useQuery, useMutation } from '@/database/hooks';
-import { mutateAddProduct } from '@database/query/product';
-import getProductDetail from '@/database/query/product/getProductDetail';
-import mutateEditProduct from '@/database/query/product/mutateEditProduct';
+import {
+  getProductDetail,
+  mutateAddProduct,
+  mutateEditProduct,
+} from '@/database/query/product'
 import { formDetailNormalizer } from '../normalizer/ProductForm.normalizer';
+
+type FormDataImage = {
+  id: string;
+  path: string;
+};
 
 type FormDataVariant = {
   id?: string;
   product_id?: string;
   name: string;
-  image?: string[];
+  image?: FormDataImage[];
   price: number;
   stock: number;
   new_image?: any;
@@ -22,7 +29,7 @@ type FormData = {
   id: string;
   name: string;
   description: string;
-  image: string[];
+  image: FormDataImage[];
   by: string;
   price?: number;
   stock?: number;
@@ -222,7 +229,7 @@ export const useProductForm = () => {
     });
   };
 
-  const handleRemoveVariant = (index: number, id: string) => {
+  const handleRemoveVariant = (index: number, id?: string) => {
     id && formData.deleted_variant.push(id);
     formData.variant.splice(index, 1);
   };

@@ -1,8 +1,6 @@
-import { ref, inject, reactive } from 'vue';
-import { useRouter } from 'vue-router';
-import { queryRx, mutateRx } from '@helpers/fetcher';
-import { useQuery, useMutation } from '@/database/hooks';
-import getProductList from '@/database/query/product/getProductList';
+import { ref } from 'vue';
+import { useQuery } from '@/database/hooks';
+import { getProductList } from '@/database/query/product';
 import { debounce } from '@helpers';
 
 import { productListNormalizer } from '../normalizer/ProductList.normalizer';
@@ -23,8 +21,8 @@ export const useProductList = () => {
     queryFn: () => getProductList({
       observe: true,
       search_query: search_query.value,
-      sort: 'asc',
-      limit: 10,
+      sort: 'desc',
+      limit: 2,
       page: page.value,
       normalizer: productListNormalizer,
     }),

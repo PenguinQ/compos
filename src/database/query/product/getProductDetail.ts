@@ -1,6 +1,7 @@
 import { blobToBase64String } from 'rxdb';
 
 import { db } from '@/database';
+import { IMAGE_ID_PREFIX } from '@/database/constants';
 
 type GetProductDetailParams = {
   id: string;
@@ -26,7 +27,7 @@ export default async ({ id, normalizer }: GetProductDetailParams) => {
      */
     const product_json        = _queryProduct.toJSON();
     const product_attachments = _queryProduct.allAttachments();
-    const images              = product_attachments.filter((att: any) => att.id.startsWith('IMG_'));
+    const images              = product_attachments.filter((att: any) => att.id.startsWith(IMAGE_ID_PREFIX));
     const product_images: any = [];
     const product_data        = { image: product_images, ...product_json };
 
@@ -48,7 +49,7 @@ export default async ({ id, normalizer }: GetProductDetailParams) => {
     for (const variant of _queryVariants) {
       const variant_json        = variant.toJSON();
       const variant_attachments = variant.allAttachments();
-      const images              = variant_attachments.filter((att: any) => att.id.startsWith('IMG_'));
+      const images              = variant_attachments.filter((att: any) => att.id.startsWith(IMAGE_ID_PREFIX));
       const variant_images      = [];
 
 

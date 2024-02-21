@@ -1,37 +1,33 @@
 import { monotonicFactory } from 'ulidx';
 
 import compressImage from './compressImage';
+import { THUMBNAIL_ID_PREFIX, IMAGE_ID_PREFIX } from '@/database/constants';
 
-type Macrograph = {
+type Images = {
   id: string;
   data: File;
-}
-
-type Thumbnail = {
-  id: string;
-  data: File;
-}
+};
 
 type CompressImages = {
-  thumbnail: Thumbnail[];
-  macrograph: Macrograph[];
-}
+  thumbnails: Images[];
+  images: Images[];
+};
 
-export default async (images: File[]): Promise<CompressImages>  => {
-  const ulid     = monotonicFactory();
-  let thumbnail  = [];
-  let macrograph = [];
+export default async (data: File[]): Promise<CompressImages>  => {
+  const ulid = monotonicFactory();
+  let thumbnails = [];
+  let images = []
 
-  if (images.length) {
-    for (const image of images) {
-      const image_ulid = ulid();
+  if (data.length) {
+    for (const image of data) {
+      const synchronized_ulid = ulid();
       const compressed_thumbnail = await compressImage({ image, quality: 0.8, dimension: 360 });
       const compressed_image = await compressImage({ image, quality: 0.8, dimension: 800 });
 
-      thumbnail.push({ id: `THUMB_${image_ulid}`, data: compressed_thumbnail });
-      macrograph.push({ id: `IMG_${image_ulid}`, data: compressed_image })
+      thumbnails.push({ id: `${THUMBNAIL_ID_PREFIX + synchronized_ulid}`, data: compressed_thumbnail });
+      images.push({ id: `${IMAGE_ID_PREFIX + synchronized_ulid}`, data: compressed_image })
     }
   }
 
-  return { thumbnail, macrograph };
+  return { thumbnails, images };
 };

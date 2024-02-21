@@ -3,8 +3,9 @@ import type { RxDocument } from 'rxdb';
 
 import { db } from '@/database';
 import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
-import type { VariantDoc } from '@/database/types';
 import { compressProductImage } from '@/database/utils';
+
+import type { VariantDoc } from '@/database/types';
 
 interface ProductVariant extends VariantDoc {
   new_image?: File[];
@@ -48,6 +49,9 @@ export default async ({ data }: MutateAddProductParams) => {
       variant    = [],
       new_image  = [],
     } = data;
+
+    if (typeof price !== 'number') throw `Price must be a number.`;
+    if (typeof stock !== 'number') throw `Stock must be a number.`;
 
     /**
      * ----------------------
@@ -114,10 +118,10 @@ export default async ({ data }: MutateAddProductParams) => {
        * -----------------------------
        */
       if (new_image.length) {
-        const { thumbnail, macrograph } = await compressProductImage(new_image);
+        const { thumbnails, images } = await compressProductImage(new_image);
 
-        if (thumbnail.length)  await addImages(thumbnail, _queryProduct);
-        if (macrograph.length) await addImages(macrograph, _queryProduct);
+        if (thumbnails.length) await addImages(thumbnails, _queryProduct);
+        if (images.length)     await addImages(images, _queryProduct);
       }
 
       /**
@@ -136,10 +140,10 @@ export default async ({ data }: MutateAddProductParams) => {
       if (variants.length) {
         for (const [index, variant] of variants.entries()) {
           if (variant_attachments[index].length) {
-            const { thumbnail, macrograph } = await compressProductImage(variant_attachments[index]);
+            const { thumbnails, images } = await compressProductImage(variant_attachments[index]);
 
-            if (thumbnail.length)  await addImages(thumbnail, variant);
-            if (macrograph.length) await addImages(macrograph, variant);
+            if (thumbnails.length) await addImages(thumbnails, variant);
+            if (images.length)     await addImages(images, variant);
           }
         }
       }
@@ -175,10 +179,10 @@ export default async ({ data }: MutateAddProductParams) => {
        * -----------------------------
        */
       if (new_image.length) {
-        const { thumbnail, macrograph } = await compressProductImage(new_image);
+        const { thumbnails, images } = await compressProductImage(new_image);
 
-        if (thumbnail.length)  await addImages(thumbnail, _queryProduct);
-        if (macrograph.length) await addImages(macrograph, _queryProduct);
+        if (thumbnails.length) await addImages(thumbnails, _queryProduct);
+        if (images.length)     await addImages(images, _queryProduct);
       }
     }
   } catch (error) {

@@ -2,7 +2,8 @@ import { monotonicFactory } from 'ulidx';
 import type { RxDocument } from 'rxdb';
 
 import { db } from '@/database';
-import { compressProductImage } from '@/database/utils';
+import { addImages, compressProductImage } from '@/database/utils';
+import { THUMBNAIL_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
 
 type MutateEditProductVariant = {
   id: string;
@@ -32,22 +33,6 @@ type MutateEditProductParams = {
   data: MutateEditProductData;
 };
 
-const getThumbnail = (id: string, query: RxDocument<any>) => {
-  const thumbnail_id = `THUMB_${id.split('_')[1]}`;
-  const thumbnail    = query.getAttachment(thumbnail_id);
-
-  return thumbnail;
-};
-
-const addImages = async (images: any[], doc: RxDocument<any>) => {
-  for (const image of images) {
-    const { id, data } = image;
-    const { type }     = data;
-
-    await doc.putAttachment({ id, data, type });
-  }
-};
-
 export default async ({ id, data }: MutateEditProductParams) => {
   try {
     const {
@@ -63,10 +48,13 @@ export default async ({ id, data }: MutateEditProductParams) => {
       deleted_variant   = [],
     } = data;
 
+    if (typeof price !== 'number') throw `Price must be a number.`;
+    if (typeof stock !== 'number') throw `Stock must be a number.`;
+
     const removeImages = async (images: string[], doc: RxDocument<any>) => {
       for (const id of images) {
         const image     = doc.getAttachment(id);
-        const thumbnail = getThumbnail(id, doc);
+        const thumbnail = doc.getAttachment(THUMBNAIL_ID_PREFIX + id.split('_')[1]);
 
         if (image) await image.remove();
         if (thumbnail) await thumbnail.remove();
@@ -165,9 +153,7 @@ export default async ({ id, data }: MutateEditProductParams) => {
       },
     }).exec();
 
-    if (!_queryProduct) {
-      throw `Cannot find product with id ${id}, operation cancelled.`;
-    }
+    if (!_queryProduct) throw `Cannot find product with id ${id}.`;
 
     /**
      * --------------------------------------
@@ -223,12 +209,12 @@ export default async ({ id, data }: MutateEditProductParams) => {
        * --------------------------
        */
       if (new_image.length) {
-        const { thumbnail, macrograph } = await compressProductImage(new_image);
-        const images                    = _queryProduct.allAttachments();
+        const { thumbnails, images } = await compressProductImage(new_image);
+        const product_attachments    = _queryProduct.allAttachments();
 
-        if (images.length)    await removeCurrentImage(_queryProduct);
-        if (thumbnail.length) await addImages(thumbnail, _queryProduct);
-        if (macrograph)       await addImages(macrograph, _queryProduct);
+        if (product_attachments.length) await removeCurrentImage(_queryProduct);
+        if (thumbnails.length)          await addImages(thumbnails, _queryProduct);
+        if (images.length)              await addImages(images, _queryProduct);
       }
 
       if (deleted_image.length) await removeImages(deleted_image, _queryProduct);
@@ -273,7 +259,7 @@ export default async ({ id, data }: MutateEditProductParams) => {
             }
           }).exec();
 
-          if (!_queryVariant) throw `Cannot find product variant with id ${id}, operation cancelled.`;
+          if (!_queryVariant) throw `Cannot find product variant with id ${id}.`;
 
           /**
            * --------------------------------------------------
@@ -297,12 +283,12 @@ export default async ({ id, data }: MutateEditProductParams) => {
            * --------------------------------------------------
            */
           if (v_new_image.length) {
-            const images = _queryVariant.allAttachments();
-            const { thumbnail, macrograph } = await compressProductImage(v_new_image);
+            const { thumbnails, images } = await compressProductImage(v_new_image);
+            const variant_attachments    = _queryVariant.allAttachments();
 
-            if (images.length)    await removeCurrentImage(_queryVariant);
-            if (thumbnail.length) await addImages(thumbnail, _queryVariant);
-            if (macrograph)       await addImages(macrograph, _queryVariant);
+            if (variant_attachments.length) await removeCurrentImage(_queryVariant);
+            if (thumbnails.length)          await addImages(thumbnails, _queryVariant);
+            if (images.length)              await addImages(images, _queryVariant);
           }
 
           if (v_deleted_image.length) await removeImages(v_deleted_image, _queryVariant);
@@ -326,9 +312,8 @@ export default async ({ id, data }: MutateEditProductParams) => {
            * 1.5.2.1 Create new variant.
            * ---------------------------
            */
-          const ulid = monotonicFactory();
-
-          const variant_id = 'VAR_' + ulid();
+          const ulid       = monotonicFactory();
+          const variant_id = VARIANT_ID_PREFIX + ulid();
 
           const _queryVariant = await db.variant.insert({
             id        : variant_id,
@@ -348,10 +333,10 @@ export default async ({ id, data }: MutateEditProductParams) => {
            * --------------------------------------------
            */
           if (v_new_image.length) {
-            const { thumbnail, macrograph } = await compressProductImage(v_new_image);
+            const { thumbnails, images } = await compressProductImage(v_new_image);
 
-            if (thumbnail.length) await addImages(thumbnail, _queryVariant);
-            if (macrograph)       await addImages(macrograph, _queryVariant);
+            if (thumbnails.length) await addImages(thumbnails, _queryVariant);
+            if (images.length)     await addImages(images, _queryVariant);
           }
 
           /**
@@ -398,12 +383,12 @@ export default async ({ id, data }: MutateEditProductParams) => {
        * ------------------------------
        */
       if (new_image.length) {
-        const images = _queryProduct.allAttachments();
-        const { thumbnail, macrograph } = await compressProductImage(new_image);
+        const { thumbnails, images } = await compressProductImage(new_image);
+        const product_attachments    = _queryProduct.allAttachments();
 
-        if (images.length)    await removeCurrentImage(_queryProduct);
-        if (thumbnail.length) await addImages(thumbnail, _queryProduct);
-        if (macrograph)       await addImages(macrograph, _queryProduct);
+        if (product_attachments.length) await removeCurrentImage(_queryProduct);
+        if (thumbnails.length)          await addImages(thumbnails, _queryProduct);
+        if (images.length)              await addImages(images, _queryProduct);
       }
 
       if (deleted_image.length) await removeImages(deleted_image, _queryProduct);

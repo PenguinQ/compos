@@ -3,6 +3,7 @@ import type { RxDocument } from 'rxdb';
 
 import { db } from '@/database';
 import { getPaginationSelector, handlePagination } from '@/database/utils';
+import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
 
 type GetProductListParams = {
   active?: boolean;
@@ -91,7 +92,7 @@ export default async ({
         for (const product of data) {
           const product_json = product.toJSON();
           const images       = product.allAttachments();
-          const thumbnail    = images.filter((att: any) => att.id.startsWith('THUMB_'));
+          const thumbnail    = images.filter((att: any) => att.id.startsWith(THUMBNAIL_ID_PREFIX));
           let product_image  = '';
 
           if (thumbnail.length) {
@@ -144,7 +145,7 @@ export default async ({
     for (const product of _queryProduct as RxDocument<any>[]) {
       const product_json = product.toJSON();
       const images       = product.allAttachments();
-      const thumbnail    = images.filter((att: any) => att.id.startsWith('THUMB_'));
+      const thumbnail    = images.filter((att: any) => att.id.startsWith(THUMBNAIL_ID_PREFIX));
       let product_image  = '';
 
       if (thumbnail.length) {
