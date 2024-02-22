@@ -30,3 +30,20 @@
     }
   }
 }
+
+@mixin create-column-offset($size: '', $column: 12) {
+  $dataSelector: 'data-cp-offset';
+
+  @if $size != '' {
+    $dataSelector: 'data-cp-offset-#{$size}';
+  }
+
+  @for $i from 1 through $column {
+    $offset: (($i * 100) / 12) * 1%;
+    $additionalWidth: $gutterColumn / calc($column / $i);
+
+    .cp-column[#{$dataSelector}="#{$i}"] {
+      margin-left: calc(#{$offset} + #{$additionalWidth});
+    }
+  }
+}

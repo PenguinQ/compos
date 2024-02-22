@@ -6,19 +6,33 @@ export interface ColumnType {
   [key: string]: number | string;
 }
 
+export type ColumnAlign = {
+  [key: string]: number | string;
+};
+
+export type ColumnOffset = {
+  [key: string]: number | string;
+};
+
 interface Props {
   align?: CSS.Property.AlignSelf;
-  col?: number | string | ColumnType;
+  col?: number | string | ColumnAlign;
   order?: CSS.Property.Order;
-}
+  offset?: number | string | ColumnOffset;
+};
 
 const props = defineProps<Props>();
 
-const { col } = props;
+const { col, offset } = props;
 
 const columnBreakpoints = reactive({
   'data-cp-col': typeof col === 'object' ? col?.default : col ? col : undefined,
   'data-cp-col-md': typeof col === 'object' ? col?.md : undefined,
+});
+
+const columnOffsets = reactive({
+  'data-cp-offset': typeof offset === 'object' ? offset?.default : offset ? offset : undefined,
+  'data-cp-offset-md': typeof offset === 'object' ? offset?.md : undefined,
 });
 
 const columnStyle = reactive({
@@ -28,8 +42,12 @@ const columnStyle = reactive({
 </script>
 
 <template>
-  <div class="cp-column" v-bind="columnBreakpoints" :style="columnStyle">
-    <slot></slot>
+  <div
+    class="cp-column"
+    v-bind="{...columnBreakpoints, ...columnOffsets}"
+    :style="columnStyle"
+  >
+    <slot />
   </div>
 </template>
 
@@ -43,8 +61,10 @@ const columnStyle = reactive({
 }
 
 @include create-column('column');
+@include create-column-offset();
 
 @include screen-md {
   @include create-column('column', 'md');
+  @include create-column-offset('md');
 }
 </style>

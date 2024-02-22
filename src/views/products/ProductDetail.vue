@@ -8,6 +8,7 @@ import EmptyState from '@components/EmptyState';
 import Text from '@components/Text';
 import Link from '@components/Link';
 import { PencilSquare, Trash } from '@icons';
+import { Column, Row, Container } from '@components/Layout';
 
 import { PRODUCT_DETAIL } from './constants';
 import Error from '@assets/illustration/error.svg';
@@ -57,9 +58,41 @@ const {
       <pre style="overflow: auto;">
         {{ data }}
       </pre>
+      <Container>
+        <Row>
+          <Column :col="{ default: '12', 'md': 4 }">Image Column</Column>
+          <Column :col="{ default: '12', 'md': 4 }">Detail Column</Column>
+          <Column :col="{ default: '12', 'md': 4 }">Detail Column</Column>
+          <Column :col="{ default: '12', 'md': 4 }" :offset="{ default: 1, 'md': 4 }">Variant Column 1</Column>
+        </Row>
+      </Container>
+      <div class="cp-lists">
+        <div class="cp-list">
+          <Text class="cp-list__title" heading="4">Name</Text>
+          <Text class="cp-list__description">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          </Text>
+        </div>
+      </div>
       <img style="width: 100px; height: 100px; object-fit: contain;" v-for="image in data.image" :src="image" />
     </template>
   </template>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss">
+.cp-lists {
+  background-color: var(--color-white);
+}
+
+.cp-list {
+  padding: 8px 16px;
+
+  &__title {
+    margin-bottom: 4px;
+  }
+
+  &__description {
+    margin-bottom: 0;
+  }
+}
+</style>
