@@ -12,10 +12,11 @@ html {
 }
 
 body {
-  color: var(--color-black);
+  color: var(--color-black, #2E4057);
+  background-color: var(--color-background, #FAFAFF);
   font-family: "DM Sans", sans-serif;
-  font-size: 14px; // body-medium style
-  line-height: 18px; // body-medium style
+  font-size: var(--text-body-medium-size, 14px);
+  line-height: var(--text-body-medium-height, 18px);
   font-weight: 400;
 }
 

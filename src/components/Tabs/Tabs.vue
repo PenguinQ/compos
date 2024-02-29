@@ -12,6 +12,7 @@ import {
 } from 'vue';
 import type { VNode } from 'vue'
 import type { Props as TabProps } from './Tab.vue';
+import { useScopeId } from '@hooks';
 
 type TabSlot = VNode & {
   name?: string;
@@ -33,9 +34,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emits = defineEmits(['update:modelValue']);
 
+const scope_id = useScopeId();
 const tabs_container = ref();
 const active_index = ref<number>(0);
-const scope_id = ref<string | null | undefined>('');
 const tabs_class = reactive({
   'cp-tabs-controls': true,
   'cp-tabs-controls--grow': props.grow,
@@ -46,8 +47,6 @@ const tab_style = reactive({
 });
 
 onBeforeMount(() => {
-  scope_id.value = getCurrentInstance()?.vnode.scopeId;
-
   if (props.modelValue) active_index.value = parseInt(props.modelValue as string);
 });
 
@@ -80,7 +79,7 @@ const handleTab = (index: number) => {
   <div
     ref="tabs_container"
     v-if="$slots.default"
-    v-bind:[`${scope_id}`]="''"
+    :[scope_id]="''"
     v-bind="controlContainerProps"
     :class="tabs_class"
     :style="tab_style"
@@ -100,8 +99,8 @@ const handleTab = (index: number) => {
   </div>
   <div
     v-if="$slots.default"
+    :[scope_id]="''"
     v-bind="panelContainerProps"
-    v-bind:[`${scope_id}`]="''"
     class="cp-tabs-panels"
   >
     <component

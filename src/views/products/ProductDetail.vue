@@ -59,11 +59,10 @@ const {
         {{ data }}
       </pre>
       <Container>
-        <Row>
-          <Column :col="{ default: '12', 'md': 4 }">Image Column</Column>
-          <Column :col="{ default: '12', 'md': 4 }">Detail Column</Column>
-          <Column :col="{ default: '12', 'md': 4 }">Detail Column</Column>
-          <Column :col="{ default: '12', 'md': 4 }" :offset="{ default: 1, 'md': 4 }">Variant Column 1</Column>
+        <Row col="4">
+          <Column :col="{ default: 12, md: 6 }">Image Column</Column>
+          <Column :col="{ default: 12, md: 6 }">Detail Column</Column>
+          <Column :col="{ default: 12, md: 6 }" :offset="{ md: 6 }">Variant Column 1</Column>
         </Row>
       </Container>
       <div class="cp-lists">

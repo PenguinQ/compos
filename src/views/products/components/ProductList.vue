@@ -4,16 +4,16 @@ import { useRouter } from 'vue-router';
 import { useProductList } from '../hooks/ProductList.hook';
 
 import Button from '@components/Button';
+import Card, { CardBody } from '@components/Card';
 import Text from '@components/Text';
 import Label from '@components/Label';
 import { Shimmer } from '@components/Loader';
 import EmptyState from '@components/EmptyState';
-
 import PageControl from './PageControl.vue';
 
 import Error from '@assets/illustration/error.svg';
-import NoImage from '@assets/illustration/no_image.svg'
-import NotFound from '@assets/illustration/not_found.svg'
+import NoImage from '@assets/illustration/no_image.svg';
+import NotFound from '@assets/illustration/not_found.svg';
 
 const router = useRouter();
 const {
@@ -65,29 +65,33 @@ const {
       description="Try other search key to find what you're looking for."
       margin="80px 0"
     />
-    <div v-else class="product-grid">
-      <div class="product" v-for="product in data.products" @click="router.push(`/product/${product.id}`)">
-          <div class="product__image">
-            <img
-              :src="product.image ? product.image : NoImage"
-              :alt="`${product.name} image`"
-              loading="lazy"
-            />
-          </div>
-          <div class="product__detail">
-            <span style="display: block; overflow: hidden;">{{ product.image64 }}</span>
-            <Text
-              class="product__title"
-              heading="4"
-              margin="0 0 8px"
-              :title="product.name"
-            >
-              {{ product.name }}
-            </Text>
-            <Label v-if="product.variant">{{ product.variant }} variants</Label>
-            <Label v-else variant="outline">No variant</Label>
-          </div>
-      </div>
+    <div v-else class="product-card-grid">
+      <Card class="product-card" v-for="product in data.products" :to="`/product/${product.id}`">
+        <div class="product-card__image">
+          <img :src="product.image ? product.image : NoImage" :alt="`${product.name} image`" loading="lazy" />
+        </div>
+        <div class="product-card__detail">
+          <span style="display: block; overflow: hidden">{{ product.image64 }}</span>
+          <Text class="product-card__title" heading="4" margin="0 0 8px" :title="product.name">
+            {{ product.name }}
+          </Text>
+          <Label v-if="product.variant">{{ product.variant }} variants</Label>
+          <Label v-else variant="outline">No variant</Label>
+        </div>
+      </Card>
+      <!-- <div class="product-card" v-for="product in data.products" @click="router.push(`/product/${product.id}`)">
+        <div class="product-card__image">
+          <img :src="product.image ? product.image : NoImage" :alt="`${product.name} image`" loading="lazy" />
+        </div>
+        <div class="product-card__detail">
+          <span style="display: block; overflow: hidden">{{ product.image64 }}</span>
+          <Text class="product--card__title" heading="4" margin="0 0 8px" :title="product.name">
+            {{ product.name }}
+          </Text>
+          <Label v-if="product.variant">{{ product.variant }} variants</Label>
+          <Label v-else variant="outline">No variant</Label>
+        </div>
+      </div> -->
     </div>
 
     <PageControl
@@ -110,7 +114,7 @@ const {
 </template>
 
 <style lang="scss" scoped>
-.product-grid {
+.product-card-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
@@ -120,8 +124,10 @@ const {
   }
 }
 
-.product {
-  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+.product-card {
+  box-shadow:
+    rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
   border-radius: 6px;
   cursor: pointer;
   display: block;
@@ -129,7 +135,9 @@ const {
   transition: all 280ms cubic-bezier(0.63, 0.01, 0.29, 1);
 
   &:active {
-    box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+    box-shadow:
+      rgba(0, 0, 0, 0.16) 0px 3px 6px,
+      rgba(0, 0, 0, 0.23) 0px 3px 6px;
     transform: scale(0.98);
   }
 

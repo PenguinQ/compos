@@ -1,6 +1,6 @@
 import path, { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import fs from 'fs-extra'
+import fs from 'fs-extra';
 import { setComponentName } from './icons-helper.ts';
 import type { ContentType } from './icons-build.ts';
 
@@ -9,7 +9,7 @@ const __dirname = dirname(__filename);
 
 const generateVueIndex = (glyphs: ContentType[]) => {
   let string = '';
-  let typesString = `import { SVGAttributes } from 'vue';
+  const typesString = `import { SVGAttributes } from 'vue';
 
 export interface IconProps extends /* @vue-ignore */ SVGAttributes {
   title?: string;
@@ -18,7 +18,7 @@ export interface IconProps extends /* @vue-ignore */ SVGAttributes {
   rotate?: number;
   margin?: string;
 }`;
-  let moduleString = `declare module '@icons';
+  const moduleString = `declare module '@icons';
 
 /**
  * KEEP THIS FOR FUTURE CHANGES.
@@ -35,16 +35,25 @@ export interface IconProps extends /* @vue-ignore */ SVGAttributes {
 //   }
 // }`;
 
-  glyphs.map(glyph => {
+  glyphs.map((glyph) => {
     const { name } = glyph;
     const componentName = setComponentName(name);
 
     string += `export { default as ${componentName} } from './${componentName}.vue';\n`;
   });
 
-  fs.outputFile(path.join(__dirname, '../../components/icons/modules.d.ts'), moduleString);
-  fs.outputFile(path.join(__dirname, '../../components/icons/types.ts'), typesString);
-  fs.outputFile(path.join(__dirname, '../../components/icons/index.ts'), string);
+  fs.outputFile(
+    path.join(__dirname, '../../components/icons/modules.d.ts'),
+    moduleString,
+  );
+  fs.outputFile(
+    path.join(__dirname, '../../components/icons/types.ts'),
+    typesString,
+  );
+  fs.outputFile(
+    path.join(__dirname, '../../components/icons/index.ts'),
+    string,
+  );
 };
 
 export default generateVueIndex;
