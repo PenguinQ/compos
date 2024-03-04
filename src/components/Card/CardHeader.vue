@@ -14,7 +14,7 @@ const headingStyles = reactive({
 </script>
 
 <template>
-  <div class="cp-card__header" :styles="headingStyles">
+  <div class="cp-card__header" :style="headingStyles">
     <slot />
   </div>
 </template>

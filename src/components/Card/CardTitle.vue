@@ -8,7 +8,9 @@
 
 <style lang="scss">
 .cp-card__title {
+  font-family: "Nunito", sans-serif;
   font-size: 20px;
+  font-weight: 600;
   line-height: 32px;
   padding: 8px 16px;
 

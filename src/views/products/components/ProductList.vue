@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { useProductList } from '../hooks/ProductList.hook';
 
 import Button from '@components/Button';
-import Card, { CardBody } from '@components/Card';
+import Card from '@components/Card';
 import Text from '@components/Text';
 import Label from '@components/Label';
 import { Shimmer } from '@components/Loader';
@@ -56,7 +56,6 @@ const {
       @clickPaginationNext="toNextPage"
       @clickPaginationLast="toNextPage($event, true)"
     />
-
     <Shimmer v-if="productsLoading" class="product-shimmer" animate />
     <EmptyState
       v-else-if="!data.products.length"
@@ -66,7 +65,7 @@ const {
       margin="80px 0"
     />
     <div v-else class="product-card-grid">
-      <Card class="product-card" v-for="product in data.products" :to="`/product/${product.id}`">
+      <Card class="product-card" :key="product.id" v-for="product in data.products" :to="`/product/${product.id}`">
         <div class="product-card__image">
           <img :src="product.image ? product.image : NoImage" :alt="`${product.name} image`" loading="lazy" />
         </div>
@@ -79,21 +78,7 @@ const {
           <Label v-else variant="outline">No variant</Label>
         </div>
       </Card>
-      <!-- <div class="product-card" v-for="product in data.products" @click="router.push(`/product/${product.id}`)">
-        <div class="product-card__image">
-          <img :src="product.image ? product.image : NoImage" :alt="`${product.name} image`" loading="lazy" />
-        </div>
-        <div class="product-card__detail">
-          <span style="display: block; overflow: hidden">{{ product.image64 }}</span>
-          <Text class="product--card__title" heading="4" margin="0 0 8px" :title="product.name">
-            {{ product.name }}
-          </Text>
-          <Label v-if="product.variant">{{ product.variant }} variants</Label>
-          <Label v-else variant="outline">No variant</Label>
-        </div>
-      </div> -->
     </div>
-
     <PageControl
       :search="false"
       :pagination="data?.products.length ? true : false"
@@ -107,7 +92,6 @@ const {
       @clickPaginationNext="toNextPage"
       @clickPaginationLast="toNextPage($event, true)"
     />
-
     <!-- Should be FAB -->
     <Button @click="router.push('/product/add')">Add Product</Button>
   </template>
@@ -125,22 +109,6 @@ const {
 }
 
 .product-card {
-  box-shadow:
-    rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
-    rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
-  border-radius: 6px;
-  cursor: pointer;
-  display: block;
-  padding: 0;
-  transition: all 280ms cubic-bezier(0.63, 0.01, 0.29, 1);
-
-  &:active {
-    box-shadow:
-      rgba(0, 0, 0, 0.16) 0px 3px 6px,
-      rgba(0, 0, 0, 0.23) 0px 3px 6px;
-    transform: scale(0.98);
-  }
-
   &__image {
     width: 100%;
     height: 180px;

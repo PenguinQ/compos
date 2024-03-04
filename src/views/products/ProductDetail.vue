@@ -2,8 +2,9 @@
 import { useRouter } from 'vue-router';
 import { useProductDetail } from './hooks/ProductDetail.hook';
 
-import Navbar, { NavbarAction } from '@components/Navbar';
 import Button from '@components/Button';
+import Card, { CardHeader, CardTitle, CardBody } from '@components/Card';
+import Navbar, { NavbarAction } from '@components/Navbar';
 import EmptyState from '@components/EmptyState';
 import Text from '@components/Text';
 import Link from '@components/Link';
@@ -11,6 +12,8 @@ import { PencilSquare, Trash } from '@icons';
 import { Column, Row, Container } from '@components/Layout';
 
 import { PRODUCT_DETAIL } from './constants';
+
+import NoImage from '@assets/illustration/no_image.svg';
 import Error from '@assets/illustration/error.svg';
 
 const router = useRouter();
@@ -55,14 +58,38 @@ const {
   <template v-else>
     <Text v-if="isLoading">Loading...</Text>
     <template v-else>
-      <pre style="overflow: auto;">
-        {{ data }}
-      </pre>
       <Container>
-        <Row col="4">
-          <Column :col="{ default: 12, md: 6 }">Image Column</Column>
-          <Column :col="{ default: 12, md: 6 }">Detail Column</Column>
-          <Column :col="{ default: 12, md: 6 }" :offset="{ md: 6 }">Variant Column 1</Column>
+        <Row>
+          <Column :col="{ default: 12, md: 'auto' }">
+            <Card>
+              <picture class="detail-image">
+                <img :src="`${data.image.length ? data.image[0] : NoImage}`" :alt="`${data.name} image`" />
+              </picture>
+            </Card>
+          </Column>
+          <Column>
+            <Card>
+              <CardHeader>
+                <CardTitle>Details</CardTitle>
+              </CardHeader>
+              <CardBody>
+                <pre style="overflow: auto; margin: 0;">
+                  {{ data }}
+                </pre>
+              </CardBody>
+            </Card>
+          </Column>
+          <Column :col="{ default: 12 }">
+            <Card>
+              <CardHeader>
+                <CardTitle>Variants</CardTitle>
+              </CardHeader>
+              <CardBody>
+                <template v-if="!data.variant.length">No shit</template>
+                <template v-else>This is...</template>
+              </CardBody>
+            </Card>
+          </Column>
         </Row>
       </Container>
       <div class="cp-lists">
@@ -79,6 +106,16 @@ const {
 </template>
 
 <style lang="scss">
+.detail {
+  &-image {
+    display: block;
+
+    img {
+      display: block;
+    }
+  }
+}
+
 .cp-lists {
   background-color: var(--color-white);
 }

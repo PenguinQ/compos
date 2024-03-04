@@ -14,7 +14,7 @@ const bodyStyles = reactive({
 </script>
 
 <template>
-  <div class="cp-card__body" :styles="bodyStyles">
+  <div class="cp-card__body" :style="bodyStyles">
     <slot />
   </div>
 </template>

@@ -11,6 +11,7 @@
   }
 
   .cp-#{$for}[#{$dataSelector}="auto"] #{$childSelector} {
+    max-width: 100%;
     width: auto;
     flex: 0 0 auto;
   }
@@ -26,7 +27,7 @@
 
     .cp-#{$for}[#{$dataSelector}="#{$i}"] #{$childSelector} {
       max-width: calc((#{$baseWidth} - #{$gutterColumn}) + #{$additionalWidth});
-      flex-basis: calc((#{$baseWidth} - #{$gutterColumn}) + #{$additionalWidth});
+      flex: 0 0 calc((#{$baseWidth} - #{$gutterColumn}) + #{$additionalWidth});
     }
   }
 }

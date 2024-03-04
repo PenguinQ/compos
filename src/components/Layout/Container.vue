@@ -31,7 +31,7 @@ const containerClass = reactive({
 
 @include screen-md {
   .cp-container {
-    &:not([data-cp-breakpoint]):not([class^="cp-container--fluid"]) {
+    &:not([data-cp-breakpoint]):not([class*="cp-container--fluid"]) {
       max-width: 1320px;
     }
 
