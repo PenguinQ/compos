@@ -5,22 +5,23 @@ export default { inheritAttrs: false };
 import { computed, reactive } from 'vue';
 import { RouterLink } from 'vue-router';
 import type { AnchorHTMLAttributes } from 'vue';
-import type { RouterLinkProps } from 'vue-router';
+import type { RouterLinkProps, RouteLocationRaw } from 'vue-router';
 import type * as CSS from 'csstype';
+
 import { useScopeId } from '@hooks';
 
-interface Props extends /* @vue-ignore */ AnchorHTMLAttributes, RouterLinkProps {
+interface CardProps extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLinkProps, 'to'> {
   clicky?: boolean;
   margin?: CSS.Property.Margin;
   padding?: CSS.Property.Padding;
   variant?: 'outline' | 'flat';
   target?: '_self' | '_blank';
+  to?: RouteLocationRaw;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<CardProps>(), {
   clicky: false,
   target: '_self',
-  to: '',
 });
 
 const scope_id = useScopeId();
@@ -45,13 +46,14 @@ const cardStyles = reactive({
       :[scope_id]="''"
       v-bind="$attrs"
       :class="cardClass"
-      :href="to as string"
+      :href="(to as string)"
       :target="target"
       :style="cardStyles"
       rel="noopener"
     >
       <slot />
     </a>
+    <!-- @vue-ignore -->
     <RouterLink v-else v-bind="$props" v-slot="{ href, navigate }" custom>
       <a
         :[scope_id]="''"
