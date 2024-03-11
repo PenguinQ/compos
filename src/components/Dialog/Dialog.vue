@@ -3,7 +3,7 @@ import type * as CSS from 'csstype';
 
 import Text from '@components/Text'
 import Overlay from '@components/Overlay'
-import { X } from '@icons';
+import { IconX } from '@icons';
 
 interface Props {
   fullscreen?: boolean;
@@ -68,7 +68,7 @@ const closeDialog = () => {
         aria-label="Close"
         @click="closeDialog"
       >
-        <X size="24" />
+        <IconX size="24" />
       </button>
       <div v-if="title || $slots.header" class="cp-dialog-header">
         <Text v-if="title && !$slots.header" class="cp-dialog__title" heading="3" textAlign="center">

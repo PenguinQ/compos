@@ -2,10 +2,10 @@
 import Button from '@components/Button';
 import Text from '@components/Text';
 import {
-  ChevronDoubleRight,
-  ChevronDoubleLeft,
-  ChevronLeft,
-  ChevronRight,
+  IconChevronDoubleRight,
+  IconChevronDoubleLeft,
+  IconChevronLeft,
+  IconChevronRight,
 } from '@icons';
 
 type Props = {
@@ -39,13 +39,13 @@ defineEmits([
       @click="$emit('clickFirst')"
       :disabled="disabled ? true : first_page ? true : false"
     >
-      <ChevronDoubleLeft size="18" color="var(--color-white)" />
+      <IconChevronDoubleLeft size="18" color="var(--color-white)" />
     </Button>
     <Button
       @click="$emit('clickPrev')"
       :disabled="disabled ? true : first_page ? true : false"
     >
-      <ChevronLeft size="18" color="var(--color-white)" />
+      <IconChevronLeft size="18" color="var(--color-white)" />
     </Button>
     <div class="pagination__detail">
       <Text v-if="disabled || !page && !total_page">-</Text>
@@ -55,13 +55,13 @@ defineEmits([
       @click="$emit('clickNext')"
       :disabled="disabled ? true : last_page ? true : false"
     >
-      <ChevronRight size="18" color="var(--color-white)" />
+      <IconChevronRight size="18" color="var(--color-white)" />
     </Button>
     <Button
       @click="$emit('clickLast')"
       :disabled="disabled ? true : last_page ? true : false"
     >
-      <ChevronDoubleRight size="18" color="var(--color-white)" />
+      <IconChevronDoubleRight size="18" color="var(--color-white)" />
     </Button>
   </div>
 </template>

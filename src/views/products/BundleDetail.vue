@@ -6,7 +6,7 @@ import Text from '@components/Text';
 import EmptyState from '@components/EmptyState';
 import { Shimmer } from '@components/Loader';
 import Navbar, { NavbarAction } from '@components/Navbar';
-import { PencilSquare, Trash } from '@icons';
+import { IconPencilSquare, IconTrash } from '@icons';
 
 import Error from '@assets/illustration/error.svg';
 
@@ -28,13 +28,13 @@ const {
         backgroundColor="var(--color-blue-3)"
         @click="router.push(`/bundle/edit/${data.id}`)"
       >
-        <PencilSquare color="#FFF" />
+        <IconPencilSquare color="#FFF" />
       </NavbarAction>
       <NavbarAction
         backgroundColor="var(--color-red-3)"
         @click="() => {}"
       >
-        <Trash color="#FFF" />
+        <IconTrash color="#FFF" />
       </NavbarAction>
     </template>
   </Navbar>

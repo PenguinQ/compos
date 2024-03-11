@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
-import { Plus, Dash } from '@icons';
+import { IconPlus, IconDash } from '@icons';
 
 interface Props extends /* @vue-ignore */ InputHTMLAttributes {
   disabled?: boolean;
@@ -63,7 +63,7 @@ const handleInput = (e: Event) => {
       @keydown="(e) => handleKeyDown(e, false)"
       @keyup="stopQuantityUpdate"
     >
-      <Dash size="28" />
+      <IconDash size="28" />
     </button>
     <input
       ref="input"
@@ -87,7 +87,7 @@ const handleInput = (e: Event) => {
       @keydown="(e) => handleKeyDown(e)"
       @keyup="stopQuantityUpdate"
     >
-      <Plus size="28" />
+      <IconPlus size="28" />
     </button>
   </div>
 </template>

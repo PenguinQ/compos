@@ -4,7 +4,7 @@ export default { inheritAttrs: false };
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
-import { Eye, EyeSlash } from '@icons';
+import { IconEye, IconEyeSlash } from '@icons';
 
 interface Props extends /* @vue-ignore */ InputHTMLAttributes {
   append?: string;
@@ -86,8 +86,8 @@ const togglePassword = () => {
           type="button"
           @click="togglePassword"
         >
-          <Eye v-if="!showPassword" />
-          <EyeSlash v-else />
+          <IconEye v-if="!showPassword" />
+          <IconEyeSlash v-else />
         </button>
         <slot name="append" />
         {{ append }}

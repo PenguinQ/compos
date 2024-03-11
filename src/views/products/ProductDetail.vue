@@ -8,7 +8,7 @@ import Navbar, { NavbarAction } from '@components/Navbar';
 import EmptyState from '@components/EmptyState';
 import Text from '@components/Text';
 import Link from '@components/Link';
-import { PencilSquare, Trash } from '@icons';
+import { IconPencilSquare, IconTrash } from '@icons';
 import { Column, Row, Container } from '@components/Layout';
 
 import { PRODUCT_DETAIL } from './constants';
@@ -34,13 +34,13 @@ const {
         backgroundColor="var(--color-blue-3)"
         @click="router.push(`/product/edit/${data.id}`)"
       >
-        <PencilSquare color="#FFF" />
+        <IconPencilSquare color="#FFF" />
       </NavbarAction>
       <NavbarAction
         backgroundColor="var(--color-red-3)"
         @click="deleteProduct"
       >
-        <Trash color="#FFF" />
+        <IconTrash color="#FFF" />
       </NavbarAction>
     </template>
   </Navbar>

@@ -4,13 +4,30 @@ import fs from 'fs-extra';
 import chalk from 'chalk';
 import ora from 'ora';
 
-import { setComponentName } from './icons-helper.ts';
+import { setFileName } from './icons-helper.ts';
 import type { ContentType } from './icons-build.ts'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const generateVueIcons = ({ name, source }: { name: string, source: string}) => {
+const dynamicTemplate = `<script setup lang="ts">
+import { defineAsyncComponent } from 'vue';
+import type { IconProps } from './types';
+
+interface DynamicIconProps extends IconProps {
+  name: string;
+}
+
+const props = defineProps<DynamicIconProps>();
+
+const DynamicIcon = defineAsyncComponent(() => import(\`./icon-\${props.name}.vue\`));
+</script>
+
+<template>
+  <component :is="DynamicIcon" />
+</template>`;
+
+const staticTemplate = ({ name, source }: { name: string, source: string}) => {
   const color = 'var(--color-black, #000)';
   const iconName = name.replaceAll('_', '-');
 
@@ -50,27 +67,32 @@ defineExpose({ ref: iconRef });
 `;
 };
 
-const generateVueComponents = (glyphs: ContentType[]) => {
-  const log = chalk.hex('#70EAFA');
-  const bold = chalk.bold;
-  const spinner = ora(`${bold('Generating SVG components...')}`);
-  let count = 0;
+const generateVueComponents = async (glyphs: ContentType[]) => {
+  try {
+    const log = chalk.hex('#70EAFA');
+    const bold = chalk.bold;
+    const spinner = ora(`${bold('Generating icon components...')}`);
+    let count = 0;
 
-  spinner.start();
+    spinner.start();
 
-  glyphs.map(glyph => {
-    const { name, source } = glyph;
-    const componentName = setComponentName(name);
-    const componentContent = generateVueIcons({ name, source });
+    await fs.outputFile(path.join(__dirname, `../../components/icons/icon.vue`), dynamicTemplate);
 
-    fs.outputFile(path.join(__dirname, `../../components/icons/${componentName}.vue`), componentContent);
+    for (const glyph of glyphs) {
+      const { name, source } = glyph;
+      const fileName = setFileName(name);
 
-    count += 1;
+      await fs.outputFile(path.join(__dirname, `../../components/icons/${fileName}.vue`), staticTemplate({ name, source }));
+
+      count += 1;
+    }
 
     if (count === glyphs.length) {
       spinner.stopAndPersist({ symbol: '✅', text: `${log(`(${count}/${glyphs.length})`)} ${bold(`Icon components generated\n\nIcon components are located in /src/components/icons`)}` });
     }
-  });
+  } catch (error) {
+    console.error('Error:', error)
+  }
 };
 
-export default generateVueComponents;
+export { generateVueComponents };

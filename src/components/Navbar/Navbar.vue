@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
-import { ArrowLeftShort } from '@icons';
+import { IconArrowLeftShort } from '@icons';
 
 export type Props = {
   title: string;
@@ -24,7 +24,7 @@ const navbarClass = reactive({
       type="button"
       @click="$emit('back')"
     >
-      <ArrowLeftShort color="white" size="42" />
+      <IconArrowLeftShort color="white" size="42" />
     </button>
     <h2 class="cp-navbar__title">{{ title }}</h2>
     <div v-if="$slots.default" class="cp-navbar__items">

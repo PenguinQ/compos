@@ -5,7 +5,9 @@ const { upperFirst, camelCase } = lodash;
 const setComponentName = (name: string) => {
   const splittedName = name.split('_');
 
-  return `${upperFirst(camelCase(splittedName.join('_')))}`;
+  return `Icon${upperFirst(camelCase(splittedName.join('-')))}`;
 };
 
-export { setComponentName };
+const setFileName = (name: string) => `icon-${name.split('_').join('-')}`;
+
+export { setComponentName, setFileName };

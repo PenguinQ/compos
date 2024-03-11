@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
-import { Check } from '@icons';
+import { IconCheck } from '@icons';
 
 interface Props extends /* @vue-ignore */ InputHTMLAttributes {
   class?: string;
@@ -101,7 +101,7 @@ const handleKeydown = (e: KeyboardEvent) => {
         @input="handleChange"
       />
       <div class="cp-checkbox__box">
-        <Check color="var(--color-white)" />
+        <IconCheck color="var(--color-white)" />
       </div>
     </div>
     <span v-if="label" class="cp-checkbox__label">{{ label }}</span>

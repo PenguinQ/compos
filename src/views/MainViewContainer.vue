@@ -5,10 +5,10 @@ import { Tab, Tabs } from '@components/Tabs';
 import { BottomNavbar, BottomNavbarButton } from '@components/BottomNavbar';
 
 import {
-  Archive,
-  ArchiveFill,
-  Basket,
-  BasketFill,
+  IconArchive,
+  IconArchiveFill,
+  IconBasket,
+  IconBasketFill,
 } from '@icons';
 </script>
 

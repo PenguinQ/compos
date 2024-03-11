@@ -4,7 +4,7 @@ import List from './List.vue';
 import ListItem from './ListItem.vue';
 import ListTitle from './ListTitle.vue';
 import ListSubtitle from './ListSubtitle.vue';
-import IconTest from './TestingIcon.vue';
+import Icon, { IconBag } from '@icons';
 
 const meta: Meta<typeof List> = {
   component: List,
@@ -22,7 +22,7 @@ type Story = StoryObj<typeof List>;
 
 export const Default: Story = {
   render: (args: any) => ({
-    components: { List, ListItem, ListTitle, ListSubtitle, IconTest },
+    components: { List, ListItem, ListTitle, ListSubtitle, Icon, IconBag },
     setup() {
       const items = [
         {
@@ -46,7 +46,6 @@ export const Default: Story = {
       return { args, items };
     },
     template: `
-      <IconTest name="ArchiveFill" />
       <br />
       <List :items="items" />
       <br />
