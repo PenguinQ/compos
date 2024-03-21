@@ -1,7 +1,7 @@
 <script setup lang="ts">
 export type DescriptionListItemProps = {
   title?: string;
-  description?: string;
+  description?: string | number;
 };
 
 defineProps<DescriptionListItemProps>();

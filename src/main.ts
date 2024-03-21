@@ -10,8 +10,9 @@ import './assets/main.scss';
 const pinia = createPinia();
 const app = createApp(App);
 
-initDB();
-
 app.use(router);
 app.use(pinia);
+
+initDB();
+
 app.mount('#app');

@@ -22,7 +22,9 @@ export const useProductDetail = () => {
       id: params.id as string,
       normalizer: detailNormalizer,
     }),
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
+      const { code } = error as { code: number, message: string };
+
       console.error('[ERROR] Failed to get the product detail.', error);
     },
     onSuccess: (response: any) => {

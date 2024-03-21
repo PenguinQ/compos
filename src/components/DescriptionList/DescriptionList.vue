@@ -6,7 +6,7 @@ import { reactive, defineAsyncComponent } from 'vue';
 
 type DescriptionListItem = {
   title: string;
-  description: string;
+  description: string | number;
   props?: object;
 };
 

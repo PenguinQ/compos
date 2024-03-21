@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
-import * as CSS from 'csstype';
+import type * as CSS from 'csstype';
 import type { ButtonHTMLAttributes } from 'vue';
 
 interface Props extends /* @vue-ignore */ ButtonHTMLAttributes {

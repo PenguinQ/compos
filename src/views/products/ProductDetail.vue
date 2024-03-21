@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useProductDetail } from './hooks/ProductDetail.hook';
 
@@ -7,9 +8,11 @@ import Card, { CardHeader, CardTitle, CardBody } from '@components/Card';
 import Navbar, { NavbarAction } from '@components/Navbar';
 import EmptyState from '@components/EmptyState';
 import Text from '@components/Text';
+import Label from '@components/Label';
 import Link from '@components/Link';
-import { IconPencilSquare, IconTrash } from '@icons';
 import { Column, Row, Container } from '@components/Layout';
+import DescriptionList from '@components/DescriptionList';
+import { IconPencilSquare, IconTrash } from '@icons';
 
 import { PRODUCT_DETAIL } from './constants';
 
@@ -17,29 +20,16 @@ import NoImage from '@assets/illustration/no_image.svg';
 import Error from '@assets/illustration/error.svg';
 
 const router = useRouter();
-const {
-  data,
-  refetch,
-  isError,
-  isLoading,
-  deleteProduct,
-  deleteProductLoading,
-} = useProductDetail();
+const { data, refetch, isError, isLoading, deleteProduct, deleteProductLoading } = useProductDetail();
 </script>
 
 <template>
   <Navbar :title="data ? data.name : ''" sticky>
     <template v-if="!isError && !isLoading" #action>
-      <NavbarAction
-        backgroundColor="var(--color-blue-3)"
-        @click="router.push(`/product/edit/${data.id}`)"
-      >
+      <NavbarAction backgroundColor="var(--color-blue-3)" @click="router.push(`/product/edit/${data.id}`)">
         <IconPencilSquare color="#FFF" />
       </NavbarAction>
-      <NavbarAction
-        backgroundColor="var(--color-red-3)"
-        @click="deleteProduct"
-      >
+      <NavbarAction backgroundColor="var(--color-red-3)" @click="deleteProduct">
         <IconTrash color="#FFF" />
       </NavbarAction>
     </template>
@@ -59,76 +49,175 @@ const {
     <Text v-if="isLoading">Loading...</Text>
     <template v-else>
       <Container>
-        <Row>
-          <Column :col="{ default: 12, md: 'auto' }">
-            <Card>
-              <picture class="detail-image">
-                <img :src="`${data.image.length ? data.image[0] : NoImage}`" :alt="`${data.name} image`" />
-              </picture>
-            </Card>
-          </Column>
-          <Column>
-            <Card>
-              <CardHeader>
-                <CardTitle>Details</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <pre style="overflow: auto; margin: 0;">
-                  {{ data }}
-                </pre>
-              </CardBody>
-            </Card>
-          </Column>
-          <Column :col="{ default: 12 }">
-            <Card>
-              <CardHeader>
-                <CardTitle>Variants</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <template v-if="!data.variant.length">No shit</template>
-                <template v-else>This is...</template>
-              </CardBody>
-            </Card>
-          </Column>
-        </Row>
-      </Container>
-      <div class="cp-lists">
-        <div class="cp-list">
-          <Text class="cp-list__title" heading="4">Name</Text>
-          <Text class="cp-list__description">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit.
-          </Text>
+        <div class="product-detail">
+          <Card>
+            <CardBody>
+              <Row>
+                <Column :col="{ default: 12, md: 'auto' }">
+                  <picture class="detail-image">
+                    <img :src="`${data.image.length ? data.image[0] : NoImage}`" :alt="`${data.name} image`" />
+                  </picture>
+                </Column>
+                <Column>
+                  <DescriptionList
+                    :items="[
+                      {
+                        title: 'Name',
+                        description: data.name,
+                      },
+                      {
+                        title: 'Description',
+                        description: data.description ? data.description : '-',
+                      },
+                      {
+                        title: 'By',
+                        description: data.by ? data.by : '-',
+                      },
+                      {
+                        title: 'Price',
+                        description: `${data.price ? data.price : '-'}`,
+                      },
+                      {
+                        title: 'Stock',
+                        description: `${data.stock ? data.stock : '-'}`,
+                      },
+                      {
+                        title: 'SKU',
+                        description: data.sku ? data.sku : '-',
+                      },
+                    ]"
+                  />
+                </Column>
+              </Row>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Variants</CardTitle>
+            </CardHeader>
+            <CardBody>
+              <EmptyState
+                v-if="!data.variant.length"
+                title="Hmm..."
+                description="This product doesn't have any variants."
+                margin="16px 0"
+              />
+              <template v-else>
+                <div class="product-variants">
+                  <div v-for="variant in data.variant" class="product-variant">
+                    <picture class="product-variant__image">
+                      <img :src="`${variant.image.length ? variant.image[0] : NoImage}`" :alt="`${variant.name} image`" />
+                    </picture>
+                    <div class="product-variant__detail">
+                      <Text class="product-variant__name" body="large" as="h4">
+                        <Label v-if="!variant.active" color="red">Inactive</Label>
+                        {{ variant.name }}
+                      </Text>
+                      <Text class="product-variant__description">
+                        Price: {{ variant.price }} | Stock: {{ variant.stock }}
+                      </Text>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </CardBody>
+          </Card>
         </div>
-      </div>
-      <img style="width: 100px; height: 100px; object-fit: contain;" v-for="image in data.image" :src="image" />
+      </Container>
     </template>
   </template>
 </template>
 
-<style lang="scss">
-.detail {
-  &-image {
-    display: block;
+<style lang="scss" scoped>
+.product-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  > .cp-card {
+    border-radius: 0;
+  }
+}
+
+.product-variants {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.product-variant {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  &__image {
+    width: 80px;
+    height: 80px;
+    border: 1px solid rgba(46, 64, 87, 0.4);
+    border-radius: 4px;
+    overflow: hidden;
 
     img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+  }
+
+  &__detail {
+    flex: 1 0 auto;
+  }
+
+  &__name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+  }
+
+  &__description {
+    opacity: 0.8;
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+}
+
+.detail {
+  &-image {
+    max-width: 180px;
+    max-height: 180px;
+    width: 180px;
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.12),
+      0 1px 2px rgba(0, 0, 0, 0.24);
+    border-radius: 4px;
+    display: block;
+    overflow: hidden;
+    margin: 0 auto;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
       display: block;
     }
   }
 }
 
-.cp-lists {
-  background-color: var(--color-white);
-}
+@include screen-md {
+  .product-detail {
+    padding: 0;
 
-.cp-list {
-  padding: 8px 16px;
-
-  &__title {
-    margin-bottom: 4px;
+    > .cp-card {
+      border-radius: 8px;
+    }
   }
 
-  &__description {
-    margin-bottom: 0;
+  .detail-image {
+    max-width: 240px;
+    max-height: 240px;
+    width: 240px;
   }
 }
 </style>
