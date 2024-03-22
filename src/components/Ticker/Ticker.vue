@@ -1,8 +1,19 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref, reactive, useSlots, watch, onBeforeMount, onMounted, onUnmounted } from 'vue';
+import {
+  computed,
+  defineAsyncComponent,
+  reactive,
+  ref,
+  useSlots,
+  watch,
+  onBeforeMount,
+  onMounted,
+  onUnmounted,
+} from 'vue';
+import type { VNode } from 'vue';
 import type { TickerItemProps } from './TickerItem.vue';
 
-type TickerItemObject = { props?: object; } & TickerItemProps;
+type TickerItemObject = { props?: object } & TickerItemProps;
 
 type TickerProps = {
   activeIndex?: number;
@@ -11,40 +22,56 @@ type TickerProps = {
   items?: TickerItemObject[];
 };
 
+type TickerState = {
+  active_index: number;
+  active_type: string;
+  items: VNode[];
+  length: number;
+  types: string[];
+};
+
 const props = withDefaults(defineProps<TickerProps>(), {
   activeIndex: 0,
-  autoplay: true,
-  autoplayTimeout: 3000,
+  autoplay: false,
+  autoplayTimeout: 5000,
 });
 
 const TickerItem = defineAsyncComponent(() => import('./TickerItem.vue'));
 const slots = useSlots();
-const slider = ref();
-const slider_index = ref(props.activeIndex);
-const slider_length = ref(0);
-let autoplayInterval: ReturnType<typeof setInterval>;
+const ticker_slider = ref();
 
-const tickerClass = reactive({
-  'cp-ticker': true,
+const ticker = reactive<TickerState>({
+  active_index: props.activeIndex,
+  active_type: '',
+  items: [],
+  length: 0,
+  types: [],
 });
+const ticker_class = computed(() => ({
+  'cp-ticker': true,
+  'cp-ticker--info': ticker.active_type === 'info',
+  'cp-ticker--warning': ticker.active_type === 'warning',
+  'cp-ticker--error': ticker.active_type === 'error',
+}));
+let autoplay_interval: ReturnType<typeof setInterval>;
 
 const handleNext = () => {
-  if (slider_index.value === slider_length.value - 1) {
-    slider_index.value = 0;
+  if (ticker.active_index === ticker.length - 1) {
+    ticker.active_index = 0;
   } else {
-    slider_index.value += 1;
+    ticker.active_index += 1;
   }
 };
 
-const endAutoplay = () => clearInterval(autoplayInterval);
+const endAutoplay = () => clearInterval(autoplay_interval);
 
 const startAutoplay = () => {
   endAutoplay();
-  autoplayInterval = setInterval(handleNext, props.autoplayTimeout);
+  autoplay_interval = setInterval(handleNext, props.autoplayTimeout);
 };
 
 const handleClickControl = (index: number) => {
-  slider_index.value = index - 1;
+  ticker.active_index = index - 1;
 };
 
 const handleMouseEnter = () => {
@@ -55,33 +82,50 @@ const handleMouseLeave = () => {
   if (props.autoplay) startAutoplay();
 };
 
-const getSlotLength = (slots: unknown) => {
-  let child_count = 0;
+const getSlotDetail = (slots: VNode[]) => {
+  let slot_types: string[] = [];
+  let slot_children: VNode[] = [];
 
-  (slots as []).forEach((slot) => {
-    const { children, type } = slot;
+  slots.forEach((slot: VNode) => {
+    const { children, type, props } = slot;
 
     if (typeof type === 'symbol') {
-      if (children && typeof children === 'object') child_count += (children as []).length;
+      if (children && typeof children === 'object') {
+        (children as []).forEach((child: any) => {
+          slot_types.push(child.props.type ? child.props.type : null);
+          slot_children.push(child);
+        });
+      }
     } else {
-      child_count += 1;
+      slot_types.push(props?.type ? props.type : null);
+      slot_children.push(slot);
     }
   });
 
-  return child_count;
+  return {
+    length: slot_types.length,
+    types: slot_types,
+    children: slot_children,
+  };
 };
 
 onBeforeMount(() => {
   if (props.items && slots.default) {
-    console.error(`[Ticker] Don't use items & slot at the same time, choose either using items or slot.`)
+    console.error(`[Ticker] Don't use items & slot at the same time, choose either using items or slot.`);
   } else {
-    if (props.items) slider_length.value = props.items.length;
-    if (slots.default) slider_length.value = getSlotLength(slots.default());
+    if (props.items) ticker.length = props.items.length;
+    if (slots.default) {
+      const { length, types, children } = getSlotDetail(slots.default());
+
+      ticker.length = length;
+      ticker.types = types;
+      ticker.items = children;
+    }
   }
 });
 
 onMounted(() => {
-  if (props.autoplay && slider_length.value > 1) startAutoplay();
+  if (props.autoplay && ticker.length > 1) startAutoplay();
 });
 
 onUnmounted(() => endAutoplay());
@@ -90,53 +134,76 @@ watch(
   () => props.items,
   (items) => {
     if (items) {
-      slider_length.value = items.length;
-      slider_index.value = items.length > 1 ? items.length - 2 : 0;
+      ticker.length = items.length;
+      ticker.active_index = 0;
 
       if (props.autoplay) items.length > 1 ? startAutoplay() : endAutoplay();
     }
+  },
+  { deep: true },
+);
+
+watch(
+  () => ticker.active_index,
+  (index) => {
+    ticker.active_type = ticker.types[index];
   },
 );
 
 if (slots.default) {
   watch(slots.default, (slot) => {
-    const default_slot = getSlotLength(slot);
+    const { length, types, children } = getSlotDetail(slot);
 
-    slider_length.value = default_slot;
-    slider_index.value = default_slot > 1 ? default_slot - 2 : 0;
+    ticker.length = length;
+    ticker.types = types;
+    ticker.items = children;
+    ticker.active_index = 0;
 
-    if (props.autoplay) default_slot > 1 ? startAutoplay() : endAutoplay();
+    if (props.autoplay) length > 1 ? startAutoplay() : endAutoplay();
   });
 }
 </script>
 
 <template>
-  <div :class="tickerClass" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
+  <div
+    :class="ticker_class"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+  >
     <div class="cp-ticker__wrapper">
       <div
-        ref="slider"
-        class="cp-ticker__container"
-        :style="{ transform: `translate3d(-${100 * slider_index}%, 0, 0)` }"
+        ref="ticker_slider"
+        class="cp-ticker-items"
+        :style="{ transform: `translate3d(-${100 * ticker.active_index}%, 0, 0)` }"
       >
         <template v-if="items && !$slots.default">
           <component
+            v-for="(item, index) in items"
+            v-bind="item.props"
             :is="TickerItem"
             :key="item.title"
-            v-for="item in items"
-            v-bind="item.props"
             :title="item.title"
             :description="item.description"
+            :data-cp-active="ticker.active_index === index ? true : undefined"
           />
         </template>
-        <slot v-if="$slots.default && !items" />
+        <template v-if="$slots.default && !items">
+          <component
+            v-for="(item, index) in ticker.items"
+            :is="item"
+            :key="index"
+            :data-cp-active="ticker.active_index === index ? true : undefined"
+          />
+        </template>
       </div>
-      <div v-if="slider_length > 1" class="cp-ticker-control">
+      <div v-if="ticker.length > 1" class="cp-ticker-controls">
         <span
-          :key="n"
-          v-for="n in slider_length"
-          class="cp-ticker-control__item"
-          :data-cp-active="slider_index === n - 1 ? true : undefined"
-          @click="handleClickControl(n)"
+          :key="index"
+          v-for="index in ticker.length"
+          class="cp-ticker-control"
+          role="button"
+          :data-cp-active="ticker.active_index === index - 1 ? true : undefined"
+          @click="handleClickControl(index)"
         />
       </div>
     </div>
@@ -144,38 +211,66 @@ if (slots.default) {
 </template>
 
 <style lang="scss">
+$root: '.cp-ticker';
+
 .cp-ticker {
+  border: 1px solid var(--color-black);
+  border-radius: 8px;
+  background-color: var(--color-white);
+  transition: all 280ms ease;
+
+  &--info {
+    border-color: #5c9dff;
+    background-color: #d6e7ff;
+  }
+
+  &--warning {
+    border-color: var(--color-yellow-1);
+    background-color: var(--color-yellow-5);
+  }
+
+  &--error {
+    background-color: var(--color-red-3);
+  }
+
   &__wrapper {
-    border: 1px solid var(--color-black);
-    border-radius: 8px;
-    background-color: var(--color-white);
     overflow: hidden;
   }
 
-  &__container {
+  &-items {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     transition: transform 280ms ease;
   }
 
-  &-control {
+  &-controls {
     display: flex;
     justify-content: center;
     gap: 4px;
-    bottom: 8px;
-    left: 50%;
     padding-bottom: 8px;
+  }
 
-    &__item {
-      width: 8px;
-      height: 8px;
-      background-color: var(--color-disabled-2);
-      border-radius: 50%;
-      transition: background-color 280ms ease;
-      cursor: pointer;
+  &-control {
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-disabled-2);
+    border-radius: 50%;
+    transition: background-color 280ms ease;
+    cursor: pointer;
 
-      &[data-cp-active] {
-        background-color: var(--color-black);
+    &[data-cp-active] {
+      background-color: var(--color-black);
+
+      #{$root}--info & {
+        background-color: white;
+      }
+
+      #{$root}--warning & {
+        background-color: var(--color-yellow-1);
+      }
+
+      #{$root}--error & {
+        background-color: white;
       }
     }
   }

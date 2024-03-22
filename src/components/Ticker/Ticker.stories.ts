@@ -3,6 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 
 import Ticker from './Ticker.vue';
 import TickerItem from './TickerItem.vue';
+import Card from '@components/Card';
+import Text from '@components/Text';
 
 const meta: Meta<typeof Ticker> = {
   component: Ticker,
@@ -38,24 +40,31 @@ type Story = StoryObj<typeof Ticker>;
 
 export const Default: Story = {
   render: (args) => ({
-    components: { Ticker, TickerItem },
+    components: { Ticker, TickerItem, Card, Text },
     setup() {
       const slotObject = ref([
         {
           title: 'Title One',
           description: 'Description one.',
+          type: 'info',
         }, {
           title: 'Title Two',
           description: 'Description two.',
+          type: 'warning',
         },
         {
           title: 'Title Three',
           description: 'Description three.',
-        }
+          type: 'error',
+        },
       ]);
 
-      const removeChild = () => {
-        slotObject.value.pop();
+      const addTicker = () => {
+        slotObject.value.push({
+          title: 'Title',
+          description: 'Description.',
+          type: 'error',
+        });
       };
 
       const tickerState = ref(false);
@@ -64,14 +73,31 @@ export const Default: Story = {
         tickerState.value = !tickerState.value;
       };
 
-      return { args, slotObject, removeChild, tickerState, toggleTicker };
+      return { args, slotObject, addTicker, tickerState, toggleTicker };
     },
     template: `
-      <Ticker></Ticker>
+        <button @click="addTicker">Add Ticker</button>
+        <Ticker v-bind="args" />
+
+        <button @click="toggleTicker">Toggle Ticker</button>
+        <Ticker>
+          <TickerItem v-if="tickerState" title="Ticker One Title" description="Ticker one description." />
+          <TickerItem title="Some ticker" description="Description for some ticker." />
+          <TickerItem
+            v-for="object in slotObject"
+            :title="object.title"
+            :description="object.description"
+            :type="object.type"
+          />
+        </Ticker>
+
+        <Card>
+          <Text>Text one</Text>
+          <Text>Text two</Text>
+          <Text v-if="tickerState">Text three</Text>
+        </Card>
       `,
-      // <Ticker v-bind="args" />
-      // <button @click="removeChild">Remove 1 Child</button>
-      // <button @click="toggleTicker">Toggle Ticker</button>
+      // <TickerItem v-if="tickerState" title="Ticker One Title" description="Ticker one description." type="info" />
       // <Ticker>
       //   <TickerItem v-if="tickerState" title="Ticker One Title" description="Ticker one description." type="info" />
       //   <TickerItem type="info">

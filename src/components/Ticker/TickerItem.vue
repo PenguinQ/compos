@@ -2,7 +2,7 @@
 export default { name: 'TickerItem' };
 </script>
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed } from 'vue';
 
 export type TickerItemProps = {
   title?: string;
@@ -12,12 +12,12 @@ export type TickerItemProps = {
 
 const props = defineProps<TickerItemProps>();
 
-const tickerClass = reactive({
+const tickerClass = computed(() => ({
   'cp-ticker-item': true,
   'cp-ticker-item--error': props.type === 'error',
   'cp-ticker-item--info': props.type === 'info',
   'cp-ticker-item--warning': props.type === 'warning',
-});
+}));
 </script>
 
 <template>
@@ -37,17 +37,5 @@ const tickerClass = reactive({
 .cp-ticker-item {
   flex: 0 0 100%;
   padding: 16px;
-
-  &--info {
-
-  }
-
-  &--warning {
-
-  }
-
-  &--error {
-
-  }
 }
 </style>

@@ -15,6 +15,11 @@
   --color-blue-3: #0063F7;
   --color-blue-4: #1271FF;
   --color-blue-5: #2B80FF;
+  --color-yellow-1: #FFE97F;
+  --color-yellow-2: #FFEE99;
+  --color-yellow-3: #FFF2B2;
+  --color-yellow-4: #FFF6CC;
+  --color-yellow-5: #FFFAE5;
 
   // Base Color
   --color-background: #FAFAFF;
@@ -24,6 +29,7 @@
   --color-secondary: var(--color-red-3);
   --color-success: var(--color-green-3);
   --color-danger: var(--color-red-3);
+  --color-warning: var(--color-yellow-3);
 
   // Neutral Color
   --color-disabled-background: #FCF7F8;

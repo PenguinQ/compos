@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useProductDetail } from './hooks/ProductDetail.hook';
 
@@ -14,6 +14,8 @@ import { Column, Row, Container } from '@components/Layout';
 import DescriptionList from '@components/DescriptionList';
 import { IconPencilSquare, IconTrash } from '@icons';
 
+import Ticker from '@components/Ticker';
+
 import { PRODUCT_DETAIL } from './constants';
 
 import NoImage from '@assets/illustration/no_image.svg';
@@ -21,6 +23,31 @@ import Error from '@assets/illustration/error.svg';
 
 const router = useRouter();
 const { data, refetch, isError, isLoading, deleteProduct, deleteProductLoading } = useProductDetail();
+
+const ticker_items = ref([
+  {
+    title: 'Title One',
+    description: 'Description one.',
+    type: 'info',
+  }, {
+    title: 'Title Two',
+    description: 'Description two.',
+    type: 'warning',
+  },
+  {
+    title: 'Title Three',
+    description: 'Description three.',
+    type: 'error',
+  },
+]);
+
+const addTicker = () => {
+  ticker_items.value.push({
+    title: 'Title',
+    description: 'Description.',
+    type: 'error',
+  });
+};
 </script>
 
 <template>
@@ -49,6 +76,8 @@ const { data, refetch, isError, isLoading, deleteProduct, deleteProductLoading }
     <Text v-if="isLoading">Loading...</Text>
     <template v-else>
       <Container>
+        <button @click="addTicker">Test</button>
+        <Ticker :items="ticker_items" />
         <div class="product-detail">
           <Card>
             <CardBody>
