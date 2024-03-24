@@ -1,25 +1,40 @@
 :root {
   // Monochromatic Color
-  --color-red-1: #DC0909;
-  --color-red-2: #F10909;
-  --color-red-3: #F43839;
-  --color-red-4: #F66C6D;
-  --color-red-5: #FA9C9E;
-  --color-green-1: #049153;
-  --color-green-2: #05A962;
-  --color-green-3: #06C270;
-  --color-green-4: #07DB7E;
-  --color-green-5: #08F38D;
-  --color-blue-1: #004FC4;
-  --color-blue-2: #0059DE;
-  --color-blue-3: #0063F7;
-  --color-blue-4: #1271FF;
-  --color-blue-5: #2B80FF;
-  --color-yellow-1: #FFE97F;
-  --color-yellow-2: #FFEE99;
+  --color-neutral-1: #F2F3F8;
+  --color-neutral-2: #D8DADF;
+  --color-neutral-3: #BEC0C7;
+  --color-neutral-4: #A4A7AE;
+  --color-neutral-5: #898D95;
+  --color-neutral-6: #6F747D;
+  --color-neutral-7: #555A64;
+  --color-red-1: #F6CACC;
+  --color-red-2: #F1A7A9;
+  --color-red-3: #EC8385;
+  --color-red-4: #E66063;
+  --color-red-5: #E35053;
+  --color-red-6: #DD2C2F;
+  --color-red-7: #D02224;
+  --color-green-1: #B7EFC5;
+  --color-green-2: #92E6A7;
+  --color-green-3: #6EDE8A;
+  --color-green-4: #4AD66D;
+  --color-green-5: #2DC653;
+  --color-green-6: #25A244;
+  --color-green-7: #208B3A;
+  --color-blue-1: #D6E7FF;
+  --color-blue-2: #ADCEFF;
+  --color-blue-3: #85B6FF;
+  --color-blue-4: #5C9DFF;
+  --color-blue-5: #237BFF;
+  --color-blue-6: #0A6CFF;
+  --color-blue-7: #005AE0;
+  --color-yellow-1: #FFFAE5;
+  --color-yellow-2: #FFF6CC;
   --color-yellow-3: #FFF2B2;
-  --color-yellow-4: #FFF6CC;
-  --color-yellow-5: #FFFAE5;
+  --color-yellow-4: #FFEE99;
+  --color-yellow-5: #FFE97F;
+  --color-yellow-6: #FFE566;
+  --color-yellow-7: #FFE14C;
 
   // Base Color
   --color-background: #FAFAFF;
@@ -44,19 +59,21 @@
 
   --color-focus-outline: var(--color-blue-5);
 
-  // Font Size
-  --text-heading-1-size: 28px;
+  // Typpography
+  --text-heading-family: "Nunito", sans-serif;
+  --text-body-family: "DM Sans", sans-serif;
+  --text-heading-1-size: 26px;
   --text-heading-2-size: 24px;
-  --text-heading-3-size: 20px;
-  --text-heading-4-size: 16px;
-  --text-heading-5-size: 14px;
-  --text-heading-6-size: 12px;
-  --text-heading-1-height: 34px;
+  --text-heading-3-size: 22px;
+  --text-heading-4-size: 20px;
+  --text-heading-5-size: 18px;
+  --text-heading-6-size: 16px;
+  --text-heading-1-height: 32px;
   --text-heading-2-height: 30px;
-  --text-heading-3-height: 26px;
-  --text-heading-4-height: 22px;
-  --text-heading-5-height: 20px;
-  --text-heading-6-height: 18px;
+  --text-heading-3-height: 28px;
+  --text-heading-4-height: 26px;
+  --text-heading-5-height: 24px;
+  --text-heading-6-height: 22px;
   --text-body-large-size: 16px;
   --text-body-medium-size: 14px;
   --text-body-small-size: 12px;

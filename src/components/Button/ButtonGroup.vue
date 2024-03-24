@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed } from 'vue';
 
 type Props = {
   full?: boolean;
@@ -9,10 +9,10 @@ const props = withDefaults(defineProps<Props>(), {
   full: false,
 });
 
-const groupClass = reactive({
+const groupClass = computed(() => ({
   'cp-button-group': true,
   'cp-button-group--full': props.full,
-});
+}));
 </script>
 
 <template>

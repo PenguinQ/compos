@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed } from 'vue';
 import type { ButtonHTMLAttributes } from 'vue';
 import type * as CSS from 'csstype';
 
@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'button',
 });
 
-const buttonClass = reactive({
+const buttonClass = computed(() => ({
   'cp-button': true,
   'cp-button--full': props.full,
   'cp-button--outline': props.variant === 'outline',
@@ -29,7 +29,7 @@ const buttonClass = reactive({
   'cp-button--red': props.color === 'red',
   'cp-button--green': props.color === 'green',
   'cp-button--blue': props.color === 'blue',
-});
+}));
 </script>
 
 <template>

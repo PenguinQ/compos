@@ -24,7 +24,7 @@ const DynamicIcon = defineAsyncComponent(() => import(\`./icon-\${props.name}.vu
 </script>
 
 <template>
-  <component :is="DynamicIcon" />
+  <component :is="DynamicIcon" v-bind="$props" />
 </template>`;
 
 const staticTemplate = ({ name, source }: { name: string, source: string}) => {

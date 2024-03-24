@@ -3,12 +3,12 @@ export default { name: 'Tabs', inheritAttrs: false };
 </script>
 <script setup lang="ts">
 import {
+  computed,
   reactive,
   ref,
   watch,
   onBeforeMount,
   onMounted,
-  getCurrentInstance,
 } from 'vue';
 import type { VNode } from 'vue'
 import type { Props as TabProps } from './Tab.vue';
@@ -37,11 +37,11 @@ const emits = defineEmits(['update:modelValue']);
 const scope_id = useScopeId();
 const tabs_container = ref();
 const active_index = ref<number>(0);
-const tabs_class = reactive({
+const tabs_class = computed(() => ({
   'cp-tabs-controls': true,
   'cp-tabs-controls--grow': props.grow,
   'cp-tabs-controls--sticky': props.sticky,
-});
+}));
 const tab_style = reactive({
   top: props.sticky,
 });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onBeforeMount } from 'vue';
+import { ref, computed, reactive, watchEffect } from 'vue';
 import type * as CSS from 'csstype';
 
 interface Props {
@@ -42,17 +42,15 @@ const textStyle = reactive({
   margin: props.margin,
 });
 
-onBeforeMount(() => {
-  const { as, heading } = props;
-
-  if (as) {
-    markup.value = as;
+watchEffect(() => {
+  if (props.as) {
+    markup.value = props.as;
   } else {
-    if (heading && headingMap[heading]) markup.value = headingMap[heading];
+    if (props.heading && headingMap[props.heading]) markup.value = headingMap[props.heading];
   }
 });
 
-const textClass = reactive({
+const textClass = computed(() => ({
   'cp-text': true,
   'cp-text--heading-1': props.heading == 1,
   'cp-text--heading-2': props.heading == 2,
@@ -64,7 +62,7 @@ const textClass = reactive({
   'cp-text--body-medium': props.body === 'medium',
   'cp-text--body-small': props.body === 'small',
   'cp-text--body-micro': props.body === 'micro',
-});
+}));
 </script>
 
 <template>
@@ -76,7 +74,7 @@ const textClass = reactive({
 <style lang="scss">
 .cp-text {
   color: var(--color-black);
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--text-body-family);
   font-size: var(--text-body-medium-size);
   font-weight: 400;
   line-height: var(--text-body-medium-height);
@@ -105,7 +103,7 @@ const textClass = reactive({
   }
 
   &[class*="cp-text--heading"] {
-    font-family: "Nunito", sans-serif;
+    font-family: var(--text-heading-family);
     font-weight: 600;
   }
 

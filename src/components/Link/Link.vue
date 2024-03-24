@@ -41,13 +41,13 @@ const linkStyle = reactive({
   textDecoration: props.textDecoration,
   textTransform: props.textTransform,
 });
-const linkClass = reactive({
+const linkClass = computed(() => ({
   'cp-link': true,
   'cp-link--body-large': props.body === 'large',
   'cp-link--body-medium': props.body === 'medium',
   'cp-link--body-small': props.body === 'small',
   'cp-link--body-micro': props.body === 'micro',
-});
+}));
 </script>
 
 <template>

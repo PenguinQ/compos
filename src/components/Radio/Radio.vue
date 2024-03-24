@@ -21,10 +21,10 @@ const props = withDefaults(defineProps<Props>(), {
 const container = ref<HTMLLabelElement>();
 const input = ref<HTMLInputElement>();
 const isChecked = computed(() => props.modelValue === props.value);
-const radioClass = reactive({
+const radioClass = computed(() => ({
   'cp-radio': true,
   'cp-radio--full': props.full,
-});
+}));
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Enter') input.value?.click();

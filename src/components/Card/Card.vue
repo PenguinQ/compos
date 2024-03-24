@@ -26,13 +26,13 @@ const props = withDefaults(defineProps<CardProps>(), {
 
 const scope_id = useScopeId();
 const isExternal = computed(() => typeof props.to === 'string' && props.to.startsWith('http'));
-const cardClass = reactive({
+const cardClass = computed(() => ({
   'cp-card': true,
   'cp-card--link': props.to,
   'cp-card--clicky': props.clicky,
   'cp-card--flat': props.variant === 'flat',
   'cp-card--outline': props.variant === 'outline',
-});
+}));
 const cardStyles = reactive({
   margin: props.margin,
   padding: props.padding,

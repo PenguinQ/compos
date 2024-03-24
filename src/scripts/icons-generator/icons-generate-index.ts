@@ -42,6 +42,8 @@ export interface IconProps extends /* @vue-ignore */ SVGAttributes {
     const componentName = setComponentName(name);
     const fileName = setFileName(name);
 
+    // string += `export { default as ${componentName} } from './${fileName}.vue';\n`;
+
     string += `import ${componentName} from './${fileName}.vue';\n`;
   });
 

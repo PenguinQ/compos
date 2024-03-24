@@ -24,6 +24,7 @@ import Error from '@assets/illustration/error.svg';
 const router = useRouter();
 const { data, refetch, isError, isLoading, deleteProduct, deleteProductLoading } = useProductDetail();
 
+const ticker_index = ref(0);
 const ticker_items = ref([
   {
     title: 'Title One',
@@ -40,6 +41,10 @@ const ticker_items = ref([
     type: 'error',
   },
 ]);
+
+const setTickerIndex = () => {
+  ticker_index.value = 1;
+};
 
 const addTicker = () => {
   ticker_items.value.push({
@@ -75,9 +80,9 @@ const addTicker = () => {
   <template v-else>
     <Text v-if="isLoading">Loading...</Text>
     <template v-else>
+      <button @click="setTickerIndex">Set Ticker Index {{ ticker_index }}</button>
+      <Ticker :items="ticker_items" :activeIndex="ticker_index" />
       <Container>
-        <button @click="addTicker">Test</button>
-        <Ticker :items="ticker_items" />
         <div class="product-detail">
           <Card>
             <CardBody>

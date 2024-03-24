@@ -44,10 +44,10 @@ const isChecked = computed((): any => {
     if (typeof props.modelValue !== 'string') return props.modelValue;
   }
 });
-const checkboxClass = reactive({
+const checkboxClass = computed(() => ({
   'cp-checkbox': true,
   'cp-checkbox--full': props.full,
-});
+}));
 
 const handleChange = (e: Event) => {
   const checked = (e.target as HTMLInputElement).checked;

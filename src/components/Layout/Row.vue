@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 import type * as CSS from 'csstype';
 import type { ColumnType } from './Column.vue';
 
@@ -35,10 +35,10 @@ if (gutter) {
   }
 }
 
-const columnBreakpoints = reactive({
+const columnBreakpoints = computed(() => ({
   'data-cp-col': typeof col === 'object' ? col?.default : col ? col : undefined,
   'data-cp-col-md': typeof col === 'object' ? col?.md : undefined,
-});
+}));
 
 const rowStyle = reactive({
   '--gutter-col': gutters.col,

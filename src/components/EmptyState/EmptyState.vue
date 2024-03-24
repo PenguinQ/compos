@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 import type * as CSS from 'csstype';
 
 import Text from '../Text';
@@ -22,10 +22,10 @@ const props = withDefaults(defineProps<Props>(), {
   orientation: 'vertical',
 });
 
-const empty_state_class = reactive({
+const empty_state_class = computed(() => ({
   'cp-empty-state': true,
   'cp-empty-state--horizontal': props.orientation === 'horizontal',
-});
+}));
 const empty_state_style = reactive({
   height: props.height,
   margin: props.margin,

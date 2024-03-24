@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 import type * as CSS from 'csstype';
 
 type Props = {
@@ -14,11 +14,11 @@ const props = withDefaults(defineProps<Props>(), {
   animate: false,
 });
 
-const shimmerClass = reactive({
+const shimmerClass = computed(() => ({
   'cp-loader': true,
   'cp-loader--shimmer': true,
   'cp-loader--shimmer-animate': props.animate,
-});
+}));
 const shimmerStyle = reactive({
   width: props.width,
   height: props.height,

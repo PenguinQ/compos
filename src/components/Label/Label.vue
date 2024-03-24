@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed } from 'vue';
 
 interface Props {
   color?: 'red' | 'green' | 'blue';
@@ -8,13 +8,13 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const labelClass = reactive({
+const labelClass = computed(() => ({
   'cp-label': true,
   'cp-label--outline': props.variant === 'outline',
   'cp-label--red': props.color === 'red',
   'cp-label--green': props.color === 'green',
   'cp-label--blue': props.color === 'blue',
-});
+}));
 </script>
 
 <template>

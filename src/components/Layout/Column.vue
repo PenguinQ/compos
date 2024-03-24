@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 import type * as CSS from 'csstype';
 
 export interface ColumnType {
@@ -25,15 +25,15 @@ const props = defineProps<Props>();
 
 const { col, offset } = props;
 
-const columnBreakpoints = reactive({
+const columnBreakpoints = computed(() => ({
   'data-cp-col': typeof col === 'object' ? col?.default : col ? col : undefined,
   'data-cp-col-md': typeof col === 'object' ? col?.md : undefined,
-});
+}));
 
-const columnOffsets = reactive({
+const columnOffsets = computed(() => ({
   'data-cp-offset': typeof offset === 'object' ? offset?.default : offset ? offset : undefined,
   'data-cp-offset-md': typeof offset === 'object' ? offset?.md : undefined,
-});
+}));
 
 const columnStyle = reactive({
   'order': props.order,

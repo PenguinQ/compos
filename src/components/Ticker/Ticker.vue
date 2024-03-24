@@ -16,9 +16,21 @@ import type { TickerItemProps } from './TickerItem.vue';
 type TickerItemObject = { props?: object } & TickerItemProps;
 
 type TickerProps = {
+  /**
+   * Set the current or starting active slide.
+   */
   activeIndex?: number;
+  /**
+   * Set the ticker to autoplay.
+   */
   autoplay?: boolean;
-  autoplayTimeout?: number;
+  /**
+   * Set the ticker autoplay duration.
+   */
+  autoplayDuration?: number;
+  /**
+   * Set the item for each ticker.
+   */
   items?: TickerItemObject[];
 };
 
@@ -32,14 +44,13 @@ type TickerState = {
 
 const props = withDefaults(defineProps<TickerProps>(), {
   activeIndex: 0,
-  autoplay: false,
-  autoplayTimeout: 5000,
+  autoplay: true,
+  autoplayDuration: 1000,
 });
 
 const TickerItem = defineAsyncComponent(() => import('./TickerItem.vue'));
 const slots = useSlots();
 const ticker_slider = ref();
-
 const ticker = reactive<TickerState>({
   active_index: props.activeIndex,
   active_type: '',
@@ -67,7 +78,7 @@ const endAutoplay = () => clearInterval(autoplay_interval);
 
 const startAutoplay = () => {
   endAutoplay();
-  autoplay_interval = setInterval(handleNext, props.autoplayTimeout);
+  autoplay_interval = setInterval(handleNext, props.autoplayDuration);
 };
 
 const handleClickControl = (index: number) => {
@@ -82,6 +93,14 @@ const handleMouseLeave = () => {
   if (props.autoplay) startAutoplay();
 };
 
+const getItemTypes = (items: TickerItemObject[]) => {
+  return items.reduce((types: string[], item: TickerItemObject) => {
+    types.push(item.type ? item.type : '');
+
+    return types;
+  }, []);
+};
+
 const getSlotDetail = (slots: VNode[]) => {
   let slot_types: string[] = [];
   let slot_children: VNode[] = [];
@@ -91,8 +110,8 @@ const getSlotDetail = (slots: VNode[]) => {
 
     if (typeof type === 'symbol') {
       if (children && typeof children === 'object') {
-        (children as []).forEach((child: any) => {
-          slot_types.push(child.props.type ? child.props.type : null);
+        (children as []).forEach((child: VNode) => {
+          slot_types.push(child.props?.type ? child.props.type : null);
           slot_children.push(child);
         });
       }
@@ -113,19 +132,31 @@ onBeforeMount(() => {
   if (props.items && slots.default) {
     console.error(`[Ticker] Don't use items & slot at the same time, choose either using items or slot.`);
   } else {
-    if (props.items) ticker.length = props.items.length;
+    if (props.items) {
+      const types = getItemTypes(props.items);
+
+      ticker.active_type = types[props.activeIndex];
+      ticker.length = props.items.length;
+      ticker.types = types;
+    }
+
     if (slots.default) {
       const { length, types, children } = getSlotDetail(slots.default());
 
+      ticker.active_type = types[props.activeIndex];
+      ticker.items = children;
       ticker.length = length;
       ticker.types = types;
-      ticker.items = children;
     }
   }
 });
 
 onMounted(() => {
-  if (props.autoplay && ticker.length > 1) startAutoplay();
+  if (props.autoplay) {
+    ticker.length > 1 ? startAutoplay() : endAutoplay();
+  } else {
+    endAutoplay();
+  }
 });
 
 onUnmounted(() => endAutoplay());
@@ -134,8 +165,12 @@ watch(
   () => props.items,
   (items) => {
     if (items) {
+      const types = getItemTypes(items);
+
+      ticker.active_index = props.activeIndex;
+      ticker.active_type = types[props.activeIndex];
+      ticker.types = types;
       ticker.length = items.length;
-      ticker.active_index = 0;
 
       if (props.autoplay) items.length > 1 ? startAutoplay() : endAutoplay();
     }
@@ -144,8 +179,25 @@ watch(
 );
 
 watch(
-  () => ticker.active_index,
-  (index) => {
+  [() => props.activeIndex, () => props.autoplay],
+  ([index, autoplay], [old_index, _old_autoplay]) => {
+    if (autoplay) {
+      ticker.length > 1 ? startAutoplay() : endAutoplay();
+    } else {
+      endAutoplay();
+    }
+
+    if (index !== old_index) ticker.active_index = index;
+  },
+);
+
+watch(
+  [() => ticker.active_index, () => ticker.length],
+  ([index, length], [_prev_index, prev_length]) => {
+    if (length !== prev_length) {
+      if (props.autoplay) ticker.length > 1 ? startAutoplay() : endAutoplay();
+    }
+
     ticker.active_type = ticker.types[index];
   },
 );
@@ -154,10 +206,11 @@ if (slots.default) {
   watch(slots.default, (slot) => {
     const { length, types, children } = getSlotDetail(slot);
 
+    ticker.active_index = props.activeIndex;
+    ticker.active_type = types[props.activeIndex];
+    ticker.items = children;
     ticker.length = length;
     ticker.types = types;
-    ticker.items = children;
-    ticker.active_index = 0;
 
     if (props.autoplay) length > 1 ? startAutoplay() : endAutoplay();
   });
@@ -165,47 +218,42 @@ if (slots.default) {
 </script>
 
 <template>
-  <div
-    :class="ticker_class"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
-  >
-    <div class="cp-ticker__wrapper">
-      <div
-        ref="ticker_slider"
-        class="cp-ticker-items"
-        :style="{ transform: `translate3d(-${100 * ticker.active_index}%, 0, 0)` }"
-      >
-        <template v-if="items && !$slots.default">
-          <component
-            v-for="(item, index) in items"
-            v-bind="item.props"
-            :is="TickerItem"
-            :key="item.title"
-            :title="item.title"
-            :description="item.description"
-            :data-cp-active="ticker.active_index === index ? true : undefined"
-          />
-        </template>
-        <template v-if="$slots.default && !items">
-          <component
-            v-for="(item, index) in ticker.items"
-            :is="item"
-            :key="index"
-            :data-cp-active="ticker.active_index === index ? true : undefined"
-          />
-        </template>
-      </div>
-      <div v-if="ticker.length > 1" class="cp-ticker-controls">
-        <span
-          :key="index"
-          v-for="index in ticker.length"
-          class="cp-ticker-control"
-          role="button"
-          :data-cp-active="ticker.active_index === index - 1 ? true : undefined"
-          @click="handleClickControl(index)"
+  <div :class="ticker_class" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
+    <div
+      ref="ticker_slider"
+      class="cp-ticker-items"
+      :style="{ transform: `translate3d(-${100 * ticker.active_index}%, 0, 0)` }"
+    >
+      <template v-if="items && !$slots.default">
+        <component
+          v-for="(item, index) in items"
+          v-bind="item.props"
+          :is="TickerItem"
+          :key="item.title"
+          :title="item.title"
+          :description="item.description"
+          :type="item.type"
+          :data-cp-active="ticker.active_index === index ? true : undefined"
         />
-      </div>
+      </template>
+      <template v-if="$slots.default && !items">
+        <component
+          v-for="(item, index) in ticker.items"
+          :is="item"
+          :key="index"
+          :data-cp-active="ticker.active_index === index ? true : undefined"
+        />
+      </template>
+    </div>
+    <div v-if="ticker.length > 1" class="cp-ticker-controls">
+      <span
+        :key="index"
+        v-for="index in ticker.length"
+        class="cp-ticker-control"
+        role="button"
+        :data-cp-active="ticker.active_index === index - 1 ? true : undefined"
+        @click="handleClickControl(index)"
+      />
     </div>
   </div>
 </template>
@@ -214,23 +262,25 @@ if (slots.default) {
 $root: '.cp-ticker';
 
 .cp-ticker {
-  border: 1px solid var(--color-black);
+  border: 1px solid var(--color-neutral-4);
   border-radius: 8px;
-  background-color: var(--color-white);
+  background-color: var(--color-neutral-1);
+  overflow: hidden;
   transition: all 280ms ease;
 
+  &--error {
+    border-color: var(--color-red-4);
+    background-color: var(--color-red-1);
+  }
+
   &--info {
-    border-color: #5c9dff;
-    background-color: #d6e7ff;
+    border-color: var(--color-blue-4);
+    background-color: var(--color-blue-1);
   }
 
   &--warning {
-    border-color: var(--color-yellow-1);
-    background-color: var(--color-yellow-5);
-  }
-
-  &--error {
-    background-color: var(--color-red-3);
+    border-color: var(--color-yellow-4);
+    background-color: var(--color-yellow-1);
   }
 
   &__wrapper {
@@ -240,7 +290,7 @@ $root: '.cp-ticker';
   &-items {
     display: flex;
     align-items: stretch;
-    transition: transform 280ms ease;
+    transition: transform var(--transition-duration-normal) var(--transition-timing-function);
   }
 
   &-controls {
@@ -253,24 +303,24 @@ $root: '.cp-ticker';
   &-control {
     width: 8px;
     height: 8px;
-    background-color: var(--color-disabled-2);
+    background-color: var(--color-neutral-4);
     border-radius: 50%;
-    transition: background-color 280ms ease;
+    transition: background-color var(--transition-duration-normal) var(--transition-timing-function);
     cursor: pointer;
 
     &[data-cp-active] {
-      background-color: var(--color-black);
+      background-color: var(--color-neutral-7);
+
+      #{$root}--error & {
+        background-color: var(--color-red-4);
+      }
 
       #{$root}--info & {
-        background-color: white;
+        background-color: var(--color-blue-4);
       }
 
       #{$root}--warning & {
-        background-color: var(--color-yellow-1);
-      }
-
-      #{$root}--error & {
-        background-color: white;
+        background-color: var(--color-yellow-4);
       }
     }
   }

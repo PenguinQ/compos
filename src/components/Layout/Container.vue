@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed } from 'vue';
 
 interface Props {
   fluid?: boolean;
@@ -7,10 +7,10 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const containerClass = reactive({
+const containerClass = computed(() => ({
   'cp-container': true,
   'cp-container--fluid': props.fluid,
-});
+}));
 </script>
 
 <template>

@@ -10,27 +10,20 @@ const meta: Meta<typeof Ticker> = {
   component: Ticker,
   tags: ['autodocs'],
   argTypes: {
-    items: {
-      control: 'object',
+    activeIndex: {
+      control: 'number',
+    },
+    autoplay: {
+      control: 'boolean',
+    },
+    autoplayDuration: {
+      control: 'number',
     },
   },
   args: {
-    items: [
-      {
-        title: 'Item 1',
-        description: 'Dosanko Gal wa Namaramenkoi',
-      },
-      {
-        title: 'Item 2',
-        description:
-          'Shiki Tsubasa has just moved from Tokyo to Hokkaido in the middle of winter. Not quite appreciating how far apart towns are in the country, he gets off the taxi at the next town over from his destination so he can see the sights around his home, but he is shocked when he learns the "next town" is a 3-hour walk away. However, he also meets a cute Dosanko (born and raised in Hokkaido) gyaru named Fuyuki Minami who is braving 8 degrees celcius below 0 weather in the standard gyaru outfit of short skirts and bare legs!',
-      },
-      {
-        title: 'Item 3',
-        description:
-          'Shiki Tsubasa has just moved from Tokyo to Hokkaido in the middle of winter. Not quite appreciating how far apart towns are in the country, he gets off the taxi at the next town over from his destination so he can see the sights around his home, but he is shocked when he learns the "next town" is a 3-hour walk away. However, he also meets a cute Dosanko (born and raised in Hokkaido) gyaru named Fuyuki Minami who is braving 8 degrees celcius below 0 weather in the standard gyaru outfit of short skirts and bare legs!',
-      },
-    ],
+    activeIndex: 0,
+    autoplay: true,
+    autoplayDuration: 2000,
   },
 };
 
@@ -38,31 +31,76 @@ export default meta;
 
 type Story = StoryObj<typeof Ticker>;
 
-export const Default: Story = {
+export const Items: Story = {
+  render: (args) => ({
+    components: { Ticker, TickerItem, Card, Text },
+    setup() {
+      const index = ref(0);
+      const autoplay = ref(false);
+      const autoplay_duration = ref(2000);
+
+      return { args, index, autoplay, autoplay_duration };
+    },
+    template: `
+      <Ticker v-bind="args" />
+    `,
+  }),
+  argTypes: {
+    items: {
+      control: 'object',
+    },
+  },
+  args: {
+    items: [
+      {
+        title: 'Default Ticker',
+        description: 'Description for default ticker.',
+      },
+      {
+        title: 'Info Ticker',
+        description: 'Description for info ticker.',
+        type: 'info',
+      },
+      {
+        title: 'Warning Ticker',
+        description: 'Description for warning ticker.',
+        type: 'warning',
+      },
+      {
+        title: 'Error Ticker',
+        description: 'Description for error ticker.',
+        type: 'error',
+      },
+    ],
+  },
+};
+
+export const DefaultSlot: Story = {
   render: (args) => ({
     components: { Ticker, TickerItem, Card, Text },
     setup() {
       const slotObject = ref([
         {
-          title: 'Title One',
-          description: 'Description one.',
+          title: 'Info Ticker',
+          description: 'Description for info ticker.',
           type: 'info',
-        }, {
-          title: 'Title Two',
-          description: 'Description two.',
+        },
+        {
+          title: 'Warning Ticker',
+          description: 'Description for warning ticker.',
           type: 'warning',
         },
         {
-          title: 'Title Three',
-          description: 'Description three.',
+          title: 'Error Ticker',
+          description: 'Description for error ticker.',
           type: 'error',
         },
       ]);
 
       const addTicker = () => {
         slotObject.value.push({
-          title: 'Title',
-          description: 'Description.',
+          title: 'Dynamic Error Ticker',
+          description: 'Description for dynamic error ticker.',
           type: 'error',
         });
       };
@@ -76,40 +114,67 @@ export const Default: Story = {
       return { args, slotObject, addTicker, tickerState, toggleTicker };
     },
     template: `
-        <button @click="addTicker">Add Ticker</button>
-        <Ticker v-bind="args" />
-
-        <button @click="toggleTicker">Toggle Ticker</button>
-        <Ticker>
-          <TickerItem v-if="tickerState" title="Ticker One Title" description="Ticker one description." />
-          <TickerItem title="Some ticker" description="Description for some ticker." />
-          <TickerItem
-            v-for="object in slotObject"
-            :title="object.title"
-            :description="object.description"
-            :type="object.type"
-          />
-        </Ticker>
-
-        <Card>
-          <Text>Text one</Text>
-          <Text>Text two</Text>
-          <Text v-if="tickerState">Text three</Text>
-        </Card>
-      `,
-      // <TickerItem v-if="tickerState" title="Ticker One Title" description="Ticker one description." type="info" />
-      // <Ticker>
-      //   <TickerItem v-if="tickerState" title="Ticker One Title" description="Ticker one description." type="info" />
-      //   <TickerItem type="info">
-      //     <template #title>Berak</template>
-      //     <template #description>Berak description</template>
-      //   </TickerItem>
-      // </Ticker>
-
-    // <Ticker>
-    //     <TickerItem :key="object.title" v-for="object in slotObject" :title="object.title" :description="object.description" />
-    //     <TickerItem title="Ticker One Title" description="Ticker one description." type="info" />
-    //     <TickerItem v-if="appear" title="Ticker Two Title" description="Ticker two description." type="warning" />
-    //   </Ticker>
+      <Ticker v-bind="args">
+        <TickerItem title="Default Ticker" description="Description for default ticker" />
+        <TickerItem title="Info Ticker" description="Description for info ticker" type="info" />
+        <TickerItem title="Warning Ticker" description="Description for warning ticker" type="warning" />
+        <TickerItem title="Error Ticker" description="Description for error ticker" type="error" />
+      </Ticker>
+    `,
   }),
 };
+
+DefaultSlot.storyName = 'Default Slot';
+
+export const DefaultSlotLoop: Story = {
+  render: (args) => ({
+    components: { Ticker, TickerItem, Card, Text },
+    setup() {
+      return { args };
+    },
+    template: `
+      <Ticker
+        :autoplay="args.autoplay"
+        :autoplayDuration="args.autoplayDuration"
+        :activeIndex="args.activeIndex"
+      >
+        <TickerItem
+          v-for="item in args.items"
+          :title="item.title"
+          :description="item.title"
+          :type="item.type"
+        />
+      </Ticker>
+    `,
+  }),
+  argTypes: {
+    items: {
+      control: 'object',
+    },
+  },
+  args: {
+    items: [
+      {
+        title: 'Default Ticker',
+        description: 'Description for default ticker.',
+      },
+      {
+        title: 'Info Ticker',
+        description: 'Description for info ticker.',
+        type: 'info',
+      },
+      {
+        title: 'Warning Ticker',
+        description: 'Description for warning ticker.',
+        type: 'warning',
+      },
+      {
+        title: 'Error Ticker',
+        description: 'Description for error ticker.',
+        type: 'error',
+      },
+    ],
+  },
+};
+
+DefaultSlotLoop.storyName = 'Default Slot (Looping)';

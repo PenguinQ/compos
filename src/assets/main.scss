@@ -14,14 +14,14 @@ html {
 body {
   color: var(--color-black, #2E4057);
   background-color: var(--color-background, #FAFAFF);
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--text-body-family);
   font-size: var(--text-body-medium-size, 14px);
   line-height: var(--text-body-medium-height, 18px);
   font-weight: 400;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Nunito", sans-serif;
+  font-family: var(--text-heading-family);
   font-weight: 600;
 }
 

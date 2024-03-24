@@ -2,7 +2,7 @@
 export default { inheritAttrs: false };
 </script>
 <script setup lang="ts">
-import { reactive, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 
 type DescriptionListItem = {
   title: string;
@@ -31,12 +31,12 @@ type DescriptionListProps = {
 
 const props = defineProps<DescriptionListProps>();
 
-const listClass = reactive({
+const listClass = computed(() => ({
   'cp-description-list': true,
   'cp-description-list--horizontal': props.alignment === 'horizontal',
   'cp-description-list--rtl': props.direction === 'rtl',
   'cp-description-list--compact': props.density === 'compact',
-});
+}));
 
 const DescriptionListItem = defineAsyncComponent(() => import('./DescriptionListItem.vue'));
 </script>

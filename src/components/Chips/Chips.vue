@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed } from 'vue';
 
 interface Props {
   color?: 'red' | 'green' | 'blue';
@@ -8,13 +8,13 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const chipsClass = reactive({
+const chipsClass = computed(() => ({
   'cp-chips': true,
   'cp-chips--outline': props.variant === 'outline',
   'cp-chips--red': props.color === 'red',
   'cp-chips--green': props.color === 'green',
   'cp-chips--blue': props.color === 'blue',
-});
+}));
 </script>
 
 <template>
