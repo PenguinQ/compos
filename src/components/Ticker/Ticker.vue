@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   computed,
-  defineAsyncComponent,
   reactive,
   ref,
   useSlots,
@@ -11,6 +10,8 @@ import {
   onUnmounted,
 } from 'vue';
 import type { VNode } from 'vue';
+
+import TickerItem from './TickerItem.vue';
 import type { TickerItemProps } from './TickerItem.vue';
 
 type TickerItemObject = { props?: object } & TickerItemProps;
@@ -44,15 +45,14 @@ type TickerState = {
 
 const props = withDefaults(defineProps<TickerProps>(), {
   activeIndex: 0,
-  autoplay: true,
-  autoplayDuration: 1000,
+  autoplay: false,
+  autoplayDuration: 5000,
 });
 
-const TickerItem = defineAsyncComponent(() => import('./TickerItem.vue'));
 const slots = useSlots();
 const ticker_slider = ref();
 const ticker = reactive<TickerState>({
-  active_index: props.activeIndex,
+  active_index: 0,
   active_type: '',
   items: [],
   length: 0,
@@ -129,25 +129,23 @@ const getSlotDetail = (slots: VNode[]) => {
 };
 
 onBeforeMount(() => {
-  if (props.items && slots.default) {
-    console.error(`[Ticker] Don't use items & slot at the same time, choose either using items or slot.`);
-  } else {
-    if (props.items) {
-      const types = getItemTypes(props.items);
+  if (props.items) {
+    const types = getItemTypes(props.items);
 
-      ticker.active_type = types[props.activeIndex];
-      ticker.length = props.items.length;
-      ticker.types = types;
-    }
+    ticker.active_index = props.activeIndex > props.items.length - 1 ? 0 : props.activeIndex;
+    ticker.active_type = types[props.activeIndex];
+    ticker.length = props.items.length;
+    ticker.types = types;
+  }
 
-    if (slots.default) {
-      const { length, types, children } = getSlotDetail(slots.default());
+  if (slots.default) {
+    const { length, types, children } = getSlotDetail(slots.default());
 
-      ticker.active_type = types[props.activeIndex];
-      ticker.items = children;
-      ticker.length = length;
-      ticker.types = types;
-    }
+    ticker.active_index = props.activeIndex > length - 1 ? 0 : props.activeIndex;
+    ticker.active_type = types[props.activeIndex];
+    ticker.items = children;
+    ticker.length = length;
+    ticker.types = types;
   }
 });
 
@@ -181,13 +179,21 @@ watch(
 watch(
   [() => props.activeIndex, () => props.autoplay],
   ([index, autoplay], [old_index, _old_autoplay]) => {
-    if (autoplay) {
-      ticker.length > 1 ? startAutoplay() : endAutoplay();
-    } else {
-      endAutoplay();
+    if (autoplay !== _old_autoplay) {
+      if (autoplay) {
+        ticker.length > 1 ? startAutoplay() : endAutoplay();
+      } else {
+        endAutoplay();
+      }
     }
 
-    if (index !== old_index) ticker.active_index = index;
+    if (index !== old_index) {
+      if (index > ticker.length - 1) {
+        ticker.active_index = 0;
+      } else {
+        ticker.active_index = index;
+      }
+    }
   },
 );
 
@@ -224,7 +230,7 @@ if (slots.default) {
       class="cp-ticker-items"
       :style="{ transform: `translate3d(-${100 * ticker.active_index}%, 0, 0)` }"
     >
-      <template v-if="items && !$slots.default">
+      <template v-if="items">
         <component
           v-for="(item, index) in items"
           v-bind="item.props"
@@ -236,7 +242,7 @@ if (slots.default) {
           :data-cp-active="ticker.active_index === index ? true : undefined"
         />
       </template>
-      <template v-if="$slots.default && !items">
+      <template v-if="$slots.default">
         <component
           v-for="(item, index) in ticker.items"
           :is="item"

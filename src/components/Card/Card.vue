@@ -2,7 +2,7 @@
 export default { inheritAttrs: false };
 </script>
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
+import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import type { AnchorHTMLAttributes } from 'vue';
 import type { RouterLinkProps, RouteLocationRaw } from 'vue-router';
@@ -10,13 +10,21 @@ import type * as CSS from 'csstype';
 
 import { useScopeId } from '@hooks';
 
+import CardHeader from './CardHeader.vue';
+import CardTitle from './CardTitle.vue';
+import CardSubtitle from './CardSubtitle.vue';
+import CardBody from './CardBody.vue';
+
 interface CardProps extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLinkProps, 'to'> {
+  title?: string;
+  subtitle?: string;
+  content?: string;
   clicky?: boolean;
   margin?: CSS.Property.Margin;
   padding?: CSS.Property.Padding;
-  variant?: 'outline' | 'flat';
   target?: '_self' | '_blank';
   to?: RouteLocationRaw;
+  variant?: 'outline' | 'flat';
 }
 
 const props = withDefaults(defineProps<CardProps>(), {
@@ -33,10 +41,6 @@ const cardClass = computed(() => ({
   'cp-card--flat': props.variant === 'flat',
   'cp-card--outline': props.variant === 'outline',
 }));
-const cardStyles = reactive({
-  margin: props.margin,
-  padding: props.padding,
-});
 </script>
 
 <template>
@@ -48,12 +52,18 @@ const cardStyles = reactive({
       :class="cardClass"
       :href="(to as string)"
       :target="target"
-      :style="cardStyles"
+      :style="{ padding, margin }"
       rel="noopener"
     >
-      <slot />
+      <slot v-if="$slots.default" />
+      <template v-else>
+        <CardHeader v-if="title">
+          <CardTitle>{{ title }}</CardTitle>
+          <CardSubtitle v-if="subtitle">{{ subtitle }}</CardSubtitle>
+        </CardHeader>
+        <CardBody v-if="content">{{ content }}</CardBody>
+      </template>
     </a>
-    <!-- @vue-ignore -->
     <RouterLink v-else v-bind="$props" v-slot="{ href, navigate }" custom>
       <a
         :[scope_id]="''"
@@ -61,16 +71,30 @@ const cardStyles = reactive({
         :class="cardClass"
         :href="href"
         :target="target"
-        :style="cardStyles"
+        :style="{ padding, margin }"
         rel="noopener"
         @click="navigate"
       >
-        <slot />
+      <slot v-if="$slots.default" />
+      <template v-else>
+        <CardHeader v-if="title">
+          <CardTitle>{{ title }}</CardTitle>
+          <CardSubtitle v-if="subtitle">{{ subtitle }}</CardSubtitle>
+        </CardHeader>
+        <CardBody v-if="content">{{ content }}</CardBody>
+      </template>
       </a>
     </RouterLink>
   </template>
-  <div v-else :[scope_id]="''" v-bind="$attrs" :class="cardClass" :style="cardStyles">
-    <slot />
+  <div v-else :[scope_id]="''" v-bind="$attrs" :class="cardClass" :style="{ padding, margin }">
+    <slot v-if="$slots.default" />
+    <template v-else>
+      <CardHeader v-if="title">
+        <CardTitle>{{ title }}</CardTitle>
+        <CardSubtitle v-if="subtitle">{{ subtitle }}</CardSubtitle>
+      </CardHeader>
+      <CardBody v-if="content">{{ content }}</CardBody>
+    </template>
   </div>
 </template>
 

@@ -49,17 +49,6 @@ switch (props.type) {
 $root-container: '.cp-ticker';
 $root: '.cp-ticker-item';
 
-@keyframes slideIn {
-  0% {
-    transform: translate3d(-50%, 0, 0);
-    opacity: 0;
-  }
-  100% {
-    transform: translate3d(0%, 0, 0);
-    opacity: 0.4;
-  }
-}
-
 .cp-ticker-item {
   flex: 0 0 100%;
   position: relative;
@@ -73,6 +62,8 @@ $root: '.cp-ticker-item';
     left: -12px;
     z-index: 1;
     opacity: 0;
+    transform: translate3d(-50%, 0, 0);
+    transition: all var(--transition-duration-slow) 160ms var(--transition-timing-function);
 
     #{$root-container}--error & {
       fill: var(--color-red-7);
@@ -105,7 +96,8 @@ $root: '.cp-ticker-item';
 
   &[data-cp-active] {
     #{$root}__icon {
-      animation: slideIn var(--transition-duration-slow) var(--transition-timing-function) 160ms forwards;
+      opacity: 0.4;
+      transform: translate3d(0, 0, 0);
     }
   }
 }

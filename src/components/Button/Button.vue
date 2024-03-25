@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { ButtonHTMLAttributes } from 'vue';
-import type * as CSS from 'csstype';
 
 /**
  * Vue only has limited Typescript support, that's why there's
@@ -10,9 +9,8 @@ import type * as CSS from 'csstype';
  * https://github.com/vuejs/core/issues/8286
  */
 interface Props extends /* @vue-ignore */ ButtonHTMLAttributes {
-  color?: CSS.Property.Color;
+  color?: 'red' | 'green' | 'blue';
   full?: boolean;
-  type?: any;
   variant?: 'outline' | 'text';
 }
 

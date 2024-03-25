@@ -22,8 +22,8 @@ const meta: Meta<typeof Ticker> = {
   },
   args: {
     activeIndex: 0,
-    autoplay: true,
-    autoplayDuration: 2000,
+    autoplay: false,
+    autoplayDuration: 1000,
   },
 };
 

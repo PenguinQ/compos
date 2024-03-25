@@ -1,20 +1,15 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
 import type * as CSS from 'csstype';
 
 type Props = {
   padding?: CSS.Property.Padding;
 };
 
-const props = defineProps<Props>();
-
-const headingStyles = reactive({
-  padding: props.padding,
-});
+defineProps<Props>();
 </script>
 
 <template>
-  <div class="cp-card__header" :style="headingStyles">
+  <div class="cp-card__header" :style="{ padding }">
     <slot />
   </div>
 </template>
