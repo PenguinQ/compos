@@ -3,10 +3,8 @@ import { computed } from 'vue';
 import type { ButtonHTMLAttributes } from 'vue';
 
 /**
- * Vue only has limited Typescript support, that's why there's
- * @vue-ignore inline below to allow compiler ignore warning, see:
- *
- * https://github.com/vuejs/core/issues/8286
+ * @vue-ignore inline below to allow compiler ignore warning.
+ * Reference: https://github.com/vuejs/core/issues/8286
  */
 interface Props extends /* @vue-ignore */ ButtonHTMLAttributes {
   color?: 'red' | 'green' | 'blue';
@@ -16,7 +14,6 @@ interface Props extends /* @vue-ignore */ ButtonHTMLAttributes {
 
 const props = withDefaults(defineProps<Props>(), {
   full: false,
-  type: 'button',
 });
 
 const buttonClass = computed(() => ({
@@ -31,7 +28,7 @@ const buttonClass = computed(() => ({
 </script>
 
 <template>
-  <button :class="buttonClass" :type="type">
+  <button :class="buttonClass" type="button">
     <slot />
   </button>
 </template>

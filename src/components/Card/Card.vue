@@ -8,8 +8,6 @@ import type { AnchorHTMLAttributes } from 'vue';
 import type { RouterLinkProps, RouteLocationRaw } from 'vue-router';
 import type * as CSS from 'csstype';
 
-import { useScopeId } from '@hooks';
-
 import CardHeader from './CardHeader.vue';
 import CardTitle from './CardTitle.vue';
 import CardSubtitle from './CardSubtitle.vue';
@@ -32,7 +30,6 @@ const props = withDefaults(defineProps<CardProps>(), {
   target: '_self',
 });
 
-const scope_id = useScopeId();
 const isExternal = computed(() => typeof props.to === 'string' && props.to.startsWith('http'));
 const cardClass = computed(() => ({
   'cp-card': true,
@@ -47,7 +44,6 @@ const cardClass = computed(() => ({
   <template v-if="to">
     <a
       v-if="isExternal"
-      :[scope_id]="''"
       v-bind="$attrs"
       :class="cardClass"
       :href="(to as string)"
@@ -66,7 +62,6 @@ const cardClass = computed(() => ({
     </a>
     <RouterLink v-else v-bind="$props" v-slot="{ href, navigate }" custom>
       <a
-        :[scope_id]="''"
         v-bind="$attrs"
         :class="cardClass"
         :href="href"
@@ -86,7 +81,7 @@ const cardClass = computed(() => ({
       </a>
     </RouterLink>
   </template>
-  <div v-else :[scope_id]="''" v-bind="$attrs" :class="cardClass" :style="{ padding, margin }">
+  <div v-else v-bind="$attrs" :class="cardClass" :style="{ padding, margin }">
     <slot v-if="$slots.default" />
     <template v-else>
       <CardHeader v-if="title">

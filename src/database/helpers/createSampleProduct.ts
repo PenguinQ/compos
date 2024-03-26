@@ -13,7 +13,7 @@ export default async () => {
     const productID = 'PRD_' + ulid();
     const obj: any = {
       id: productID,
-      active: true,
+      active: i < 3 ? true : false,
       name: `Product ${i}`,
       description: `This is description for Product ${i}`,
       by: '',

@@ -11,7 +11,7 @@ import Text from '@components/Text';
 import Label from '@components/Label';
 import Link from '@components/Link';
 import { Column, Row, Container } from '@components/Layout';
-import DescriptionList from '@components/DescriptionList';
+import DescriptionList, { DescriptionListItem } from '@components/DescriptionList';
 import { IconPencilSquare, IconTrash } from '@icons';
 
 import Ticker from '@components/Ticker';
@@ -23,36 +23,6 @@ import Error from '@assets/illustration/error.svg';
 
 const router = useRouter();
 const { data, refetch, isError, isLoading, deleteProduct, deleteProductLoading } = useProductDetail();
-
-const ticker_index = ref(0);
-const ticker_items = ref([
-  {
-    title: 'Title One',
-    description: 'Description one.',
-    type: 'info',
-  }, {
-    title: 'Title Two',
-    description: 'Description two.',
-    type: 'warning',
-  },
-  {
-    title: 'Title Three',
-    description: 'Description three.',
-    type: 'error',
-  },
-]);
-
-const setTickerIndex = () => {
-  ticker_index.value = 1;
-};
-
-const addTicker = () => {
-  ticker_items.value.push({
-    title: 'Title',
-    description: 'Description.',
-    type: 'error',
-  });
-};
 </script>
 
 <template>
@@ -80,10 +50,19 @@ const addTicker = () => {
   <template v-else>
     <Text v-if="isLoading">Loading...</Text>
     <template v-else>
-      <button @click="setTickerIndex">Set Ticker Index {{ ticker_index }}</button>
-      <Ticker :items="ticker_items" :activeIndex="ticker_index" />
       <Container>
         <div class="product-detail">
+          <Ticker
+            v-if="!data.active"
+            :items="[
+              {
+                title: 'Inactive Product',
+                description: `This product currently inactive since the stock is 0, or any variants of it has 0 stock.`,
+                type: 'error',
+              }
+            ]"
+          />
+
           <Card>
             <CardBody>
               <Row>
@@ -93,7 +72,35 @@ const addTicker = () => {
                   </picture>
                 </Column>
                 <Column>
+                  <DescriptionList class="product-description" alignment="horizontal">
+                    <DescriptionListItem>
+                      <dt>Name</dt>
+                      <dd>{{ data.name }}</dd>
+                    </DescriptionListItem>
+                  </DescriptionList>
+
+                  <Card class="card-test">
+                    <div>Test item</div>
+                  </Card>
+
+                  <Card
+                    class="card-test"
+                    title="Test Title (Props)"
+                    content="Test content (Props)"
+                  />
+
+                  <Card class="card-test">
+                    <CardHeader>
+                      <CardTitle>Test Title (Slot)</CardTitle>
+                    </CardHeader>
+                    <CardBody>
+                      <div>Test content (Slot)</div>
+                    </CardBody>
+                  </Card>
+
                   <DescriptionList
+                    class="product-description"
+                    alignment="horizontal"
                     :items="[
                       {
                         title: 'Name',
@@ -125,6 +132,7 @@ const addTicker = () => {
               </Row>
             </CardBody>
           </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Variants</CardTitle>
@@ -170,6 +178,15 @@ const addTicker = () => {
 
   > .cp-card {
     border-radius: 0;
+  }
+}
+
+.product-description {
+  opacity: 0.5;
+
+  dt {
+    width: 50px;
+    display: none;
   }
 }
 

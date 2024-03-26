@@ -13,6 +13,7 @@ import type { VNode } from 'vue';
 
 import TickerItem from './TickerItem.vue';
 import type { TickerItemProps } from './TickerItem.vue';
+import type * as CSS from 'csstype';
 
 type TickerItemObject = { props?: object } & TickerItemProps;
 
@@ -33,6 +34,10 @@ type TickerProps = {
    * Set the item for each ticker.
    */
   items?: TickerItemObject[];
+  /**
+   * Set the margin for the ticker.
+   */
+  margin?: CSS.Property.Margin;
 };
 
 type TickerState = {
@@ -224,7 +229,7 @@ if (slots.default) {
 </script>
 
 <template>
-  <div :class="ticker_class" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
+  <div :class="ticker_class" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" :style="{ margin }">
     <div
       ref="ticker_slider"
       class="cp-ticker-items"

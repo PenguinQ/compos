@@ -1,4 +1,4 @@
-import { ref, getCurrentInstance, onBeforeMount, toRef } from 'vue';
+import { ref, getCurrentInstance, onBeforeMount } from 'vue';
 
 export default () => {
   const scope_id = ref<string | null | undefined>('');

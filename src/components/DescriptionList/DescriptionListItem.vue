@@ -9,8 +9,8 @@ defineProps<DescriptionListItemProps>();
 
 <template>
   <div class="cp-description-list__item">
-    <dt v-if="title" v-html="title" />
-    <dd v-if="description" v-html="description" />
+    <dt v-if="title">{{ title }}</dt>
+    <dd v-if="description">{{ description }}</dd>
     <slot />
   </div>
 </template>

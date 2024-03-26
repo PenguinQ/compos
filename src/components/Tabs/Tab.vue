@@ -1,11 +1,8 @@
-<script lang="ts">
-export default { name: 'Tab', inheritAttrs: false };
-</script>
 <script setup lang="ts">
-import { reactive, ref, watch, onBeforeMount } from 'vue';
+import { ref, watch, onBeforeMount } from 'vue';
 import type * as CSS from 'csstype';
 
-export type Props = {
+export type TabProps = {
   active?: boolean;
   index?: number;
   lazy?: boolean;
@@ -13,17 +10,19 @@ export type Props = {
   padding?: CSS.Property.Padding;
   controlProps?: object;
   panelProps?: object;
-}
+};
 
-const props = withDefaults(defineProps<Props>(), {
+defineOptions({
+  name: 'Tab',
+  inheritAttrs: false,
+});
+
+const props = withDefaults(defineProps<TabProps>(), {
   lazy: false,
 });
 
 const tab = ref<HTMLDivElement | null>(null);
 const lazy_tab = ref(false);
-const panel_style = reactive({
-  padding: props.padding,
-});
 
 onBeforeMount(() => {
   if (props.lazy) {
@@ -54,11 +53,11 @@ defineExpose({ ref: tab });
     <div
       ref="tab"
       v-if="lazy_tab"
-      v-bind="{...($attrs.root as object), ...panelProps}"
-      v-bind:[`${$attrs.scope_id}`]="''"
+      v-bind="{ ...($attrs.root_props as object), ...panelProps }"
+      :[`${$attrs.scope_id}`]="''"
       class="cp-tabs-panel"
       role="tabpanel"
-      :style="panel_style"
+      :style="{ padding }"
     >
       <slot />
     </div>
@@ -67,11 +66,11 @@ defineExpose({ ref: tab });
     <div
       ref="tab"
       v-show="active"
-      v-bind="{...($attrs.root as object), ...panelProps}"
-      v-bind:[`${$attrs.scope_id}`]="''"
+      v-bind="{ ...($attrs.root_props as object), ...panelProps }"
+      :[`${$attrs.scope_id}`]="''"
       class="cp-tabs-panel"
       role="tabpanel"
-      :style="panel_style"
+      :style="{ padding }"
     >
       <slot />
     </div>
@@ -79,6 +78,8 @@ defineExpose({ ref: tab });
 </template>
 
 <style lang="scss">
+$parent: '.cp-tabs-controls';
+
 .cp-tabs-control {
   color: var(--color-white);
   font-size: var(--text-body-medium-size);
@@ -94,8 +95,17 @@ defineExpose({ ref: tab });
   cursor: pointer;
   padding: 14px 32px;
 
+  #{$parent}--alternate & {
+    color: var(--color-black);
+    background-color: var(--color-white);
+
+    &::before {
+      background-color: var(--color-black);
+    }
+  }
+
   &::before {
-    content: "";
+    content: '';
     width: 0;
     height: 2px;
     position: absolute;

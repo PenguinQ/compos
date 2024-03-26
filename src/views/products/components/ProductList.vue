@@ -92,6 +92,7 @@ const {
       @clickPaginationNext="toNextPage"
       @clickPaginationLast="toNextPage($event, true)"
     />
+
     <!-- Should be FAB -->
     <Button @click="router.push('/product/add')">Add Product</Button>
   </template>

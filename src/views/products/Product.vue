@@ -1,13 +1,23 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+
 import Navbar from '@components/Navbar';
 import { Tab, Tabs } from '@components/Tabs';
+
 import ProductList from './components/ProductList.vue';
 import BundleList from './components/BundleList.vue';
+import TestScope from './TestScope.vue';
 </script>
 
 <template>
   <Tabs grow sticky>
-    <Tab title="Product" padding="16px">
+    <Tab title="Testing 1" padding="16px">
+      <div>Scoped tab content 1</div>
+    </Tab>
+    <Tab title="Testing 2" padding="16px" lazy>
+      <div>Scoped tab content 2</div>
+    </Tab>
+    <Tab title="Product" padding="16px" lazy>
       <ProductList />
     </Tab>
     <Tab title="Bundle" padding="16px" lazy>
@@ -16,7 +26,7 @@ import BundleList from './components/BundleList.vue';
   </Tabs>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .cp-tabs-controls {
   // margin: -16px -16px 0 -16px;
 }

@@ -3,6 +3,7 @@ export default { inheritAttrs: false };
 </script>
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
+import { useScopeId } from '@hooks';
 
 type DescriptionListItem = {
   title: string;
