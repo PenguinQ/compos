@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<TabProps>(), {
   lazy: false,
 });
 
-const tab = ref<HTMLDivElement | null>(null);
+const tab = ref<HTMLDivElement>();
 const lazy_tab = ref(false);
 
 onBeforeMount(() => {

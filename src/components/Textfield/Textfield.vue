@@ -1,25 +1,66 @@
-<script lang="ts">
-export default { inheritAttrs: false };
-</script>
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
+import type * as CSS from 'csstype'
+
 import { IconEye, IconEyeSlash } from '@icons';
 
 interface Props extends /* @vue-ignore */ InputHTMLAttributes {
+  /**
+   * Append text to the textfield.
+   */
   append?: string;
-  class?: string;
+  /**
+   * Set additional properties for the textfield container.
+   */
+  containerProps?: object;
+  /**
+   * Set the textfield into disabled state.
+   */
   disabled?: boolean;
+  /**
+   * Set the textfield into disabled state.
+   */
   error?: boolean;
+  /**
+   * Set the textfield label.
+   */
   label?: string;
+  /**
+   * Set the textfield CSS margin.
+   */
+  margin?: CSS.Property.Margin;
+  /**
+   * Set the message for the textfield.
+   */
   message?: string;
+  /**
+   * Set the value using v-model two way data binding.
+   */
   modelValue?: string | number;
+  /**
+   * Set the textarea placeholder.
+   */
   placeholder?: string;
+  /**
+   * Prepend text to the textfield.
+   */
   prepend?: string;
+  /**
+   * Set the textfield into disabled state.
+   */
   success?: boolean;
+  /**
+   * Set the textfield input type.
+   */
   type?: 'email' | 'number' | 'password' | 'tel' | 'text';
-  value?: any;
+  /**
+   * Set the value for the textfield without using v-model two way data binding.
+   */
+  value?: string | number;
 }
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
@@ -32,9 +73,12 @@ const emits = defineEmits(['update:modelValue']);
 
 const isPassword = computed(() => props.type === 'password');
 const showPassword = ref(false);
+const input_value = ref(props.modelValue || props.value);
 
 const handleInput = (e: Event) => {
-  emits('update:modelValue', (e.target as HTMLInputElement).value);
+  input_value.value = (e.target as HTMLInputElement).value;
+
+  emits('update:modelValue', input_value.value);
 };
 
 const togglePassword = () => {
@@ -44,11 +88,12 @@ const togglePassword = () => {
 
 <template>
   <div
+    v-bind="containerProps"
     class="cp-form cp-form--textfield"
-    :class="class"
-    :data-mt-disabled="disabled ? true : undefined"
-    :data-mt-error="error ? true : undefined"
-    :data-mt-success="success ? true : undefined"
+    :data-cp-disabled="disabled ? true : undefined"
+    :data-cp-error="error ? true : undefined"
+    :data-cp-success="success ? true : undefined"
+    :style="{ margin }"
   >
     <label v-if="label || $slots['label']">
       <slot name="label" />
@@ -66,7 +111,7 @@ const togglePassword = () => {
         :disabled="disabled"
         :placeholder="placeholder"
         :type="showPassword ? 'text' : 'password'"
-        :value="value || modelValue"
+        :value="input_value"
         @input="handleInput"
       />
       <input
@@ -76,7 +121,7 @@ const togglePassword = () => {
         :disabled="disabled"
         :placeholder="placeholder"
         :type="type"
-        :value="value || modelValue"
+        :value="input_value"
         @input="handleInput"
       />
       <div v-if="append || $slots['append'] || isPassword" class="cp-form-affix">

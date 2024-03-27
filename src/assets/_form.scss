@@ -10,6 +10,7 @@
   }
 
   &-container {
+    background-color: var(--color-white);
     border: 1px solid var(--color-black);
     border-radius: 6px;
     display: flex;
@@ -32,7 +33,6 @@
     font-size: 16px;
     line-height: 22px;
     font-weight: 400;
-    background-color: transparent;
     border: none;
     border-radius: inherit;
     outline: none;
@@ -52,19 +52,19 @@
     margin: 4px 0 0;
   }
 
-  &[data-mt-success] {
+  &[data-cp-success] {
     .cp-form-container {
       border-color: var(--color-success);
     }
   }
 
-  &[data-mt-error] {
+  &[data-cp-error] {
     .cp-form-container {
       border-color: var(--color-error);
     }
   }
 
-  &[data-mt-disabled] {
+  &[data-cp-disabled] {
     .cp-form-container {
       background-color: var(--color-disabled-background);
       border-color: var(--color-disabled-border);

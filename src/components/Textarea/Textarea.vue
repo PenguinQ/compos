@@ -1,47 +1,82 @@
-<script lang="ts">
-export default { inheritAttrs: false };
-</script>
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import type { TextareaHTMLAttributes } from 'vue';
+import type * as CSS from 'csstype'
 
 interface Props extends /* @vue-ignore */ TextareaHTMLAttributes {
-  class?: string;
+  /**
+   * Set additional properties for the textarea container.
+   */
+  containerProps?: object;
+  /**
+   * Set the textarea into disabled state.
+   */
   disabled?: boolean;
+  /**
+   * Set the textarea into error state.
+   */
   error?: boolean;
-  focus?: boolean;
+  /**
+   * Set the textarea label.
+   */
   label?: string;
+  /**
+   * Set the textarea CSS margin.
+   */
+  margin?: CSS.Property.Margin;
+  /**
+   * Set the maximum rows for textarea.
+   */
   maxRows?: number;
+  /**
+   * Set the message for the textarea.
+   */
   message?: string;
+  /**
+   * Set the minimum rows for textarea.
+   */
   minRows?: number;
+  /**
+   * Set the value using v-model two way data binding.
+   */
   modelValue?: string | number;
+  /**
+   * Set the textarea placeholder.
+   */
   placeholder?: string;
+  /**
+   * Set the textarea into success state.
+   */
   success?: boolean;
-  value?: any;
+  /**
+   * Set the value for the textarea without using v-model two way data binding.
+   */
+  value?: string | number;
 }
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   error: false,
-  focus: false,
   success: false,
   minRows: 4,
 });
 
-const emits = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue']);
 
 const LINE_HEIGHT = 22;
-const minHeight = ref<number | null>(props.minRows * LINE_HEIGHT);
-const maxHeight = ref<number | null>(props.maxRows ? props.maxRows * LINE_HEIGHT : null);
-const fieldRef = ref<HTMLTextAreaElement | null>(null);
+const min_height = ref<number>(props.minRows ? props.minRows * LINE_HEIGHT : LINE_HEIGHT);
+const max_height = ref<number>(props.maxRows ? props.maxRows * LINE_HEIGHT : 0);
+const field_ref = ref<HTMLTextAreaElement>();
 
 const updateHeight = (elem: HTMLTextAreaElement, height?: number) => {
-  elem.style.height = `${minHeight.value}px`;
+  elem.style.height = `${min_height.value}px`;
   elem.style.height = `${height ? height : elem.scrollHeight}px`;
-}
+};
 
 const handleInput = (e: Event) => {
-  const el = fieldRef.value;
+  const el = field_ref.value;
 
   if (!el) return false;
 
@@ -50,70 +85,70 @@ const handleInput = (e: Event) => {
   if (props.maxRows) {
     if (props.minRows > props.maxRows) return false;
 
-    if (maxHeight.value! >= elScrollHeight) updateHeight(el);
+    if (max_height.value! >= elScrollHeight) updateHeight(el);
   } else {
-    if (minHeight.value! <= elScrollHeight) updateHeight(el);
+    if (min_height.value! <= elScrollHeight) updateHeight(el);
   }
 
-  emits('update:modelValue', (e.target as HTMLTextAreaElement).value);
+  emit('update:modelValue', (e.target as HTMLTextAreaElement).value);
 };
 
 const handlePaste = (e: Event) => {
-  const el = fieldRef.value;
+  const el = field_ref.value;
 
   if (!el) return false;
 
   requestAnimationFrame(() => {
     const elScrollHeight = el.scrollHeight;
 
-    if (maxHeight.value! <= elScrollHeight) updateHeight(el, maxHeight.value!);
+    if (max_height.value! <= elScrollHeight) updateHeight(el, max_height.value!);
 
-    emits('update:modelValue', (e.target as HTMLTextAreaElement).value);
+    emit('update:modelValue', (e.target as HTMLTextAreaElement).value);
   });
 };
 
 const handleFieldClick = () => {
-  fieldRef.value?.focus();
+  field_ref.value?.focus();
 };
 
 onMounted(() => {
-  if (fieldRef.value) {
+  if (field_ref.value) {
     if (props.maxRows) {
-      fieldRef.value.style.height = `${props.minRows > props.maxRows ? maxHeight.value : minHeight.value}px`;
+      field_ref.value.style.height = `${props.minRows > props.maxRows ? max_height.value : min_height.value}px`;
     } else {
-      fieldRef.value.style.height = `${minHeight.value}px`;
+      field_ref.value.style.height = `${min_height.value}px`;
     }
   }
 });
 
 watch(
-  () =>[props.minRows, props.maxRows],
-  ([minRows, maxRows]) => {
-    const el = fieldRef.value;
+  [() => props.minRows, () => props.maxRows],
+  ([min, max], [prev_min, prev_max]) => {
+    if (field_ref.value) {
+      if (max !== prev_max && max) {
+        max_height.value = max * LINE_HEIGHT;
 
-    if (!el) return false;
+        if (min && min >= max) field_ref.value.style.height = `${max_height.value}px`;
+      }
 
-    if (maxRows) {
-      maxHeight.value = maxRows * LINE_HEIGHT;
+      if (min !== prev_min && min) {
+        min_height.value = max && min >= max ? max * LINE_HEIGHT : min * LINE_HEIGHT;
 
-      if (minRows! >= maxRows) minHeight.value = maxHeight.value;
-
-      el.style.height = `${minHeight.value}px`;
-    } else {
-      minHeight.value = minRows! * LINE_HEIGHT;
-      el.style.height = `${minRows! * LINE_HEIGHT}px`;
+        field_ref.value.style.height = `${min_height.value}px`;
+      }
     }
-  }
+  },
 );
 </script>
 
 <template>
   <div
+    v-bind="containerProps"
     class="cp-form cp-form--textarea"
-    :class="class"
-    :data-mt-disabled="disabled ? true : undefined"
-    :data-mt-error="error ? true : undefined"
-    :data-mt-success="success ? true : undefined"
+    :data-cp-disabled="disabled ? true : undefined"
+    :data-cp-error="error ? true : undefined"
+    :data-cp-success="success ? true : undefined"
+    :style="{ margin }"
   >
     <label v-if="label || $slots['label']">
       <slot name="label" />
@@ -121,7 +156,7 @@ watch(
     </label>
     <div class="cp-form-container" @click="handleFieldClick">
       <textarea
-        ref="fieldRef"
+        ref="field_ref"
         class="cp-form-field"
         v-bind="$attrs"
         :disabled="disabled"

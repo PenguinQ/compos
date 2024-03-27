@@ -54,7 +54,7 @@ defineExpose({ ref: iconRef });
     xmlns="http://www.w3.org/2000/svg"
     class="cp-icon"
     viewBox="0 0 24 24"
-    data-mt-icon="${iconName}"
+    data-cp-icon="${iconName}"
     :title="title"
     :width="size ? size : 24"
     :height="size ? size : 24"

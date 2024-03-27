@@ -50,7 +50,7 @@ const handleInput = (e: Event) => {
 </script>
 
 <template>
-  <div class="cp-quantity-editor" :data-mt-disabled="disabled ? disabled : undefined">
+  <div class="cp-quantity-editor" :data-cp-disabled="disabled ? disabled : undefined">
     <button
       type="button"
       :disabled="disabled"
