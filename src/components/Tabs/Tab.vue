@@ -86,14 +86,20 @@ $parent: '.cp-tabs-controls';
   line-height: var(--text-body-medium-height);
   font-weight: 600;
   background-color: var(--color-black);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex: 0 0 auto;
+  border: none;
   position: relative;
   cursor: pointer;
   padding: 14px 32px;
+
+  #{$parent}--grow & {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    flex: 1 1 auto;
+    padding-right: 0;
+    padding-left: 0;
+  }
 
   #{$parent}--alternate & {
     color: var(--color-black);
@@ -110,6 +116,8 @@ $parent: '.cp-tabs-controls';
     height: 2px;
     position: absolute;
     bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
     background-color: var(--color-white);
     transition: width var(--transition-duration-very-fast) var(--transition-timing-function);
   }

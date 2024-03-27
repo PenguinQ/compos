@@ -123,7 +123,7 @@ watch(
       @click="handleTab(index)"
     >
       <component v-if="(tab.children as TabProps)?.title" :is="(tab.children as TabProps).title" />
-      <template v-else>{{ (tab.props as TabProps)?.title }}</template>
+      <template v-else><span>{{ (tab.props as TabProps)?.title }}</span></template>
     </button>
   </div>
   <div v-if="$slots.default" :[scope_id]="''" v-bind="panelContainerProps" class="cp-tabs-panels">
@@ -146,11 +146,7 @@ watch(
 
   &::-webkit-scrollbar {
     display: none;
-    height: 5px;
-  }
-
-  &::-webkit-scrollbar {
-    height: 5px;
+    height: 8px;
   }
 
   &::-webkit-scrollbar-track {
@@ -169,14 +165,6 @@ watch(
 
   &--grow {
     overflow: hidden;
-
-    .cp-tabs-control {
-      width: 100%;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      flex: 1 1 auto;
-    }
   }
 }
 
@@ -185,7 +173,7 @@ watch(
     scrollbar-width: auto;
 
     &::-webkit-scrollbar {
-      display: unset;
+      display: initial;
     }
   }
 }

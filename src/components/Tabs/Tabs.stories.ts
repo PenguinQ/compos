@@ -63,9 +63,6 @@ export const Default: Story = {
     template: `
       <Tabs v-bind="args">
         <Tab title="Himeko">
-          <template #title>
-            <span>Himeko</span>
-          </template>
           <p>An adventurous scientist who encountered and repaired a stranded train as a child, she now ventures across the universe with the Astral Express as its navigator.</p>
         </Tab>
         <Tab title="Kafka 1">
