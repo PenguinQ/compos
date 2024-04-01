@@ -34,7 +34,7 @@ export const Items: Story = {
       };
 
       const handleClick = () => {
-        toast.value.add({ message: 'Toast Item', type: 'success' });
+        toast.value.add({ message: 'Toast Item', duration: 1000 });
       };
 
       return { args, toast, show, handleClick, handleShow };
@@ -44,10 +44,11 @@ export const Items: Story = {
       <Toast ref="toast" v-bind="args" />
 
       <br />
+      <br />
 
       <Button @click="handleShow">Show Toast</Button>
       <Toast>
-        <ToastItem v-if="show" message="Test" />
+        <ToastItem v-model="show" message="Test" :duration="1000" />
       </Toast>
     `,
   }),

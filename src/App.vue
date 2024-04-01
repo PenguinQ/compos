@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
+import Toast, { ToastProvider } from '@components/Toast';
 </script>
 
 <template>
-  <div class="main">
-    <RouterView class="main__navbar" name="Navbar" />
-    <div class="main__view">
-      <RouterView />
+  <ToastProvider>
+    <div class="main">
+      <RouterView class="main__navbar" name="Navbar" />
+      <div class="main__view">
+        <RouterView />
+      </div>
+      <RouterView class="main__bottom-navbar" name="BottomNavbar" />
     </div>
-    <RouterView class="main__bottom-navbar" name="BottomNavbar" />
-  </div>
+  </ToastProvider>
+  <!-- <Toast :items="$toastItems" /> -->
 </template>
 
 <style scoped lang="scss">

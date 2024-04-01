@@ -44,6 +44,7 @@ export default defineConfig({
       "@database": fileURLToPath(new URL("./src/database", import.meta.url)),
       "@helpers": fileURLToPath(new URL("./src/helpers", import.meta.url)),
       "@hooks": fileURLToPath(new URL("./src/hooks", import.meta.url)),
+      "@plugins": fileURLToPath(new URL("./src/plugins", import.meta.url)),
       "@icons": fileURLToPath(new URL("./src/components/icons", import.meta.url)),
     },
   },

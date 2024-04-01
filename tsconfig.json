@@ -7,6 +7,8 @@
       "@assets/*": ["src/assets/*"],
       "@components/*": ["src/components/*"],
       "@helpers/*": ["src/helpers/*"],
+      "@hooks/*": ["src/components/hooks/*"],
+      "@plugins/*": ["src/components/plugins/*"],
       "@icons/*": ["src/components/icons/*"]
     },
     "target": "ES2020",

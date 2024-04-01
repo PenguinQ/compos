@@ -1,12 +1,13 @@
-import { createApp } from 'vue';
-
-import { Toast, ToastContainer } from '@components/Toast';
+import { inject } from 'vue';
+import type { App } from 'vue';
+import useToast from '@hooks/useToast';
 
 export default {
-  install(app: any) {
-    const instance = createApp(ToastContainer);
-    let ToastVM = instance.mount(document.createElement('div'));
+  install(app: App) {
+    // const { items, add } = useToast();
 
-    document.body.appendChild(ToastVM.$el);
-  }
+    // app.provide('ToastProvider', { items, add });
+    // app.config.globalProperties.$toastItems = items as any;
+    // app.config.globalProperties.$toastAdd = add as any;
+  },
 };

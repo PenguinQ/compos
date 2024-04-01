@@ -1,4 +1,9 @@
 import Toast from './Toast.vue';
-import ToastContainer from './ToastContainer.vue';
+import ToastItem from './ToastItem.vue';
+import ToastProvider from './ToastProvider.vue';
 
-export { Toast, ToastContainer };
+export {
+  Toast as default,
+  ToastItem,
+  ToastProvider
+};

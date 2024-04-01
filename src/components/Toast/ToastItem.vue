@@ -1,38 +1,94 @@
 <script setup lang="ts">
 import { ref, Transition, onMounted, watch } from 'vue';
+import { IconX } from '@icons';
 
 export type ToastItemProps = {
   message: string;
-  type?: 'error' | 'success';
   duration?: number;
-  props?: object;
   modelValue?: boolean;
-
-  // Tests
+  persist?: boolean;
+  persistOnHover?: boolean;
   show?: boolean;
-  timer?: any;
+  type?: 'error' | 'success';
 };
 
-const item_props = withDefaults(defineProps<ToastItemProps>(), {
+const props = withDefaults(defineProps<ToastItemProps>(), {
   duration: 5000,
+  persist: false,
+  persistOnHover: false,
 });
 
-const emit = defineEmits([
-  'enter',
-  'after-enter',
-  'leave',
-  'after-leave',
-]);
+const emit = defineEmits(['update:modelValue', 'enter', 'after-enter', 'leave', 'after-leave']);
 
-const display = ref(item_props.modelValue ? item_props.modelValue : item_props.show);
+const display = ref(props.modelValue ? props.modelValue : props.show);
 
-let item_timeout: ReturnType<typeof setTimeout>;
+let toast_timeout: ReturnType<typeof setTimeout>;
+
+const handleClose = () => {
+  if (props.modelValue) {
+    emit('update:modelValue', false);
+  } else {
+    display.value = false;
+  }
+};
+
+const handleMouseEnter = () => {
+  if (!props.persist || !props.persistOnHover) clearTimeout(toast_timeout);;
+};
+
+const handleMouseLeave = () => {
+  clearTimeout(toast_timeout);
+
+  if (!props.persist || !props.persistOnHover) {
+    if (props.modelValue) {
+      toast_timeout = setTimeout(() => emit('update:modelValue', false), props.duration);
+    } else {
+      toast_timeout = setTimeout(() => (display.value = false), props.duration);
+    }
+  }
+};
 
 onMounted(() => {
-  clearTimeout(item_timeout);
+  clearTimeout(toast_timeout);
 
-  console.log('Mounted');
+  if (!props.persist) {
+    if (props.modelValue) {
+      toast_timeout = setTimeout(() => emit('update:modelValue', false), props.duration);
+    } else {
+      toast_timeout = setTimeout(() => (display.value = false), props.duration);
+    }
+  }
 });
+
+watch(
+  () => props.modelValue,
+  (modelValue) => {
+    if (modelValue) {
+      clearTimeout(toast_timeout);
+
+      if (!props.persist) {
+        toast_timeout = setTimeout(() => emit('update:modelValue', false), props.duration);
+      }
+    }
+
+    display.value = modelValue ? true : false;
+  },
+);
+
+watch(
+  () => props.show,
+  (show) => {
+    if (show) {
+      clearTimeout(toast_timeout);
+
+      if (!props.persist) {
+        toast_timeout = setTimeout(() => (display.value = false), props.duration);
+      }
+    }
+
+    display.value = show ? true : false;
+  },
+);
 </script>
 
 <template>
@@ -47,12 +103,16 @@ onMounted(() => {
     <div
       v-if="display"
       class="cp-toast"
-      v-bind="props"
-      :data-cp-success="item_props.type === 'success' ? true : undefined"
-      :data-cp-error="item_props.type === 'error' ? true : undefined"
+      :data-cp-success="props.type === 'success' ? true : undefined"
+      :data-cp-error="props.type === 'error' ? true : undefined"
+      @mouseenter="handleMouseEnter"
+      @mouseleave="handleMouseLeave"
     >
       <template v-if="$slots.default"><slot /></template>
       <template v-else>{{ message }}</template>
+      <button class="cp-toast__close" @click="handleClose">
+        <IconX :size="24" color="var(--color-white)" />
+      </button>
     </div>
   </Transition>
 </template>
@@ -60,17 +120,25 @@ onMounted(() => {
 <style lang="scss">
 .cp-toast {
   color: var(--color-white);
-  background-color: var(--color-black);
+  background-color: #0d1317;
   border-radius: 6px;
-  padding: 12px 16px;
+  padding: 8px 12px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   z-index: 60;
   transition-property: all;
   transition-duration: var(--transition-duration-normal);
   transition-timing-function: var(--transition-function);
   pointer-events: all;
+
+  &__close {
+    background-color: transparent;
+    border: none;
+    align-self: flex-start;
+    cursor: pointer;
+    padding: 0;
+  }
 
   &[data-cp-success] {
     background-color: var(--color-green-4);

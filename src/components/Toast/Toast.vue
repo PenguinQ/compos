@@ -1,61 +1,76 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 import ToastItem from './ToastItem.vue';
 import type { ToastItemProps } from './ToastItem.vue'
 
-const toasts = ref<ToastItemProps[]>([]);
-
-const add = ({ message, type, props }: ToastItemProps) => {
-  const toast = { message, type, props, timeout: undefined };
-
-  toasts.value.push(toast);
-
-  toast.timeout = setTimeout(() => {
-    console.log('remove');
-    remove(toast);
-  }, 1000);
+type ToastProps = {
+  // items?: any;
+  counter?: number;
 };
 
-const remove = (toast: any) => {
-  const index = toasts.value.indexOf(toast)
+const props = withDefaults(defineProps<ToastProps>(), {
+  // items: [],
+});
 
-  if (index !== -1) {
-    toasts.value.splice(index, 1);
+const emit = defineEmits(['after-leave']);
+
+const items = ref<ToastItemProps[]>([]);
+const counter = ref(0);
+
+const add = (props: ToastItemProps) => {
+  items.value.push(props);
+};
+
+const remove = () => {
+  counter.value += 1;
+
+  if (items.value.length === counter.value) {
+    items.value = [];
+    counter.value = 0;
   }
 };
 
-const stopClosing = (toast: any) => {
-  console.log('Stop');
-
-  clearTimeout(toast.timer);
-};
-
-const resumeClosing = (toast: any) => {
-  console.log('Resume');
-
-  toast.timer = setTimeout(() => {
-    remove(toast);
-  }, 1000)
-};
-
-defineExpose({ add });
+defineExpose({ items, add });
 </script>
 
 <template>
-  <div v-if="toasts.length" class="cp-toast-container">
-    <slot />
-    <ToastItem
-      :key="index"
-      v-for="(toast, index) in toasts"
-      v-bind="toast.props"
-      :message="toast.message"
-      :type="toast.type"
-      show
-      @mouseenter="stopClosing(toast)"
-      @mouseleave="resumeClosing(toast)"
-    />
-  </div>
+  <template v-if="$slots.default">
+    <Teleport to="body">
+      <div class="cp-toast-container">
+        <slot />
+      </div>
+    </Teleport>
+  </template>
+  <template v-else-if="items.length">
+    <Teleport to="body">
+      <div class="cp-toast-container">
+        <ToastItem
+          v-for="(item, index) in items"
+          :key="index"
+          :duration="item.duration"
+          :message="item.message"
+          :type="item.type"
+          :persist="item.persist"
+          show
+          @after-leave="remove"
+        />
+      </div>
+    </Teleport>
+  </template>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss">
+.cp-toast-container {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 12px;
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  z-index: 60;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+</style>
