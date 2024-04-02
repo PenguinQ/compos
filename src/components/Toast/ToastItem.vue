@@ -1,19 +1,46 @@
 <script setup lang="ts">
 import { ref, Transition, onMounted, watch } from 'vue';
+
 import { IconX } from '@icons';
 
 export type ToastItemProps = {
+  /**
+   * Set the text message to be shown.
+   */
   message: string;
+  /**
+   * Set the duration for the toast before it's closing.
+   */
   duration?: number;
+  /**
+   * Render message as raw html, allowing inline style or html tag to be rendered.
+   */
+  html?: boolean;
+  /**
+   * Set show state using v-model two way data binding.
+   */
   modelValue?: boolean;
+  /**
+   * Stop auto closing of the toast.
+   */
   persist?: boolean;
+  /**
+   * Stop toast from auto closing when hovering the text.
+   */
   persistOnHover?: boolean;
+  /**
+   * Toggle the toast to show.
+   */
   show?: boolean;
+  /**
+   * Set the display for the toast.
+   */
   type?: 'error' | 'success';
 };
 
 const props = withDefaults(defineProps<ToastItemProps>(), {
   duration: 5000,
+  html: false,
   persist: false,
   persistOnHover: false,
 });
@@ -108,8 +135,15 @@ watch(
       @mouseenter="handleMouseEnter"
       @mouseleave="handleMouseLeave"
     >
-      <template v-if="$slots.default"><slot /></template>
-      <template v-else>{{ message }}</template>
+      <template v-if="$slots.default">
+        <div class="cp-toast__content">
+          <slot />
+        </div>
+      </template>
+      <template v-else>
+        <div v-if="html" class="cp-toast__content" v-html="message" />
+        <div v-else class="cp-toast__content">{{ message }}</div>
+      </template>
       <button class="cp-toast__close" @click="handleClose">
         <IconX :size="24" color="var(--color-white)" />
       </button>

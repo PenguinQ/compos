@@ -4,7 +4,6 @@ import { initDB } from '@database';
 
 import App from './App.vue';
 import router from './router';
-
 import toast from '@/plugins/toast';
 
 import './assets/main.scss';

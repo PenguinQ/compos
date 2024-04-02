@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
-import Toast, { ToastProvider } from '@components/Toast';
+import { ToastProvider } from '@components/Toast';
 </script>
 
 <template>
@@ -13,7 +13,6 @@ import Toast, { ToastProvider } from '@components/Toast';
       <RouterView class="main__bottom-navbar" name="BottomNavbar" />
     </div>
   </ToastProvider>
-  <!-- <Toast :items="$toastItems" /> -->
 </template>
 
 <style scoped lang="scss">

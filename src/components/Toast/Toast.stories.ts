@@ -22,34 +22,44 @@ export default meta;
 
 type Story = StoryObj<typeof Toast>;
 
-export const Items: Story = {
+export const Default: Story = {
   render: (args) => ({
-    components: { Button, Ticker, Toast, ToastItem, Text },
+    components: { Button, Ticker, Toast, ToastItem },
     setup() {
-      const toast = ref();
       const show = ref(false);
 
       const handleShow = () => {
         show.value = !show.value;
       };
 
-      const handleClick = () => {
-        toast.value.add({ message: 'Toast Item', duration: 1000 });
-      };
-
-      return { args, toast, show, handleClick, handleShow };
+      return { args, show, handleShow };
     },
     template: `
-      <Button @click="handleClick">Add</Button>
-      <Toast ref="toast" v-bind="args" />
-
-      <br />
-      <br />
-
       <Button @click="handleShow">Show Toast</Button>
       <Toast>
-        <ToastItem v-model="show" message="Test" :duration="1000" />
+        <ToastItem v-model="show">Toaster message.</ToastItem>
       </Toast>
     `,
   }),
 };
+
+export const Expose: Story = {
+  render: (args) => ({
+    components: { Button, Ticker, Toast, ToastItem },
+    setup() {
+      const toast = ref();
+
+      const addToast = () => {
+        toast.value.add({ message: 'Toaster message.' });
+      };
+
+      return { args, toast, addToast };
+    },
+    template: `
+      <Button @click="addToast">Add</Button>
+      <Toast ref="toast" v-bind="args" />
+    `,
+  }),
+};
+
+Expose.storyName = 'Exposed Method (Recommended)';

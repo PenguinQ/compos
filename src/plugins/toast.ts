@@ -1,13 +1,12 @@
-import { inject } from 'vue';
 import type { App } from 'vue';
-import useToast from '@hooks/useToast';
+import { useToast } from '@components/Toast/hooks';
 
 export default {
   install(app: App) {
-    // const { items, add } = useToast();
+    const { items, add, remove } = useToast();
 
-    // app.provide('ToastProvider', { items, add });
-    // app.config.globalProperties.$toastItems = items as any;
-    // app.config.globalProperties.$toastAdd = add as any;
+    app.provide('ToastProvider', { items, add, remove });
+    app.config.globalProperties.$toastItems = items;
+    app.config.globalProperties.$toastAdd = add;
   },
 };

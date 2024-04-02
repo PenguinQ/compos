@@ -1,24 +1,43 @@
 <script setup lang="ts">
-import { provide, ref } from 'vue';
+import { provide, inject } from 'vue';
+
 import Toast from './Toast.vue';
+import ToastItem from './ToastItem.vue';
 import { useToast } from './hooks';
+import type { ToastReturn } from './hooks/useToast';
 
-// const { items, add, remove } = useToast();
-
-const toast = ref();
-
-const add = (props: any) => {
-  toast.value.add(props)
+type ToastProviderProps = {
+  /**
+   * Set where the toast should be rendered.
+   */
+  to?: string;
 };
 
-provide('ToastProvider', {
-  items: toast.value?.items,
-  add,
+withDefaults(defineProps<ToastProviderProps>(), {
+  to: 'body',
 });
+
+const plugin = inject<ToastReturn>('ToastProvider');
+
+const { items, add, remove } = plugin || useToast();
+
+if (!plugin) provide('ToastProvider', { items, add });
 </script>
 
 <template>
   <slot />
-  <!-- <Toast ref="toast" :items="items" @after-leave="remove" /> -->
-  <Toast ref="toast" />
+  <Toast v-if="items.length" :to="to">
+    <ToastItem
+      v-for="(item, index) in items"
+      :key="index"
+      :duration="item.duration"
+      :html="item.html"
+      :message="item.message"
+      :persist="item.persist"
+      :persistOnHover="item.persistOnHover"
+      :type="item.type"
+      show
+      @after-leave="remove"
+    />
+  </Toast>
 </template>
