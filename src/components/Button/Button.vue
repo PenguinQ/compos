@@ -9,16 +9,19 @@ import type { ButtonHTMLAttributes } from 'vue';
 interface Props extends /* @vue-ignore */ ButtonHTMLAttributes {
   color?: 'red' | 'green' | 'blue';
   full?: boolean;
+  icon?: boolean;
   variant?: 'outline' | 'text';
 }
 
 const props = withDefaults(defineProps<Props>(), {
   full: false,
+  icon: false,
 });
 
 const buttonClass = computed(() => ({
   'cp-button': true,
   'cp-button--full': props.full,
+  'cp-button--icon': props.icon,
   'cp-button--outline': props.variant === 'outline',
   'cp-button--text': props.variant === 'text',
   'cp-button--red': props.color === 'red',
@@ -73,29 +76,34 @@ const buttonClass = computed(() => ({
     border-color: var(--color-blue-3);
   }
 
-  &--outline {
+  &--outline:not(.cp-button--icon) {
     color: var(--color-black);
     background-color: var(--color-white);
   }
 
-  &--text {
+  &--text:not(.cp-button--icon) {
     color: var(--color-black);
     background-color: transparent;
     border-color: transparent;
   }
 
+  &--icon {
+    border-radius: 50%;
+    padding: 16px;
+  }
+
   &--outline,
   &--text {
     &.cp-button--red {
-      color: var(--color-red-3);
+      color: var(--color-red-4);
     }
 
     &.cp-button--green {
-      color: var(--color-green-3);
+      color: var(--color-green-4);
     }
 
     &.cp-button--blue {
-      color: var(--color-blue-3);
+      color: var(--color-blue-4);
     }
   }
 
@@ -112,7 +120,7 @@ const buttonClass = computed(() => ({
 }
 
 @include screen-md {
-  .cp-button {
+  .cp-button:not(.cp-button--icon) {
     padding: 13px 16px;
   }
 }

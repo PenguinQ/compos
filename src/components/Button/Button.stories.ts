@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
 import Button from './Button.vue';
+import { IconArchive } from '@icons';
 
 const meta: Meta<typeof Button> = {
   component: Button,
@@ -17,14 +18,10 @@ const meta: Meta<typeof Button> = {
       control: 'select',
       options: ['outline', 'text'],
     },
-    default: {
-      control: 'text',
-    },
   },
   args: {
-    color: '',
+    color: undefined,
     disabled: false,
-    default: 'Button',
   },
 };
 
@@ -37,6 +34,38 @@ export const Default: Story = {
     setup() {
       return { args };
     },
-    template: `<Button v-bind="args">{{ args.default }}</Button>`,
+    template: `
+      <Button v-bind="args">{{ args.default }}</Button>
+    `,
   }),
+  argTypes: {
+    default: {
+      control: 'text',
+    },
+  },
+  args: {
+    default: 'Button',
+  },
+};
+
+export const IconButton: Story = {
+  render: (args) => ({
+    components: { Button, IconArchive },
+    setup() {
+      return { args };
+    },
+    template: `
+      <Button v-bind="args">
+        <IconArchive color="white" />
+      </Button>
+    `,
+  }),
+  argTypes: {
+    icon: {
+      control: 'boolean',
+    },
+  },
+  args: {
+    icon: true,
+  },
 };

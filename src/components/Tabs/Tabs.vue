@@ -70,7 +70,7 @@ const tabs_class = computed(() => ({
 const scrollToView = (index: number) => {
   const visible = isVisible(tabs.value[index], tabs_container.value);
 
-  if (!visible) tabs.value[index].scrollIntoView({ behavior: 'smooth', inline: 'center' });
+  if (!visible) tabs.value[index].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
 };
 
 const handleTab = (index: number) => {

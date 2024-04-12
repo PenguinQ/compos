@@ -5,7 +5,7 @@ import { useProductDetail } from './hooks/ProductDetail.hook';
 
 import Button from '@components/Button';
 import Card, { CardHeader, CardTitle, CardBody } from '@components/Card';
-import Navbar, { NavbarAction } from '@components/Navbar';
+import Navbar, { NavbarAction, NavbarSpacer } from '@components/Navbar';
 import EmptyState from '@components/EmptyState';
 import Text from '@components/Text';
 import Label from '@components/Label';
@@ -27,12 +27,13 @@ const { data, refetch, isError, isLoading, deleteProduct, deleteProductLoading }
 
 <template>
   <Navbar :title="data ? data.name : ''" sticky>
-    <template v-if="!isError && !isLoading" #action>
-      <NavbarAction backgroundColor="var(--color-blue-3)" @click="router.push(`/product/edit/${data.id}`)">
-        <IconPencilSquare color="#FFF" />
+    <template v-if="!isError && !isLoading">
+      <NavbarSpacer />
+      <NavbarAction icon backgroundColor="var(--color-blue-5)" @click="router.push(`/product/edit/${data.id}`)">
+        <IconPencilSquare />
       </NavbarAction>
-      <NavbarAction backgroundColor="var(--color-red-3)" @click="deleteProduct">
-        <IconTrash color="#FFF" />
+      <NavbarAction icon backgroundColor="var(--color-red-5)" @click="deleteProduct">
+        <IconTrash />
       </NavbarAction>
     </template>
   </Navbar>
@@ -59,7 +60,7 @@ const { data, refetch, isError, isLoading, deleteProduct, deleteProductLoading }
                 title: 'Inactive Product',
                 description: `This product currently inactive since the stock is 0, or any variants of it has 0 stock.`,
                 type: 'error',
-              }
+              },
             ]"
           />
 
@@ -83,11 +84,7 @@ const { data, refetch, isError, isLoading, deleteProduct, deleteProductLoading }
                     <div>Test item</div>
                   </Card>
 
-                  <Card
-                    class="card-test"
-                    title="Test Title (Props)"
-                    content="Test content (Props)"
-                  />
+                  <Card class="card-test" title="Test Title (Props)" content="Test content (Props)" />
 
                   <Card class="card-test">
                     <CardHeader>
@@ -148,7 +145,10 @@ const { data, refetch, isError, isLoading, deleteProduct, deleteProductLoading }
                 <div class="product-variants">
                   <div v-for="variant in data.variant" class="product-variant">
                     <picture class="product-variant__image">
-                      <img :src="`${variant.image.length ? variant.image[0] : NoImage}`" :alt="`${variant.name} image`" />
+                      <img
+                        :src="`${variant.image.length ? variant.image[0] : NoImage}`"
+                        :alt="`${variant.name} image`"
+                      />
                     </picture>
                     <div class="product-variant__detail">
                       <Text class="product-variant__name" body="large" as="h4">

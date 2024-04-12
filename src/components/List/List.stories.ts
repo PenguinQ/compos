@@ -16,7 +16,7 @@ const meta: Meta<typeof List> = {
 export default meta;
 type Story = StoryObj<typeof List>;
 
-export const Default: Story = {
+export const DefaultTBA: Story = {
   render: (args: any) => ({
     components: {
       Card,

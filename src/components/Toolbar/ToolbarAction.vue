@@ -3,35 +3,35 @@ import { computed } from 'vue';
 import type { ButtonHTMLAttributes } from 'vue';
 import type * as CSS from 'csstype';
 
-interface NavbarActionProps extends /* @vue-ignore */ ButtonHTMLAttributes {
+interface ToolbarActionProps extends /* @vue-ignore */ ButtonHTMLAttributes {
   icon?: boolean;
   backgroundColor?: CSS.Property.BackgroundColor;
 }
 
-const props = withDefaults(defineProps<NavbarActionProps>(), {
+const props = withDefaults(defineProps<ToolbarActionProps>(), {
   icon: false,
 });
 
 const button_class = computed(() => ({
-  'cp-navbar-action': true,
-  'cp-navbar-action--icon': props.icon,
+  'cp-toolbar-action': true,
+  'cp-toolbar-action--icon': props.icon,
 }));
 </script>
 
 <template>
   <button :class="button_class" type="button" :style="{ backgroundColor }">
-    <span class="cp-navbar-action__wrapper">
+    <span class="cp-toolbar-action__wrapper">
       <slot />
     </span>
   </button>
 </template>
 
 <style lang="scss">
-.cp-navbar-action {
+.cp-toolbar-action {
   $root: &;
 
-  min-width: var(--navbar-height);
-  height: var(--navbar-height);
+  min-width: var(--toolbar-height);
+  height: var(--toolbar-height);
   color: var(--color-white);
   font-size: var(--text-body-large-size);
   line-height: var(--text-body-large-height);
@@ -65,7 +65,7 @@ const button_class = computed(() => ({
   }
 
   &--icon {
-    width: var(--navbar-height);
+    width: var(--toolbar-height);
     padding-left: 0;
     padding-right: 0;
 

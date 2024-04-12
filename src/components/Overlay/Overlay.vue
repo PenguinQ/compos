@@ -1,25 +1,24 @@
-<script lang="ts">
-export default { inheritAttrs: false };
-</script>
 <script setup lang="ts">
-import { Teleport, Transition, onBeforeMount } from 'vue';
+import { computed, Teleport, Transition, onBeforeMount } from 'vue';
 import { useOverlayContainer } from '@hooks';
 import type * as CSS from 'csstype';
 
-interface Props {
+interface OverlayProps {
   duration?: number;
   modelValue?: boolean;
-  overflow?: boolean;
+  fullscreen?: boolean;
   padding?: CSS.Property.Padding;
 }
 
-withDefaults(defineProps<Props>(), {
+defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(defineProps<OverlayProps>(), {
   duration: 300,
   modelValue: false,
-  overflow: false,
+  fullscreen: false,
 });
 
-const emits = defineEmits([
+const emit = defineEmits([
   'on-click-backdrop',
   'before-enter',
   'enter',
@@ -32,6 +31,10 @@ const emits = defineEmits([
 ]);
 
 const { overlayContainer, createOverlayContainer } = useOverlayContainer();
+const overlay_class = computed(() => ({
+  'cp-overlay': true,
+  'cp-overlay--fullscreen': props.fullscreen,
+}));
 
 onBeforeMount(() => {
   createOverlayContainer();
@@ -39,12 +42,12 @@ onBeforeMount(() => {
 
 const handleEnter = () => {
   document.body.style.overflow = 'hidden';
-  emits('enter');
+  emit('enter');
 };
 
 const handleLeave = () => {
   document.body.style.overflow = '';
-  emits('leave');
+  emit('leave');
 };
 </script>
 
@@ -61,12 +64,7 @@ const handleLeave = () => {
       @after-leave="$emit('after-leave')"
       @leave-cancelled="$emit('leave-cancelled')"
     >
-      <div
-        v-if="modelValue"
-        v-bind="$attrs"
-        class="cp-overlay"
-        :data-cp-overflow="overflow ? overflow : undefined"
-      >
+      <div v-if="modelValue" v-bind="$attrs" :class="overlay_class">
         <div class="cp-overlay__wrapper" :style="{ padding }">
           <div class="cp-overlay__backdrop" @click="$emit('on-click-backdrop')" />
           <div class="cp-overlay__content">
@@ -79,6 +77,8 @@ const handleLeave = () => {
 </template>
 
 <style lang="scss">
+$root: '.cp-overlay';
+
 .cp-overlay {
   pointer-events: auto;
   position: fixed;
@@ -88,7 +88,7 @@ const handleLeave = () => {
 
   &__wrapper {
     width: 100%;
-    height: 100%;
+    min-height: 100%;
     position: relative;
     display: flex;
     justify-content: center;
@@ -108,17 +108,18 @@ const handleLeave = () => {
     contain: layout;
     pointer-events: auto;
     position: relative;
-    // max-width: 100%;
-    // max-height: 100%;
 
     > * {
       position: relative;
     }
   }
 
-  &[data-cp-overflow] .cp-overlay__wrapper {
-    min-height: 100%;
-    height: auto;
+  &--fullscreen {
+    overflow: hidden;
+
+    #{$root}__wrapper {
+      height: 100%;
+    }
   }
 
   &.v-enter-from .cp-overlay__backdrop,

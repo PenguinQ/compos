@@ -1,38 +1,28 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
-import { IconArrowLeftShort } from '@icons';
+import { computed, defineAsyncComponent } from 'vue';
 
-export type Props = {
-  title: string;
+export type NavbarProps = {
+  title?: string;
   sticky?: boolean;
   onBack?: () => void;
-}
+};
 
-const props = defineProps<Props>();
+const props = defineProps<NavbarProps>();
+const emit = defineEmits(['back']);
 
-const navbarClass = reactive({
+const NavbarBack = defineAsyncComponent(() => import('./NavbarBack.vue'));
+const has_back = computed(() => !!props.onBack);
+const navbar_class = computed(() => ({
   'cp-navbar': true,
   'cp-navbar--sticky': props.sticky,
-});
+}));
 </script>
 
 <template>
-  <nav :class="navbarClass">
-    <button
-      v-if="$props.onBack"
-      class="cp-navbar__back"
-      type="button"
-      @click="$emit('back')"
-    >
-      <IconArrowLeftShort color="white" size="42" />
-    </button>
-    <h2 class="cp-navbar__title">{{ title }}</h2>
-    <div v-if="$slots.default" class="cp-navbar__items">
-      <slot />
-    </div>
-    <div v-if="$slots.action" class="cp-navbar-actions">
-      <slot name="action" />
-    </div>
+  <nav :class="navbar_class">
+    <NavbarBack v-if="has_back" @click="$emit('back')" />
+    <h2 v-if="title" class="cp-navbar__title">{{ title }}</h2>
+    <slot />
   </nav>
 </template>
 
@@ -45,19 +35,9 @@ const navbarClass = reactive({
   background-color: var(--color-black);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-
-  &__back {
-    background-color: transparent;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-
-    .cp-icon {
-      fill: var(--color-white);
-    }
-  }
+  box-shadow:
+    rgba(0, 0, 0, 0.16) 0 3px 6px,
+    rgba(0, 0, 0, 0.23) 0 3px 6px;
 
   &__title {
     color: inherit;
@@ -66,16 +46,13 @@ const navbarClass = reactive({
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    flex-grow: 1;
     margin-top: 0;
+    margin-right: 16px;
     margin-bottom: 0;
-  }
 
-  &__items {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
+    &:first-child {
+      margin-left: 16px;
+    }
   }
 
   &-actions {
