@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import * as CSS from 'csstype';
 
-interface Props {
-  fluid?: boolean;
+type ContainerProps = {
   breakpoint?: 'md';
-}
+  fluid?: boolean;
+  padding?: CSS.Property.Padding;
+};
 
-const props = defineProps<Props>();
+const props = defineProps<ContainerProps>();
 const containerClass = computed(() => ({
   'cp-container': true,
   'cp-container--fluid': props.fluid,
@@ -14,8 +16,12 @@ const containerClass = computed(() => ({
 </script>
 
 <template>
-  <div :class="containerClass" :data-cp-breakpoint="breakpoint ? breakpoint : undefined">
-    <slot></slot>
+  <div
+    :class="containerClass"
+    :data-cp-breakpoint="breakpoint ? breakpoint : undefined"
+    :style="{ padding }"
+  >
+    <slot />
   </div>
 </template>
 

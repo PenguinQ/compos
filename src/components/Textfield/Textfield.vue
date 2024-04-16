@@ -27,6 +27,10 @@ interface Props extends /* @vue-ignore */ InputHTMLAttributes {
    */
   label?: string;
   /**
+   * Set the textfield label additional properties.
+   */
+  labelProps?: object;
+  /**
    * Set the textfield CSS margin.
    */
   margin?: CSS.Property.Margin;
@@ -95,7 +99,7 @@ const togglePassword = () => {
     :data-cp-success="success ? true : undefined"
     :style="{ margin }"
   >
-    <label v-if="label || $slots['label']">
+    <label v-if="label || $slots['label']" v-bind="labelProps">
       <slot name="label" />
       {{ label }}
     </label>

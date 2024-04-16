@@ -5,48 +5,51 @@ import { ToastProvider } from '@components/Toast';
 
 <template>
   <ToastProvider>
-    <div class="main">
-      <RouterView class="main__navbar" name="Navbar" />
-      <div class="main__view">
-        <RouterView />
-      </div>
-      <RouterView class="main__bottom-navbar" name="BottomNavbar" />
+    <div id="page-container">
+      <RouterView id="page-navbar" name="Navbar" />
+      <div id="page-view"><RouterView /></div>
+      <RouterView id="page-bottom-navbar" name="BottomNavbar" />
     </div>
   </ToastProvider>
 </template>
 
 <style scoped lang="scss">
-.main {
-  min-height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  grid-template-areas:
-    "navbar"
-    "view"
-    "bottom-navbar";
+#page {
+  &-container {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "navbar"
+      "view"
+      "bottom-navbar";
 
-  > * {
-    min-width: 0;
+    > * {
+      min-width: 0;
+    }
   }
 
-  &__navbar {
+  &-navbar {
     grid-area: navbar;
     position: sticky;
     top: 0;
     z-index: 50;
   }
 
-  &__view {
+  &-view {
     grid-area: view;
     position: relative;
-    // padding: 16px;
   }
 
-  &__bottom-navbar {
+  &-bottom-navbar {
     grid-area: bottom-navbar;
     position: sticky;
     bottom: 0;
     z-index: 50;
+
+    .cp-bottom-navbar-button {
+      opacity: 0.1;
+    }
   }
 }
 </style>

@@ -9,13 +9,13 @@ import TestScope from './TestScope.vue';
 
 <template>
   <Tabs grow sticky>
-    <Tab title="Testing 1" padding="16px">
+    <!-- <Tab title="Testing 1" padding="16px">
       <div>Scoped tab content 1</div>
     </Tab>
     <Tab title="Testing 2" padding="16px" lazy>
       <div>Scoped tab content 2</div>
-    </Tab>
-    <Tab title="Product" padding="16px" lazy>
+    </Tab> -->
+    <Tab title="Product" padding="16px">
       <ProductList />
     </Tab>
     <Tab title="Bundle" padding="16px" lazy>

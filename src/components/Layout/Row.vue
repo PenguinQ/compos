@@ -3,21 +3,21 @@ import { computed, reactive } from 'vue';
 import type * as CSS from 'csstype';
 import type { ColumnType } from './Column.vue';
 
-interface GutterType {
+type GutterType =  {
   col?: number | string | null;
   row?: number | string | null;
-}
+};
 
-interface Props {
+type RowProps = {
   align?: CSS.Property.AlignItems;
   col?: number | string | ColumnType;
   direction?: CSS.Property.FlexDirection;
   gutter?: number | string | GutterType;
   justify?: CSS.Property.JustifyContent;
   margin?: CSS.Property.Margin | number;
-}
+};
 
-const props = defineProps<Props>();
+const props = defineProps<RowProps>();
 
 const { col, gutter } = props;
 const gutters: GutterType = { col: null, row: null };

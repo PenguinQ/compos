@@ -24,6 +24,9 @@ const meta: Meta<typeof Textfield> = {
     label: {
       control: 'text',
     },
+    labelProps: {
+      control: 'object',
+    },
     margin: {
       control: 'text',
     },
@@ -65,6 +68,7 @@ const meta: Meta<typeof Textfield> = {
     disabled: false,
     error: false,
     label: '',
+    labelProps: {},
     margin: '',
     message: '',
     placeholder: '',

@@ -20,6 +20,9 @@ const meta: Meta<typeof Textarea> = {
     label: {
       control: 'text',
     },
+    labelProps: {
+      control: 'object',
+    },
     margin: {
       control: 'text',
     },
@@ -59,6 +62,7 @@ const meta: Meta<typeof Textarea> = {
     disabled: false,
     error: false,
     label: '',
+    labelProps: {},
     margin: '',
     maxRows: undefined,
     message: '',

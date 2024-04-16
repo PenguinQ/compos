@@ -1,5 +1,5 @@
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { inject, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import { useQuery, useMutation } from '@/database/hooks';
 import { mutateDeleteProduct } from '@/database/query/product';
@@ -8,8 +8,10 @@ import { detailNormalizer } from '../normalizer/ProductDetail.normalizer';
 
 export const useProductDetail = () => {
   const route = useRoute();
+  const router = useRouter();
   const { params } = route;
-  const delete_id = ref('');
+  const toast = inject('ToastProvider');
+  const dialog_delete = ref(false);
 
   const {
     data,
@@ -23,38 +25,35 @@ export const useProductDetail = () => {
       normalizer: detailNormalizer,
     }),
     onError: (error: unknown) => {
-      const { code } = error as { code: number, message: string };
-
       console.error('[ERROR] Failed to get the product detail.', error);
-    },
-    onSuccess: (response: any) => {
-      console.log('[SUCCESS] Product detail page', response);
+      toast.add({ message: 'Failed to get the product detail.', type: 'error', duration: 2000 });
     },
   });
 
   const {
     mutate: deleteProduct,
     isLoading: deleteProductLoading,
-    isError: deletepProductError,
   } = useMutation({
     mutateFn: () => mutateDeleteProduct(params.id as string),
     onError: (error: Error) => {
-      console.log('[ERROR] Failed to delete the product', error);
+      console.error('[ERROR] Failed to delete the product', error);
+      toast.add({ message: 'Failed to delete the product', type: 'error', duration: 2000 });
     },
-    onSuccess: (response: any) => {
-      console.log('[SUCCESS] Deleting the product', response);
+    onSuccess: () => {
+      toast.add({ message: 'Product deleted', type: 'success', duration: 2000 });
+      router.back();
     }
   });
 
   return {
     productID: params.id,
     data,
+    dialog_delete,
     isError,
     isLoading,
     isSuccess,
-    refetch,
     deleteProduct,
     deleteProductLoading,
-    deletepProductError,
+    refetch,
   };
 };

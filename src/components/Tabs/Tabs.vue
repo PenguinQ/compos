@@ -111,20 +111,24 @@ watch(
     v-bind="controlContainerProps"
     :class="tabs_class"
   >
-    <button
-      ref="tabs"
-      v-for="(tab, index) in $slots.default().filter((slot) => (slot.type as TabSlot).name === 'Tab')"
-      v-bind="{ ...controlProps, ...tab.props?.controlProps }"
-      :[scope_id]="''"
-      :key="index"
-      class="cp-tabs-control"
-      role="tab"
-      :data-cp-active="active_index === index ? true : undefined"
-      @click="handleTab(index)"
-    >
-      <component v-if="(tab.children as TabProps)?.title" :is="(tab.children as TabProps).title" />
-      <template v-else><span>{{ (tab.props as TabProps)?.title }}</span></template>
-    </button>
+    <div class="cp-tabs-controls-container">
+      <button
+        ref="tabs"
+        v-for="(tab, index) in $slots.default().filter((slot) => (slot.type as TabSlot).name === 'Tab')"
+        v-bind="{ ...controlProps, ...tab.props?.controlProps }"
+        :[scope_id]="''"
+        :key="index"
+        class="cp-tabs-control"
+        role="tab"
+        :data-cp-active="active_index === index ? true : undefined"
+        @click="handleTab(index)"
+      >
+        <component v-if="(tab.children as TabProps)?.title" :is="(tab.children as TabProps).title" />
+        <template v-else>
+          <span>{{ (tab.props as TabProps)?.title }}</span>
+        </template>
+      </button>
+    </div>
   </div>
   <div v-if="$slots.default" :[scope_id]="''" v-bind="panelContainerProps" class="cp-tabs-panels">
     <component
@@ -139,10 +143,33 @@ watch(
 </template>
 
 <style lang="scss">
+$root: '.cp-tabs-controls';
+
 .cp-tabs-controls {
-  display: flex;
-  overflow: auto;
-  scrollbar-width: none;
+  max-width: 100%;
+  width: fit-content;
+  position: relative;
+
+  &-container {
+    display: flex;
+    overflow: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+      height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: #ecebed;
+      border-radius: 24px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #b2b4bd;
+      border-radius: 24px;
+    }
+  }
 
   &::-webkit-scrollbar {
     display: none;
@@ -161,19 +188,39 @@ watch(
 
   &--sticky {
     position: sticky;
+    z-index: 50;
+
+    &::before {
+      content: '';
+      width: 100%;
+      height: 50%;
+      box-shadow:
+        rgba(0, 0, 0, 0.16) 0 3px 6px,
+        rgba(0, 0, 0, 0.23) 0 3px 6px;
+      position: absolute;
+      bottom: 0;
+      z-index: -1;
+      pointer-events: none;
+    }
   }
 
   &--grow {
-    overflow: hidden;
+    width: 100%;
+
+    #{$root}-container {
+      width: 100%;
+    }
   }
 }
 
 @include screen-md {
   .cp-tabs-controls {
-    scrollbar-width: auto;
+    &-container {
+      scrollbar-width: auto;
 
-    &::-webkit-scrollbar {
-      display: initial;
+      &::-webkit-scrollbar {
+        display: initial;
+      }
     }
   }
 }

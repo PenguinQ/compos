@@ -48,6 +48,7 @@ defineExpose({ items, add });
 
 <style lang="scss">
 .cp-toast-container {
+  width: 100%;
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
@@ -58,5 +59,6 @@ defineExpose({ items, add });
   z-index: 60;
   transform: translateX(-50%);
   pointer-events: none;
+  padding: 0 16px;
 }
 </style>

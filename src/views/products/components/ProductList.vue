@@ -141,7 +141,7 @@ const {
 }
 
 @include screen-md {
-  .product-grid {
+  .product-card-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
@@ -151,7 +151,7 @@ const {
 }
 
 @include screen-lg {
-  .product-grid {
+  .product-card-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
@@ -161,7 +161,7 @@ const {
 }
 
 @include screen-xl {
-  .product-grid {
+  .product-card-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 

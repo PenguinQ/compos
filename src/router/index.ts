@@ -15,7 +15,7 @@ const router = createRouter({
       redirect: '/sales',
       components: {
         default: () => import('../views/MainViewContainer.vue'),
-        // Navbar: () => import('../views/MainViewNavbar.vue'),
+        Navbar: () => import('../views/MainViewNavbar.vue'),
         BottomNavbar: () => import('../views/MainViewBottomNavbar.vue'),
       },
       children: [
@@ -23,10 +23,6 @@ const router = createRouter({
           path: '/sales',
           redirect: '/sales/list',
           component: () => import('../views/sales/SalesViewContainer.vue'),
-          // components: {
-          //   default: () => import('../views/sales/SalesViewContainer.vue'),
-          //   Navbar: () => import('../views/TestNavbar.vue'),
-          // },
           children: [
             {
               path: '/sales/list',
@@ -38,11 +34,7 @@ const router = createRouter({
               path: '/sales/dashboard',
               name: 'sales-dashboard',
               meta: { title: 'Sales Dashboard - ComPOS',},
-              // component: () => import('../views/sales/SalesDashboard.vue'),
-              components: {
-                default: () => import('../views/sales/SalesDashboard.vue'),
-                Navbar: () => import('../views/TestNavbar.vue'),
-              }
+              component: () => import('../views/sales/SalesDashboard.vue'),
             },
             {
               path: '/sales/running',
@@ -81,19 +73,28 @@ const router = createRouter({
             {
               path: '/product/edit/:id',
               name: 'product-edit',
-              meta: { title: 'Edit Product - ComPOS' },
+              meta: {
+                title: 'Edit Product - ComPOS',
+                hideNavbar: true,
+              },
               component: () => import('../views/products/ProductForm.vue'),
             },
             {
               path: '/product/bundle/:id',
               name: 'bundle-detail',
-              meta: { title: 'Bundle Detail - ComPOS' },
+              meta: {
+                title: 'Bundle Detail - ComPOS',
+                hideNavbar: true,
+              },
               component: () => import('../views/products/BundleDetail.vue'),
             },
             {
               path: '/product/bundle/edit/:id',
               name: 'bundle-edit',
-              meta: { title: 'Bundle Edit - ComPOS' },
+              meta: {
+                title: 'Bundle Edit - ComPOS',
+                hideNavbar: true,
+              },
               component: () => import('../views/products/BundleForm.vue'),
             },
           ],

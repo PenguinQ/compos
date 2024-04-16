@@ -4,7 +4,7 @@ import { IconArchive, IconArchiveFill, IconBasket, IconBasketFill } from '@icons
 </script>
 
 <template>
-  <BottomNavbar>
+  <BottomNavbar v-if="!$route.meta.hideBottomNavbar">
     <BottomNavbarButton
       title="Sales"
       :icon="($route.name as string).startsWith('sales') ? IconBasketFill : IconBasket"

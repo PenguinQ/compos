@@ -21,6 +21,10 @@ interface Props extends /* @vue-ignore */ TextareaHTMLAttributes {
    */
   label?: string;
   /**
+   * Set the textarea label additional properties.
+   */
+  labelProps?: object;
+  /**
    * Set the textarea CSS margin.
    */
   margin?: CSS.Property.Margin;
@@ -150,7 +154,7 @@ watch(
     :data-cp-success="success ? true : undefined"
     :style="{ margin }"
   >
-    <label v-if="label || $slots['label']">
+    <label v-if="label || $slots['label']" v-bind="labelProps">
       <slot name="label" />
       {{ label }}
     </label>

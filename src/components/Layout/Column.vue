@@ -2,9 +2,9 @@
 import { computed, reactive } from 'vue';
 import type * as CSS from 'csstype';
 
-export interface ColumnType {
+export type ColumnType = {
   [key: string]: number | string;
-}
+};
 
 export type ColumnAlign = {
   [key: string]: number | string;
@@ -14,14 +14,14 @@ export type ColumnOffset = {
   [key: string]: number | string;
 };
 
-interface Props {
+type ColumnProps = {
   align?: CSS.Property.AlignSelf;
   col?: number | string | ColumnAlign;
   order?: CSS.Property.Order;
   offset?: number | string | ColumnOffset;
 };
 
-const props = defineProps<Props>();
+const props = defineProps<ColumnProps>();
 
 const { col, offset } = props;
 
@@ -57,6 +57,7 @@ const columnStyle = reactive({
 
 .cp-column {
   max-width: 100%;
+  min-width: 0;
   flex: 1 0 0%;
 }
 

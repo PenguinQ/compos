@@ -128,7 +128,7 @@ const cardClass = computed(() => ({
   }
 
   &--outline {
-    border: 1px solid var(--color-black);
+    border: 1px solid var(--color-neutral-2);
     box-shadow: none;
   }
 }

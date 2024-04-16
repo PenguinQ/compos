@@ -153,6 +153,7 @@ watch(
 
 <style lang="scss">
 .cp-toast {
+  max-width: 480px;
   color: var(--color-white);
   background-color: #0d1317;
   border-radius: 6px;
@@ -166,9 +167,14 @@ watch(
   transition-timing-function: var(--transition-function);
   pointer-events: all;
 
+  &__content {
+    flex: 1 1 auto;
+  }
+
   &__close {
     background-color: transparent;
     border: none;
+    flex-shrink: 0;
     align-self: flex-start;
     cursor: pointer;
     padding: 0;

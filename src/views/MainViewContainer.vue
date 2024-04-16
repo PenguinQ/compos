@@ -1,62 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { RouterView } from 'vue-router';
-import { Tab, Tabs } from '@components/Tabs';
-import { BottomNavbar, BottomNavbarButton } from '@components/BottomNavbar';
-
-import {
-  IconArchive,
-  IconArchiveFill,
-  IconBasket,
-  IconBasketFill,
-} from '@icons';
 </script>
 
 <template>
   <RouterView />
-  <!-- <div class="page">
-    <div class="page__view">
-      <RouterView />
-    </div>
-    <BottomNavbar class="page__navigation">
-      <BottomNavbarButton
-        title="Sales"
-        :icon="($route.name as string).startsWith('sales') ? BasketFill : Basket"
-        :active="($route.name as string).startsWith('sales')"
-        @click="$router.push('/sales')"
-      />
-      <BottomNavbarButton
-        title="Product Management"
-        :icon="($route.name as string).startsWith('product') ? ArchiveFill : Archive"
-        :active="($route.name as string).startsWith('product')"
-        @click="$router.push('/product')"
-      />
-    </BottomNavbar>
-  </div> -->
 </template>
-
-<style lang="scss" scoped>
-.page {
-  min-height: 100vh;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  grid-template-areas:
-    "view"
-    "navigation";
-
-  > * {
-    min-width: 0;
-  }
-
-  &__view {
-    grid-area: view;
-  }
-
-  &__navigation {
-    grid-area: navigation;
-    position: sticky;
-    bottom: 0;
-    margin-top: 16px;
-  }
-}
-</style>

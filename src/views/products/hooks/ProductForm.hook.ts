@@ -1,5 +1,5 @@
-import { reactive, toRaw } from 'vue';
-import { useRoute } from 'vue-router';
+import { reactive, toRaw, inject, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import { useQuery, useMutation } from '@/database/hooks';
 import {
@@ -42,6 +42,8 @@ type FormData = {
 
 export const useProductForm = () => {
   const route = useRoute();
+  const router = useRouter();
+  const toast = inject('ToastProvider');
   const { params } = route;
   const formData = reactive<FormData>({
     id             : '',
@@ -61,6 +63,14 @@ export const useProductForm = () => {
     },
   });
 
+
+  watch(
+    () => formData.variant,
+    (variants) => {
+      console.log('Product has variant');
+    },
+  );
+
   // Get product detail hooks.
   const {
     data,
@@ -76,6 +86,7 @@ export const useProductForm = () => {
     enabled: params.id ? true : false,
     onError: (error: Error) => {
       console.error('Failed to get the product detail.', error);
+      toast.add({ message: 'Failed to get the product detail.', type: 'error' });
     },
     onSuccess: (result: any) => {
       console.info('[SUCCESS] Product Form Page.');
@@ -139,9 +150,11 @@ export const useProductForm = () => {
     },
     onError: (error: Error) => {
       console.error('Error mutating product detail.', error);
+      toast.add({ message: 'Error updating product detail.', type: 'error' });
     },
     onSuccess: () => {
-      console.log('Success mutating product detail.');
+      toast.add({ message: 'Product detail updated.', type: 'success', duration: 2000 });
+      router.back();
     },
   });
 
@@ -175,10 +188,13 @@ export const useProductForm = () => {
     },
     onError: (error: Error) => {
       console.error('Error adding new product.', error);
+      toast.add({ message: 'Error adding new product.', type: 'error' });
     },
     onSuccess: () => {
       console.log('Success adding new product.');
       handleResetForm();
+      toast.add({ message: 'Product added.', type: 'success', duration: 2000 });
+      router.back();
     },
   });
 

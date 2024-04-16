@@ -32,6 +32,7 @@ type DescriptionListProps = {
 
 const props = defineProps<DescriptionListProps>();
 
+const scope_id = useScopeId();
 const listClass = computed(() => ({
   'cp-description-list': true,
   'cp-description-list--horizontal': props.alignment === 'horizontal',
@@ -44,12 +45,14 @@ const DescriptionListItem = defineAsyncComponent(() => import('./DescriptionList
 
 <template>
   <template v-if="items">
+    <!-- v-bind="item.props" -->
     <dl :class="listClass" v-bind="$attrs">
       <component
         :is="DescriptionListItem"
+        :[scope_id]="''"
         :key="item.title"
         v-for="item in items"
-        v-bind="item.props"
+        v-bind="{ ...item.props, ...{ scope_id: scope_id ? scope_id : '' } }"
         :title="item.title"
         :description="item.description"
       />

@@ -5,7 +5,12 @@ import { db } from '@/database';
 import { IMAGE_ID_PREFIX } from '@/database/constants';
 import type { ProductDoc, VariantDoc } from '@/database/types';
 
-export default async ({ id, normalizer }: any): Promise<any> => {
+type GetBundleDetailParams = {
+  id: string;
+  normalizer?: (data: any) => void;
+};
+
+export default async ({ id, normalizer }: GetBundleDetailParams): Promise<any> => {
   try {
     const _queryBundle = await db.bundle.findOne({ selector: { id } }).exec();
 
@@ -80,7 +85,13 @@ export default async ({ id, normalizer }: any): Promise<any> => {
     }
 
     return {
-      result: normalizer({ product: product_list, ...bundleData }),
+      result: normalizer ? normalizer({
+        product: product_list,
+        ...bundleData
+      }): {
+        product: product_list,
+        ...bundleData
+      },
     };
   } catch (error) {
     if (error instanceof Error) {

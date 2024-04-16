@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import type * as CSS from 'csstype';
+import { useScopeId } from '@hooks';
 
 import Overlay from '@components/Overlay';
 import { IconX } from '@icons';
@@ -55,6 +56,7 @@ const emit = defineEmits([
   'leave-cancelled',
 ]);
 
+const scope_id = useScopeId();
 const show = ref(props.modelValue !== undefined ? props.modelValue : false);
 const dialog_class = computed(() => ({
   'cp-dialog': true,
@@ -104,16 +106,18 @@ watch(
     @onClickBackdrop="!persistent && closeDialog()"
   >
     <div
+      :[scope_id]="''"
       v-if="show"
       v-bind="$attrs"
       :class="dialog_class"
       :style="{ maxWidth, minWidth, width }"
     >
-      <div class="cp-dialog-header">
+      <div :[scope_id]="''" class="cp-dialog-header">
         <slot name="header" v-bind="{ props: activator_props }" />
-        <div v-if="!$slots.header" class="cp-dialog-header__content">
-          <h3 v-if="title" class="cp-dialog__title">{{ title }}</h3>
+        <div :[scope_id]="''" v-if="!$slots.header" class="cp-dialog-header__content">
+          <h3 :[scope_id]="''" v-if="title" class="cp-dialog__title">{{ title }}</h3>
           <button
+            :[scope_id]="''"
             v-if="!noClose"
             class="cp-dialog__close"
             type="button"
@@ -124,10 +128,10 @@ watch(
           </button>
         </div>
       </div>
-      <div class="cp-dialog-body">
+      <div v-if="$slots.default" :[scope_id]="''" class="cp-dialog-body">
         <slot />
       </div>
-      <div v-if="$slots.footer" class="cp-dialog-footer">
+      <div v-if="$slots.footer" :[scope_id]="''" class="cp-dialog-footer">
         <slot name="footer" v-bind="{ props: activator_props }" />
       </div>
     </div>
