@@ -2,24 +2,12 @@ import { blobToBase64String } from 'rxdb';
 import type { RxDocument } from 'rxdb';
 
 import { db } from '@/database';
-import { getPaginationSelector, handlePagination } from '@/database/utils';
+import { getPageStatus } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
+import type { ProductDoc, QueryParams, QueryReturn } from '@/database/types';
 
-type GetProductListParams = {
-  active?: boolean;
-  limit: number;
-  observe?: boolean;
-  page: number;
-  search_query: string;
-  sort: 'asc' | 'desc';
-  normalizer: (data: any) => void;
-};
-
-type GetProductList = {
-  result?: object | void;
-  observe?: boolean;
-  preprocessor?: (data: any) => void;
-  normalizer?: (data: object) => void;
+export type ProductsData = ProductDoc & {
+  image?: string;
 };
 
 export default async ({
@@ -30,7 +18,7 @@ export default async ({
   limit,
   observe = false,
   normalizer,
-}: GetProductListParams): Promise<GetProductList | any> => {
+}: QueryParams): Promise<QueryReturn> => {
   try {
     const query_selector = search_query ? {
       name: { $regex: `.*${search_query}.*`, $options: 'i' },
@@ -42,21 +30,24 @@ export default async ({
     const query_skip  = page > 1 ? (page - 1) * limit : 0;
     const query_limit = limit;
     const query_sort  = [{ id: sort }];
-    let product_count: number;
 
-    if (search_query) {
-      const _searchQuery = await db.product.find({ selector: query_selector }).exec();
+    const getProductCount = async () => {
+      let _query;
 
-      product_count = _searchQuery.length;
-    } else {
-      const _searchQuery = await db.product.find({
+      if (search_query) {
+        _query = await db.product.find({ selector: query_selector }).exec();
+
+        return _query.length;
+      }
+
+      _query = await db.product.find({
         selector: {
           ...(active !== undefined && { active: { $eq: active } }),
         },
       }).exec();
 
-      product_count = _searchQuery.length;
-    }
+      return _query.length;
+    };
 
     const _queryConstruct = db.product.find({
       selector: query_selector,
@@ -65,8 +56,6 @@ export default async ({
       sort    : query_sort,
     });
     const _queryProduct = observe ? _queryConstruct.$ : await _queryConstruct.exec();
-    const total_page    = Math.ceil(product_count / query_limit);
-    const product_data: object[] = [];
 
     /**
      * ----------------------
@@ -74,25 +63,25 @@ export default async ({
      * ----------------------
      */
     if (observe) {
-      const preprocessor = async (data: RxDocument<any>[]) => {
-        const { first_selector, last_selector } = getPaginationSelector({
+      const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> => {
+        const product_count = await getProductCount();
+        const total_page    = Math.ceil(product_count / query_limit);
+        const { first_page, last_page } = await getPageStatus({
+          collection: 'product',
           data,
           sort,
+          sortBy: [{ id: sort }],
           query: {
             name: { $regex: `.*${search_query}.*`, $options: 'i' },
             ...(active !== undefined && { active: { $eq: active } }),
           },
         });
-        const { first_page, last_page } = await handlePagination({
-          collection: 'product',
-          selector: { first: first_selector, last: last_selector },
-          sort: [{ id: sort }],
-        });
+        let product_data = [];
 
-        for (const product of data) {
+        for (const product of data as RxDocument<ProductDoc>[]) {
           const product_json = product.toJSON();
           const images       = product.allAttachments();
-          const thumbnail    = images.filter((att: any) => att.id.startsWith(THUMBNAIL_ID_PREFIX));
+          const thumbnail    = images.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
           let product_image  = '';
 
           if (thumbnail.length) {
@@ -107,18 +96,21 @@ export default async ({
         }
 
         return {
-          products  : product_data,
-          count     : product_count,
-          first_page,
-          last_page,
-          total_page,
+          data      : product_data,
+          data_count: product_count,
+          page      : {
+            current: page,
+            first: first_page,
+            last: last_page,
+            total: total_page,
+          },
         };
       };
 
       return {
-        result      : _queryProduct,
-        observe     : true,
-        preprocessor,
+        observeable: true,
+        result : _queryProduct,
+        observeableProcessor,
         normalizer,
       };
     }
@@ -128,24 +120,24 @@ export default async ({
      * 2. Non-observable queries.
      * --------------------------
      */
-    const { first_selector, last_selector } = getPaginationSelector({
-      data: _queryProduct as RxDocument<any>[],
+    const product_count = await getProductCount();
+    const total_page    = Math.ceil(product_count / query_limit);
+    const { first_page, last_page } = await getPageStatus({
+      collection: 'product',
+      data: _queryProduct as RxDocument<ProductDoc>[],
       sort,
+      sortBy: [{ id: sort }],
       query: {
         name: { $regex: `.*${search_query}.*`, $options: 'i' },
         ...(active !== undefined && { active: { $eq: active } }),
       },
     });
-    const { first_page, last_page } = await handlePagination({
-      collection: 'product',
-      selector: { first: first_selector, last: last_selector },
-      sort: [{ id: sort }],
-    });
+    let product_data = [];
 
-    for (const product of _queryProduct as RxDocument<any>[]) {
+    for (const product of _queryProduct as RxDocument<ProductDoc>[]) {
       const product_json = product.toJSON();
       const images       = product.allAttachments();
-      const thumbnail    = images.filter((att: any) => att.id.startsWith(THUMBNAIL_ID_PREFIX));
+      const thumbnail    = images.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
       let product_image  = '';
 
       if (thumbnail.length) {
@@ -160,11 +152,14 @@ export default async ({
     }
 
     const raw_data = {
-      products  : product_data,
-      count     : product_count,
-      first_page,
-      last_page,
-      total_page,
+      data      : product_data,
+      data_count: product_count,
+      page      : {
+        current: page,
+        first: first_page,
+        last: last_page,
+        total: total_page,
+      },
     };
 
     return {

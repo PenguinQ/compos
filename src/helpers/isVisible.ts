@@ -1,4 +1,4 @@
-export default (element: HTMLElement, container: HTMLElement) => {
+export default (element: HTMLElement, container: HTMLElement): boolean | undefined => {
   if (!element) return;
 
   const element_rect = element.getBoundingClientRect();

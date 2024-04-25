@@ -1,4 +1,34 @@
-import type { RxDatabase, RxCollection } from 'rxdb';
+import type { RxDatabase, RxDocument, RxCollection } from 'rxdb';
+
+export type NormalizerDataPage = {
+  current: number;
+  first: boolean;
+  last: boolean;
+  total: number;
+};
+
+export type NormalizerData = {
+  data: unknown;
+  data_count: number;
+  page?: NormalizerDataPage;
+};
+
+export type QueryParams = {
+  active?: boolean;
+  limit: number;
+  observe?: boolean;
+  page: number;
+  search_query: string;
+  sort: 'asc' | 'desc';
+  normalizer?: (data: NormalizerData) => void;
+};
+
+export type QueryReturn = {
+  observeable?: boolean;
+  result?: unknown;
+  normalizer?: (data: NormalizerData) => void;
+  observeableProcessor?: (data: RxDocument<unknown>[]) => Promise<object>;
+};
 
 export type SalesDoc = {
   id: string;

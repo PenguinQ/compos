@@ -1,24 +1,26 @@
-import type { RxDocument } from 'rxdb';
-import type { BundleDoc } from '@/database/types';
+import type { NormalizerData, NormalizerDataPage } from '@/database/types';
+import type { BundlesData } from '@/database/query/bundle/getBundleList';
 
-interface Bundle extends BundleDoc {
-  image?: string[];
+type BundleList = {
+  count: number;
+  id: string,
+  image: string[];
+  name: string;
 }
 
-type NormalizerParams = {
-  first_page: boolean;
-  last_page: boolean;
-  total_page: number;
-  count: number;
-  bundles: RxDocument<Bundle>[];
+export type BundleListNormalizerReturn = {
+  bundles: BundleList[];
+  bundles_count: number;
+  bundles_count_total: number;
+  page: NormalizerDataPage;
 };
 
-export const bundleListNormalizer = (data: NormalizerParams) => {
-  const { first_page, last_page, total_page, count, bundles: bundles_data } = data;
+export const bundleListNormalizer = (data: NormalizerData) => {
+  const { data: bundles_data, data_count, page } = data;
   const bundles = bundles_data || [];
-  const bundle_list: object[] = [];
+  const bundle_list: BundleList[] = [];
 
-  for (const bundle of bundles) {
+  for (const bundle of bundles as BundlesData[]) {
     const { id, name, image, product } = bundle;
 
     bundle_list.push({
@@ -30,11 +32,9 @@ export const bundleListNormalizer = (data: NormalizerParams) => {
   }
 
   return {
-    first_page,
-    last_page,
-    total_page,
-    total_count: count,
-    count: bundle_list.length,
+    page,
     bundles: bundle_list,
+    bundles_count: bundle_list.length,
+    bundles_count_total: data_count,
   };
 };

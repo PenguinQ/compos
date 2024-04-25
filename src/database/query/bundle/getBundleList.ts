@@ -2,24 +2,12 @@ import { RxAttachment, blobToBase64String } from 'rxdb';
 import type { RxDocument } from 'rxdb';
 
 import { db } from '@/database';
-import { getPaginationSelector, handlePagination } from '@/database/utils';
+import { getPageStatus } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
+import type { BundleDoc, QueryParams, QueryReturn } from '@/database/types';
 
-type GetBundleListParams = {
-  active?: boolean;
-  limit: number;
-  observe?: boolean;
-  page: number;
-  search_query: string;
-  sort: 'asc' | 'desc';
-  normalizer: (data: any) => void;
-};
-
-type GetBundleList = {
-  result?: object| void;
-  observe?: boolean;
-  preprocessor?: (data: any) => void;
-  normalizer?: (data: object) => void;
+export type BundlesData = BundleDoc & {
+  image?: string[];
 };
 
 export default async ({
@@ -30,7 +18,7 @@ export default async ({
   limit,
   observe = false,
   normalizer,
-}: GetBundleListParams): Promise<GetBundleList> => {
+}: QueryParams): Promise<QueryReturn> => {
   try {
     const query_selector = search_query ? {
       name: { $regex: `.*${search_query}.*`, $options: 'i' },
@@ -42,21 +30,24 @@ export default async ({
     const query_skip     = page > 1 ? (page - 1) * limit : 0;
     const query_limit    = limit;
     const query_sort     = [{ id: sort }];
-    let bundle_count: number;
 
-    if (search_query) {
-      const _searchQuery = await db.bundle.find({ selector: query_selector }).exec();
+    const getBundleCount = async () => {
+      let _query;
 
-      bundle_count = _searchQuery.length;
-    } else {
-      const _searchQuery = await db.bundle.find({
+      if (search_query) {
+        _query = await db.bundle.find({ selector: query_selector }).exec();
+
+        return _query.length;
+      }
+
+      _query = await db.bundle.find({
         selector: {
           ...(active !== undefined && { active: { $eq: active } }),
         },
       }).exec();
 
-      bundle_count = _searchQuery.length;
-    }
+      return _query.length;
+    };
 
     const _queryConstruct = db.bundle.find({
       selector: query_selector,
@@ -65,8 +56,6 @@ export default async ({
       sort: query_sort,
     });
     const _queryBundle        = observe ? _queryConstruct.$ : await _queryConstruct.exec();
-    const total_page          = Math.ceil(bundle_count / query_limit);
-    let bundle_data: object[] = [];
 
     /**
      * ----------------------
@@ -74,22 +63,22 @@ export default async ({
      * ----------------------
      */
     if (observe) {
-      const preprocessor = async (data: RxDocument<any>[]) =>{
-        const { first_selector, last_selector } = getPaginationSelector({
+      const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> =>{
+        const bundle_count = await getBundleCount();
+        const total_page    = Math.ceil(bundle_count / query_limit);
+        const { first_page, last_page } = await getPageStatus({
+          collection: 'bundle',
           data,
           sort,
+          sortBy: [{ id: sort }],
           query: {
             name: { $regex: `.*${search_query}.*`, $options: 'i' },
             ...(active !== undefined && { active: { $eq: active } }),
           },
         });
-        const { first_page, last_page } = await handlePagination({
-          collection: 'bundle',
-          selector: { first: first_selector, last: last_selector },
-          sort: [{ id: sort }],
-        });
+        let bundle_data = [];
 
-        for (const bundle of data) {
+        for (const bundle of data as RxDocument<BundleDoc>[]) {
           const bundle_json           = bundle.toJSON();
           const { product: products } = bundle_json;
           let bundle_images           = [];
@@ -100,7 +89,7 @@ export default async ({
 
             if (_findProductQuery) {
               const images    = _findProductQuery.allAttachments();
-              const thumbnail = (images as RxAttachment<any>[]).filter((att: any) => att.id.startsWith(THUMBNAIL_ID_PREFIX));
+              const thumbnail = (images as RxAttachment<unknown>[]).filter((att: any) => att.id.startsWith(THUMBNAIL_ID_PREFIX));
 
               if (thumbnail.length) {
                 const thumbnail_data   = await thumbnail[0].getData();
@@ -116,18 +105,21 @@ export default async ({
         }
 
         return {
-          bundles   : bundle_data,
-          count     : bundle_count,
-          first_page,
-          last_page,
-          total_page,
+          data      : bundle_data,
+          data_count: bundle_count,
+          page      : {
+            current: page,
+            first: first_page,
+            last: last_page,
+            total: total_page,
+          },
         };
       };
 
       return {
-        result      : _queryBundle,
-        observe     : true,
-        preprocessor,
+        observeable: true,
+        result : _queryBundle,
+        observeableProcessor,
         normalizer,
       };
     }
@@ -137,21 +129,21 @@ export default async ({
      * 2. Non-observable queries.
      * --------------------------
      */
-    const { first_selector, last_selector } = getPaginationSelector({
+    const bundle_count = await getBundleCount();
+    const total_page    = Math.ceil(bundle_count / query_limit);
+    const { first_page, last_page } = await getPageStatus({
+      collection: 'bundle',
       data: _queryBundle as RxDocument<any>[],
       sort,
+      sortBy: [{ id: sort }],
       query: {
         name: { $regex: `.*${search_query}.*`, $options: 'i' },
         ...(active !== undefined && { active: { $eq: active } }),
       },
     });
-    const { first_page, last_page } = await handlePagination({
-      collection: 'bundle',
-      selector: { first: first_selector, last: last_selector },
-      sort: [{ id: sort }],
-    });
+    let bundle_data = [];
 
-    for (const bundle of _queryBundle as RxDocument<any>[]) {
+    for (const bundle of _queryBundle as RxDocument<BundleDoc>[]) {
       const bundle_json           = bundle.toJSON();
       const { product: products } = bundle_json;
       let bundle_images           = [];
@@ -162,7 +154,7 @@ export default async ({
 
         if (_findProductQuery) {
           const images    = _findProductQuery.allAttachments();
-          const thumbnail = (images as RxAttachment<any>[]).filter((att: any) => att.id.startsWith(THUMBNAIL_ID_PREFIX));
+          const thumbnail = (images as RxAttachment<any>[]).filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
 
           if (thumbnail.length) {
             const attachment       = await thumbnail[0].getData();
@@ -178,11 +170,14 @@ export default async ({
     }
 
     const raw_data = {
-      bundles   : bundle_data,
-      count     : bundle_count,
-      first_page,
-      last_page,
-      total_page,
+      data      : bundle_data,
+      data_count: bundle_count,
+      page      : {
+        current: page,
+        first: first_page,
+        last: last_page,
+        total: total_page,
+      },
     };
 
     return {

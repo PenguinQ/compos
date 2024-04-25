@@ -1,24 +1,26 @@
-import type { RxDocument } from 'rxdb'
-import type { ProductDoc } from '@/database/types';
+import type { NormalizerData, NormalizerDataPage } from '@/database/types';
+import type { ProductsData } from '@/database/query/product/getProductList';
 
-interface Product extends ProductDoc {
-  image?: string;
-}
-
-type NormalizerParams = {
-  first_page: boolean;
-  last_page: boolean;
-  total_page: number;
-  count: number;
-  products: RxDocument<Product>[];
+type ProductList = {
+  id: string;
+  name: string;
+  variant?: number;
+  image: string;
 };
 
-export const productListNormalizer = (data: NormalizerParams) => {
-  const { first_page, last_page, total_page, count, products: products_data } = data;
-  const products = products_data || [];
-  const product_list: object[] = [];
+export type ProductListNormalizerReturn = {
+  products: ProductList[];
+  products_count: number;
+  products_count_total: number;
+  page: NormalizerDataPage;
+};
 
-  for (const product of products) {
+export const productListNormalizer = (data: NormalizerData) => {
+  const { data: products_data, data_count, page } = data;
+  const products = products_data || [];
+  const product_list: ProductList[] = [];
+
+  for (const product of products as ProductsData[]) {
     const { id, variant, name, image } = product;
 
     product_list.push({
@@ -30,11 +32,9 @@ export const productListNormalizer = (data: NormalizerParams) => {
   }
 
   return {
-    first_page,
-    last_page,
-    total_page,
-    total_count: count,
-    count: product_list.length,
+    page,
     products: product_list,
+    products_count: product_list.length,
+    products_count_total: data_count,
   };
 };

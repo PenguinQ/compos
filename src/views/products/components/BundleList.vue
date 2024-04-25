@@ -1,31 +1,29 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 
-import { useBundle } from '../hooks/BundleList.hook';
-
 import Button from '@components/Button';
 import Text from '@components/Text';
 import Label from '@components/Label';
 import { Shimmer } from '@components/Loader';
 import EmptyState from '@components/EmptyState';
-
 import PageControl from './PageControl.vue';
 
 import Error from '@assets/illustration/error.svg';
 import NoImage from '@assets/illustration/no_image.svg'
 import NotFound from '@assets/illustration/not_found.svg'
 
+import { useBundle } from '../hooks/BundleList.hook';
+
 const router = useRouter();
 const {
   data,
   page,
-  total_page,
   bundlesError,
   bundlesLoading,
   bundlesRefetch,
-  handleSearch,
-  toPrevPage,
   toNextPage,
+  toPrevPage,
+  handleSearch,
 } = useBundle();
 </script>
 
@@ -45,18 +43,23 @@ const {
     <PageControl
       searchPlaceholder="Search"
       :pagination="data?.bundles.length ? true : false"
-      :paginationDisabled="bundlesLoading"
-      :paginationPage="page"
-      :paginationTotalPage="total_page"
-      :paginationFirstPage="data?.first_page"
-      :paginationLastPage="data?.last_page"
+      :paginationPage="page.current"
+      :paginationTotalPage="page.total"
+      :paginationFirstPage="page.current <= 1"
+      :paginationLastPage="page.current >= page.total"
       @search="handleSearch"
       @clickPaginationFirst="toPrevPage($event, true)"
       @clickPaginationPrev="toPrevPage"
       @clickPaginationNext="toNextPage"
       @clickPaginationLast="toNextPage($event, true)"
     />
-    <Shimmer v-if="bundlesLoading" class="product-shimmer" animate />
+    <div v-if="bundlesLoading" class="product-loader">
+      <Shimmer animate />
+      <Shimmer animate />
+      <Shimmer animate />
+      <Shimmer animate />
+      <Shimmer animate />
+    </div>
     <EmptyState
       v-else-if="!data.bundles.length"
       :image="NotFound"
@@ -68,11 +71,7 @@ const {
       <div class="product" v-for="bundle in data.bundles" @click="router.push(`/product/bundle/${bundle.id}`)">
         <div class="product__image">
           <template v-if="bundle.image.length">
-            <img
-              v-for="(image, index) of bundle.image"
-              :src="image ? image : NoImage"
-              :alt="`${bundle.name} image ${index + 1}`"
-            />
+            <img v-for="(image, index) of bundle.image" :src="image ? image : NoImage" :alt="`${bundle.name} image ${index + 1}`" />
           </template>
           <img v-else :src=" NoImage" :alt="`${bundle.name} image`" />
         </div>
@@ -94,11 +93,10 @@ const {
     <PageControl
       :search="false"
       :pagination="data?.bundles.length ? true : false"
-      :paginationDisabled="bundlesLoading"
-      :paginationPage="page"
-      :paginationTotalPage="total_page"
-      :paginationFirstPage="data?.first_page"
-      :paginationLastPage="data?.last_page"
+      :paginationPage="page.current"
+      :paginationTotalPage="page.total"
+      :paginationFirstPage="page.current <= 1"
+      :paginationLastPage="page.current >= page.total"
       @clickPaginationFirst="toPrevPage($event, true)"
       @clickPaginationPrev="toPrevPage"
       @clickPaginationNext="toNextPage"
@@ -159,38 +157,36 @@ const {
   }
 }
 
-.product-shimmer {
-  width: calc(50% - 6px);
-  height: 260px;
+.product-loader {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  .cp-loader {
+    width: 100%;
+    height: 260px;
+    display: block;
+  }
 }
 
 @include screen-md {
-  .product-grid {
+  .product-grid,
+  .product-loader {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .product-shimmer {
-    width: calc(33.33333% - 6px);
   }
 }
 
 @include screen-lg {
-  .product-grid {
+  .product-grid,
+  .product-loader {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .product-shimmer {
-    width: calc(25% - 6px);
   }
 }
 
 @include screen-xl {
-  .product-grid {
+  .product-grid,
+  .product-loader {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-
-  .product-shimmer {
-    width: calc(20% - 6px);
   }
 }
 </style>

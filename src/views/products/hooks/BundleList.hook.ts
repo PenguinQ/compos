@@ -1,89 +1,92 @@
-import { ref } from 'vue';
-import { useQuery } from '@database/hooks';
+import { inject, ref, reactive } from 'vue';
+import type { Ref } from 'vue';
+
+import { useQuery } from '@/database/hooks';
 import getBundleList from '@/database/query/bundle/getBundleList';
 import { debounce } from '@helpers';
 
 import { bundleListNormalizer } from '../normalizer/BundleList.normalizer';
+import type { BundleListNormalizerReturn } from '../normalizer/BundleList.normalizer';
 
 export const useBundle = () => {
-  const deleteID = ref<string | null>(null);
+  const toast = inject('ToastProvider');
   const search_query = ref('');
-  const page = ref(1);
-  const total_page = ref();
   const stop_refetch = ref(false);
+  const page = reactive({
+    current: 1,
+    total: 1,
+    limit: 12,
+    first: true,
+    last: true,
+  });
 
   const {
     data,
     refetch: bundlesRefetch,
     isError: bundlesError,
     isLoading: bundlesLoading,
-    isSuccess: bundlesSuccess,
   } = useQuery({
     queryKey: [search_query],
     queryFn: () => getBundleList({
       observe: true,
       search_query: search_query.value,
-      sort: 'desc',
-      limit: 1,
-      page: page.value,
+      sort: 'asc',
+      limit: page.limit,
+      page: page.current,
       normalizer: bundleListNormalizer,
     }),
-    onError: (error: string) => {
-      console.log('[ERROR] Failed to get bundle list:', error);
+    delay: 200,
+    onError: (error: Error) => {
+      console.error('Failed to get bundle list:', error);
+      toast.add({ message: 'Failed to get bundle list.', type: 'error', duration: 2000 });
     },
-    onSuccess: (response: any) => {
-      console.log('[SUCCESS] Bundle list:', response);
+    onSuccess: (response: unknown) => {
+      if (response) {
+        const { page: response_page, bundles } = response as BundleListNormalizerReturn;
 
-      const { total_page: total, bundles } = response;
+        page.total = response_page.total;
+        page.first = response_page.first;
+        page.last = response_page.last;
 
-      total_page.value = total;
-
-      if (!bundles.length) stop_refetch.value = true;
+        if (!bundles.length) stop_refetch.value = true;
+      }
     },
   });
 
   const handleSearch = debounce((e: Event) => {
     const target = e.target as HTMLInputElement;
 
-    page.value = 1;
-
+    page.current = 1;
     search_query.value = target.value;
   });
 
   const toPrevPage = (e: Event, toFirst?: boolean) => {
-    const { first_page } = data.value;
-
     if (toFirst) {
-      page.value = 1;
+      page.current = 1;
     } else {
-      page.value -= 1;
+      if (page.current > 1) page.current -= 1;
     }
 
-    !first_page && bundlesRefetch();
+    !page.first && bundlesRefetch();
   };
 
   const toNextPage = (e: Event, toLast?: boolean) => {
-    const { last_page, total_page } = data.value;
-
     if (toLast) {
-      page.value = total_page;
+      page.current = page.total;
     } else {
-      page.value += 1;
+      if (page.current < page.total) page.current += 1;
     }
 
-    !last_page && bundlesRefetch();
+    !page.last && bundlesRefetch();
   };
 
   return {
-    deleteID,
-    data,
+    data: data as Ref<BundleListNormalizerReturn>,
     search_query,
     page,
-    total_page,
     bundlesRefetch,
     bundlesError,
     bundlesLoading,
-    bundlesSuccess,
     handleSearch,
     toNextPage,
     toPrevPage,

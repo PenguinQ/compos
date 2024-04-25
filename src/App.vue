@@ -7,13 +7,15 @@ import { ToastProvider } from '@components/Toast';
   <ToastProvider>
     <div id="page-container">
       <RouterView id="page-navbar" name="Navbar" />
-      <div id="page-view"><RouterView /></div>
+      <div id="page-view">
+        <RouterView />
+      </div>
       <RouterView id="page-bottom-navbar" name="BottomNavbar" />
     </div>
   </ToastProvider>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss">
 #page {
   &-container {
     min-height: 100vh;
@@ -24,8 +26,17 @@ import { ToastProvider } from '@components/Toast';
       "view"
       "bottom-navbar";
 
+    // New
+    display: flex;
+    flex-direction: column;
+
     > * {
       min-width: 0;
+    }
+
+    &--flex {
+      display: flex;
+      flex-direction: column;
     }
   }
 
@@ -39,6 +50,11 @@ import { ToastProvider } from '@components/Toast';
   &-view {
     grid-area: view;
     position: relative;
+
+    // New
+    flex: 1 0 auto;
+    height: 0;
+    overflow-y: auto;
   }
 
   &-bottom-navbar {
@@ -46,10 +62,6 @@ import { ToastProvider } from '@components/Toast';
     position: sticky;
     bottom: 0;
     z-index: 50;
-
-    .cp-bottom-navbar-button {
-      opacity: 0.1;
-    }
   }
 }
 </style>

@@ -57,7 +57,8 @@ const props = withDefaults(defineProps<TabsProps>(), {
 const emit = defineEmits(['update:modelValue']);
 
 const scope_id = useScopeId();
-const tabs_container = ref();
+const controls = ref();
+const panels = ref();
 const tabs = ref();
 const active_index = ref<number>(props.modelValue ? props.modelValue : 0);
 const tabs_class = computed(() => ({
@@ -68,7 +69,7 @@ const tabs_class = computed(() => ({
 }));
 
 const scrollToView = (index: number) => {
-  const visible = isVisible(tabs.value[index], tabs_container.value);
+  const visible = isVisible(tabs.value[index], controls.value);
 
   if (!visible) tabs.value[index].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
 };
@@ -81,16 +82,31 @@ const handleTab = (index: number) => {
   !props.grow && scrollToView(index);
 };
 
-onMounted(() => {
-  if (props.sticky) {
-    const { top } = tabs_container.value.getBoundingClientRect();
-    const space = `${top}px`;
+const handleSticky = (sticky: boolean) => {
+  if (sticky) {
+    const { height, top } = controls.value.getBoundingClientRect();
 
-    tabs_container.value.style.top = space;
+    controls.value.style.top = `${top}px`;
+    panels.value.style.marginTop = `${height}px`;
+    // panels.value.style.paddingTop = `${height}px`;
+  } else {
+    controls.value.style.top = '';
+    panels.value.style.marginTop = '';
+    // panels.value.style.paddingTop = '';
   }
+}
 
+onMounted(() => {
+  props.sticky && handleSticky(true);
   !props.grow && scrollToView(active_index.value);
 });
+
+watch(
+  () => props.sticky,
+  (sticky) => {
+    handleSticky(sticky);
+  },
+);
 
 watch(
   () => props.modelValue,
@@ -105,9 +121,9 @@ watch(
 
 <template>
   <div
-    ref="tabs_container"
-    v-if="$slots.default"
+    ref="controls"
     :[scope_id]="''"
+    v-if="$slots.default"
     v-bind="controlContainerProps"
     :class="tabs_class"
   >
@@ -130,10 +146,19 @@ watch(
       </button>
     </div>
   </div>
-  <div v-if="$slots.default" :[scope_id]="''" v-bind="panelContainerProps" class="cp-tabs-panels">
+  <div
+    ref="panels"
+    :[scope_id]="''"
+    v-if="$slots.default"
+    v-bind="panelContainerProps"
+    class="cp-tabs-panels"
+  >
     <component
       v-for="(tab, index) in $slots.default().filter((slot) => (slot.type as TabSlot).name === 'Tab')"
-      v-bind="{ props: panelProps, ...{ scope_id: scope_id ? scope_id : '' } }"
+      v-bind="{
+        props: panelProps,
+        ...{ scope_id: scope_id ? scope_id : '' },
+      }"
       :is="tab"
       :key="index"
       :active="active_index === index"
@@ -187,7 +212,7 @@ $root: '.cp-tabs-controls';
   }
 
   &--sticky {
-    position: sticky;
+    position: fixed;
     z-index: 50;
 
     &::before {

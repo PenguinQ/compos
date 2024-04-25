@@ -1,15 +1,24 @@
-import { ref } from 'vue';
+import { inject, ref, reactive } from 'vue';
+import type { Ref } from 'vue';
+
 import { useQuery } from '@/database/hooks';
 import { getProductList } from '@/database/query/product';
 import { debounce } from '@helpers';
 
 import { productListNormalizer } from '../normalizer/ProductList.normalizer';
+import type { ProductListNormalizerReturn } from '../normalizer/ProductList.normalizer';
 
 export const useProductList = () => {
-  const stop_refetch = ref(false);
-  const page = ref(1);
-  const total_page = ref();
+  const toast = inject('ToastProvider');
   const search_query = ref('');
+  const stop_refetch = ref(false);
+  const page = reactive({
+    current: 1,
+    total: 1,
+    limit: 12,
+    first: true,
+    last: true,
+  });
 
   const {
     data,
@@ -19,64 +28,61 @@ export const useProductList = () => {
   } = useQuery({
     queryKey: [search_query],
     queryFn: () => getProductList({
-      observe: true,
       search_query: search_query.value,
-      sort: 'asc',
-      limit: 8,
-      page: page.value,
+      sort: 'desc',
+      limit: page.limit,
+      page: page.current,
       normalizer: productListNormalizer,
     }),
+    delay: 200,
     onError: (error: Error) => {
-      console.log('[ERROR] Failed to get product list:', error);
+      console.error('Failed to get product list:', error);
+      toast.add({ message: 'Failed to get product list.', type: 'error', duration: 2000 });
     },
-    onSuccess: (response: any) => {
-      console.log('[SUCCESS] Product list:', response);
+    onSuccess: (response: unknown) => {
+      if (response) {
+        const { page: response_page, products } = response as ProductListNormalizerReturn;
 
-      const { total_page: total, products } = response;
+        page.total = response_page.total;
+        page.first = response_page.first;
+        page.last = response_page.last;
 
-      total_page.value = total;
-
-      if (!products.length) stop_refetch.value = true;
+        if (!products.length) stop_refetch.value = true;
+      }
     },
   });
 
   const handleSearch = debounce((e: Event) => {
     const target = e.target as HTMLInputElement;
 
-    page.value = 1;
-
+    page.current = 1;
     search_query.value = target.value;
   });
 
   const toPrevPage = (e: Event, toFirst?: boolean) => {
-    const { first_page } = data.value;
-
     if (toFirst) {
-      page.value = 1;
+      page.current = 1;
     } else {
-      page.value -= 1;
+      if (page.current > 1) page.current -= 1;
     }
 
-    !first_page && productsRefetch();
+    !page.first && productsRefetch();
   };
 
   const toNextPage = (e: Event, toLast?: boolean) => {
-    const { last_page, total_page } = data.value;
-
     if (toLast) {
-      page.value = total_page;
+      page.current = page.total;
     } else {
-      page.value += 1;
+      if (page.current < page.total) page.current += 1;
     }
 
-    !last_page && productsRefetch();
+    !page.last && productsRefetch();
   };
 
   return {
-    data,
+    data: data as Ref<ProductListNormalizerReturn>,
     search_query,
     page,
-    total_page,
     productsError,
     productsLoading,
     productsRefetch,
