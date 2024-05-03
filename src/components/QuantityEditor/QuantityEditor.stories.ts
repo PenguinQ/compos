@@ -7,11 +7,23 @@ const meta: Meta<typeof QuantityEditor> = {
   tags: ['autodocs'],
   argTypes: {
     disabled: {
-      type: 'boolean',
+      control: 'boolean',
+    },
+    label: {
+      control: 'text',
+    },
+    labelProps: {
+      control: 'object',
+    },
+    message: {
+      control: 'text',
     },
   },
   args: {
     disabled: false,
+    label: '',
+    labelProps: {},
+    message: '',
   },
 };
 

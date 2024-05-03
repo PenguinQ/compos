@@ -50,7 +50,6 @@ export default async ({ id, normalizer }: GetProductDetailParams) => {
       const images              = variant_attachments.filter((att: RxAttachment<VariantDoc>) => att.id.startsWith(IMAGE_ID_PREFIX));
       const variant_images      = [];
 
-
       for (const image of images) {
         const { id, type } = image;
         const image_data   = await image.getData();

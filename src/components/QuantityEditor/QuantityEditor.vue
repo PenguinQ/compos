@@ -4,15 +4,48 @@ import type { InputHTMLAttributes } from 'vue';
 
 import { IconPlus, IconDash } from '@icons';
 
-interface Props extends /* @vue-ignore */ InputHTMLAttributes {
+interface QuantityEditorProps extends /* @vue-ignore */ InputHTMLAttributes {
+  /**
+   * Set the quantity editor into disabled state.
+   */
   disabled?: boolean;
+  /**
+   * Set the textfield into disabled state.
+   */
+  error?: boolean;
+  /**
+   * Set the textfield label.
+   */
+  label?: string;
+  /**
+   * Set the textfield label additional properties.
+   */
+  labelProps?: object;
+  /**
+   * Set the minimum number allowed in quantity editor.
+   */
   min?: number;
+  /**
+   * Set the message for the quantity editor.
+   */
+  message?: string;
+  /**
+   * Set the value using v-model two way data binding.
+   */
   modelValue?: string | number;
+  /**
+   * Set the value for the quantity editor without using v-model two way data binding.
+   */
   value?: string | number;
 }
 
-withDefaults(defineProps<Props>(), {
+defineOptions({
+  inheritAttrs: false,
+});
+
+withDefaults(defineProps<QuantityEditorProps>(), {
   disabled: false,
+  error: false,
   min: 0,
 });
 
@@ -22,7 +55,7 @@ const emits = defineEmits([
   'onClickIncrement',
 ]);
 
-let timeout: any = null;
+let timeout: ReturnType<typeof setTimeout>;
 const input = ref<HTMLInputElement | null>(null);
 
 const updateQuantity = (e: Event | undefined, increment: boolean = true) => {
@@ -50,53 +83,75 @@ const handleInput = (e: Event) => {
 </script>
 
 <template>
-  <div class="cp-quantity-editor" :data-cp-disabled="disabled ? disabled : undefined">
-    <button
-      type="button"
-      :disabled="disabled"
-      @click="$emit('onClickDecrement')"
-      @mousedown="(e) => updateQuantity(e, false)"
-      @mouseup="stopQuantityUpdate"
-      @mouseleave="stopQuantityUpdate"
-      @touchstart="(e) => updateQuantity(e, false)"
-      @touchend="stopQuantityUpdate"
-      @keydown="(e) => handleKeyDown(e, false)"
-      @keyup="stopQuantityUpdate"
-    >
-      <IconDash size="28" />
-    </button>
-    <input
-      ref="input"
-      v-bind="$attrs"
-      type="number"
-      inputmode="numeric"
-      :disabled="disabled"
-      :min="min"
-      :value="value || modelValue"
-      @input="handleInput"
-    />
-    <button
-      type="button"
-      :disabled="disabled"
-      @click="$emit('onClickIncrement')"
-      @mousedown="(e) => updateQuantity(e)"
-      @mouseup="stopQuantityUpdate"
-      @mouseleave="stopQuantityUpdate"
-      @touchstart="(e) => updateQuantity(e)"
-      @touchend="stopQuantityUpdate"
-      @keydown="(e) => handleKeyDown(e)"
-      @keyup="stopQuantityUpdate"
-    >
-      <IconPlus size="28" />
-    </button>
+  <div
+    class="cp-form cp-form--quantity"
+    :data-cp-disabled="disabled ? disabled : undefined"
+    :data-cp-error="error ? true : undefined"
+  >
+    <label v-if="label || $slots['label']" v-bind="labelProps">
+      <slot name="label" />
+      {{ label }}
+    </label>
+    <div class="cp-form--quantity__field">
+      <button
+        type="button"
+        :disabled="disabled"
+        @click="$emit('onClickDecrement')"
+        @mousedown="(e) => updateQuantity(e, false)"
+        @mouseup="stopQuantityUpdate"
+        @mouseleave="stopQuantityUpdate"
+        @touchstart="(e) => updateQuantity(e, false)"
+        @touchend="stopQuantityUpdate"
+        @keydown="(e) => handleKeyDown(e, false)"
+        @keyup="stopQuantityUpdate"
+      >
+        <IconDash size="28" />
+      </button>
+      <input
+        ref="input"
+        v-bind="$attrs"
+        type="number"
+        inputmode="numeric"
+        :disabled="disabled"
+        :min="min"
+        :value="value || modelValue"
+        @input="handleInput"
+      />
+      <button
+        type="button"
+        :disabled="disabled"
+        @click="$emit('onClickIncrement')"
+        @mousedown="(e) => updateQuantity(e)"
+        @mouseup="stopQuantityUpdate"
+        @mouseleave="stopQuantityUpdate"
+        @touchstart="(e) => updateQuantity(e)"
+        @touchend="stopQuantityUpdate"
+        @keydown="(e) => handleKeyDown(e)"
+        @keyup="stopQuantityUpdate"
+      >
+        <IconPlus size="28" />
+      </button>
+    </div>
+    <div class="cp-form-message" v-if="message || $slots['message']">
+      <slot name="message" />
+      {{ message }}
+    </div>
   </div>
 </template>
 
 <style src="../../assets/_form.scss" />
 <style lang="scss">
-.cp-quantity-editor {
-  display: inline-flex;
-  align-items: center;
+.cp-form--quantity {
+  display: inline-grid;
+  justify-items: start;
+
+  &__field {
+    display: inline-flex;
+  }
+
+  .cp-form-message {
+    justify-self: stretch;
+  }
 
   button {
     background-color: var(--color-black);

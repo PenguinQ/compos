@@ -5,4 +5,5 @@ export { default as generateId } from './generateId';
 export { default as handlePagination } from './handlePagination';
 export { default as getPaginationSelector } from './getPaginationSelector';
 export { default as getPageStatus } from './getPageStatus';
+export { default as isImagesValid } from './isImagesValid';
 export { default as isSafari } from './isSafari';

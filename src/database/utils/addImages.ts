@@ -5,7 +5,7 @@ type Image = {
   data: Blob;
 };
 
-export default async (images: Image[], doc: RxDocument<any>) => {
+export default async (images: Image[], doc: RxDocument<unknown>) => {
   for (const image of images) {
     const { id, data } = image;
     const { type }     = data;

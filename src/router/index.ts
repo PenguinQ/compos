@@ -54,6 +54,16 @@ const router = createRouter({
               name: 'product-list',
               meta: { title: 'Product List - ComPOS' },
               component: () => import('../views/products/Product.vue'),
+              beforeEnter: (to, _from, next) => {;
+                if (!to.query.tab && !to.query.page) {
+                  const query = { tab: 'bundle', page: '1' };
+                  const updatedQuery = { ...to.query, ...query };
+
+                  next({ ...to, query: updatedQuery });
+                } else {
+                  next();
+                }
+              },
             },
             {
               path: '/product/:id',
@@ -67,7 +77,10 @@ const router = createRouter({
             {
               path: '/product/add',
               name: 'product-add',
-              meta: { title: 'Add Product - ComPOS' },
+              meta: {
+                title: 'Add Product - ComPOS',
+                hideNavbar: true,
+              },
               component: () => import('../views/products/ProductForm.vue'),
             },
             {
@@ -111,8 +124,7 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from) => {
-  const { name: toName } = to;
-  const { name: fromName } = from;
+
 });
 
 export default router;

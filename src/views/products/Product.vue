@@ -1,24 +1,28 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { Tab, Tabs } from '@components/Tabs';
 import ProductList from './components/ProductList.vue';
 import BundleList from './components/BundleList.vue';
 
+const route = useRoute();
 const router = useRouter();
-const active_tab = 0;
-const tab_map: { [key: number]: string } = {
-  0: 'product',
-  1: 'bundle',
+const tab_map: { [key: string]: number } = {
+  'product': 0,
+  'bundle': 1,
+};
+const active_tab = ref(tab_map[route.query.tab as string]);
+
+const setRouterTab = (tab: string) => {
+  router.push({ query: { tab } });
 };
 
-const setRouterTab = (tab: number) => {
-  router.push({ query: { tab: tab_map[tab], page: 1 } })
-};
-
-onMounted(() => {
-  router.push({ query: { tab: tab_map[active_tab], page: 1 } })
-});
+watch(
+  () => route.query.tab,
+  (tab) => {
+    active_tab.value = tab_map[tab as string];
+  },
+);
 
 // const container = ref();
 // let items = ref(new Array(20).fill('Items'));
@@ -64,7 +68,7 @@ onMounted(() => {
       padding="16px"
       lazy
       :controlProps="{
-        onclick: () => setRouterTab(0),
+        onclick: () => setRouterTab('product'),
       }"
     >
       <ProductList />
@@ -74,7 +78,7 @@ onMounted(() => {
       padding="16px"
       lazy
       :controlProps="{
-        onclick: () => setRouterTab(1),
+        onclick: () => setRouterTab('bundle'),
       }"
       >
       <BundleList />

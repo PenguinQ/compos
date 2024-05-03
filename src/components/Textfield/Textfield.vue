@@ -77,12 +77,9 @@ const emits = defineEmits(['update:modelValue']);
 
 const isPassword = computed(() => props.type === 'password');
 const showPassword = ref(false);
-const input_value = ref(props.modelValue || props.value);
 
 const handleInput = (e: Event) => {
-  input_value.value = (e.target as HTMLInputElement).value;
-
-  emits('update:modelValue', input_value.value);
+  emits('update:modelValue', (e.target as HTMLInputElement).value);
 };
 
 const togglePassword = () => {
@@ -115,7 +112,7 @@ const togglePassword = () => {
         :disabled="disabled"
         :placeholder="placeholder"
         :type="showPassword ? 'text' : 'password'"
-        :value="input_value"
+        :value="value || modelValue"
         @input="handleInput"
       />
       <input
@@ -125,7 +122,7 @@ const togglePassword = () => {
         :disabled="disabled"
         :placeholder="placeholder"
         :type="type"
-        :value="input_value"
+        :value="value || modelValue"
         @input="handleInput"
       />
       <div v-if="append || $slots['append'] || isPassword" class="cp-form-affix">

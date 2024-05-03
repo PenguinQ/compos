@@ -107,8 +107,8 @@ export const useQuery = (params: UseQueryParams) => {
       }
     } catch (error) {
       states.isLoading = false;
-      states.isError = false;
-      states.isSuccess = true;
+      states.isError = true;
+      states.isSuccess = false;
 
       if (onError) onError(error as Error);
     }
