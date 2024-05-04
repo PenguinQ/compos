@@ -1,16 +1,34 @@
 import { blobToBase64String } from 'rxdb';
-import type { RxDocument, RxAttachment } from 'rxdb';
+import type { DeepReadonly, RxDocument, RxAttachment } from 'rxdb';
 
 import { db } from '@/database';
 import { IMAGE_ID_PREFIX } from '@/database/constants';
-import { ProductDoc, VariantDoc } from '@/database/types';
+import { ProductDoc, QueryReturn, VariantDoc } from '@/database/types';
 
-type GetProductDetailParams = {
+type ImageData = {
   id: string;
-  normalizer?: (data: any) => void;
+  data: string;
 };
 
-export default async ({ id, normalizer }: GetProductDetailParams) => {
+type ProductData = DeepReadonly<ProductDoc> & {
+  image: ImageData[];
+};
+
+type VariantData = DeepReadonly<VariantDoc> & {
+  image: ImageData[];
+};
+
+export type NormalizerData = {
+  product: ProductData;
+  variant: VariantData[];
+};
+
+type ProductDetailQuery = {
+  id: string;
+  normalizer?: (data: NormalizerData) => void;
+};
+
+export default async ({ id, normalizer }: ProductDetailQuery): Promise<QueryReturn> => {
   try {
     const _queryProduct = await db.product.findOne({ selector: { id } }).exec();
 
@@ -26,15 +44,14 @@ export default async ({ id, normalizer }: GetProductDetailParams) => {
     const product_json        = _queryProduct.toJSON();
     const product_attachments = _queryProduct.allAttachments();
     const images              = product_attachments.filter((att: RxAttachment<ProductDoc>) => att.id.startsWith(IMAGE_ID_PREFIX));
-    const product_images: any = [];
-    const product_data        = { image: product_images, ...product_json };
+    const product_data        = { image: [], ...product_json } as ProductData;
 
     for (const image of images) {
       const { id, type } = image;
       const image_data   = await image.getData();
       const image_base64 = await blobToBase64String(image_data);
 
-      product_images.push({ id, data: `data:${type};base64,${image_base64}` });
+      product_data.image.push({ id, data: `data:${type};base64,${image_base64}` });
     }
 
     /**
@@ -42,32 +59,32 @@ export default async ({ id, normalizer }: GetProductDetailParams) => {
      * 2. Set variant detail data.
      * ---------------------------
      */
-    const variant_data = [];
+    const variants_data = <VariantData[]>[];
 
     for (const variant of _queryVariants) {
       const variant_json        = variant.toJSON();
       const variant_attachments = variant.allAttachments();
       const images              = variant_attachments.filter((att: RxAttachment<VariantDoc>) => att.id.startsWith(IMAGE_ID_PREFIX));
-      const variant_images      = [];
+      const variant_data        = { image: [], ...variant_json } as VariantData;
 
       for (const image of images) {
         const { id, type } = image;
         const image_data   = await image.getData();
         const image_base64 = await blobToBase64String(image_data);
 
-        variant_images.push({ id, data: `data:${type};base64,${image_base64}` });
+        variant_data.image.push({ id, data: `data:${type};base64,${image_base64}` });
       }
 
-      variant_data.push({ image: variant_images, ...variant_json });
+      variants_data.push(variant_data);
     }
 
     return {
       result: normalizer ? normalizer({
         product: product_data,
-        variant: variant_data,
+        variant: variants_data,
       }) : {
         product: product_data,
-        variant: variant_data,
+        variant: variants_data,
       },
     };
   } catch (error) {

@@ -16,8 +16,6 @@ import NotFound from '@assets/illustration/not_found.svg';
 
 import { useProductList } from '../hooks/ProductList.hook';
 
-import { createSingleProduct } from '@/database/helpers';
-
 const router = useRouter();
 const {
   data,

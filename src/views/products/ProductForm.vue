@@ -23,7 +23,7 @@ import Error from '@assets/illustration/error.svg';
 const router = useRouter();
 const {
   productID,
-  formData,
+  form_data,
   form_error,
   isError,
   isLoading,
@@ -35,9 +35,7 @@ const {
   handleRemoveVariantImage,
   handleRemoveImage,
   handleSubmit,
-  mutateAdd,
   mutateAddLoading,
-  mutateEdit,
   mutateEditLoading,
 } = useProductForm();
 </script>
@@ -49,7 +47,7 @@ const {
     </ToolbarAction>
     <ToolbarTitle>{{ productID ? 'Edit Product' : 'Add Product' }}</ToolbarTitle>
     <ToolbarSpacer />
-    <ToolbarAction @click="handleSubmit">{{ mutateAddLoading ? 'Loading' : 'Save' }}</ToolbarAction>
+    <ToolbarAction @click="handleSubmit">{{ mutateAddLoading || mutateEditLoading ? 'Loading' : 'Save' }}</ToolbarAction>
   </Toolbar>
   <EmptyState
     v-if="isError"
@@ -88,33 +86,32 @@ const {
         </Column>
       </Row> -->
       <Text v-if="isLoading">Loading...</Text>
-      <form v-else id="product-form" @submit="handleSubmit">
+      <form v-else id="product-form">
         <Row>
           <Column :col="{ default: 12, md: 'auto' }">
-            <div class="pf-image">
+            <div class="pf-image" :data-error="true">
               <label>
-                <picture v-if="formData.image.length || formData.new_image.length">
+                <picture v-if="form_data.image.length || form_data.new_image.length">
                   <img
-                    v-if="!formData.new_image.length"
-                    v-for="(image, index) of formData.image"
-                    :key="`${formData.name}-img-${index}`"
-                    :alt="`${formData.name} Image - ${index + 1}`"
+                    v-if="!form_data.new_image.length"
+                    v-for="(image, index) of form_data.image"
+                    :key="`${form_data.name}-img-${index}`"
+                    :alt="`${form_data.name} Image - ${index + 1}`"
                     :src="(image.path as string)"
                   />
                   <img
-                    v-for="(image, index) of formData.new_image"
-                    :key="`new-${formData.name}-img-${index}`"
-                    :alt="`New ${formData.name} Image - ${index + 1}`"
+                    v-for="(image, index) of form_data.new_image"
+                    :key="`new-${form_data.name}-img-${index}`"
+                    :alt="`New ${form_data.name} Image - ${index + 1}`"
                     :src="(image.path as string)"
                   />
                 </picture>
                 <picture v-else>
                   <img :src="no_image" alt="" />
                 </picture>
-                <input type="file" @change="handleAddImage" />
-                <!-- <input type="file" accept=".jpg, .jpeg, .png, .webp" @change="handleAddImage" /> -->
+                <input type="file" accept=".jpg, .jpeg, .png, .webp" @change="handleAddImage" />
               </label>
-              <div v-if="formData.image.length || formData.new_image.length" class="pf-image__actions">
+              <div v-if="form_data.image.length || form_data.new_image.length" class="pf-image__actions">
                 <Button @click="handleRemoveImage" variant="outline" color="red" full>Remove</Button>
               </div>
             </div>
@@ -134,22 +131,22 @@ const {
                         :labelProps="{ for: 'product-name' }"
                         :error="form_error.name ? true : false"
                         :message="form_error.name"
-                        v-model="formData.name"
+                        v-model="form_data.name"
                       />
                       <Textarea
                         id="product-description"
                         label="Description"
                         :labelProps="{ for: 'product-description' }"
-                        v-model="formData.description"
+                        v-model="form_data.description"
                       />
                       <Textfield
                         id="product-by"
                         label="By"
                         :labelProps="{ for: 'product-by' }"
-                        v-model="formData.by"
+                        v-model="form_data.by"
                       />
                       <Ticker
-                        v-if="formData.variant.length"
+                        v-if="form_data.variant.length"
                         :items="[
                           {
                             title: 'Default Price and Stock Disabled',
@@ -165,7 +162,7 @@ const {
                           :labelProps="{ for: 'product-price' }"
                           :error="form_error.price ? true : false"
                           :message="form_error.price"
-                          v-model.number="formData.price"
+                          v-model.number="form_data.price"
                         />
                         <QuantityEditor
                           id="product-stock"
@@ -173,7 +170,7 @@ const {
                           :labelProps="{ for: 'product-stock' }"
                           :error="form_error.stock ? true : false"
                           :message="form_error.stock"
-                          v-model.number="formData.stock"
+                          v-model.number="form_data.stock"
                         />
                       </template>
                     </div>
@@ -187,7 +184,7 @@ const {
                   </CardHeader>
                   <CardBody>
                     <EmptyState
-                      v-if="!formData.variant.length"
+                      v-if="!form_data.variant.length"
                       title="Hmm..."
                       description="This product doesn't have any variants."
                       margin="16px 0"
@@ -198,7 +195,7 @@ const {
                     </EmptyState>
                     <template v-else>
                       <div class="pf-variants">
-                        <div class="pf-variant" v-for="(variant, index) of formData.variant" :key="`variant-${index}`">
+                        <div class="pf-variant" v-for="(variant, index) of form_data.variant" :key="`variant-${index}`">
                           <div class="pf-variant__header">
                             <div class="pf-variant__title">
                               Variant {{ index + 1 }}
@@ -220,14 +217,14 @@ const {
                                       <img
                                         v-if="!variant.new_image.length"
                                         v-for="(image, index) of variant.image"
-                                        :key="`${formData.name}-img-${index}`"
-                                        :alt="`${formData.name} Image - ${index + 1}`"
+                                        :key="`${form_data.name}-img-${index}`"
+                                        :alt="`${form_data.name} Image - ${index + 1}`"
                                         :src="(image.path as string)"
                                       />
                                       <img
                                         v-for="(image, index) of variant.new_image"
-                                        :key="`new-${formData.name}-img-${index}`"
-                                        :alt="`New ${formData.name} Image - ${index + 1}`"
+                                        :key="`new-${form_data.name}-img-${index}`"
+                                        :alt="`New ${form_data.name} Image - ${index + 1}`"
                                         :src="(image.path as string)"
                                       />
                                     </picture>

@@ -1,17 +1,17 @@
 import { monotonicFactory } from 'ulidx';
-import type { RxDocument } from 'rxdb';
+import { sanitize } from 'isomorphic-dompurify';
 
 import { db } from '@/database';
+import { addImages, compressProductImage, isImagesValid } from '@/database/utils';
 import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
-import { compressProductImage } from '@/database/utils';
-
 import type { VariantDoc } from '@/database/types';
+import { isNumeric } from '@/helpers';
 
-interface ProductVariant extends VariantDoc {
-  new_image?: File[];
-}
+type ProductVariant = VariantDoc & {
+  new_image: File[];
+};
 
-type MutateAddProductData = {
+type MutateAddProductQueryData = {
   name: string;
   description?: string;
   by?: string;
@@ -22,20 +22,11 @@ type MutateAddProductData = {
   new_image?: File[];
 };
 
-type MutateAddProductParams = {
-  data: MutateAddProductData;
+type MutateAddProductQuery = {
+  data: MutateAddProductQueryData;
 };
 
-const addImages = async (images: any[], doc: RxDocument<any>) => {
-  for (const image of images) {
-    const { id, data } = image;
-    const { type }     = data;
-
-    await doc.putAttachment({ id, data, type });
-  }
-};
-
-export default async ({ data }: MutateAddProductParams) => {
+export default async ({ data }: MutateAddProductQuery) => {
   try {
     const ulid       = monotonicFactory();
     const product_id = PRODUCT_ID_PREFIX + ulid();
@@ -49,9 +40,14 @@ export default async ({ data }: MutateAddProductParams) => {
       variant    = [],
       new_image  = [],
     } = data;
+    const sanitized_name = sanitize(name);
+    const sanitized_description = description && sanitize(description);
+    const sanitized_by = by && sanitize(by);
+    const sanitized_sku = sku && sanitize(sku);
 
-    if (typeof price !== 'number') throw `Price must be a number.`;
-    if (typeof stock !== 'number') throw `Stock must be a number.`;
+    if (sanitized_name.trim() === '') throw 'Name cannot be empty.';
+    if (!isNumeric(price))            throw 'Price must be a number.';
+    if (!isNumeric(stock))            throw 'Stock must be a number.';
 
     /**
      * ----------------------
@@ -59,29 +55,35 @@ export default async ({ data }: MutateAddProductParams) => {
      * ----------------------
      */
     if (variant.length) {
-      let is_active                         = true;
-      const variant_array: ProductVariant[] = [];
-      const variant_ids: string[]           = [];
-      const variant_attachments: File[][]   = [];
+      let product_active                  = true;
+      const variant_ids: string[]         = [];
+      const variant_array: VariantDoc[]   = [];
+      const variant_attachments: File[][] = [];
 
       variant.map((v: ProductVariant) => {
         const v_id = VARIANT_ID_PREFIX + ulid();
         const {
-          name: v_name,
-          sku: v_sku,
-          price: v_price         = 0,
-          stock: v_stock         = 0,
+          name     : v_name,
+          sku      : v_sku,
+          price    : v_price     = 0,
+          stock    : v_stock     = 0,
           new_image: v_new_image = [],
         } = v;
+        const sanitized_name = sanitize(v_name);
+        const sanitized_sku  = v_sku && sanitize(v_sku);
+
+        if (sanitized_name.trim() === '') throw 'Variant name cannot be empty.';
+        if (!isNumeric(v_price))          throw 'Price must be a number.';
+        if (!isNumeric(v_stock))          throw 'Stock must be a number.';
 
         variant_array.push({
           id        : v_id,
           product_id: product_id,
           active    : v_stock >= 1 ? true : false,
-          name      : v_name,
+          name      : sanitized_name,
+          sku       : sanitized_sku,
           price     : v_price,
           stock     : v_stock,
-          sku       : v_sku,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
@@ -89,9 +91,9 @@ export default async ({ data }: MutateAddProductParams) => {
         variant_attachments.push(v_new_image);
       });
 
-      const inactiveVariant = variant_array.filter((v: ProductVariant) => v.active === false);
+      const inactiveVariant = variant_array.filter(v => v.active === false);
 
-      if (inactiveVariant.length === variant_array.length) is_active = false;
+      if (inactiveVariant.length === variant_array.length) product_active = false;
 
       /**
        * --------------------
@@ -100,16 +102,16 @@ export default async ({ data }: MutateAddProductParams) => {
        */
       const _queryProduct = await db.product.insert({
         id         : product_id,
-        active     : is_active,
-        variant    : variant_ids,
+        active     : product_active,
+        name       : sanitized_name,
+        description: sanitized_description,
+        by         : sanitized_by,
+        sku        : sanitized_sku,
         price      : 0,
         stock      : 0,
-        sku        : data.sku,
+        variant    : variant_ids,
         created_at : new Date().toISOString(),
         updated_at : new Date().toISOString(),
-        name,
-        description,
-        by,
       });
 
       /**
@@ -118,6 +120,8 @@ export default async ({ data }: MutateAddProductParams) => {
        * -----------------------------
        */
       if (new_image.length) {
+        if (!isImagesValid(new_image)) throw 'Invalid file types.';
+
         const { thumbnails, images } = await compressProductImage(new_image);
 
         if (thumbnails.length) await addImages(thumbnails, _queryProduct);
@@ -140,6 +144,8 @@ export default async ({ data }: MutateAddProductParams) => {
       if (variants.length) {
         for (const [index, variant] of variants.entries()) {
           if (variant_attachments[index].length) {
+            if (!isImagesValid(variant_attachments[index])) throw 'Invalid file types.';
+
             const { thumbnails, images } = await compressProductImage(variant_attachments[index]);
 
             if (thumbnails.length) await addImages(thumbnails, variant);
@@ -160,17 +166,17 @@ export default async ({ data }: MutateAddProductParams) => {
        * --------------------
        */
       const _queryProduct = await db.product.insert({
-        name,
-        description,
-        by,
-        price,
-        stock,
-        sku,
+        name       : sanitized_name,
+        description: sanitized_description,
+        by         : sanitized_by,
+        sku        : sanitized_sku,
         id         : product_id,
         active     : stock >= 1 ? true : false,
         created_at : new Date().toISOString(),
         updated_at : new Date().toISOString(),
         variant    : [],
+        price,
+        stock,
       });
 
       /**
@@ -179,6 +185,8 @@ export default async ({ data }: MutateAddProductParams) => {
        * -----------------------------
        */
       if (new_image.length) {
+        if (!isImagesValid(new_image)) throw 'Invalid file types.';
+
         const { thumbnails, images } = await compressProductImage(new_image);
 
         if (thumbnails.length) await addImages(thumbnails, _queryProduct);

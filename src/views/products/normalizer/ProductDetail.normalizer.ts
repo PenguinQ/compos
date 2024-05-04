@@ -1,6 +1,7 @@
 import { getUpdateTime, toIDR } from '@helpers';
+import type { NormalizerData } from '@/database/query/product/getProductDetail';
 
-type Variant = {
+type ProductVariant = {
   id: string;
   active: boolean;
   product_id: string;
@@ -8,9 +9,9 @@ type Variant = {
   image: string[];
   price: number;
   stock: number;
-}
+};
 
-type DetailNormalizerReturns = {
+export type DetailNormalizerReturn = {
   id: string;
   active: boolean;
   name: string;
@@ -20,18 +21,18 @@ type DetailNormalizerReturns = {
   price: number;
   stock: number;
   sku: string;
-  variant: Variant[];
+  variant: ProductVariant[];
   updated_at: string;
 };
 
-export const detailNormalizer = (data: any): DetailNormalizerReturns => {
-  const { product, variant }        = data || {};
-  const product_image: string[]    = [];
-  const product_variant: Variant[] = [];
+export const detailNormalizer = (data: NormalizerData): DetailNormalizerReturn => {
+  const { product, variant } = data || {};
+  const product_image: string[] = [];
+  const product_variant: ProductVariant[] = [];
 
-  product.image.map((att: any) => product_image.push(att.data));
+  product.image.map(att => product_image.push(att.data));
 
-  if (variant?.length) {
+  if (variant.length) {
     variant.forEach((v: any) => {
       const variant_image: string[] = [];
 
@@ -39,7 +40,7 @@ export const detailNormalizer = (data: any): DetailNormalizerReturns => {
       if (v.image.length) variant_image.push(v.image[0].data);
 
       // If the product_image is empty, fill it with any image from the variant.
-      if (!product.image.length) variant_image.map((image: string) => product_image.push(image));
+      if (!product.image.length) variant_image.map(image => product_image.push(image));
 
       product_variant.push({
         id        : v.id || '',

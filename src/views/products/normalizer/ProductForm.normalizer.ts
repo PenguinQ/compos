@@ -1,66 +1,68 @@
-type Image = {
+import type { NormalizerData } from '@/database/query/product/getProductDetail';
+
+type ProductVariantImage = {
   id: string;
   path: string;
-}
+};
 
-type Variant = {
+type ProductVariant = {
   id: string;
   active: boolean;
   product_id: string;
   name: string;
-  image: Image[];
+  image: ProductVariantImage[];
   price: number;
   stock: number;
 }
 
-type Detail = {
+export type ProductFormNormalizerReturn = {
   id: string;
   active: boolean;
   name: string;
   description: string;
-  image: Image[];
+  image: ProductVariantImage[];
   by: string;
   price: number;
   stock: number;
   sku: string;
-  variant: Variant[];
-}
+  variant: ProductVariant[];
+};
 
-export const formDetailNormalizer = (data: any): Detail => {
-  const { product, variant }        = data || {};
-  const product_images: Image[]     = [];
-  const product_variants: Variant[] = [];
+export const formDetailNormalizer = (data: NormalizerData): ProductFormNormalizerReturn => {
+  const { product, variant } = data || {};
+  const product_image: ProductVariantImage[] = [];
+  const product_variant: ProductVariant[] = [];
 
   if (variant.length) {
-    variant.forEach((v: any) => {
-      const variant_images: Image[] = [];
+    variant.forEach(v => {
+      const variant_images: ProductVariantImage[] = [];
 
-      v.image.map((att: any) => variant_images.push({ id: att.id, path: att.data }));
+      v.image.map(img => variant_images.push({ id: img.id, path: img.data }));
 
-      product_variants.push({
-        id        : v.id || '',
-        active    : v.active || false,
+      product_variant.push({
+        id: v.id || '',
+        active: v.active || false,
         product_id: v.product_id || '',
-        name      : v.name || '',
-        image     : variant_images || [],
-        price     : v.price || 0,
-        stock     : v.stock || 0,
+        name: v.name || '',
+        image: variant_images || [],
+        price: v.price || 0,
+        stock: v.stock || 0,
       });
     });
   }
 
-  product.image.map((att: any) => product_images.push({ id: att.id, path: att.data }));
+  product.image.map(img => product_image.push({ id: img.id, path: img.data }));
 
   return {
-    id         : product.id || '',
-    active     : product.active || false,
-    name       : product.name || '',
+    id: product.id || '',
+    active: product.active || false,
+    name: product.name || '',
     description: product.description || '',
-    image      : product_images || [],
-    by         : product.by || '',
-    price      : product.price || 0,
-    stock      : product.stock || 0,
-    sku        : product.sku || '',
-    variant    : product_variants,
+    image: product_image || [],
+    by: product.by || '',
+    price: product.price || 0,
+    stock: product.stock || 0,
+    sku: product.sku || '',
+    variant: product_variant,
   };
 };

@@ -29,15 +29,16 @@ export const useProductList = () => {
     queryKey: [search_query],
     queryFn: () => getProductList({
       search_query: search_query.value,
-      sort: 'asc',
+      sort: 'desc',
       limit: page.limit,
       page: page.current,
       normalizer: productListNormalizer,
     }),
     delay: 200,
-    onError: (error: Error) => {
-      console.error('Failed to get product list:', error);
+    onError: error => {
+      // @ts-ignore
       toast.add({ message: 'Failed to get product list.', type: 'error', duration: 2000 });
+      console.error('Failed to get product list:', error);
     },
     onSuccess: (response: unknown) => {
       if (response) {
@@ -59,7 +60,7 @@ export const useProductList = () => {
     search_query.value = target.value;
   });
 
-  const toPrevPage = (e: Event, toFirst?: boolean) => {
+  const toPrevPage = (_e: Event, toFirst?: boolean) => {
     if (toFirst) {
       page.current = 1;
     } else {
@@ -69,7 +70,7 @@ export const useProductList = () => {
     !page.first && productsRefetch();
   };
 
-  const toNextPage = (e: Event, toLast?: boolean) => {
+  const toNextPage = (_e: Event, toLast?: boolean) => {
     if (toLast) {
       page.current = page.total;
     } else {

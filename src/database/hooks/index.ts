@@ -22,7 +22,7 @@ type UseQueryParams = {
 
 type UseMutateParams = {
   mutateFn: () => Promise<void>;
-  onError?: (response?: Error) => void;
+  onError?: (response: Error) => void;
   onSuccess?: (response?: unknown) => void;
 };
 
