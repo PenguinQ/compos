@@ -1,13 +1,23 @@
-import { RxAttachment, blobToBase64String } from 'rxdb';
-import type { RxDocument } from 'rxdb';
+import { blobToBase64String } from 'rxdb';
+import type { RxAttachment, RxDocument } from 'rxdb';
 
 import { db } from '@/database';
 import { getPageStatus } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
-import type { BundleDoc, QueryParams, QueryReturn } from '@/database/types';
+import type { BundleDoc } from '@/database/types';
 
 export type BundlesData = BundleDoc & {
-  image?: string[];
+  images: string[];
+};
+
+type BundleListQuery = {
+  active?: boolean;
+  limit: number;
+  observe?: boolean;
+  page: number;
+  search_query?: string;
+  sort: 'asc' | 'desc';
+  normalizer?: (data: unknown) => void;
 };
 
 export default async ({
@@ -18,7 +28,7 @@ export default async ({
   limit,
   observe = false,
   normalizer,
-}: QueryParams): Promise<QueryReturn> => {
+}: BundleListQuery) => {
   try {
     const query_selector = search_query ? {
       name: { $regex: `.*${search_query}.*`, $options: 'i' },
@@ -49,13 +59,45 @@ export default async ({
       return _query.length;
     };
 
+    const getBundleData = async (data: RxDocument<BundleDoc>[]) => {
+      const bundle_data = [];
+
+      for (const bundle of data as RxDocument<BundleDoc>[]) {
+        const bundle_json             = bundle.toJSON();
+        const { product: products }   = bundle_json;
+        const bundle_images: string[] = [];
+
+        for (const product of products) {
+          const { id, variant_id } = product;
+          const _findProductQuery  = await db[variant_id ? 'variant' : 'product'].findOne(variant_id ? variant_id : id).exec();
+
+          if (_findProductQuery) {
+            const images    = _findProductQuery.allAttachments();
+            const thumbnail = (images as RxAttachment<unknown>[]).filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
+
+            if (thumbnail.length) {
+              const thumbnail_data   = await thumbnail[0].getData();
+              const thumbnail_base64 = await blobToBase64String(thumbnail_data);
+              const { type }         = thumbnail_data;
+
+              bundle_images.push(`data:${type};base64,${thumbnail_base64}`);
+            }
+          }
+        }
+
+        bundle_data.push({ images: bundle_images, ...bundle_json });
+      }
+
+      return bundle_data;
+    };
+
     const _queryConstruct = db.bundle.find({
       selector: query_selector,
       skip: query_skip,
       limit: query_limit,
       sort: query_sort,
     });
-    const _queryBundle        = observe ? _queryConstruct.$ : await _queryConstruct.exec();
+    const _queryBundle = observe ? _queryConstruct.$ : await _queryConstruct.exec();
 
     /**
      * ----------------------
@@ -76,33 +118,7 @@ export default async ({
             ...(active !== undefined && { active: { $eq: active } }),
           },
         });
-        let bundle_data = [];
-
-        for (const bundle of data as RxDocument<BundleDoc>[]) {
-          const bundle_json           = bundle.toJSON();
-          const { product: products } = bundle_json;
-          let bundle_images           = [];
-
-          for (const product of products) {
-            const { id, variant_id } = product;
-            const _findProductQuery  = await db[variant_id ? 'variant' : 'product'].findOne(variant_id ? variant_id : id).exec();
-
-            if (_findProductQuery) {
-              const images    = _findProductQuery.allAttachments();
-              const thumbnail = (images as RxAttachment<unknown>[]).filter((att: any) => att.id.startsWith(THUMBNAIL_ID_PREFIX));
-
-              if (thumbnail.length) {
-                const thumbnail_data   = await thumbnail[0].getData();
-                const thumbnail_base64 = await blobToBase64String(thumbnail_data);
-                const { type }         = thumbnail_data;
-
-                bundle_images.push(`data:${type};base64,${thumbnail_base64}`);
-              }
-            }
-          }
-
-          bundle_data.push({ image: bundle_images, ...bundle_json });
-        }
+        const bundle_data = await getBundleData(data as RxDocument<BundleDoc>[]);
 
         return {
           data      : bundle_data,
@@ -133,7 +149,7 @@ export default async ({
     const total_page    = Math.ceil(bundle_count / query_limit);
     const { first_page, last_page } = await getPageStatus({
       collection: 'bundle',
-      data: _queryBundle as RxDocument<any>[],
+      data: _queryBundle as RxDocument<BundleDoc>[],
       sort,
       sortBy: [{ id: sort }],
       query: {
@@ -141,33 +157,7 @@ export default async ({
         ...(active !== undefined && { active: { $eq: active } }),
       },
     });
-    let bundle_data = [];
-
-    for (const bundle of _queryBundle as RxDocument<BundleDoc>[]) {
-      const bundle_json           = bundle.toJSON();
-      const { product: products } = bundle_json;
-      let bundle_images           = [];
-
-      for (const product of products) {
-        const { id, variant_id } = product;
-        const _findProductQuery  = await db[variant_id ? 'variant' : 'product'].findOne(variant_id ? variant_id : id).exec();
-
-        if (_findProductQuery) {
-          const images    = _findProductQuery.allAttachments();
-          const thumbnail = (images as RxAttachment<any>[]).filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
-
-          if (thumbnail.length) {
-            const attachment       = await thumbnail[0].getData();
-            const attachmentString = await blobToBase64String(attachment);
-            const { type }         = attachment;
-
-            bundle_images.push(`data:${type};base64,${attachmentString}`);
-          }
-        }
-      }
-
-      bundle_data.push({ image: bundle_images, ...bundle_json });
-    }
+    const bundle_data = await getBundleData(_queryBundle as RxDocument<BundleDoc>[]);
 
     const raw_data = {
       data      : bundle_data,

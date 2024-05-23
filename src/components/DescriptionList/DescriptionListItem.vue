@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import * as CSS from 'csstype';
+
 export type DescriptionListItemProps = {
+  alignItems?: CSS.Property.AlignItems;
   title?: string;
   description?: string | number;
 };
@@ -8,7 +11,7 @@ defineProps<DescriptionListItemProps>();
 </script>
 
 <template>
-  <div class="cp-description-list__item">
+  <div class="cp-description-list__item" :style="{ alignItems }">
     <dt :[`${$attrs.scope_id}`]="''" v-if="title">{{ title }}</dt>
     <dd :[`${$attrs.scope_id}`]="''" v-if="description">{{ description }}</dd>
     <slot />

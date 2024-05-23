@@ -1,24 +1,41 @@
 import { blobToBase64String } from 'rxdb';
-import type { RxDocument } from 'rxdb';
+import type { DeepReadonlyArray, RxDocument } from 'rxdb';
 
 import { db } from '@/database';
 import { getPageStatus } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
-import type { ProductDoc, QueryParams, QueryReturn } from '@/database/types';
+import type { ProductDoc, VariantDoc } from '@/database/types';
 
-export type ProductsData = ProductDoc & {
-  image?: string;
+export type VariantsData = VariantDoc & {
+  images: string[];
+};
+
+export interface ProductsData extends Omit<ProductDoc, 'variant'> {
+  images: string[];
+  variant?: DeepReadonlyArray<string> | VariantsData[];
+}
+
+type ProductListQuery = {
+  active?: boolean;
+  complete?: boolean;
+  limit: number;
+  observe?: boolean;
+  page: number;
+  search_query?: string;
+  sort: 'asc' | 'desc';
+  normalizer?: (data: unknown) => void;
 };
 
 export default async ({
   active,
+  complete,
   page,
   search_query,
   sort,
   limit,
   observe = false,
   normalizer,
-}: QueryParams): Promise<QueryReturn> => {
+}: ProductListQuery) => {
   try {
     const query_selector = search_query ? {
       name: { $regex: `.*${search_query}.*`, $options: 'i' },
@@ -49,6 +66,57 @@ export default async ({
       return _query.length;
     };
 
+    const getProductData = async (data: RxDocument<ProductDoc>[]) => {
+      const product_data: ProductsData[] = [];
+
+      for (const product of data) {
+        const { variant: product_variant, ...rest } = product.toJSON();
+        const product_variant_detail: VariantsData[] = [];
+        const product_images            = product.allAttachments();
+        const product_thumbnails        = product_images.filter(img => img.id.startsWith(THUMBNAIL_ID_PREFIX));
+        let   product_thumbnails_base64 = [];
+
+        for (const thumbnail of product_thumbnails) {
+          const thumbnail_data   = await thumbnail.getData();
+          const thumbnail_base64 = await blobToBase64String(thumbnail_data);
+          const { type }         = thumbnail_data;
+
+          product_thumbnails_base64.push(`data:${type};base64,${thumbnail_base64}`);
+        }
+
+        if (complete && product_variant) {
+          for (const variant of product_variant) {
+            const _queryVariant = await db.variant.findOne({ selector: { id: variant } }).exec();
+
+            if (_queryVariant) {
+              const variant_json              = _queryVariant.toJSON();
+              const variant_images            = _queryVariant.allAttachments();
+              const variant_thumbnails        = variant_images.filter(img => img.id.startsWith(THUMBNAIL_ID_PREFIX));
+              let   variant_thumbnails_base64 = [];
+
+              for (const thumbnail of variant_thumbnails) {
+                const thumbnail_data   = await thumbnail.getData();
+                const thumbnail_base64 = await blobToBase64String(thumbnail_data);
+                const { type }         = thumbnail_data;
+
+                variant_thumbnails_base64.push(`data:${type};base64,${thumbnail_base64}`);
+              }
+
+              product_variant_detail.push({ images: variant_thumbnails_base64, ...variant_json })
+            }
+          }
+        }
+
+        product_data.push({
+          images: product_thumbnails_base64,
+          variant: complete ? product_variant_detail : product_variant,
+          ...rest,
+        });
+      }
+
+      return product_data;
+    };
+
     const _queryConstruct = db.product.find({
       selector: query_selector,
       skip    : query_skip,
@@ -76,24 +144,7 @@ export default async ({
             ...(active !== undefined && { active: { $eq: active } }),
           },
         });
-        let product_data = [];
-
-        for (const product of data as RxDocument<ProductDoc>[]) {
-          const product_json = product.toJSON();
-          const images       = product.allAttachments();
-          const thumbnail    = images.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
-          let product_image  = '';
-
-          if (thumbnail.length) {
-            const attachment       = await thumbnail[0].getData();
-            const attachmentString = await blobToBase64String(attachment);
-            const { type }         = attachment;
-
-            product_image = `data:${type};base64,${attachmentString}`;
-          }
-
-          product_data.push({ image: product_image, ...product_json });
-        }
+        const product_data = await getProductData(data as RxDocument<ProductDoc>[]);
 
         return {
           data      : product_data,
@@ -132,24 +183,7 @@ export default async ({
         ...(active !== undefined && { active: { $eq: active } }),
       },
     });
-    let product_data = [];
-
-    for (const product of _queryProduct as RxDocument<ProductDoc>[]) {
-      const product_json = product.toJSON();
-      const images       = product.allAttachments();
-      const thumbnail    = images.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
-      let product_image  = '';
-
-      if (thumbnail.length) {
-        const attachment       = await thumbnail[0].getData();
-        const attachmentString = await blobToBase64String(attachment);
-        const { type }         = attachment;
-
-        product_image = `data:${type};base64,${attachmentString}`;
-      }
-
-      product_data.push({ image: product_image, ...product_json });
-    }
+    const product_data = await getProductData(_queryProduct as RxDocument<ProductDoc>[]);
 
     const raw_data = {
       data      : product_data,

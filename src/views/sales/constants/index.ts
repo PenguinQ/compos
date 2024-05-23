@@ -1,13 +1,19 @@
-export const EMPTY_STATE_RUNNING = {
-  EMPTY_TITLE: 'Whoops...',
-  EMPTY_DESCRIPTION: 'Looks like there\'s no running sales yet, why not create a new one?',
-  SEARCH_EMPTY_TITLE: 'Uhm...',
-  SEARCH_EMPTY_DESCRIPTION: 'There\'s no running sales with that name, try another keyword perhaps?',
+export const SALES_LIST = {
+  RUNNING_EMPTY_TITLE: 'Hmm...',
+  RUNNING_EMPTY_DESCRIPTION: 'Looks like you doesn\'t have any running sales, yet.',
+  FINISHED_EMPTY_TITLE: 'Hmm...',
+  FINISHED_EMPTY_DESCRIPTION: 'Looks like you doesn\'t have any finished sales, yet.',
+  SEARCH_EMPTY_TITLE: 'Welp.',
+  SEARCH_EMPTY_DESCRIPTION: 'There\'s no sales with that name, try another keyword perhaps?',
+  ERROR_EMPTY_TITLE: 'Ouch!',
+  ERROR_EMPTY_DESCRIPTION: 'Looks like there\'s some thing wrong, please try again.',
 };
 
-export const EMPTY_STATE_FINISHED = {
-  EMPTY_TITLE: 'Whoops...',
-  EMPTY_DESCRIPTION: 'Looks like there are no finished sales... Make one! ',
-  SEARCH_EMPTY_TITLE: 'Uhm...',
-  SEARCH_EMPTY_DESCRIPTION: 'There\'s no finished sales with that name, try another keyword perhaps?',
+export const SALES_DETAIL = {
+  ERROR_DETAIL_TITLE: 'Error Detail Title',
+  ERROR_DETAIL_DESCRIPTION: 'Error Detail Description',
+  EMPTY_ORDER_TITLE: 'Not stonks...',
+  EMPTY_ORDER_DESCRIPTION: 'No order has been made, yet.',
+  EMPTY_SOLD_TITLE: 'Whoosh...',
+  EMPTY_SOLD_DESCRIPTION: 'Currently no products has been sold, yet.',
 };

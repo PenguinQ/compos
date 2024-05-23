@@ -1,0 +1,32 @@
+.pf {
+  &-container {
+    padding: 16px 0;
+  }
+
+  &-card {
+    border-right: none;
+    border-left: none;
+    border-radius: 0;
+
+    hr {
+      height: 1px;
+      background-color: var(--color-neutral-2);
+      border: none;
+      margin: 20px 0;
+    }
+  }
+}
+
+@include screen-md {
+  .pf {
+    &-container {
+      padding: 16px;
+    }
+
+    &-card {
+      border-right: 1px solid var(--color-neutral-2);
+      border-left: 1px solid var(--color-neutral-2);
+      border-radius: 8px;
+    }
+  }
+}

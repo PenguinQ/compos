@@ -4,7 +4,7 @@ import { IconArchive, IconArchiveFill, IconBasket, IconBasketFill } from '@icons
 </script>
 
 <template>
-  <BottomNavbar v-if="!$route.meta.hideBottomNavbar">
+  <BottomNavbar id="view-navigation" v-if="!$route.meta.hideBottomNavbar">
     <BottomNavbarButton
       title="Sales"
       :icon="($route.name as string).startsWith('sales') ? IconBasketFill : IconBasket"
@@ -19,3 +19,13 @@ import { IconArchive, IconArchiveFill, IconBasket, IconBasketFill } from '@icons
     />
   </BottomNavbar>
 </template>
+
+<style lang="scss">
+#view-navigation {
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+</style>

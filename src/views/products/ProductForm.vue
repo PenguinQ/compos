@@ -11,7 +11,7 @@ import QuantityEditor from '@components/QuantityEditor';
 import Ticker from '@components/Ticker';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Row, Column } from '@components/Layout';
-import { Shimmer } from '@components/Loader';
+import { Bar, Shimmer } from '@components/Loader';
 import { IconArrowLeftShort, IconXLarge } from '@icons';
 
 import { useProductForm } from './hooks/ProductForm.hook';
@@ -61,31 +61,7 @@ const {
   </EmptyState>
   <template v-else>
     <Container class="pf-container">
-      <!-- <Row>
-        <Column :col="{ default: 12, md: 'auto' }">
-          <Shimmer block class="pf-loading-image" />
-        </Column>
-        <Column>
-          <Card class="pf-card">
-            <CardBody>
-              <Shimmer block width="100px" height="18px" radius="4px" margin="0 0 4px" />
-              <Shimmer block width="100%" height="52px" radius="4px" margin="0 0 20px" />
-              <Shimmer block width="100px" height="18px" radius="4px" margin="0 0 4px" />
-              <Shimmer block width="100%" height="52px" radius="4px" margin="0 0 20px" />
-              <Shimmer block width="100px" height="18px" radius="4px" margin="0 0 4px" />
-              <Shimmer block width="100%" height="52px" radius="4px" margin="0 0 20px" />
-              <Shimmer block width="100px" height="18px" radius="4px" margin="0 0 4px" />
-              <Shimmer block width="100%" height="52px" radius="4px" margin="0 0 20px" />
-              <Shimmer block width="100px" height="18px" radius="4px" margin="0 0 4px" />
-              <Shimmer block width="136px" height="40px" radius="4px" margin="0" />
-
-              <hr class="pf-card__separator" />
-
-            </CardBody>
-          </Card>
-        </Column>
-      </Row> -->
-      <Text v-if="isLoading">Loading...</Text>
+      <Bar v-if="isLoading" margin="80px 0" />
       <form v-else id="product-form">
         <Row>
           <Column :col="{ default: 12, md: 'auto' }">
@@ -268,7 +244,7 @@ const {
                                     :labelProps="{ for: `variant-price-${index + 1}` }"
                                     :error="form_error.variant[index].price ? true : false"
                                     :message="form_error.variant[index].price"
-                                    v-model="variant.price"
+                                    v-model.number="variant.price"
                                   />
                                   <QuantityEditor
                                     label="Stock"
@@ -276,7 +252,7 @@ const {
                                     :labelProps="{ for: `variant-stock-${index + 1}` }"
                                     :error="form_error.variant[index].stock ? true : false"
                                     :message="form_error.variant[index].stock"
-                                    v-model="variant.stock"
+                                    v-model.number="variant.stock"
                                   />
                                   <Row>
                                     <Column>
@@ -304,30 +280,14 @@ const {
   </template>
 </template>
 
+<style lang="scss" src="@assets/_page-form.scss" />
 <style lang="scss" scoped>
 .pf {
-  &-container {
-    padding: 16px 0;
-  }
-
   &-loading {
     &-image {
       width: 180px;
       height: 180px;
       margin: 0 auto;
-    }
-  }
-
-  &-card {
-    border-right: none;
-    border-left: none;
-    border-radius: 0;
-
-    &__separator {
-      height: 1px;
-      background-color: var(--color-neutral-2);
-      border: none;
-      margin: 20px 0;
     }
   }
 
@@ -460,10 +420,6 @@ const {
 
 @include screen-md {
   .pf {
-    &-container {
-      padding: 16px;
-    }
-
     &-loading {
       &-image {
         width: 240px;
@@ -489,12 +445,6 @@ const {
           height: 120px;
         }
       }
-    }
-
-    &-card {
-      border-right: 1px solid var(--color-neutral-2);
-      border-left: 1px solid var(--color-neutral-2);
-      border-radius: 8px;
     }
   }
 }

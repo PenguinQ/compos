@@ -29,9 +29,10 @@ export const useProductList = () => {
     queryKey: [search_query],
     queryFn: () => getProductList({
       search_query: search_query.value,
-      sort: 'desc',
+      sort: 'asc',
       limit: page.limit,
       page: page.current,
+      complete: true,
       normalizer: productListNormalizer,
     }),
     delay: 200,
@@ -87,8 +88,8 @@ export const useProductList = () => {
     productsError,
     productsLoading,
     productsRefetch,
+    handleSearch,
     toNextPage,
     toPrevPage,
-    handleSearch,
   };
 };

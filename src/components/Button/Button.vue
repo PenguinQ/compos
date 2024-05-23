@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { ButtonHTMLAttributes } from 'vue';
+import * as CSS from 'csstype';
 
 /**
  * @vue-ignore inline below to allow compiler ignore warning.
@@ -10,6 +11,7 @@ interface Props extends /* @vue-ignore */ ButtonHTMLAttributes {
   color?: 'red' | 'green' | 'blue';
   full?: boolean;
   icon?: boolean;
+  padding?: CSS.Property.Padding;
   variant?: 'outline' | 'text';
 }
 
@@ -31,7 +33,7 @@ const buttonClass = computed(() => ({
 </script>
 
 <template>
-  <button :class="buttonClass" type="button">
+  <button :class="buttonClass" type="button" :style="{ padding }">
     <slot />
   </button>
 </template>
@@ -76,12 +78,12 @@ const buttonClass = computed(() => ({
     border-color: var(--color-blue-3);
   }
 
-  &--outline:not(.cp-button--icon) {
+  &--outline {
     color: var(--color-black);
     background-color: var(--color-white);
   }
 
-  &--text:not(.cp-button--icon) {
+  &--text {
     color: var(--color-black);
     background-color: transparent;
     border-color: transparent;
@@ -89,21 +91,37 @@ const buttonClass = computed(() => ({
 
   &--icon {
     border-radius: 50%;
-    padding: 16px;
+    padding: 8px;
+
+    .cp-icon {
+      fill: var(--color-white);
+    }
   }
 
   &--outline,
   &--text {
     &.cp-button--red {
       color: var(--color-red-4);
+
+      &.cp-button--icon .cp-icon {
+        fill: var(--color-red-4);
+      }
     }
 
     &.cp-button--green {
       color: var(--color-green-4);
+
+      &.cp-button--icon .cp-icon {
+        fill: var(--color-green-4);
+      }
     }
 
     &.cp-button--blue {
       color: var(--color-blue-4);
+
+      &.cp-button--icon .cp-icon {
+        fill: var(--color-blue-4);
+      }
     }
   }
 

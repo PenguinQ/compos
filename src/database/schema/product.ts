@@ -56,6 +56,8 @@ export default {
   required: [
     'id',
     'name',
+    'price',
+    'stock',
     'created_at',
     'updated_at',
   ],

@@ -1,41 +1,35 @@
 import type { RxDatabase, RxDocument, RxCollection } from 'rxdb';
 
-export type NormalizerDataPage = {
-  current: number;
-  first: boolean;
-  last: boolean;
-  total: number;
-};
-
-export type NormalizerData = {
-  data: unknown;
-  data_count: number;
-  page?: NormalizerDataPage;
-};
-
 export type QueryParams = {
   active?: boolean;
-  limit: number;
+  limit?: number;
   observe?: boolean;
-  page: number;
-  search_query: string;
-  sort: 'asc' | 'desc';
-  normalizer?: (data: NormalizerData) => void;
+  page?: number;
+  search_query?: string;
+  sort?: 'asc' | 'desc';
+  normalizer?: (data: unknown) => void;
 };
 
 export type QueryReturn = {
   observeable?: boolean;
   result?: unknown;
-  normalizer?: (data: NormalizerData) => void;
+  normalizer?: (data: unknown) => void;
   observeableProcessor?: (data: RxDocument<unknown>[]) => Promise<object>;
+};
+
+export type SalesProductsSold = {
+  id: string;
+  name: string;
+  quantity: number;
 };
 
 export type SalesDoc = {
   id: string;
   name: string;
-  product: string[];
-  order?: string[];
-  income?: number;
+  products: string[];
+  products_sold: SalesProductsSold[];
+  orders: string[];
+  revenue: number;
   finished: boolean;
   created_at: string;
   updated_at: string;
@@ -46,15 +40,16 @@ export type SalesCollection = RxCollection<SalesDoc>;
 export type OrderProduct = {
   id: string;
   name: string;
-  price: number;
+  subtotal: number;
   quantity: number;
 };
 
 export type OrderDoc = {
   id: string;
   sales_id: string;
-  product: OrderProduct[];
-  price: number;
+  name: string;
+  products: OrderProduct[];
+  subtotal: number;
   created_at: string;
   updated_at: string;
 };
@@ -68,8 +63,8 @@ export type ProductDoc = {
   description?: string;
   by?: string;
   variant?: string[];
-  price?: number;
-  stock?: number;
+  price: number;
+  stock: number;
   sku?: string;
   created_at: string;
   updated_at: string;

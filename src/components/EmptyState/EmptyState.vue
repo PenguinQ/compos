@@ -6,6 +6,7 @@ import Text from '../Text';
 
 type Props = {
   description?: string;
+  emoji?: string;
   height?: CSS.Property.Height;
   image?: string;
   imageAlt?: string;
@@ -42,6 +43,7 @@ const image_style = reactive({
       <picture v-if="image">
         <img :src="image" :alt="imageAlt ? imageAlt : 'Empty state image'" :style="image_style" />
       </picture>
+      <div class="cp-empty-state__emoji">{{ emoji }}</div>
       <div class="cp-empty-state__body">
         <Text v-if="!$slots.title" class="cp-empty-state__title" heading="2">
           {{ title }}
@@ -67,7 +69,6 @@ const image_style = reactive({
 .cp-empty-state {
   $root: &;
 
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,6 +85,11 @@ const image_style = reactive({
     img {
       display: block;
     }
+  }
+
+  &__emoji {
+    font-size: 80px;
+    line-height: 1;
   }
 
   &__body {

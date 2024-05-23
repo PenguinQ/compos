@@ -11,25 +11,45 @@ export default {
       type: 'string',
       maxLength: 1000,
     },
-    product: {
+    products: {
       type: 'array',
-      ref: 'product',
-      uniqueItems: true,
-      items: {
-        type: 'string', // Can be product, variant, or bundle id.
-      },
-      default: [],
-    },
-    order: {
-      type: 'array',
-      ref: 'order',
       uniqueItems: true,
       items: {
         type: 'string',
       },
       default: [],
     },
-    income: {
+    products_sold: {
+      type: 'array',
+      uniqueItems: true,
+      items: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+          },
+          name: {
+            type: 'string',
+          },
+          quantity: {
+            type: 'integer',
+            minimum: 0,
+            default: 0,
+          },
+        },
+      },
+      default: [],
+    },
+    orders: {
+      type: 'array',
+      ref: 'order',        // Refer to populate order schema. Usage: populate('orders');
+      uniqueItems: true,
+      items: {
+        type: 'string',
+      },
+      default: [],
+    },
+    revenue: {
       type: 'number',
       minimum: 0,
       default: 0,
@@ -48,7 +68,9 @@ export default {
   required: [
     'id',
     'name',
-    'product',
+    'orders',
+    'products',
+    'revenue',
     'finished',
     'created_at',
     'updated_at',

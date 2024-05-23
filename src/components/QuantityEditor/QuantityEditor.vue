@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
 import { IconPlus, IconDash } from '@icons';
@@ -10,15 +10,15 @@ interface QuantityEditorProps extends /* @vue-ignore */ InputHTMLAttributes {
    */
   disabled?: boolean;
   /**
-   * Set the textfield into disabled state.
+   * Set the quantity editor into disabled state.
    */
   error?: boolean;
   /**
-   * Set the textfield label.
+   * Set the quantity editor label.
    */
   label?: string;
   /**
-   * Set the textfield label additional properties.
+   * Set the quantity editor label additional properties.
    */
   labelProps?: object;
   /**
@@ -34,29 +34,45 @@ interface QuantityEditorProps extends /* @vue-ignore */ InputHTMLAttributes {
    */
   modelValue?: string | number;
   /**
+   * Reduce the size of the quantity editor.
+   */
+  small?: boolean;
+  /**
    * Set the value for the quantity editor without using v-model two way data binding.
    */
   value?: string | number;
+  /**
+   * Set the width of the quantity editor input, represented as a number of digits.
+   */
+  width?: number | string;
 }
 
 defineOptions({
   inheritAttrs: false,
 });
 
-withDefaults(defineProps<QuantityEditorProps>(), {
+const props = withDefaults(defineProps<QuantityEditorProps>(), {
   disabled: false,
   error: false,
   min: 0,
+  small: false,
+  width: 2,
 });
 
-const emits = defineEmits([
+const emit = defineEmits([
   'update:modelValue',
+  'onChange',
   'onClickDecrement',
   'onClickIncrement',
 ]);
 
 let timeout: ReturnType<typeof setTimeout>;
 const input = ref<HTMLInputElement | null>(null);
+const quantityClass = computed(() => ({
+  'cp-form': true,
+  'cp-form--quantity': true,
+  'cp-form--quantity--small': props.small,
+}));
 
 const updateQuantity = (e: Event | undefined, increment: boolean = true) => {
   e?.preventDefault();
@@ -68,7 +84,7 @@ const updateQuantity = (e: Event | undefined, increment: boolean = true) => {
 
   timeout = setTimeout(() => updateQuantity(e, increment), 200);
 
-  emits('update:modelValue', el?.value)
+  emit('update:modelValue', el?.value)
 };
 
 const stopQuantityUpdate = () => clearTimeout(timeout);
@@ -78,13 +94,20 @@ const handleKeyDown = (e: KeyboardEvent, increment: boolean = true) => {
 };
 
 const handleInput = (e: Event) => {
-  emits('update:modelValue', (e.target as HTMLInputElement).value)
+  emit('update:modelValue', (e.target as HTMLInputElement).value)
 };
+
+watch(
+  () => props.modelValue,
+  () => {
+    emit('onChange');
+  },
+);
 </script>
 
 <template>
   <div
-    class="cp-form cp-form--quantity"
+    :class="quantityClass"
     :data-cp-disabled="disabled ? disabled : undefined"
     :data-cp-error="error ? true : undefined"
   >
@@ -116,6 +139,8 @@ const handleInput = (e: Event) => {
         :min="min"
         :value="value || modelValue"
         @input="handleInput"
+        @change="$emit('onChange')"
+        :style="{ width: `calc(${width}ch + 16px)` }"
       />
       <button
         type="button"
@@ -199,7 +224,7 @@ const handleInput = (e: Event) => {
   }
 
   input {
-    width: calc(4ch + 16px);
+    width: calc(2ch + 16px);
     color: var(--color-black);
     font-size: 16px;
     line-height: 22px;
@@ -242,6 +267,17 @@ const handleInput = (e: Event) => {
       background-color: var(--color-disabled-background);
       border-color: var(--color-disabled-border);
       cursor: not-allowed;
+    }
+  }
+
+  &--small {
+    button {
+      padding: 0;
+    }
+
+    input {
+      padding-top: 4px;
+      padding-bottom: 4px;
     }
   }
 }

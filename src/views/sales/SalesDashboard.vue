@@ -3,7 +3,7 @@ import { useRoute } from 'vue-router';
 
 import Text from '@components/Text';
 
-import { useSalesList } from './hooks/SalesDashboard.hook';
+import { useSalesList } from './hooks/SalesList.hook';
 
 import Button from '@components/Button';
 import { Shimmer } from '@components/Loader';

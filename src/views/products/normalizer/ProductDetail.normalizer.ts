@@ -1,5 +1,10 @@
 import { getUpdateTime, toIDR } from '@helpers';
-import type { NormalizerData } from '@/database/query/product/getProductDetail';
+import type { ProductData, VariantData } from '@/database/query/product/getProductDetail';
+
+type NormalizerData = {
+  product: ProductData;
+  variant: VariantData[];
+};
 
 type ProductVariant = {
   id: string;
@@ -25,15 +30,15 @@ export type DetailNormalizerReturn = {
   updated_at: string;
 };
 
-export const detailNormalizer = (data: NormalizerData): DetailNormalizerReturn => {
-  const { product, variant } = data || {};
+export const detailNormalizer = (data: unknown) => {
+  const { product, variant } = data as NormalizerData || {};
   const product_image: string[] = [];
   const product_variant: ProductVariant[] = [];
 
   product.image.map(att => product_image.push(att.data));
 
   if (variant.length) {
-    variant.forEach((v: any) => {
+    variant.forEach(v => {
       const variant_image: string[] = [];
 
       // Only push the first image from every image of the product.

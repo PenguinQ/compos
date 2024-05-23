@@ -10,8 +10,20 @@ $screen-xxl: 1400px;
   }
 };
 
+@mixin screen-landscape-sm {
+  @media screen and (min-width: $screen-sm) and (orientation: landscape) {
+    @content;
+  }
+};
+
 @mixin screen-md {
   @media screen and (min-width: $screen-md) {
+    @content;
+  }
+};
+
+@mixin screen-landscape-md {
+  @media screen and (min-width: $screen-md) and (orientation: landscape) {
     @content;
   }
 };
@@ -22,8 +34,20 @@ $screen-xxl: 1400px;
   }
 };
 
+@mixin screen-landscape-lg {
+  @media screen and (min-width: $screen-lg) and (orientation: landscape) {
+    @content;
+  }
+};
+
 @mixin screen-xl {
   @media screen and (min-width: $screen-xl) {
+    @content;
+  }
+};
+
+@mixin screen-landscape-xl {
+  @media screen and (min-width: $screen-xl) and (orientation: landscape) {
     @content;
   }
 };
@@ -34,8 +58,20 @@ $screen-xxl: 1400px;
   }
 };
 
+@mixin screen-landscape-xxl {
+  @media screen and (min-width: $screen-xxl) and (orientation: landscape) {
+    @content;
+  }
+};
+
 @mixin screen-rwd($screen) {
   @media screen and (min-width: $screen + 'px') {
+    @content;
+  }
+}
+
+@mixin screen-landscape-rwd($screen) {
+  @media screen and (min-width: $screen + 'px') and (orientation: landscape) {
     @content;
   }
 }

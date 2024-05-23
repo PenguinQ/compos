@@ -96,7 +96,7 @@ const removeVariant = async (variantsID: string[], product: RxDocument<ProductDo
   }
 };
 
-const updateBundles = async ({
+const updateBundlesStatus = async ({
   id,
   stock,
   isVariant = false
@@ -154,6 +154,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
     if (clean_name.trim() === '') throw 'Name cannot be empty.';
     if (!isNumeric(price))        throw 'Price must be a number.';
     if (!isNumeric(stock))        throw 'Stock must be a number.';
+
+    const clean_price = parseInt(price as unknown as string);
+    const clean_stock = parseInt(stock as unknown as string);
 
     const _queryProduct = await db.product.findOne({
       selector: {
@@ -260,6 +263,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
         if (!isNumeric(v_price))        throw 'Variant price must be a number.';
         if (!isNumeric(v_stock))        throw 'Variant stock must be a number.';
 
+        const clean_v_price = parseInt(v_price as unknown as string);
+        const clean_v_stock = parseInt(v_stock as unknown as string);
+
         /**
          * ------------------------------------
          * 1.5.1 Check for existing variant ID.
@@ -284,14 +290,16 @@ export default async ({ id, data }: MutateEditProductQuery) => {
            */
           await _queryVariant.update({
             $set: {
-              active    : v_stock > 0 ? true : false,
+              active    : clean_v_stock > 0 ? true : false,
               name      : clean_v_name,
               sku       : clean_v_sku,
-              price     : v_price,
-              stock     : v_stock,
+              price     : clean_v_price,
+              stock     : clean_v_stock,
               updated_at: new Date().toISOString(),
             },
           });
+
+          const updated_variant = _queryVariant.getLatest();
 
           /**
            * --------------------------------------------------
@@ -316,7 +324,12 @@ export default async ({ id, data }: MutateEditProductQuery) => {
            * 1.5.1.3 Update any bundle that contains current variant iteration as one of it's product.
            * -----------------------------------------------------------------------------------------
            */
-          await updateBundles({ id: v_id, stock: v_stock, isVariant: true });
+          if (
+            _queryVariant.stock === 0 && updated_variant.stock > 0 ||
+            _queryVariant.stock > 0 && updated_variant.stock === 0
+          ) {
+            await updateBundlesStatus({ id: v_id, stock: v_stock, isVariant: true });
+          }
         }
         /**
          * --------------------------------
@@ -336,11 +349,11 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           const _queryVariant = await db.variant.insert({
             id        : variant_id,
             product_id: id,
-            active    : v_stock >= 1 ? true : false,
+            active    : clean_v_stock >= 1 ? true : false,
             name      : clean_v_name,
             sku       : clean_v_sku,
-            price     : v_price,
-            stock     : v_stock,
+            price     : clean_v_price,
+            stock     : clean_v_stock,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
@@ -390,12 +403,14 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           description: clean_description,
           by         : clean_by,
           sku        : clean_sku,
-          active     : stock >= 1 ? true : false,
-          price      : price,
-          stock      : stock,
+          active     : clean_stock >= 1 ? true : false,
+          price      : clean_price,
+          stock      : clean_stock,
           updated_at : new Date().toISOString(),
         },
       });
+
+      const updated_product = _queryProduct.getLatest();
 
       /**
        * ------------------------------
@@ -428,8 +443,18 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        * ---------------------------------------------------------------------------
        * 2.4 Update any bundle that contains current product as one of it's product.
        * ---------------------------------------------------------------------------
+       * Update bundle if:
+       * - Previous stock is equal to 0 and new stock is more than 0
+       * - Previous stock is more than 0 and new stock is equal to 0
+       *
+       * This to update active status of each product on the bundle.
        */
-      await updateBundles({ id, stock });
+      if (
+        _queryProduct.stock === 0 && updated_product.stock > 0 ||
+        _queryProduct.stock > 0 && updated_product.stock === 0
+      ) {
+        await updateBundlesStatus({ id, stock });
+      }
     }
   } catch (error) {
     if (error instanceof Error) {

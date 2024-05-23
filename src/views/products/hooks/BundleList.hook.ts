@@ -28,17 +28,17 @@ export const useBundle = () => {
   } = useQuery({
     queryKey: [search_query],
     queryFn: () => getBundleList({
-      observe: true,
       search_query: search_query.value,
-      sort: 'asc',
+      sort: 'desc',
       limit: page.limit,
       page: page.current,
       normalizer: bundleListNormalizer,
     }),
     delay: 200,
     onError: (error: Error) => {
-      console.error('Failed to get bundle list:', error);
+      // @ts-ignore
       toast.add({ message: 'Failed to get bundle list.', type: 'error', duration: 2000 });
+      console.error('Failed to get bundle list:', error);
     },
     onSuccess: (response: unknown) => {
       if (response) {
@@ -60,7 +60,7 @@ export const useBundle = () => {
     search_query.value = target.value;
   });
 
-  const toPrevPage = (e: Event, toFirst?: boolean) => {
+  const toPrevPage = (_e: Event, toFirst?: boolean) => {
     if (toFirst) {
       page.current = 1;
     } else {
@@ -70,7 +70,7 @@ export const useBundle = () => {
     !page.first && bundlesRefetch();
   };
 
-  const toNextPage = (e: Event, toLast?: boolean) => {
+  const toNextPage = (_e: Event, toLast?: boolean) => {
     if (toLast) {
       page.current = page.total;
     } else {

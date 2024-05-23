@@ -1,9 +1,9 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="cp-bottom-navbar">
+  <nav class="cp-bottom-navbar">
     <slot />
-  </div>
+  </nav>
 </template>
 
 <style lang="scss">

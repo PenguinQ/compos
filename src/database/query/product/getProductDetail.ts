@@ -3,32 +3,27 @@ import type { DeepReadonly, RxDocument, RxAttachment } from 'rxdb';
 
 import { db } from '@/database';
 import { IMAGE_ID_PREFIX } from '@/database/constants';
-import { ProductDoc, QueryReturn, VariantDoc } from '@/database/types';
+import { ProductDoc, VariantDoc } from '@/database/types';
 
 type ImageData = {
   id: string;
   data: string;
 };
 
-type ProductData = DeepReadonly<ProductDoc> & {
+export type ProductData = DeepReadonly<ProductDoc> & {
   image: ImageData[];
 };
 
-type VariantData = DeepReadonly<VariantDoc> & {
+export type VariantData = DeepReadonly<VariantDoc> & {
   image: ImageData[];
-};
-
-export type NormalizerData = {
-  product: ProductData;
-  variant: VariantData[];
 };
 
 type ProductDetailQuery = {
   id: string;
-  normalizer?: (data: NormalizerData) => void;
+  normalizer?: (data: unknown) => void;
 };
 
-export default async ({ id, normalizer }: ProductDetailQuery): Promise<QueryReturn> => {
+export default async ({ id, normalizer }: ProductDetailQuery) => {
   try {
     const _queryProduct = await db.product.findOne({ selector: { id } }).exec();
 

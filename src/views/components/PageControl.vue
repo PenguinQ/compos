@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+
 import Textfield from '@components/Textfield';
 import Pagination from './Pagination.vue';
 
@@ -11,11 +13,13 @@ type Props = {
   paginationLastPage?: boolean;
   search?: boolean;
   searchPlaceholder?: string;
+  sticky?: boolean;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   pagination: true,
   search: true,
+  sticky: false,
 });
 
 defineEmits([
@@ -25,13 +29,51 @@ defineEmits([
   'clickPaginationLast',
   'search',
 ]);
+
+const container = ref<HTMLDivElement>();
+const container_class = computed(() => ({
+  'page-control': true,
+  'page-control--sticky': props.sticky,
+}));
+
+const handleScroll = () => {
+  if (typeof window !== 'undefined') {
+    const scrollY = window.scrollY;
+
+    console.log(scrollY);
+
+    if (container.value) {
+      if (window.scrollY > 156) {
+        container.value.style.transform = `translateY(-56px)`;
+      } else {
+        container.value.style.transform = '';
+      }
+    }
+  }
+}
+
+onMounted(() => {
+  if (props.sticky) {
+    const bound = container.value?.getBoundingClientRect();
+
+    if (container.value) {
+      container.value.style.top = `${bound!.y}px`;
+    }
+  }
+
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 </script>
 
 <template>
-  <div class="page-control">
+  <div ref="container" :class="container_class">
     <Textfield
       v-if="search"
-      class="page-control__search"
+      :containerProps="{ class: 'page-control__search' }"
       :placeholder="searchPlaceholder"
       @input="$emit('search', $event)"
     />
@@ -58,9 +100,23 @@ defineEmits([
   gap: 16px;
   margin-bottom: 16px;
   align-items: center;
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-neutral-2);
+  transition: transform var(--transition-duration-very-fast) var(--transition-timing-function);
+  // padding: 8px 16px;
 
   &__search {
-    width: 100%;
+    flex-grow: 1;
+
+    .cp-form-field {
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+  }
+
+  &--sticky {
+    position: sticky;
+    top: 0;
   }
 }
 

@@ -3,8 +3,8 @@ import { ref, watch, onBeforeMount } from 'vue';
 import type * as CSS from 'csstype';
 
 export type TabProps = {
-  active?: boolean;
-  index?: number;
+  index?: number; // Internal props
+  active?: boolean; // Internal props
   lazy?: boolean;
   title: string;
   padding?: CSS.Property.Padding;
@@ -81,6 +81,7 @@ defineExpose({ ref: tab });
 $parent: '.cp-tabs-controls';
 
 .cp-tabs-control {
+  height: var(--tab-height);
   color: var(--color-white);
   font-size: var(--text-body-medium-size);
   line-height: var(--text-body-medium-height);
@@ -90,7 +91,7 @@ $parent: '.cp-tabs-controls';
   border: none;
   position: relative;
   cursor: pointer;
-  padding: 14px 32px;
+  padding: 0 32px;
 
   #{$parent}--grow & {
     white-space: nowrap;

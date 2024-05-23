@@ -11,7 +11,11 @@ export default {
       ref: 'sales',
       type: 'string',
     },
-    product: {
+    name: {
+      type: 'string',
+      maxLength: 1000,
+    },
+    products: {
       type: 'array',
       uniqueItems: true,
       items: {
@@ -23,7 +27,7 @@ export default {
           name: {
             type: 'string',
           },
-          price: {
+          total: {
             type: 'number',
             minimum: 0,
             default: 0,
@@ -37,7 +41,7 @@ export default {
       },
       default: [],
     },
-    price: {
+    subtotal: {
       type: 'number',
       minimum: 0,
       default: 0,
@@ -53,6 +57,8 @@ export default {
     'id',
     'sales_id',
     'name',
+    'products',
+    'subtotal',
     'created_at',
     'updated_at',
   ],

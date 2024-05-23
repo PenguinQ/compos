@@ -1,142 +1,157 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 
+// Common Components
 import Button from '@components/Button';
 import Card from '@components/Card';
 import Text from '@components/Text';
 import Label from '@components/Label';
-import { Shimmer } from '@components/Loader';
+import { Bar } from '@components/Loader';
 import EmptyState from '@components/EmptyState';
-import PageControl from './PageControl.vue';
-import { IconPlusLarge } from '@/components/icons';
 
-import Error from '@assets/illustration/error.svg';
+// View Components
+import ProductImage from '@/views/components/ProductImage.vue';
+import Pagination from '@/views/components/Pagination.vue';
+import ListSearch from '@/views/components/ListSearch.vue';
+import ListFooter from '@/views/components/ListFooter.vue';
+import ListFab from '@/views/components/ListFab.vue';
+
+// Hooks
+import { useProductList } from '../hooks/Unified.hook';
+
+// Constants
+import GLOBAL from '@/views/constants';
+import { PRODUCT_LIST } from '../constants';
+
+// Assets
 import NoImage from '@assets/illustration/no_image.svg';
-import NotFound from '@assets/illustration/not_found.svg';
 
-import { useProductList } from '../hooks/ProductList.hook';
+type ProductListProps = {
+  type: 'product' | 'bundle';
+};
+
+const props = defineProps<ProductListProps>();
 
 const router = useRouter();
 const {
-  data,
+  list,
   page,
-  productsError,
-  productsLoading,
-  productsRefetch,
+  search_query,
+  isListEmpty,
+  listError,
+  listLoading,
+  listRefetch,
   toNextPage,
   toPrevPage,
   handleSearch,
-} = useProductList();
+} = useProductList(props.type);
 </script>
 
 <template>
   <EmptyState
-    v-if="productsError"
-    :image="Error"
-    title="Oops..."
-    description="Looks like there's some thing wrong, please try again."
+    v-if="listError"
+    :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+    :title="GLOBAL.ERROR_EMPTY_TITLE"
+    :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
     margin="80px 0"
   >
     <template #action>
-      <Button @click="productsRefetch">Try Again</Button>
+      <Button @click="listRefetch">Try Again</Button>
     </template>
   </EmptyState>
   <template v-else>
-    <PageControl
-      searchPlaceholder="Search"
-      :pagination="data?.products.length ? true : false"
-      :paginationPage="page.current"
-      :paginationTotalPage="page.total"
-      :paginationFirstPage="page.current <= 1"
-      :paginationLastPage="page.current >= page.total"
-      @search="handleSearch"
-      @clickPaginationFirst="toPrevPage($event, true)"
-      @clickPaginationPrev="toPrevPage"
-      @clickPaginationNext="toNextPage"
-      @clickPaginationLast="toNextPage($event, true)"
+    <ListSearch
+      sticky
+      :placeholder="type === 'product' ? 'Search Product' : 'Search Bundle'"
+      @input="handleSearch"
     />
-    <div v-if="productsLoading" class="product-loader">
-      <Shimmer animate />
-      <Shimmer animate />
-      <Shimmer animate />
-      <Shimmer animate />
-      <Shimmer animate />
-    </div>
-    <EmptyState
-      v-else-if="!data.products.length"
-      :image="NotFound"
-      title="No results found..."
-      description="Try other search key to find what you're looking for."
-      margin="80px 0"
-    />
-    <div v-else class="product-card-grid" style="position: relative;">
-      <Card class="product-card" :key="product.id" v-for="product in data.products" :to="`/product/${product.id}`">
-        <div class="product-card__image">
-          <img :src="product.image ? product.image : NoImage" :alt="`${product.name} image`" />
+    <Bar v-if="listLoading" margin="64px 0" />
+    <template v-else>
+      <EmptyState
+        v-if="isListEmpty && search_query === ''"
+        emoji="🍃"
+        :title="type === 'product' ? PRODUCT_LIST.PRODUCT_EMPTY_TITLE : PRODUCT_LIST.BUNDLE_EMPTY_TITLE"
+        :description="type === 'product' ? PRODUCT_LIST.PRODUCT_EMPTY_DESCRIPTION : PRODUCT_LIST.BUNDLE_EMPTY_DESCRIPTION"
+        margin="56px 0"
+      />
+      <EmptyState
+        v-else-if="isListEmpty && search_query !== ''"
+        emoji="😵‍💫"
+        :title="PRODUCT_LIST.SEARCH_EMPTY_TITLE"
+        :description="PRODUCT_LIST.SEARCH_EMPTY_DESCRIPTION"
+        margin="56px 0"
+      />
+      <template v-else>
+        <div class="product-grid" style="position: relative;">
+          <template v-if="type === 'product'">
+            <Card class="product" :key="product.id" v-for="product in list.products" :to="`/product/${product.id}`">
+              <ProductImage class="product__image">
+                <img :src="product.image ? product.image : NoImage" :alt="`${product.name} image`" />
+              </ProductImage>
+              <div class="product__detail">
+                <Text class="product__title" heading="4" margin="0 0 8px" :title="product.name">
+                  {{ product.name }}
+                </Text>
+                <Label v-if="product.variant">{{ product.variant }} variants</Label>
+                <Label v-else variant="outline">No variant</Label>
+              </div>
+            </Card>
+          </template>
+          <template v-else>
+            <Card class="product" :key="bundle.id" v-for="bundle in list.bundles" :to="`/product/${bundle.id}`">
+              <ProductImage class="product__image">
+                <img
+                  v-if="bundle.images.length"
+                  v-for="image of bundle.images"
+                  :src="image ? image : NoImage"
+                  :alt="`${bundle.name} image`"
+                />
+                <img v-else :src=" NoImage" :alt="`${bundle.name} image`" />
+              </ProductImage>
+              <div class="product__detail">
+                <Text class="product__title" heading="4" margin="0 0 8px" :title="bundle.name">
+                  {{ bundle.name }}
+                </Text>
+                <Label color="blue" v-if="bundle.count">{{ bundle.count }} products</Label>
+                <Label v-else variant="outline">No product</Label>
+              </div>
+            </Card>
+          </template>
         </div>
-        <div class="product-card__detail">
-          <Text class="product-card__title" heading="4" margin="0 0 8px" :title="product.name">
-            {{ product.name }}
-          </Text>
-          <Label v-if="product.variant">{{ product.variant }} variants</Label>
-          <Label v-else variant="outline">No variant</Label>
-        </div>
-      </Card>
-    </div>
-    <PageControl
-      :search="false"
-      :pagination="data?.products.length ? true : false"
-      :paginationDisabled="productsLoading"
-      :paginationPage="page.current"
-      :paginationTotalPage="page.total"
-      :paginationFirstPage="page.current <= 1"
-      :paginationLastPage="page.current >= page.total"
-      @clickPaginationFirst="toPrevPage($event, true)"
-      @clickPaginationPrev="toPrevPage"
-      @clickPaginationNext="toNextPage"
-      @clickPaginationLast="toNextPage($event, true)"
-    />
-
-    <Button icon class="product-fab" @click="router.push('/product/add')">
-      <IconPlusLarge />
-    </Button>
+      </template>
+    </template>
   </template>
+  <ListFooter sticky :height="isListEmpty ? '82px' : '152px'">
+    <ListFab align="flex-end" @click="router.push(`${type === 'product' ? '/product/add' : '/bundle/add'}`)" />
+    <Pagination
+      v-if="!listLoading && !isListEmpty"
+      frame
+      :page="page.current"
+      :total_page="page.total"
+      :first_page="page.current <= 1"
+      :last_page="page.current >= page.total"
+      @clickFirst="toPrevPage($event, true)"
+      @clickPrev="toPrevPage"
+      @clickNext="toNextPage"
+      @clickLast="toNextPage($event, true)"
+    />
+  </ListFooter>
 </template>
 
 <style lang="scss" scoped>
-.product-fab {
-  position: fixed;
-  right: 16px;
-  bottom: calc(68px + 16px);
-  z-index: 100;
-
-  .cp-icon {
-    fill: var(--color-white);
-  }
-}
-
-.product-card-grid {
+.product-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-
-  + .page-control {
-    margin-top: 16px;
-  }
+  padding: 0 16px;
 }
 
-.product-card {
+.product {
   &__image {
     width: 100%;
     height: 180px;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
+    border: none;
+    border-radius: 0;
   }
 
   &__detail {
@@ -151,35 +166,20 @@ const {
   }
 }
 
-.product-loader {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-
-  .cp-loader {
-    width: 100%;
-    height: 260px;
-    display: block;
-  }
-}
-
 @include screen-md {
-  .product-card-grid,
-  .product-loader {
+  .product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @include screen-lg {
-  .product-card-grid,
-  .product-loader {
+  .product-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 @include screen-xl {
-  .product-card-grid,
-  .product-loader {
+  .product-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }

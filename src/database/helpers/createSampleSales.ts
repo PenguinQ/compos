@@ -6,18 +6,23 @@ import { SALES_ID_PREFIX } from '@/database/constants';
 export default async (products: string[]) => {
   const ulid = monotonicFactory();
   const products_array = [];
-  const item_max = 2;
+  const item_max = 3;
   let item_count = 0;
 
-  while (item_count < products.length) {
-    if (item_count > 0) {
-      products_array.push(products.slice(item_count, item_count + item_max));
-    } else {
-      products_array.push(products.slice(item_count, item_max));
-    }
-
-    item_count += item_max;
+  while (item_count < item_max) {
+    products_array.push(products);
+    item_count += 1;
   };
+
+  // while (item_count < products.length) {
+  //   if (item_count > 0) {
+  //     products_array.push(products.slice(item_count, item_count + item_max));
+  //   } else {
+  //     products_array.push(products.slice(item_count, item_max));
+  //   }
+
+  //   item_count += item_max;
+  // };
 
   const sales_obj = [];
 
@@ -26,9 +31,12 @@ export default async (products: string[]) => {
 
     sales_obj.push({
       id: sales_id,
+      finished: false,
       name: `Sales ${index + 1}`,
-      product: products,
-      finished: index === (products_array.length - 1) ? true : false,
+      products: products,
+      products_sold: [],
+      orders: [],
+      revenue: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });

@@ -1,68 +1,63 @@
 <script setup lang="ts">
-import Button from '@components/Button';
+import { computed } from 'vue';
+import * as CSS from 'csstype';
+
 import Text from '@components/Text';
-import {
-  IconChevronDoubleRight,
-  IconChevronDoubleLeft,
-  IconChevronLeft,
-  IconChevronRight,
-} from '@icons';
+import { IconChevronDoubleRight, IconChevronDoubleLeft, IconChevronLeft, IconChevronRight } from '@icons';
+import ButtonBlock from './ButtonBlock.vue';
 
 type Props = {
+  align?: CSS.Property.AlignSelf;
   disabled?: boolean;
   first_page?: boolean;
+  frame?: boolean;
+  grow?: boolean;
   last_page?: boolean;
-  page?: number,
-  total_page?: number,
+  page?: number;
+  size?: 'large';
+  total_page?: number;
 };
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   first_page: true,
+  frame: false,
+  grow: false,
   last_page: true,
 });
 
-defineEmits([
-  'clickFirst',
-  'clickPrev',
-  'clickNext',
-  'clickLast',
-]);
+defineEmits(['clickFirst', 'clickPrev', 'clickNext', 'clickLast']);
+
+const classes = computed(() => ({
+  pagination: true,
+  'pagination--frame': props.frame,
+  'pagination--grow': props.grow,
+  'pagination--large': props.size === 'large',
+}));
 </script>
 
 <template>
   <div
-    class="pagination"
+    :class="classes"
     :data-cp-disabled="disabled ? true : !page && !total_page ? true : undefined"
+    :style="{ alignSelf: align }"
   >
-    <Button
-      @click="$emit('clickFirst')"
-      :disabled="disabled ? true : first_page ? true : false"
-    >
-      <IconChevronDoubleLeft size="18" color="var(--color-white)" />
-    </Button>
-    <Button
-      @click="$emit('clickPrev')"
-      :disabled="disabled ? true : first_page ? true : false"
-    >
-      <IconChevronLeft size="18" color="var(--color-white)" />
-    </Button>
+    <ButtonBlock @click="$emit('clickFirst')" :disabled="disabled ? true : first_page ? true : false">
+      <IconChevronDoubleLeft color="var(--color-white)" />
+    </ButtonBlock>
+    <ButtonBlock @click="$emit('clickPrev')" :disabled="disabled ? true : first_page ? true : false">
+      <IconChevronLeft color="var(--color-white)" />
+    </ButtonBlock>
     <div class="pagination__detail">
-      <Text v-if="disabled || !page && !total_page">-</Text>
+      <Text v-if="disabled || (!page && !total_page)">-</Text>
       <Text v-else>Page {{ page }} of {{ total_page }}</Text>
     </div>
-    <Button
-      @click="$emit('clickNext')"
-      :disabled="disabled ? true : last_page ? true : false"
-    >
-      <IconChevronRight size="18" color="var(--color-white)" />
-    </Button>
-    <Button
-      @click="$emit('clickLast')"
-      :disabled="disabled ? true : last_page ? true : false"
-    >
-      <IconChevronDoubleRight size="18" color="var(--color-white)" />
-    </Button>
+    <ButtonBlock @click="$emit('clickNext')" :disabled="disabled ? true : last_page ? true : false">
+      <IconChevronRight color="var(--color-white)" />
+    </ButtonBlock>
+    <ButtonBlock @click="$emit('clickLast')" :disabled="disabled ? true : last_page ? true : false">
+      <IconChevronDoubleRight color="var(--color-white)" />
+    </ButtonBlock>
   </div>
 </template>
 
@@ -72,10 +67,17 @@ defineEmits([
 
   display: inline-flex;
   align-items: center;
+  background-color: var(--color-white);
 
-  > .cp-button {
+  > .button-block {
+    width: 46px;
+    height: 46px;
     border-radius: 0;
-    margin-right: -1px;
+
+    .cp-icon {
+      width: 18px;
+      height: 18px;
+    }
 
     &:first-child {
       border-top-left-radius: 8px;
@@ -100,16 +102,40 @@ defineEmits([
     justify-content: center;
     flex-shrink: 0;
     border: 1px solid var(--color-black);
-    padding: 4px 8px;
+    padding: 0 8px;
 
     .cp-text {
       width: 100%;
       text-align: center;
       margin: 0;
     }
+  }
 
-    + .cp-button {
-      margin-right: 0;
+  &--frame {
+    border-radius: 12px;
+    box-shadow:
+      rgba(60, 64, 67, 0.3) 0px 1px 2px 0,
+      rgba(60, 64, 67, 0.15) 0 1px 3px 1px;
+    padding: 4px;
+  }
+
+  &--grow {
+    width: 100%;
+
+    .pagination__detail {
+      flex-grow: 1;
+    }
+  }
+
+  &--large {
+    > .button-block {
+      width: 56px;
+      height: 56px;
+
+      .cp-icon {
+        width: 24px;
+        height: 24px;
+      }
     }
   }
 

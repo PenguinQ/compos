@@ -1,20 +1,13 @@
-import {
-  ref,
-  reactive,
-  toRefs,
-  computed,
-  watch,
-  onBeforeUnmount,
-} from 'vue';
+import { ref, reactive, toRefs, watch, onBeforeUnmount } from 'vue';
 import type { Ref } from 'vue';
 import type { Observable, Subscription } from 'rxjs';
 import type { RxDocument } from 'rxdb';
-import type { NormalizerData, QueryReturn } from '@/database/types';
+import type { QueryReturn } from '@/database/types';
 
 type UseQueryParams = {
   delay?: number,
-  enabled?: boolean;
-  queryKey?: Ref<string>[],
+  enabled?: Ref<boolean> | boolean;
+  queryKey?: Ref<unknown>[],
   queryFn: () => Promise<QueryReturn>;
   onError?: (response: Error) => void;
   onSuccess?: (response: object | undefined) => void;
@@ -29,19 +22,18 @@ type UseMutateParams = {
 export const useQuery = (params: UseQueryParams) => {
   const {
     enabled = true,
-    delay = false,
+    delay,
     queryKey = [],
     queryFn,
     onError,
     onSuccess,
   } = params;
-  // const query_enabled = isRef(enabled) ? enabled : ref(enabled);
-  // const query_key = isRef(queryKey) ? queryKey : ref(queryKey);
-  const query_enabled = computed(() => enabled);
-  const query_key = computed(() => queryKey);
+  const query_enabled = ref(enabled);
+  const query_key = ref(queryKey);
   const states = reactive({
     data: undefined as undefined | object,
     isError: false,
+    isPending: query_enabled.value ? false : true,
     isLoading: false,
     isSuccess: false,
   });
@@ -50,6 +42,7 @@ export const useQuery = (params: UseQueryParams) => {
 
   const query = async () => {
     try {
+      states.isPending = false;
       states.isLoading = true;
 
       if (delay) clearTimeout(delayTimeout);
@@ -62,7 +55,7 @@ export const useQuery = (params: UseQueryParams) => {
         subscribed_result.value?.unsubscribe();
         subscribed_result.value = (result as Observable<unknown>).subscribe({
           next: async (data) => {
-            const processed_data = await observeableProcessor(data as RxDocument<unknown>[]) as NormalizerData;
+            const processed_data = await observeableProcessor(data as RxDocument<unknown>[]);
             const normalized_data = normalizer ? normalizer(processed_data) : processed_data;
 
             if (delay) {
@@ -89,16 +82,16 @@ export const useQuery = (params: UseQueryParams) => {
       } else {
         if (delay) {
           delayTimeout = setTimeout(() => {
-            states.isLoading = false;
             states.isError = false;
+            states.isLoading = false;
             states.isSuccess = true;
             states.data = result as object;
 
             if (onSuccess) onSuccess(states.data);
           }, delay);
         } else {
-          states.isLoading = false;
           states.isError = false;
+          states.isLoading = false;
           states.isSuccess = true;
           states.data = result as object;
 
@@ -106,8 +99,8 @@ export const useQuery = (params: UseQueryParams) => {
         }
       }
     } catch (error) {
-      states.isLoading = false;
       states.isError = true;
+      states.isLoading = false;
       states.isSuccess = false;
 
       if (onError) onError(error as Error);
@@ -120,13 +113,13 @@ export const useQuery = (params: UseQueryParams) => {
     if (subscribed_result.value) subscribed_result.value.unsubscribe();
   });
 
-  watch(
-    query_key,
-    () => {
-      if (query_enabled.value) query();
-    },
-    { deep: true },
-  );
+  watch(() => query_key, () => {
+    if (query_enabled.value) query();
+  }, { deep: true });
+
+  watch(query_enabled, (new_query_enabled) => {
+    if (new_query_enabled) query();
+  });
 
   if (query_enabled.value) query();
 

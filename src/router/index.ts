@@ -11,59 +11,77 @@ const router = createRouter({
       component: () => import('../views/Landing.vue'),
     },
     {
+      path: '/sales/dashboard/:id',
+      name: 'sales-dashboard',
+      meta: { title: 'Sales **Name** - ComPOS' },
+      component: () => import('../views/sales/SalesRunning.vue'),
+    },
+    {
       path: '/',
       redirect: '/sales',
       components: {
-        default: () => import('../views/MainViewContainer.vue'),
-        Navbar: () => import('../views/MainViewNavbar.vue'),
-        BottomNavbar: () => import('../views/MainViewBottomNavbar.vue'),
+        default: () => import('../views/ViewContainer.vue'),
+        navigation: () => import('../views/ViewNavigation.vue'),
       },
       children: [
         {
           path: '/sales',
           redirect: '/sales/list',
-          component: () => import('../views/sales/SalesViewContainer.vue'),
+          // component: () => import('../views/sales/SalesViewContainer.vue'),
           children: [
             {
               path: '/sales/list',
               name: 'sales-list',
               meta: { title: 'Sales - ComPOS' },
-              component: () => import('../views/sales/SalesMainView.vue'),
+              component: () => import('../views/sales/SalesList.vue'),
             },
             {
-              path: '/sales/dashboard',
-              name: 'sales-dashboard',
-              meta: { title: 'Sales Dashboard - ComPOS',},
-              component: () => import('../views/sales/SalesDashboard.vue'),
+              path: '/sales/detail/:id',
+              name: 'sales-detail',
+              meta: {
+                title: 'Sales Detail',
+              },
+              component: () => import('../views/sales/SalesDetail.vue'),
             },
             {
-              path: '/sales/running',
-              name: 'sales-running',
-              meta: { title: 'Sales **Name** - ComPOS' },
-              component: () => import('../views/sales/SalesRunning.vue'),
+              path: '/sales/add',
+              name: 'sales-add',
+              meta: {
+                title: 'Add Sales',
+              },
+              component: () => import('../views/sales/SalesForm.vue'),
+            },
+            {
+              path: '/sales/edit/:id',
+              name: 'sales-edit',
+              meta: {
+                title: 'Edit Sales',
+                hideNavbar: true,
+              },
+              component: () => import('../views/sales/SalesForm.vue'),
             },
           ],
         },
         {
           path: '/product',
           redirect: '/product/list',
-          component: () => import('../views/products/ProductViewContainer.vue'),
+          // component: () => import('../views/products/ProductViewContainer.vue'),
           children: [
             {
               path: '/product/list',
               name: 'product-list',
               meta: { title: 'Product List - ComPOS' },
-              component: () => import('../views/products/Product.vue'),
-              beforeEnter: (to, _from, next) => {;
-                if (!to.query.tab && !to.query.page) {
-                  const query = { tab: 'bundle', page: '1' };
-                  const updatedQuery = { ...to.query, ...query };
+              component: () => import('../views/products/ProductList.vue'),
+              // beforeEnter: (to, _from, next) => {;
+              //   if (!to.query.tab && !to.query.page) {
+              //     const query = { tab: 'product', page: '1' };
+              //     const updatedQuery = { ...to.query, ...query };
 
-                  next({ ...to, query: updatedQuery });
-                } else {
-                  next();
-                }
-              },
+              //     next({ ...to, query: updatedQuery });
+              //   } else {
+              //     next();
+              //   }
+              // },
             },
             {
               path: '/product/:id',

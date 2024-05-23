@@ -40,14 +40,17 @@ export default async ({ data }: MutateAddProductQuery) => {
       variant    = [],
       new_image  = [],
     } = data;
-    const sanitized_name = sanitize(name);
-    const sanitized_description = description && sanitize(description);
-    const sanitized_by = by && sanitize(by);
-    const sanitized_sku = sku && sanitize(sku);
+    const clean_name        = sanitize(name);
+    const clean_description = description && sanitize(description);
+    const clean_by          = by && sanitize(by);
+    const clean_sku         = sku && sanitize(sku);
 
-    if (sanitized_name.trim() === '') throw 'Name cannot be empty.';
-    if (!isNumeric(price))            throw 'Price must be a number.';
-    if (!isNumeric(stock))            throw 'Stock must be a number.';
+    if (clean_name.trim() === '') throw 'Name cannot be empty.';
+    if (!isNumeric(price))        throw 'Price must be a number.';
+    if (!isNumeric(stock))        throw 'Stock must be a number.';
+
+    const clean_price = parseInt(price as unknown as string);
+    const clean_stock = parseInt(stock as unknown as string);
 
     /**
      * ----------------------
@@ -69,21 +72,24 @@ export default async ({ data }: MutateAddProductQuery) => {
           stock    : v_stock     = 0,
           new_image: v_new_image = [],
         } = v;
-        const sanitized_name = sanitize(v_name);
-        const sanitized_sku  = v_sku && sanitize(v_sku);
+        const clean_v_name = sanitize(v_name);
+        const clean_v_sku  = v_sku && sanitize(v_sku);
 
-        if (sanitized_name.trim() === '') throw 'Variant name cannot be empty.';
-        if (!isNumeric(v_price))          throw 'Price must be a number.';
-        if (!isNumeric(v_stock))          throw 'Stock must be a number.';
+        if (clean_v_name.trim() === '') throw 'Variant name cannot be empty.';
+        if (!isNumeric(v_price))        throw 'Price must be a number.';
+        if (!isNumeric(v_stock))        throw 'Stock must be a number.';
+
+        const clean_v_price = parseInt(v_price as unknown as string);
+        const clean_v_stock = parseInt(v_stock as unknown as string);
 
         variant_array.push({
           id        : v_id,
           product_id: product_id,
           active    : v_stock >= 1 ? true : false,
-          name      : sanitized_name,
-          sku       : sanitized_sku,
-          price     : v_price,
-          stock     : v_stock,
+          name      : clean_v_name,
+          sku       : clean_v_sku,
+          price     : clean_v_price,
+          stock     : clean_v_stock,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
@@ -91,9 +97,9 @@ export default async ({ data }: MutateAddProductQuery) => {
         variant_attachments.push(v_new_image);
       });
 
-      const inactiveVariant = variant_array.filter(v => v.active === false);
+      const inactive_variant = variant_array.filter(v => v.active === false);
 
-      if (inactiveVariant.length === variant_array.length) product_active = false;
+      if (inactive_variant.length === variant_array.length) product_active = false;
 
       /**
        * --------------------
@@ -101,12 +107,12 @@ export default async ({ data }: MutateAddProductQuery) => {
        * --------------------
        */
       const _queryProduct = await db.product.insert({
-        id         : product_id,
         active     : product_active,
-        name       : sanitized_name,
-        description: sanitized_description,
-        by         : sanitized_by,
-        sku        : sanitized_sku,
+        id         : product_id,
+        name       : clean_name,
+        description: clean_description,
+        by         : clean_by,
+        sku        : clean_sku,
         price      : 0,
         stock      : 0,
         variant    : variant_ids,
@@ -166,17 +172,17 @@ export default async ({ data }: MutateAddProductQuery) => {
        * --------------------
        */
       const _queryProduct = await db.product.insert({
-        name       : sanitized_name,
-        description: sanitized_description,
-        by         : sanitized_by,
-        sku        : sanitized_sku,
+        active     : clean_stock >= 1 ? true : false,
         id         : product_id,
-        active     : stock >= 1 ? true : false,
+        name       : clean_name,
+        description: clean_description,
+        by         : clean_by,
+        sku        : clean_sku,
+        price      : clean_price,
+        stock      : clean_stock,
+        variant    : [],
         created_at : new Date().toISOString(),
         updated_at : new Date().toISOString(),
-        variant    : [],
-        price,
-        stock,
       });
 
       /**

@@ -15,6 +15,7 @@ type TabsProps = {
    * Set the tab buttons to take the whole width.
    */
   grow?: boolean;
+  panelGrow?: boolean;
   /**
    * Set the current active tab programmatically.
    */
@@ -67,6 +68,10 @@ const tabs_class = computed(() => ({
   'cp-tabs-controls--grow': props.grow,
   'cp-tabs-controls--sticky': props.sticky,
 }));
+const panel_class = computed(() => ({
+  'cp-tabs-panels': true,
+  'cp-tabs-panels--grow': props.panelGrow,
+}));
 
 const scrollToView = (index: number) => {
   const visible = isVisible(tabs.value[index], controls.value);
@@ -97,16 +102,16 @@ const handleSticky = (sticky: boolean) => {
 }
 
 onMounted(() => {
-  props.sticky && handleSticky(true);
+  // props.sticky && handleSticky(true);
   !props.grow && scrollToView(active_index.value);
 });
 
-watch(
-  () => props.sticky,
-  (sticky) => {
-    handleSticky(sticky);
-  },
-);
+// watch(
+//   () => props.sticky,
+//   (sticky) => {
+//     handleSticky(sticky);
+//   },
+// );
 
 watch(
   () => props.modelValue,
@@ -151,7 +156,7 @@ watch(
     :[scope_id]="''"
     v-if="$slots.default"
     v-bind="panelContainerProps"
-    class="cp-tabs-panels"
+    :class="panel_class"
   >
     <component
       v-for="(tab, index) in $slots.default().filter((slot) => (slot.type as TabSlot).name === 'Tab')"
@@ -169,6 +174,11 @@ watch(
 
 <style lang="scss">
 $root: '.cp-tabs-controls';
+
+.cp-tabs-controls,
+.cp-tabs-panels {
+  --tab-height: 48px;
+}
 
 .cp-tabs-controls {
   max-width: 100%;
@@ -214,6 +224,8 @@ $root: '.cp-tabs-controls';
   &--sticky {
     position: fixed;
     z-index: 50;
+    position: sticky;
+    top: 0;
 
     &::before {
       content: '';
@@ -234,6 +246,17 @@ $root: '.cp-tabs-controls';
 
     #{$root}-container {
       width: 100%;
+    }
+  }
+}
+
+.cp-tabs-panels {
+  &--grow {
+    height: calc(100% - var(--tab-height));
+
+    .cp-tabs-panel {
+      height: 100%;
+      overflow-y: auto;
     }
   }
 }

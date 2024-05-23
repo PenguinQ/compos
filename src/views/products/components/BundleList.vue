@@ -89,7 +89,6 @@ const {
         </div>
       </div>
     </div>
-
     <PageControl
       :search="false"
       :pagination="data?.bundles.length ? true : false"

@@ -5,38 +5,57 @@ import { ToastProvider } from '@components/Toast';
 
 <template>
   <ToastProvider>
-    <div id="page-container">
-      <RouterView id="page-navbar" name="Navbar" />
-      <div id="page-view">
-        <RouterView />
-      </div>
-      <RouterView id="page-bottom-navbar" name="BottomNavbar" />
-    </div>
+    <RouterView />
+    <RouterView name="navigation" />
   </ToastProvider>
 </template>
 
 <style lang="scss">
+:root {
+  --bottom-nav-height: 68px;
+}
+
+#app-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  header {
+    flex: 0 0 auto;
+  }
+
+  main {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+  footer {
+    flex: 0 0 auto;
+  }
+}
+
+#main-view {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
 #page {
   &-container {
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    grid-template-areas:
-      "navbar"
-      "view"
-      "bottom-navbar";
+    // min-height: 100vh;
+    // display: grid;
+    // grid-template-rows: auto 1fr auto;
+    // grid-template-areas:
+    //   "navbar"
+    //   "view"
+    //   "bottom-navbar";
 
     // New
+    height: 100vh;
     display: flex;
     flex-direction: column;
 
     > * {
       min-width: 0;
-    }
-
-    &--flex {
-      display: flex;
-      flex-direction: column;
     }
   }
 
@@ -48,12 +67,16 @@ import { ToastProvider } from '@components/Toast';
   }
 
   &-view {
-    grid-area: view;
-    position: relative;
+    // grid-area: view;
+    // position: relative;
 
-    // New
-    flex: 1 0 auto;
-    height: 0;
+    // // New
+    // flex: 1 0 auto;
+    // height: 0;
+    // min-height: 0;
+    // overflow-y: auto;
+
+    flex-grow: 1;
     overflow-y: auto;
   }
 

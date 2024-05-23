@@ -91,6 +91,19 @@
   --transition-duration-slow: 320ms;
   --transition-duration-very-slow: 360ms;
   --transition-timing-function: cubic-bezier(0.63, 0.01, 0.29, 1);
+
+  // z-index
+  --z-min: 0;
+  --z-1: 10;
+  --z-2: 20;
+  --z-3: 30;
+  --z-4: 40;
+  --z-5: 50;
+  --z-6: 60;
+  --z-7: 70;
+  --z-8: 80;
+  --z-9: 90;
+  --z-max: 100;
 }
 
 @include screen-md {

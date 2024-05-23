@@ -14,11 +14,14 @@ interface Props {
   textAlign?: CSS.Property.TextAlign;
   textDecoration?: CSS.Property.TextDecoration;
   textTransform?: CSS.Property.TextTransform;
+  truncate?: boolean;
   margin?: CSS.Property.Margin;
   padding?: CSS.Property.Padding;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  truncate: false,
+});
 
 let markup = ref<string>('p');
 const headingMap: { [key: string]: string } = {
@@ -52,6 +55,7 @@ watchEffect(() => {
 
 const textClass = computed(() => ({
   'cp-text': true,
+  'cp-text--truncate': props.truncate,
   'cp-text--heading-1': props.heading == 1,
   'cp-text--heading-2': props.heading == 2,
   'cp-text--heading-3': props.heading == 3,
@@ -81,6 +85,12 @@ const textClass = computed(() => ({
   text-decoration: none;
   margin-top: 0;
   margin-bottom: 12px;
+
+  &--truncate {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
 
   &--body-large {
     font-size: var(--text-body-large-size);

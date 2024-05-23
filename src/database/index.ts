@@ -72,7 +72,7 @@ export const initDB = async () => {
   if (productSuccess.length) {
     const productSales = <string[]>[];
 
-    productSuccess.slice(0, 5).map((product: any) => {
+    productSuccess.slice(1, 2).map((product: any) => {
       const { id, variant } = product;
 
       productSales.push(variant.length ? variant[0] : id);
@@ -85,6 +85,8 @@ export const initDB = async () => {
 
     if (bundleSuccess.length) {
       console.info('Sample bundle successfully created.');
+
+      console.log(productSales);
 
       const sampleSales = await createSampleSales(productSales);
       const { success: salesSuccess } = sampleSales;
