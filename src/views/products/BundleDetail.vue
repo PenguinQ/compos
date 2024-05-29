@@ -1,28 +1,36 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { useBundleDetail } from './hooks/BundleDetail.hook';
 
+// Common Components
 import Button from '@components/Button';
 import Card, { CardBody } from '@components/Card';
 import DescriptionList from '@components/DescriptionList';
 import Dialog from '@components/Dialog';
 import EmptyState from '@components/EmptyState';
 import Label from '@components/Label';
+import Separator from '@components/Separator';
 import Text from '@components/Text';
 import Ticker from '@components/Ticker';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
+import { Bar } from '@components/Loader';
 import { Column, Row, Container } from '@components/Layout';
-import { Shimmer } from '@components/Loader';
 import { IconArrowLeftShort, IconPencilSquare, IconTrash } from '@icons';
 
-import { PRODUCT_DETAIL } from './constants';
+// View Components
+import ProductImage from '@/views/components/ProductImage.vue';
 
+// Constants
+import GLOBAL from '@/views/constants';
+
+// Assets
 import no_image from '@assets/illustration/no_image.svg';
-import error_image from '@assets/illustration/error.svg';
+
+// Hooks
+import { useBundleDetail } from './hooks/BundleDetail.hook';
 
 const router = useRouter();
 const {
-  bundleID,
+  bundle_id,
   data,
   dialog_delete,
   isError,
@@ -44,7 +52,7 @@ const {
       v-if="!isError && !isLoading"
       icon
       backgroundColor="var(--color-blue-4)"
-      @click="router.push(`/bundle/edit/${bundleID}`)"
+      @click="router.push(`/bundle/edit/${bundle_id}`)"
     >
       <IconPencilSquare />
     </ToolbarAction>
@@ -57,48 +65,22 @@ const {
       <IconTrash />
     </ToolbarAction>
   </Toolbar>
-
+  <!--  -->
   <EmptyState
     v-if="isError"
-    :image="error_image"
-    :title="PRODUCT_DETAIL.ERROR_TITLE"
-    :description="PRODUCT_DETAIL.ERROR_DESCRIPTION"
+    :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+    :title="GLOBAL.ERROR_EMPTY_TITLE"
+    :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+    margin="56px 0"
   >
     <template #action>
       <Button @click="refetch">Try Again</Button>
     </template>
   </EmptyState>
+  <!--  -->
   <template v-else>
     <Container class="pd-container">
-      <template v-if="isLoading">
-        <Row>
-          <Column :col="{ default: 12, md: 'auto' }">
-            <Shimmer block class="pd-loading-image" />
-          </Column>
-          <Column>
-            <Card class="pd-card" variant="outline">
-              <CardBody>
-                <Shimmer block width="50%" height="20px" radius="4px" margin="4px 0 8px" />
-                <Shimmer block width="100%" height="14px" radius="4px" margin="4px 0 0" />
-                <hr class="pd-card__separator" />
-                <div class="pd-loading-detail">
-                  <Shimmer width="30%" height="18px" radius="4px" />
-                  <Shimmer width="30%" height="18px" radius="4px" />
-                </div>
-                <hr class="pd-card__separator" />
-                <Shimmer block width="100px" height="20px" radius="4px" margin="4px 0 20px" />
-                <div style="display: flex; align-items: center; gap: 16px;">
-                  <Shimmer width="80px" height="80px" radius="4px" style="flex-shrink: 0;" />
-                  <div style="flex: 1 0 auto;">
-                    <Shimmer block width="50%" height="16px" radius="4px" margin="0 0 8px" />
-                    <Shimmer block width="30%" height="14px" radius="4px" />
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-          </Column>
-        </Row>
-      </template>
+      <Bar v-if="isLoading" margin="56px 0" />
       <template v-else>
         <Ticker
           v-if="!data.active"
@@ -112,22 +94,22 @@ const {
         />
         <Row>
           <Column :col="{ default: 12, md: 'auto' }">
-            <picture class="pd-image">
+            <ProductImage>
               <img
-                v-if="data.image.length"
-                v-for="image of data.image"
+                v-if="data.images.length"
+                v-for="image of data.images"
                 :src="image"
                 :alt="`${data.name} image`"
               />
               <img v-else :src="no_image" :alt="`${data.name} image`" />
-            </picture>
+            </ProductImage>
           </Column>
           <Column>
             <Card class="pd-card" variant="outline">
               <CardBody>
                 <Text heading="3" margin="0 0 4px">{{ data.name }}</Text>
                 <Text v-if="data.description">{{ data.description }}</Text>
-                <hr class="pd-card__separator" />
+                <Separator />
                 <DescriptionList
                   class="pd-description-list"
                   alignment="horizontal"
@@ -142,33 +124,30 @@ const {
                     },
                   ]"
                 />
-                <hr class="pd-card__separator" />
+                <Separator />
                 <Text as="h4" heading="5">Products</Text>
                 <EmptyState
-                  v-if="!data.product.length"
+                  v-if="!data.products.length"
                   title="Hmm..."
                   description="This bundle doesn't have any products."
                   margin="16px 0"
                 />
                 <div v-else class="pd-items">
                   <div
-                    v-for="product in data.product"
+                    v-for="product in data.products"
                     class="pd-item"
                     :data-inactive="!product.active ? true : undefined"
                   >
-                    <picture class="pd-item__image">
-                      <img
-                        :src="`${product.image.length ? product.image[0] : no_image}`"
-                        :alt="`${product.name} image`"
-                      />
-                    </picture>
+                    <ProductImage width="80px" height="80px">
+                      <img :src="`${product.image ? product.image : no_image}`" :alt="`${product.name} image`" />
+                    </ProductImage>
                     <div class="pd-item__detail">
                       <Text class="pd-item__name" body="large" as="h4">
                         <Label v-if="!product.active" color="red">Inactive</Label>
                         {{ product.product_name ? `${product.product_name} - ${product.name}` : product.name }}
                       </Text>
                       <Text class="pd-item__description">
-                        Price: {{ product.price }} | Stock: {{ product.stock }}
+                        Price: {{ product.price }} | Stock: {{ product.stock }} | SKU: {{ product.sku }}
                       </Text>
                     </div>
                   </div>
@@ -193,4 +172,3 @@ const {
 </template>
 
 <style lang="scss" src="./assets/_detail.scss" scoped />
-<style lang="scss" scoped></style>

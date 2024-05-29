@@ -41,8 +41,6 @@ export const useSalesList = (status: 'running' | 'finished' = 'running') => {
       console.error('Failed to get product list:', error);
     },
     onSuccess: (response: unknown) => {
-      console.log(response);
-
       if (response) {
         const { page: response_page, sales } = response as SalesListNormalizerReturn;
 

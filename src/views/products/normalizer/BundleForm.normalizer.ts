@@ -1,3 +1,45 @@
+type ProductsList = {
+  id: string;
+  image: string;
+  name: string;
+  price: number;
+  quantity: number;
+};
+
+export type FormNormalizerReturn = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  products: ProductsList[];
+};
+
+export const formDetailNormalizer = (data: unknown): FormNormalizerReturn => {
+  const { id, name, description, price, products } = data as any;
+  const products_list: ProductsList[] = [];
+
+  products.forEach((product: any) => {
+    const { id, images, name, price, quantity  } = product;
+    const product_image = images.length ? images[0] : '';
+
+    products_list.push({
+      id,
+      image: product_image,
+      name,
+      price,
+      quantity
+    })
+  });
+
+  return {
+    id,
+    name,
+    description,
+    price,
+    products: products_list,
+  };
+};
+
 export const bundleFormNormalizer = (data: any) => {
   const bundle_data = data || {};
   let product: any = [];

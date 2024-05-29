@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 
+// Common Components
 import Button from '@components/Button';
 import Text from '@components/Text';
 import Card, { CardHeader, CardTitle, CardBody } from '@components/Card';
@@ -11,14 +12,21 @@ import QuantityEditor from '@components/QuantityEditor';
 import Ticker from '@components/Ticker';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Row, Column } from '@components/Layout';
-import { Bar, Shimmer } from '@components/Loader';
+import { Bar } from '@components/Loader';
 import { IconArrowLeftShort, IconXLarge } from '@icons';
 
+// View Components
+import ProductImage from '@/views/components/ProductImage.vue';
+
+// Hooks
 import { useProductForm } from './hooks/ProductForm.hook';
+
+// Constants
+import GLOBAL from '@/views/constants';
 import { PRODUCT_DETAIL } from './constants';
 
+// Assets
 import no_image from '@assets/illustration/no_image.svg';
-import Error from '@assets/illustration/error.svg';
 
 const router = useRouter();
 const {
@@ -49,16 +57,19 @@ const {
     <ToolbarSpacer />
     <ToolbarAction @click="handleSubmit">{{ mutateAddLoading || mutateEditLoading ? 'Loading' : 'Save' }}</ToolbarAction>
   </Toolbar>
+  <!--  -->
   <EmptyState
     v-if="isError"
-    :image="Error"
-    :title="PRODUCT_DETAIL.ERROR_TITLE"
-    :description="PRODUCT_DETAIL.ERROR_DESCRIPTION"
+    :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+    :title="GLOBAL.ERROR_EMPTY_TITLE"
+    :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+    margin="56px 0"
   >
     <template #action>
       <Button @click="refetch">Try Again</Button>
     </template>
   </EmptyState>
+  <!--  -->
   <template v-else>
     <Container class="pf-container">
       <Bar v-if="isLoading" margin="80px 0" />
@@ -67,24 +78,23 @@ const {
           <Column :col="{ default: 12, md: 'auto' }">
             <div class="pf-image" :data-error="true">
               <label>
-                <picture v-if="form_data.image.length || form_data.new_image.length">
-                  <img
-                    v-if="!form_data.new_image.length"
-                    v-for="(image, index) of form_data.image"
-                    :key="`${form_data.name}-img-${index}`"
-                    :alt="`${form_data.name} Image - ${index + 1}`"
-                    :src="(image.path as string)"
-                  />
-                  <img
-                    v-for="(image, index) of form_data.new_image"
-                    :key="`new-${form_data.name}-img-${index}`"
-                    :alt="`New ${form_data.name} Image - ${index + 1}`"
-                    :src="(image.path as string)"
-                  />
-                </picture>
-                <picture v-else>
-                  <img :src="no_image" alt="" />
-                </picture>
+                <ProductImage borderless>
+                  <template v-if="form_data.image.length || form_data.new_image.length">
+                    <img
+                      v-if="form_data.new_image.length"
+                      :src="(form_data.new_image[0].url as string)"
+                      :alt="`${form_data.name} Image`"
+                    />
+                    <img
+                      v-else
+                      :src="(form_data.image[0].url as string)"
+                      :alt="`${form_data.name} Image`"
+                    />
+                  </template>
+                  <template v-else>
+                    <img :src="no_image" alt="" />
+                  </template>
+                </ProductImage>
                 <input type="file" accept=".jpg, .jpeg, .png, .webp" @change="handleAddImage" />
               </label>
               <div v-if="form_data.image.length || form_data.new_image.length" class="pf-image__actions">
@@ -122,7 +132,7 @@ const {
                         v-model="form_data.by"
                       />
                       <Ticker
-                        v-if="form_data.variant.length"
+                        v-if="form_data.variants.length"
                         :items="[
                           {
                             title: 'Default Price and Stock Disabled',
@@ -160,7 +170,7 @@ const {
                   </CardHeader>
                   <CardBody>
                     <EmptyState
-                      v-if="!form_data.variant.length"
+                      v-if="!form_data.variants.length"
                       title="Hmm..."
                       description="This product doesn't have any variants."
                       margin="16px 0"
@@ -171,7 +181,7 @@ const {
                     </EmptyState>
                     <template v-else>
                       <div class="pf-variants">
-                        <div class="pf-variant" v-for="(variant, index) of form_data.variant" :key="`variant-${index}`">
+                        <div class="pf-variant" v-for="(variant, index) of form_data.variants" :key="`variant-${index}`">
                           <div class="pf-variant__header">
                             <div class="pf-variant__title">
                               Variant {{ index + 1 }}
@@ -195,13 +205,13 @@ const {
                                         v-for="(image, index) of variant.image"
                                         :key="`${form_data.name}-img-${index}`"
                                         :alt="`${form_data.name} Image - ${index + 1}`"
-                                        :src="(image.path as string)"
+                                        :src="(image.url as string)"
                                       />
                                       <img
                                         v-for="(image, index) of variant.new_image"
                                         :key="`new-${form_data.name}-img-${index}`"
                                         :alt="`New ${form_data.name} Image - ${index + 1}`"
-                                        :src="(image.path as string)"
+                                        :src="(image.url as string)"
                                       />
                                     </picture>
                                     <picture v-else>
@@ -234,24 +244,24 @@ const {
                                     label="Name"
                                     :id="`variant-name-${index + 1}`"
                                     :labelProps="{ for: `variant-name-${index + 1}` }"
-                                    :error="form_error.variant[index].name ? true : false"
-                                    :message="form_error.variant[index].name"
+                                    :error="form_error.variants[index].name ? true : false"
+                                    :message="form_error.variants[index].name"
                                     v-model="variant.name"
                                   />
                                   <Textfield
                                     label="Price"
                                     :id="`variant-price-${index + 1}`"
                                     :labelProps="{ for: `variant-price-${index + 1}` }"
-                                    :error="form_error.variant[index].price ? true : false"
-                                    :message="form_error.variant[index].price"
+                                    :error="form_error.variants[index].price ? true : false"
+                                    :message="form_error.variants[index].price"
                                     v-model.number="variant.price"
                                   />
                                   <QuantityEditor
                                     label="Stock"
                                     :id="`variant-stock-${index + 1}`"
                                     :labelProps="{ for: `variant-stock-${index + 1}` }"
-                                    :error="form_error.variant[index].stock ? true : false"
-                                    :message="form_error.variant[index].stock"
+                                    :error="form_error.variants[index].stock ? true : false"
+                                    :message="form_error.variants[index].stock"
                                     v-model.number="variant.stock"
                                   />
                                   <Row>
@@ -434,6 +444,7 @@ const {
       label {
         max-height: 240px;
         height: 240px;
+        overflow: hidden;
       }
 
       &--variant {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 
+// Common Components
 import Button from '@components/Button';
 import Card, { CardBody } from '@components/Card';
 import DescriptionList, { DescriptionListItem } from '@components/DescriptionList';
@@ -12,14 +13,15 @@ import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components
 import { Container, Column, Row } from '@components/Layout';
 import { IconArrowLeftShort, IconPencilSquare, IconTrash } from '@icons';
 
+// Hooks
 import { useSalesDetail } from './hooks/SalesDetail.hook';
-import { SALES_DETAIL } from './constants';
-
-import no_image from '@assets/illustration/no_image.svg';
-import error_image from '@assets/illustration/error.svg';
 
 // Constants
 import GLOBAL from '@/views/constants';
+import { SALES_DETAIL } from './constants';
+
+// Assets
+import no_image from '@assets/illustration/no_image.svg';
 
 const router = useRouter();
 const {

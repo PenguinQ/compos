@@ -93,15 +93,6 @@ const router = createRouter({
               component: () => import('../views/products/ProductDetail.vue'),
             },
             {
-              path: '/product/add',
-              name: 'product-add',
-              meta: {
-                title: 'Add Product - ComPOS',
-                hideNavbar: true,
-              },
-              component: () => import('../views/products/ProductForm.vue'),
-            },
-            {
               path: '/product/edit/:id',
               name: 'product-edit',
               meta: {
@@ -111,7 +102,16 @@ const router = createRouter({
               component: () => import('../views/products/ProductForm.vue'),
             },
             {
-              path: '/product/bundle/:id',
+              path: '/product/add',
+              name: 'product-add',
+              meta: {
+                title: 'Add Product - ComPOS',
+                hideNavbar: true,
+              },
+              component: () => import('../views/products/ProductForm.vue'),
+            },
+            {
+              path: '/bundle/:id',
               name: 'bundle-detail',
               meta: {
                 title: 'Bundle Detail - ComPOS',
@@ -120,10 +120,19 @@ const router = createRouter({
               component: () => import('../views/products/BundleDetail.vue'),
             },
             {
-              path: '/product/bundle/edit/:id',
+              path: '/bundle/edit/:id',
               name: 'bundle-edit',
               meta: {
                 title: 'Bundle Edit - ComPOS',
+                hideNavbar: true,
+              },
+              component: () => import('../views/products/BundleForm.vue'),
+            },
+            {
+              path: '/bundle/add',
+              name: 'bundle-add',
+              meta: {
+                title: 'Add Bundle - ComPOS',
                 hideNavbar: true,
               },
               component: () => import('../views/products/BundleForm.vue'),

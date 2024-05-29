@@ -10,10 +10,10 @@ export type VariantsData = VariantDoc & {
   images: string[];
 };
 
-export interface ProductsData extends Omit<ProductDoc, 'variant'> {
+export type ProductsData = Omit<ProductDoc, 'variants'> & {
   images: string[];
-  variant?: DeepReadonlyArray<string> | VariantsData[];
-}
+  variants?: DeepReadonlyArray<string> | VariantsData[];
+};
 
 type ProductListQuery = {
   active?: boolean;
@@ -48,7 +48,7 @@ export default async ({
     const query_limit = limit;
     const query_sort  = [{ id: sort }];
 
-    const getProductCount = async () => {
+    const getProductsCount = async () => {
       let _query;
 
       if (search_query) {
@@ -66,11 +66,11 @@ export default async ({
       return _query.length;
     };
 
-    const getProductData = async (data: RxDocument<ProductDoc>[]) => {
+    const getProductsData = async (data: RxDocument<ProductDoc>[]) => {
       const product_data: ProductsData[] = [];
 
       for (const product of data) {
-        const { variant: product_variant, ...rest } = product.toJSON();
+        const { variants: product_variants, ...rest } = product.toJSON();
         const product_variant_detail: VariantsData[] = [];
         const product_images            = product.allAttachments();
         const product_thumbnails        = product_images.filter(img => img.id.startsWith(THUMBNAIL_ID_PREFIX));
@@ -84,8 +84,8 @@ export default async ({
           product_thumbnails_base64.push(`data:${type};base64,${thumbnail_base64}`);
         }
 
-        if (complete && product_variant) {
-          for (const variant of product_variant) {
+        if (complete && product_variants) {
+          for (const variant of product_variants) {
             const _queryVariant = await db.variant.findOne({ selector: { id: variant } }).exec();
 
             if (_queryVariant) {
@@ -109,7 +109,7 @@ export default async ({
 
         product_data.push({
           images: product_thumbnails_base64,
-          variant: complete ? product_variant_detail : product_variant,
+          variants: complete ? product_variant_detail : product_variants,
           ...rest,
         });
       }
@@ -132,8 +132,8 @@ export default async ({
      */
     if (observe) {
       const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> => {
-        const product_count = await getProductCount();
-        const total_page    = Math.ceil(product_count / query_limit);
+        const products_count = await getProductsCount();
+        const total_page    = Math.ceil(products_count / query_limit);
         const { first_page, last_page } = await getPageStatus({
           collection: 'product',
           data,
@@ -144,11 +144,11 @@ export default async ({
             ...(active !== undefined && { active: { $eq: active } }),
           },
         });
-        const product_data = await getProductData(data as RxDocument<ProductDoc>[]);
+        const products_data = await getProductsData(data as RxDocument<ProductDoc>[]);
 
         return {
-          data      : product_data,
-          data_count: product_count,
+          data      : products_data,
+          data_count: products_count,
           page      : {
             current: page,
             first: first_page,
@@ -171,8 +171,8 @@ export default async ({
      * 2. Non-observable queries.
      * --------------------------
      */
-    const product_count = await getProductCount();
-    const total_page    = Math.ceil(product_count / query_limit);
+    const products_count = await getProductsCount();
+    const total_page    = Math.ceil(products_count / query_limit);
     const { first_page, last_page } = await getPageStatus({
       collection: 'product',
       data: _queryProduct as RxDocument<ProductDoc>[],
@@ -183,11 +183,11 @@ export default async ({
         ...(active !== undefined && { active: { $eq: active } }),
       },
     });
-    const product_data = await getProductData(_queryProduct as RxDocument<ProductDoc>[]);
+    const products_data = await getProductsData(_queryProduct as RxDocument<ProductDoc>[]);
 
     const raw_data = {
-      data      : product_data,
-      data_count: product_count,
+      data      : products_data,
+      data_count: products_count,
       page      : {
         current: page,
         first: first_page,

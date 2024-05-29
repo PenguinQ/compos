@@ -12,6 +12,10 @@ type DialogProps = {
    */
   fullscreen?: boolean;
   /**
+   * Hide the dialog header.
+   */
+  hideHeader?: boolean;
+  /**
    * Set the maximum width of the dialog.
    */
   maxWidth?: CSS.Property.MaxWidth;
@@ -41,6 +45,7 @@ type DialogProps = {
 defineOptions({ inheritAttrs: false });
 const props = withDefaults(defineProps<DialogProps>(), {
   fullscreen: false,
+  hideHeader: false,
   noClose: false,
   persistent: false,
 });
@@ -112,7 +117,7 @@ watch(
       :class="dialog_class"
       :style="{ maxWidth, minWidth, width }"
     >
-      <div :[scope_id]="''" class="cp-dialog-header">
+      <div v-if="!hideHeader" :[scope_id]="''" class="cp-dialog-header">
         <slot name="header" v-bind="{ props: activator_props }" />
         <div :[scope_id]="''" v-if="!$slots.header" class="cp-dialog-header__content">
           <h3 :[scope_id]="''" v-if="title" class="cp-dialog__title">{{ title }}</h3>

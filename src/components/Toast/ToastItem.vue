@@ -161,7 +161,7 @@ watch(
   display: flex;
   align-items: center;
   gap: 10px;
-  z-index: 60;
+  z-index: var(--z-max);
   transition-property: all;
   transition-duration: var(--transition-duration-normal);
   transition-timing-function: var(--transition-function);

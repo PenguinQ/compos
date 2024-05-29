@@ -1,25 +1,65 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
+import { computed } from 'vue';
 import type * as CSS from 'csstype';
 
 import Text from '../Text';
 
-type Props = {
+type EmptyStateProps = {
+  /**
+   * Set the empty state description text.
+   */
   description?: string;
+  /**
+   * Set the empty state emoji that acts like an image.
+   */
   emoji?: string;
-  height?: CSS.Property.Height;
+  /**
+   * Set the empty state image.
+   */
   image?: string;
+  /**
+   * Set the empty state image alt text.
+   */
   imageAlt?: string;
+  /**
+   * Set the empty state image height.
+   */
   imageHeight?: CSS.Property.Height;
+  /**
+   * Set the empty state image width.
+   */
   imageWidth?: CSS.Property.Width;
-  margin?: CSS.Property.Margin;
+  /**
+   * Set the empty state orientation.
+   */
   orientation?: 'horizontal' | 'vertical';
+  /**
+   * Set the empty state subtitle text.
+   */
   subtitle?: string;
+  /**
+   * Set the empty state title text.
+   */
   title: string;
+  /**
+   * Set the empty state width.
+   */
   width?: CSS.Property.Width;
-}
+  /**
+   * Set the empty state height.
+   */
+  height?: CSS.Property.Height;
+  /**
+   * Set the empty state padding.
+   */
+  padding?: CSS.Property.Padding;
+  /**
+   * Set the empty state margin.
+   */
+  margin?: CSS.Property.Margin;
+};
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<EmptyStateProps>(), {
   orientation: 'vertical',
 });
 
@@ -27,21 +67,13 @@ const empty_state_class = computed(() => ({
   'cp-empty-state': true,
   'cp-empty-state--horizontal': props.orientation === 'horizontal',
 }));
-const empty_state_style = reactive({
-  height: props.height,
-  margin: props.margin,
-});
-const image_style = reactive({
-  height: props.imageHeight,
-  width: props.imageWidth,
-});
 </script>
 
 <template>
-  <div :class="empty_state_class" :style="empty_state_style">
+  <div :class="empty_state_class" :style="{ width, height, padding, margin }">
     <div class="cp-empty-state__container" :style="{ width }">
       <picture v-if="image">
-        <img :src="image" :alt="imageAlt ? imageAlt : 'Empty state image'" :style="image_style" />
+        <img :src="image" :alt="imageAlt ? imageAlt : 'Empty state image'" :style="{ width: imageWidth, height: imageHeight }" />
       </picture>
       <div class="cp-empty-state__emoji">{{ emoji }}</div>
       <div class="cp-empty-state__body">

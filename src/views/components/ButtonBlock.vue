@@ -14,8 +14,8 @@ const props = withDefaults(defineProps<ButtonBlockProps>(), {
 });
 
 const button_class = computed(() => ({
-  'button-block': true,
-  'button-block--icon': props.icon,
+  'vc-button-block': true,
+  'vc-button-block--icon': props.icon,
 }));
 </script>
 
@@ -28,9 +28,9 @@ const button_class = computed(() => ({
 </template>
 
 <style lang="scss">
-$root: '.button-block';
+$root: '.vc-button-block';
 
-.button-block {
+.vc-button-block {
   width: 56px;
   height: 56px;
   color: var(--color-white);

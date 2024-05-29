@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
+// Common Components
 import Textfield from '@components/Textfield'
 
 type ListSearchProps = {
@@ -14,8 +15,8 @@ const props = withDefaults(defineProps<ListSearchProps>(), {
 });
 const container = ref<HTMLDivElement>();
 const container_class = computed(() => ({
-  'list-search': true,
-  'list-search--sticky': props.sticky,
+  'vc-list-search': true,
+  'vc-list-search--sticky': props.sticky,
 }));
 
 const handleScroll = () => {
@@ -61,7 +62,7 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss">
-.list-search {
+.vc-list-search {
   background-color: white;
   border-bottom: 1px solid var(--color-neutral-2);
   padding: 8px 16px;

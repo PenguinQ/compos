@@ -2,13 +2,17 @@ import { inject, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
 import { useRoute, useRouter } from "vue-router";
 
+// Databases
 import { useQuery, useMutation } from '@/database/hooks';
 import { getSalesDetail, mutateAddSales } from '@/database/query/sales';
 import { getProductList } from '@/database/query/product';
-import { debounce } from '@helpers';
 
+// Normalizers
 import { salesFormListNormalizer, salesFormNormalizer } from '../normalizer/SalesForm.normalizer';
 import type { ListVariant, ListProduct, ListNormalizerReturn, FormNormalizerReturn } from '../normalizer/SalesForm.normalizer';
+
+// Helpers
+import { debounce } from '@helpers';
 
 type FormDataProduct = {
   id: string;
@@ -49,9 +53,9 @@ export const useSalesForm = () => {
   });
 
   const {
-    refetch,
-    isError,
-    isLoading,
+    refetch: salesDetailRefetch,
+    isError: salesDetailError,
+    isLoading: salesDetailLoading,
   } = useQuery({
     enabled: params.id ? true : false,
     queryFn: () => getSalesDetail({
@@ -66,7 +70,8 @@ export const useSalesForm = () => {
     onSuccess: (response: unknown) => {
       const { name, products } = response as FormNormalizerReturn;
 
-      console.log(response);
+      form_data.name = name;
+      form_data.products  = products;
     },
   });
 
@@ -194,7 +199,7 @@ export const useSalesForm = () => {
         variants.forEach(variant => {
           const { id: variant_id, image: variant_image, name: variant_name } = variant;
 
-          const selected = products.find(product => product.id === id);
+          const selected = products.find(product => product.id === variant_id);
 
           if (!selected) {
             products.push({
@@ -237,8 +242,18 @@ export const useSalesForm = () => {
     selected_products.value = form_data.products;
   };
 
-  const handleDialogClose = (e: Event, save?: boolean) => {
-    if (save) form_data.products = selected_products.value;
+  const handleDialogOpen = () => {
+    // selected_products.value = form_data.products;
+    load_products.value = true;
+  };
+
+  const handleDialogClose = (_e: Event, save?: boolean) => {
+    if (save) {
+      form_data.products = [...selected_products.value];
+    } else {
+      selected_products.value = [...form_data.products];
+    }
+
     show_products_dialog.value = false;
     page.current = 1;
   };
@@ -277,11 +292,13 @@ export const useSalesForm = () => {
     show_products_dialog,
     search_query,
     selected_products,
-    isError,
-    isLoading,
+    salesDetailError,
+    salesDetailLoading,
+    salesDetailRefetch,
     isProductSelected,
     isVariantSelected,
     handleDialogClose,
+    handleDialogOpen,
     handleRemoveProduct,
     handleSearch,
     handleSelectProduct,

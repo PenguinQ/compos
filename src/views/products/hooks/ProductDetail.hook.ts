@@ -2,11 +2,14 @@ import { inject, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 
+// Databases
 import { useQuery, useMutation } from '@/database/hooks';
 import { mutateDeleteProduct } from '@/database/query/product';
 import getProductDetail from '@/database/query/product/getProductDetail';
+
+// Normalizers
 import { detailNormalizer } from '../normalizer/ProductDetail.normalizer';
-import type { DetailNormalizerReturn } from '../normalizer/ProductDetail.normalizer';
+import type { ProductDetailNormalizerReturn } from '../normalizer/ProductDetail.normalizer';
 
 export const useProductDetail = () => {
   const route = useRoute();
@@ -28,8 +31,8 @@ export const useProductDetail = () => {
     }),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to get the product detail.', type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to get the product detail.', error);
+      toast.add({ message: 'Failed to get the product detail,', type: 'error', duration: 2000 });
+      console.error('[ERROR] Failed to get the product detail,', error);
     },
   });
 
@@ -40,19 +43,19 @@ export const useProductDetail = () => {
     mutateFn: () => mutateDeleteProduct(params.id as string),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to delete the product', type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to delete the product', error);
+      toast.add({ message: 'Failed to delete the product,', type: 'error', duration: 2000 });
+      console.error('[ERROR] Failed to delete the product,', error);
     },
     onSuccess: () => {
       // @ts-ignore
-      toast.add({ message: 'Product deleted', type: 'success', duration: 2000 });
+      toast.add({ message: 'Product deleted.', type: 'success', duration: 2000 });
       router.back();
     }
   });
 
   return {
-    productID: params.id,
-    data: data as Ref<DetailNormalizerReturn>,
+    product_id: params.id,
+    data: data as Ref<ProductDetailNormalizerReturn>,
     dialog_delete,
     isError,
     isLoading,

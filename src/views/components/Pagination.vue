@@ -2,8 +2,11 @@
 import { computed } from 'vue';
 import * as CSS from 'csstype';
 
+// Common Components
 import Text from '@components/Text';
 import { IconChevronDoubleRight, IconChevronDoubleLeft, IconChevronLeft, IconChevronRight } from '@icons';
+
+// View Components
 import ButtonBlock from './ButtonBlock.vue';
 
 type Props = {
@@ -29,10 +32,10 @@ const props = withDefaults(defineProps<Props>(), {
 defineEmits(['clickFirst', 'clickPrev', 'clickNext', 'clickLast']);
 
 const classes = computed(() => ({
-  pagination: true,
-  'pagination--frame': props.frame,
-  'pagination--grow': props.grow,
-  'pagination--large': props.size === 'large',
+  'vc-pagination': true,
+  'vc-pagination--frame': props.frame,
+  'vc-pagination--grow': props.grow,
+  'vc-pagination--large': props.size === 'large',
 }));
 </script>
 
@@ -48,9 +51,9 @@ const classes = computed(() => ({
     <ButtonBlock @click="$emit('clickPrev')" :disabled="disabled ? true : first_page ? true : false">
       <IconChevronLeft color="var(--color-white)" />
     </ButtonBlock>
-    <div class="pagination__detail">
-      <Text v-if="disabled || (!page && !total_page)">-</Text>
-      <Text v-else>Page {{ page }} of {{ total_page }}</Text>
+    <div class="vc-pagination__detail">
+      <Text as="span" v-if="disabled || (!page && !total_page)">-</Text>
+      <Text as="span" v-else>Page {{ page }} of {{ total_page }}</Text>
     </div>
     <ButtonBlock @click="$emit('clickNext')" :disabled="disabled ? true : last_page ? true : false">
       <IconChevronRight color="var(--color-white)" />
@@ -62,14 +65,14 @@ const classes = computed(() => ({
 </template>
 
 <style lang="scss">
-.pagination {
+.vc-pagination {
   $root: &;
 
   display: inline-flex;
   align-items: center;
   background-color: var(--color-white);
 
-  > .button-block {
+  > .vc-button-block {
     width: 46px;
     height: 46px;
     border-radius: 0;
@@ -128,7 +131,7 @@ const classes = computed(() => ({
   }
 
   &--large {
-    > .button-block {
+    > .vc-button-block {
       width: 56px;
       height: 56px;
 

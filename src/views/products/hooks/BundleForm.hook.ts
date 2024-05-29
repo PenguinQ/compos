@@ -1,40 +1,69 @@
-import { reactive } from 'vue';
+import { reactive, inject } from 'vue';
 import { useRoute } from 'vue-router';
 
+// Databases
 import { useQuery, useMutation } from '@/database/hooks';
 import { getBundleDetail, mutateAddBundle, mutateEditBundle } from '@/database/query/bundle';
-import { bundleFormNormalizer } from '../normalizer/BundleForm.normalizer'
+
+// Normalizers
+import { bundleFormNormalizer, formDetailNormalizer } from '../normalizer/BundleForm.normalizer'
+
+type FormErrorProducts = {
+  quantity: string;
+};
+
+type FormError = {
+  name: string;
+  products: FormErrorProducts[];
+};
 
 export const useBundleForm = () => {
   const route = useRoute();
+  const toast = inject('ToastProvider');
   const { params } = route;
-  const formData = reactive<any>({
+  const form_data = reactive<any>({
     name: '',
     description: '',
     price: '',
-    product: [],
-    deleted_product: [],
+    products: [],
+    deleted_products: [],
+  });
+  const form_error = reactive<FormError>({
+    name: '',
+    products: [],
   });
 
   const {
-    data,
-    refetch: detailRefetch,
-    isLoading: detailLoading,
+    refetch: bundleDetailRefetch,
+    isError: bundleDetailError,
+    isLoading: bundleDetailLoading,
   } = useQuery({
     queryFn: () => getBundleDetail({
-      id: params.id,
-      normalizer: bundleFormNormalizer,
+      id: params.id as string,
+      normalizer: formDetailNormalizer,
     }),
     enabled: params.id ? true : false,
-    onError: (error: string) => {
-      console.log(error);
+    onError: error => {
+      // @ts-ignore
+      toast.add({ message: `Error getting the bundle detail, ${error}`, type: 'error' });
+      console.error('[ERROR] Error getting the bundle detail,', error);
     },
-    onSuccess: (response: any) => {
+    onSuccess: (response: unknown) => {
+      const resp = response as any;
+
       if (params.id) {
-        formData.name        = response.name;
-        formData.description = response.description;
-        formData.price       = response.price;
-        formData.product     = response.product;
+        form_data.name         = resp.name;
+        form_data.description  = resp.description;
+        form_data.price        = resp.price;
+
+        resp.products.forEach((p: any) => {
+          form_data.products.push({
+            id: p.id,
+            image: p.image,
+            name: p.name,
+            quantity: p.quantity,
+          });
+        });
       }
     },
   });
@@ -44,8 +73,10 @@ export const useBundleForm = () => {
     isLoading: mutateAddLoading,
   } = useMutation({
     queryFn: () => ({}),
-    onError: (error: string) => {
-      console.log(error);
+    onError: error => {
+      // @ts-ignore
+      toast.add({ message: `Error adding new bundle, ${error}`, type: 'error' });
+      console.error('[ERROR] Error adding new bundle,', error);
     },
     onSuccess: (response: any) => {
       console.log(response);
@@ -57,8 +88,10 @@ export const useBundleForm = () => {
     isLoading: mutateEditLoading,
   } = useMutation({
     queryFn: () => ({}),
-    onError: (error: string) => {
-      console.log(error);
+    onError: error => {
+      // @ts-ignore
+      toast.add({ message: `Error updating the bundle, ${error}`, type: 'error' });
+      console.error('[ERROR] Error updating the bundle,', error);
     },
     onSuccess: (response: any) => {
       console.log(response);
@@ -66,11 +99,11 @@ export const useBundleForm = () => {
   });
 
   return {
-    bundleID: params.id,
-    formData,
-    data,
-    detailLoading,
-    detailRefetch,
+    bundle_id: params.id,
+    form_data,
+    bundleDetailError,
+    bundleDetailLoading,
+    bundleDetailRefetch,
     mutateAdd,
     mutateAddLoading,
     mutateEdit,

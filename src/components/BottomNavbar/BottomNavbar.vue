@@ -14,6 +14,6 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  z-index: 1000;
+  z-index: var(--z-1);
 }
 </style>

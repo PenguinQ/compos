@@ -1,75 +1,76 @@
+// Helpers
 import { getUpdateTime, toIDR } from '@helpers';
-import type { ProductData, VariantData } from '@/database/query/product/getProductDetail';
 
-type NormalizerData = {
-  product: ProductData;
-  variant: VariantData[];
-};
+// Types
+import type { ProductDetailQueryReturn } from '@/database/query/product/getProductDetail';
 
-type ProductVariant = {
+type ProductVariants = {
   id: string;
   active: boolean;
   product_id: string;
   name: string;
-  image: string[];
+  image: string;
   price: number;
   stock: number;
 };
 
-export type DetailNormalizerReturn = {
+export type ProductDetailNormalizerReturn = {
   id: string;
   active: boolean;
   name: string;
   description: string;
-  image: string[];
+  image: string;
   by: string;
   price: number;
   stock: number;
   sku: string;
-  variant: ProductVariant[];
+  variants: ProductVariants[];
   updated_at: string;
 };
 
-export const detailNormalizer = (data: unknown) => {
-  const { product, variant } = data as NormalizerData || {};
-  const product_image: string[] = [];
-  const product_variant: ProductVariant[] = [];
+export const detailNormalizer = (data: unknown): ProductDetailNormalizerReturn => {
+  const {
+    id,
+    active,
+    images,
+    name,
+    description,
+    by,
+    price,
+    stock,
+    sku,
+    variants,
+    updated_at,
+  } = data as ProductDetailQueryReturn || {};
+  const product_image = images[0] ? images[0].url : '';
+  const product_variants: ProductVariants[] = [];
 
-  product.image.map(att => product_image.push(att.data));
+  variants.forEach(variant => {
+    const { id, product_id, active, name, images, price, stock } = variant;
+    const variant_image = images[0] ? images[0].url : '';
 
-  if (variant.length) {
-    variant.forEach(v => {
-      const variant_image: string[] = [];
-
-      // Only push the first image from every image of the product.
-      if (v.image.length) variant_image.push(v.image[0].data);
-
-      // If the product_image is empty, fill it with any image from the variant.
-      if (!product.image.length) variant_image.map(image => product_image.push(image));
-
-      product_variant.push({
-        id        : v.id || '',
-        active    : v.active || false,
-        product_id: v.product_id || '',
-        name      : v.name || '',
-        image     : variant_image,
-        price     : toIDR(v.price),
-        stock     : v.stock || 0,
-      });
+    product_variants.push({
+      id        : id || '',
+      active    : active || false,
+      product_id: product_id || '',
+      name      : name || '',
+      image     : variant_image,
+      price     : toIDR(price ? price : 0),
+      stock     : stock || 0,
     });
-  }
+  });
 
   return {
-    id         : product.id || '',
-    active     : product.active || false,
-    name       : product.name || '',
-    description: product.description || '',
-    image      : product_image,
-    by         : product.by || '',
-    price      : toIDR(product.price),
-    stock      : product.stock || 0,
-    sku        : product.sku || '',
-    variant    : product_variant,
-    updated_at : getUpdateTime(product.updated_at),
+    id: id || '',
+    active: active || false,
+    name: name || '',
+    description: description || '',
+    image: product_image,
+    by: by || '',
+    price: toIDR(price ? price : 0),
+    stock: stock || 0,
+    sku: sku || '',
+    variants: product_variants,
+    updated_at: getUpdateTime(updated_at),
   };
 };

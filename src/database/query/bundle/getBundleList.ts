@@ -4,6 +4,11 @@ import type { RxAttachment, RxDocument } from 'rxdb';
 import { db } from '@/database';
 import { getPageStatus } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
+
+// Helpers
+import { isVariant } from '@/database/utils';
+
+// Types
 import type { BundleDoc } from '@/database/types';
 
 export type BundlesData = BundleDoc & {
@@ -41,7 +46,7 @@ export default async ({
     const query_limit    = limit;
     const query_sort     = [{ id: sort }];
 
-    const getBundleCount = async () => {
+    const getBundlesCount = async () => {
       let _query;
 
       if (search_query) {
@@ -59,17 +64,17 @@ export default async ({
       return _query.length;
     };
 
-    const getBundleData = async (data: RxDocument<BundleDoc>[]) => {
-      const bundle_data = [];
+    const getBundlesData = async (data: RxDocument<BundleDoc>[]) => {
+      const bundles_data = [];
 
       for (const bundle of data as RxDocument<BundleDoc>[]) {
-        const bundle_json             = bundle.toJSON();
-        const { product: products }   = bundle_json;
+        const bundle_json  = bundle.toJSON();
+        const { products } = bundle_json;
         const bundle_images: string[] = [];
 
         for (const product of products) {
-          const { id, variant_id } = product;
-          const _findProductQuery  = await db[variant_id ? 'variant' : 'product'].findOne(variant_id ? variant_id : id).exec();
+          const { id } = product;
+          const _findProductQuery  = await db[isVariant(id) ? 'variant' : 'product'].findOne(id).exec();
 
           if (_findProductQuery) {
             const images    = _findProductQuery.allAttachments();
@@ -85,10 +90,10 @@ export default async ({
           }
         }
 
-        bundle_data.push({ images: bundle_images, ...bundle_json });
+        bundles_data.push({ images: bundle_images, ...bundle_json });
       }
 
-      return bundle_data;
+      return bundles_data;
     };
 
     const _queryConstruct = db.bundle.find({
@@ -106,8 +111,8 @@ export default async ({
      */
     if (observe) {
       const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> =>{
-        const bundle_count = await getBundleCount();
-        const total_page    = Math.ceil(bundle_count / query_limit);
+        const bundles_count = await getBundlesCount();
+        const total_page    = Math.ceil(bundles_count / query_limit);
         const { first_page, last_page } = await getPageStatus({
           collection: 'bundle',
           data,
@@ -118,11 +123,11 @@ export default async ({
             ...(active !== undefined && { active: { $eq: active } }),
           },
         });
-        const bundle_data = await getBundleData(data as RxDocument<BundleDoc>[]);
+        const bundles_data = await getBundlesData(data as RxDocument<BundleDoc>[]);
 
         return {
-          data      : bundle_data,
-          data_count: bundle_count,
+          data      : bundles_data,
+          data_count: bundles_count,
           page      : {
             current: page,
             first: first_page,
@@ -145,8 +150,8 @@ export default async ({
      * 2. Non-observable queries.
      * --------------------------
      */
-    const bundle_count = await getBundleCount();
-    const total_page    = Math.ceil(bundle_count / query_limit);
+    const bundles_count = await getBundlesCount();
+    const total_page    = Math.ceil(bundles_count / query_limit);
     const { first_page, last_page } = await getPageStatus({
       collection: 'bundle',
       data: _queryBundle as RxDocument<BundleDoc>[],
@@ -157,11 +162,11 @@ export default async ({
         ...(active !== undefined && { active: { $eq: active } }),
       },
     });
-    const bundle_data = await getBundleData(_queryBundle as RxDocument<BundleDoc>[]);
+    const bundles_data = await getBundlesData(_queryBundle as RxDocument<BundleDoc>[]);
 
     const raw_data = {
-      data      : bundle_data,
-      data_count: bundle_count,
+      data      : bundles_data,
+      data_count: bundles_count,
       page      : {
         current: page,
         first: first_page,

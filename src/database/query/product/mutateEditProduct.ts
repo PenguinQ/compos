@@ -14,8 +14,8 @@ type MutateEditProductQueryVariant = {
   price: number;
   stock: number;
   sku?: string;
-  new_image: File[];
-  deleted_image: string[],
+  new_images: File[];
+  deleted_images: string[],
 };
 
 type MutateEditProductQueryData = {
@@ -25,10 +25,10 @@ type MutateEditProductQueryData = {
   price: number;
   stock: number;
   sku?: string;
-  new_image?: File[];
-  variant?: MutateEditProductQueryVariant[];
-  deleted_image?: string[];
-  deleted_variant?: string[];
+  new_images?: File[];
+  deleted_images?: string[];
+  variants?: MutateEditProductQueryVariant[];
+  deleted_variants?: string[];
 };
 
 type MutateEditProductQuery = {
@@ -60,10 +60,10 @@ const removeVariant = async (variantsID: string[], product: RxDocument<ProductDo
       await _queryVariant.remove();
 
       await product.incrementalModify(prev => {
-        if (prev.variant) {
-          const index = prev.variant.indexOf(id);
+        if (prev.variants) {
+          const index = prev.variants.indexOf(id);
 
-          prev.variant.splice(index, 1);
+          prev.variants.splice(index, 1);
         }
 
         return prev;
@@ -72,9 +72,9 @@ const removeVariant = async (variantsID: string[], product: RxDocument<ProductDo
 
     const _queryBundles = await db.bundle.find({
       selector: {
-        product: {
+        products: {
           $elemMatch: {
-            variant_id: id,
+            id,
           },
         }
       },
@@ -82,11 +82,11 @@ const removeVariant = async (variantsID: string[], product: RxDocument<ProductDo
 
     for (const bundle of _queryBundles) {
       await bundle.incrementalModify(prev => {
-        const index = prev.product.findIndex(data => data.variant_id === id);
+        const index = prev.products.findIndex(data => data.id === id);
 
-        prev.product.splice(index, 1);
+        prev.products.splice(index, 1);
 
-        const inactive = prev.product.filter(data => data.active === false);
+        const inactive = prev.products.filter(data => data.active === false);
 
         prev.active = inactive.length ? false : true;
 
@@ -96,21 +96,12 @@ const removeVariant = async (variantsID: string[], product: RxDocument<ProductDo
   }
 };
 
-const updateBundlesStatus = async ({
-  id,
-  stock,
-  isVariant = false
-}: {
-  id: string;
-  stock: number;
-  isVariant?: boolean;
-}) => {
-  const queryKey = isVariant ? 'variant_id' : 'id';
+const updateBundlesStatus = async ({ id, stock }: { id: string; stock: number; }) => {
   const _queryBundles = await db.bundle.find({
     selector: {
-      product: {
+      products: {
         $elemMatch: {
-          [queryKey]: id,
+          id,
         },
       }
     },
@@ -118,11 +109,11 @@ const updateBundlesStatus = async ({
 
   for (const bundle of _queryBundles) {
     await bundle.incrementalModify(prev => {
-      const index = prev.product.findIndex(data => data[queryKey] === id);
+      const index = prev.products.findIndex(data => data.id === id);
 
-      prev.product[index].active = stock >= 1 ? true : false;
+      prev.products[index].active = stock >= 1 ? true : false;
 
-      const inactive = prev.product.filter(data => data.active === false);
+      const inactive = prev.products.filter(data => data.active === false);
 
       prev.active     = inactive.length ? false : true;
       prev.updated_at = new Date().toISOString();
@@ -139,12 +130,12 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       by,
       description,
       sku,
-      price             = 0,
-      stock             = 0,
-      new_image         = [],
-      variant: variants = [],
-      deleted_image     = [],
-      deleted_variant   = [],
+      price            = 0,
+      stock            = 0,
+      new_images       = [],
+      variants         = [],
+      deleted_images   = [],
+      deleted_variants = [],
     } = data;
     const clean_name        = sanitize(name);
     const clean_by          = by && sanitize(by);
@@ -183,10 +174,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        */
       const _queryBundles = await db.bundle.find({
         selector: {
-          product: {
+          products: {
             $elemMatch: {
               id,
-              variant_id: undefined,
             },
           }
         },
@@ -219,12 +209,12 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        * 1.3 Update product images.
        * --------------------------
        */
-      if (deleted_image.length) await removeImages(deleted_image, _queryProduct);
+      if (deleted_images.length) await removeImages(deleted_images, _queryProduct);
 
-      if (new_image.length) {
-        if (!isImagesValid(new_image)) throw 'Invalid file types.';
+      if (new_images.length) {
+        if (!isImagesValid(new_images)) throw 'Invalid file types.';
 
-        const { thumbnails, images } = await compressProductImage(new_image);
+        const { thumbnails, images } = await compressProductImage(new_images);
         const product_attachments    = _queryProduct.allAttachments();
 
         if (product_attachments.length) await removeCurrentImage(_queryProduct);
@@ -239,7 +229,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        * If there are any deleted variant id in the array, remove variant from the collection and the product,
        * then remove the variant from any bundle.
        */
-      if (deleted_variant.length) await removeVariant(deleted_variant, _queryProduct);
+      if (deleted_variants.length) await removeVariant(deleted_variants, _queryProduct);
 
       /**
        * -------------------------------------------
@@ -248,13 +238,13 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        */
       for (const variant of variants) {
         const {
-          id           : v_id,
-          name         : v_name,
-          sku          : v_sku,
-          price        : v_price         = 0,
-          stock        : v_stock         = 0,
-          new_image    : v_new_image     = [],
-          deleted_image: v_deleted_image = [],
+          id            : v_id,
+          name          : v_name,
+          sku           : v_sku,
+          price         : v_price          = 0,
+          stock         : v_stock          = 0,
+          new_images    : v_new_images     = [],
+          deleted_images: v_deleted_images = [],
         } = variant;
         const clean_v_name = sanitize(v_name);
         const clean_v_sku  = v_sku && sanitize(v_sku);
@@ -306,12 +296,12 @@ export default async ({ id, data }: MutateEditProductQuery) => {
            * 1.5.1.2 Update current iteration variation images.
            * --------------------------------------------------
            */
-          if (v_deleted_image.length) await removeImages(v_deleted_image, _queryVariant);
+          if (v_deleted_images.length) await removeImages(v_deleted_images, _queryVariant);
 
-          if (v_new_image.length) {
-            if (!isImagesValid(v_new_image)) throw 'Invalid file types.';
+          if (v_new_images.length) {
+            if (!isImagesValid(v_new_images)) throw 'Invalid file types.';
 
-            const { thumbnails, images } = await compressProductImage(v_new_image);
+            const { thumbnails, images } = await compressProductImage(v_new_images);
             const variant_attachments    = _queryVariant.allAttachments();
 
             if (variant_attachments.length) await removeCurrentImage(_queryVariant);
@@ -328,7 +318,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
             _queryVariant.stock === 0 && updated_variant.stock > 0 ||
             _queryVariant.stock > 0 && updated_variant.stock === 0
           ) {
-            await updateBundlesStatus({ id: v_id, stock: v_stock, isVariant: true });
+            await updateBundlesStatus({ id: v_id, stock: v_stock });
           }
         }
         /**
@@ -363,10 +353,10 @@ export default async ({ id, data }: MutateEditProductQuery) => {
            * 1.5.2.2 Add images to newly created variant.
            * --------------------------------------------
            */
-          if (v_new_image.length) {
-            if (!isImagesValid(v_new_image)) throw 'Invalid file types.';
+          if (v_new_images.length) {
+            if (!isImagesValid(v_new_images)) throw 'Invalid file types.';
 
-            const { thumbnails, images } = await compressProductImage(v_new_image);
+            const { thumbnails, images } = await compressProductImage(v_new_images);
 
             if (thumbnails.length) await addImages(thumbnails, _queryVariant);
             if (images.length)     await addImages(images, _queryVariant);
@@ -378,7 +368,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
            * ----------------------------------------------------------------------------
            */
           await _queryProduct.incrementalModify(prev => {
-            if (prev.variant) prev.variant.push(variant_id);
+            if (prev.variants) prev.variants.push(variant_id);
 
             return prev;
           });
@@ -417,12 +407,12 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        * 2.2 Update the product images.
        * ------------------------------
        */
-      if (deleted_image.length) await removeImages(deleted_image, _queryProduct);
+      if (deleted_images.length) await removeImages(deleted_images, _queryProduct);
 
-      if (new_image.length) {
-        if (!isImagesValid(new_image)) throw 'Invalid file types.';
+      if (new_images.length) {
+        if (!isImagesValid(new_images)) throw 'Invalid file types.';
 
-        const { thumbnails, images } = await compressProductImage(new_image);
+        const { thumbnails, images } = await compressProductImage(new_images);
         const product_attachments    = _queryProduct.allAttachments();
 
         if (product_attachments.length) await removeCurrentImage(_queryProduct);
@@ -437,7 +427,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        * If there are any deleted variant id in the array, remove variant from the collection and the product,
        * then remove the variant from any bundle.
        */
-      deleted_variant.length && await removeVariant(deleted_variant, _queryProduct);
+      deleted_variants.length && await removeVariant(deleted_variants, _queryProduct);
 
       /**
        * ---------------------------------------------------------------------------

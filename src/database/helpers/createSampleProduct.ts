@@ -20,7 +20,7 @@ export default async () => {
       price: i === 1 ? 0 : 10000 * i,
       stock: i < 3 ? i : 0,
       sku: '',
-      variant: [],
+      variants: [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -29,8 +29,8 @@ export default async () => {
       const testIDOne = 'VAR_' + ulid();
       const testIDTwo = 'VAR_' + ulid();
 
-      obj.variant.push(testIDOne);
-      obj.variant.push(testIDTwo);
+      obj.variants.push(testIDOne);
+      obj.variants.push(testIDTwo);
 
       const productArray = [
         {
@@ -59,7 +59,7 @@ export default async () => {
 
       // Push sample product variant as a product in a bundle.
       // One variant version
-      bundle_data.push({ id: productID, variant_id: testIDOne, active: productArray[0].active });
+      bundle_data.push({ id: testIDOne, active: productArray[0].active });
       bundle_price += productArray[0].price;
       bundle_available = productArray[0].active ? true : false;
 

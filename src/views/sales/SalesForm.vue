@@ -1,4 +1,6 @@
 <script setup lang=ts>
+// Common Components
+import { Bar } from '@components/Loader';
 import Button from '@components/Button';
 import Text from '@components/Text';
 import Card, { CardHeader, CardTitle, CardBody, CardSubtitle } from '@components/Card';
@@ -19,13 +21,19 @@ import {
   IconSave,
 } from '@components/icons';
 
-import ProductImage from '@/views/components/ProductImage.vue';
+// View Components
 import ButtonBlock from '@/views/components/ButtonBlock.vue';
+import ListFooter from '@/views/components/ListFooter.vue';
+import Pagination from '@/views/components/Pagination.vue';
+import ProductImage from '@/views/components/ProductImage.vue';
 
+import SalesProduct from './components/SalesProduct.vue';
+
+// Hooks
 import { useSalesForm } from './hooks/SalesForm.hook';
 
-// Assets
-import no_image from '@assets/illustration/no_image.svg';
+// Constants
+import GLOBAL from '@/views/constants';
 
 const {
   sales_id,
@@ -34,6 +42,7 @@ const {
   form_data,
   form_error,
   load_products,
+  search_query,
   selected_products,
   show_products_dialog,
   isProductSelected,
@@ -41,9 +50,13 @@ const {
   productListError,
   productListLoading,
   productListRefetch,
+  salesDetailError,
+  salesDetailLoading,
+  salesDetailRefetch,
   mutateAdd,
   mutateAddLoading,
   handleDialogClose,
+  handleDialogOpen,
   handleRemoveProduct,
   handleSearch,
   handleSelectProduct,
@@ -65,250 +78,191 @@ const {
   </Toolbar>
   <!--  -->
   <Container class="pf-container">
-    <form id="sales-add-form">
-      <Card class="pf-card" variant="outline" margin="0 0 16px">
-        <CardHeader>
-          <CardTitle>General</CardTitle>
-          <CardSubtitle>General information about the sales.</CardSubtitle>
-        </CardHeader>
-        <CardBody>
-          <div>
-            <Textfield
-              id="sales-name"
-              label="Name"
-              :labelProps="{ for: 'sales-name' }"
-              :error="form_error.name ? true : false"
-              :message="form_error.name"
-              v-model="form_data.name"
-            />
-          </div>
-        </CardBody>
-      </Card>
-      <Card class="pf-card" variant="outline">
-        <CardHeader>
-          <CardTitle>Products</CardTitle>
-          <CardSubtitle>List of products that available for the sales.</CardSubtitle>
-        </CardHeader>
-        <CardBody>
-          <EmptyState
-            v-if="!form_data.products.length"
-            title="Title"
-            description="Description"
-            margin="40px 0"
-          >
-            <template #action>
-              <Button @click="show_products_dialog = true">Add Product</Button>
-            </template>
-          </EmptyState>
-          <template v-else>
-            <div class="product-lists-container">
-              <div
-                class="product-lists"
-                :key="`product-lists-${index}`"
-                v-for="(product, index) in form_data.products"
-              >
-                <div class="product-lists-item">
-                  <ProductImage>
-                    <img :src="product.image ? product.image : no_image" :alt="`${product.name} image`" />
-                  </ProductImage>
-                  <div class="product-lists-item__detail">
-                    <Text body="large" truncate margin="0">{{ product.name }}</Text>
-                  </div>
-                  <ButtonBlock icon @click="handleRemoveProduct(index)">
-                    <IconX size="32" />
-                  </ButtonBlock>
-                  <button
-                    class="product-lists-item__delete button-icon"
-                    type="button"
-                    @click="handleRemoveProduct(index)"
-                  >
-                    <IconX size="32" />
-                  </button>
-                </div>
+    <EmptyState
+      v-if="salesDetailError"
+      :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+      :title="GLOBAL.ERROR_EMPTY_TITLE"
+      :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+      margin="56px 0"
+    >
+      <template #action>
+        <Button @click="salesDetailRefetch">Try Again</Button>
+      </template>
+    </EmptyState>
+    <template v-else>
+      <Bar v-if="salesDetailLoading" margin="56px 0" />
+      <template v-else>
+        <form id="sales-add-form">
+          <Card class="pf-card" variant="outline" margin="0 0 16px">
+            <CardHeader>
+              <CardTitle>General</CardTitle>
+              <CardSubtitle>General information about the sales.</CardSubtitle>
+            </CardHeader>
+            <CardBody>
+              <div>
+                <Textfield
+                  id="sales-name"
+                  label="Name"
+                  :labelProps="{ for: 'sales-name' }"
+                  :error="form_error.name ? true : false"
+                  :message="form_error.name"
+                  v-model="form_data.name"
+                />
               </div>
-            </div>
-            <Button full @click="show_products_dialog = true">Add Product</Button>
-          </template>
-        </CardBody>
-      </Card>
-    </form>
+            </CardBody>
+          </Card>
+          <Card class="pf-card" variant="outline">
+            <CardHeader>
+              <CardTitle>Products</CardTitle>
+              <CardSubtitle>List of products that available for the sales.</CardSubtitle>
+            </CardHeader>
+            <CardBody>
+              <EmptyState
+                v-if="!form_data.products.length"
+                title="Title"
+                description="Description"
+                margin="40px 0"
+              >
+                <template #action>
+                  <Button @click="show_products_dialog = true">Add Product</Button>
+                </template>
+              </EmptyState>
+              <template v-else>
+                <div class="sales-products-list">
+                  <template :key="product.id" v-for="(product, index) in form_data.products">
+                    <SalesProduct
+                      :image="product.image"
+                      :name="product.name"
+                      @clickRemove="handleRemoveProduct(index)"
+                    />
+                  </template>
+                </div>
+                <Button full @click="show_products_dialog = true">Add Product</Button>
+              </template>
+            </CardBody>
+          </Card>
+        </form>
+      </template>
+    </template>
   </Container>
   <!--  -->
   <Dialog
     class="temp-dialog"
     v-model="show_products_dialog"
     fullscreen
+    hideHeader
     @enter="load_products = true"
     @leave="load_products = false"
   >
-    <template #header>
-      <Toolbar>
-        <ToolbarAction icon @click="handleDialogClose">
-          <IconX size="40" />
-        </ToolbarAction>
-        <input class="temp-search" placeholder="Search Product" @input="handleSearch" />
-        <ToolbarAction @click="handleDialogClose($event, true)">
-          Done
-        </ToolbarAction>
-        <template #extension>
-          <div class="temp-navigation">
-            <ButtonBlock icon :disabled="page.current <= 1" @click="toPrevPage($event, true)">
-              <IconChevronDoubleLeft />
-            </ButtonBlock>
-            <ButtonBlock icon :disabled="page.current <= 1" @click="toPrevPage">
-              <IconChevronLeft />
-            </ButtonBlock>
-            <div class="temp-navigation__page">
-              Page {{ page.current }} of {{ page.total }}
-            </div>
-            <ButtonBlock icon :disabled="page.current >= page.total" @click="toNextPage">
-              <IconChevronRight />
-            </ButtonBlock>
-            <ButtonBlock icon :disabled="page.current >= page.total" @click="toNextPage($event, true)">
-              <IconChevronDoubleRight />
-            </ButtonBlock>
+    <Toolbar sticky>
+      <ToolbarAction icon @click="handleDialogClose">
+        <IconX size="40" />
+      </ToolbarAction>
+      <input class="temp-search" placeholder="Search Product" @input="handleSearch" />
+      <ToolbarAction @click="handleDialogClose($event, true)">
+        Done
+      </ToolbarAction>
+      <!-- <template #extension>
+        <div class="temp-navigation">
+          <ButtonBlock icon :disabled="page.current <= 1" @click="toPrevPage($event, true)">
+            <IconChevronDoubleLeft />
+          </ButtonBlock>
+          <ButtonBlock icon :disabled="page.current <= 1" @click="toPrevPage">
+            <IconChevronLeft />
+          </ButtonBlock>
+          <div class="temp-navigation__page">
+            Page {{ page.current }} of {{ page.total }}
           </div>
-        </template>
-      </Toolbar>
-    </template>
-    <div v-if="productListLoading">Loading...</div>
+          <ButtonBlock icon :disabled="page.current >= page.total" @click="toNextPage">
+            <IconChevronRight />
+          </ButtonBlock>
+          <ButtonBlock icon :disabled="page.current >= page.total" @click="toNextPage($event, true)">
+            <IconChevronDoubleRight />
+          </ButtonBlock>
+        </div>
+      </template> -->
+    </Toolbar>
+    <Bar v-if="productListLoading" margin="56px 0" />
     <template v-else>
-      <div class="product-lists-container product-lists-container--selection">
-        <div
-          :key="`product-${product_index}`"
-          v-for="(product, product_index) of product_list?.products"
-          class="product-lists"
-        >
-          <div
-            class="product-lists-item product-lists-item--selection"
+      <EmptyState
+        v-if="!product_list?.products.length && search_query === ''"
+        emoji="🍃"
+        :title="''"
+        :description="''"
+        margin="56px 0"
+      />
+      <EmptyState
+        v-else-if="!product_list?.products.length && search_query !== ''"
+        emoji="😵‍💫"
+        :title="''"
+        :description="''"
+        margin="56px 0"
+      />
+      <div v-else class="sales-products-selection">
+        <template :key="product.id" v-for="product of product_list?.products">
+          <SalesProduct
+            small
             role="button"
             :aria-label="`Add ${product.name}`"
-            :data-selected="isProductSelected(product) ? true : undefined"
+            :image="product.image"
+            :name="product.name"
+            :selected="isProductSelected(product) ? true : undefined"
             @click="handleSelectProduct(product)"
-          >
-            <ProductImage class="product-lists-item__image">
-              <img :src="product.image ? product.image : no_image" :alt="`${product.name} image`" />
-            </ProductImage>
-            <div class="product-lists-item__detail">
-              <Text body="large" truncate margin="0">{{ product.name }}</Text>
-            </div>
-            <IconCheckLarge
-              class="product-lists-item__selected"
-              v-if="isProductSelected(product)"
-            />
-          </div>
-          <div
-            :key="`variant-${product_index}-${variant_index}`"
-            v-for="(variant, variant_index) of product.variant"
-            class="product-lists-item product-lists-item--variant"
+          />
+          <SalesProduct
+            :key="variant.id"
+            v-for="variant of product.variant"
+            small
+            variant
             role="button"
             :aria-label="`Add ${product.name} - ${variant.name}`"
-            :data-selected="isVariantSelected(variant.id) ? true : undefined"
+            :image="variant.image"
+            :name="variant.name"
+            :selected="isVariantSelected(variant.id) ? true : undefined"
             @click="handleSelectVariant(product.name, variant)"
-          >
-            <ProductImage class="product-lists-item__image">
-              <img :src="variant.image ? variant.image : no_image" :alt="`${variant.name} image`" />
-            </ProductImage>
-            <div class="product-lists-item__detail">
-              <Text body="large" truncate margin="0">{{ variant.name }}</Text>
-            </div>
-            <IconCheckLarge
-              class="product-lists-item__selected"
-              v-if="isVariantSelected(variant.id)"
-            />
-          </div>
-        </div>
+          />
+        </template>
       </div>
     </template>
+    <ListFooter sticky height="86px">
+      <Pagination
+        v-if="!productListLoading && product_list?.products.length"
+        frame
+        :page="page.current"
+        :total_page="page.total"
+        :first_page="page.current <= 1"
+        :last_page="page.current >= page.total"
+        @clickFirst="toPrevPage($event, true)"
+        @clickPrev="toPrevPage"
+        @clickNext="toNextPage"
+        @clickLast="toNextPage($event, true)"
+      />
+    </ListFooter>
   </Dialog>
 </template>
 
 <style lang="scss" src="@assets/_page-form.scss" />
 <style lang="scss" scoped>
-.product-lists-container {
-  border: 1px solid var(--color-neutral-2);
-  border-radius: 8px;
-  overflow: hidden;
+.sales-products-list {
   margin-bottom: 16px;
 
-  &--selection {
-    border-right: none;
-    border-left: none;
-    border-radius: 0;
-    margin-bottom: 0;
+  .sales-product {
+    &:first-of-type {
+      border-top-right-radius: 8px;
+      border-top-left-radius: 8px;
+    }
+
+    &:last-of-type {
+      border-bottom-right-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
   }
 }
 
-.product-lists {
-  margin-top: -1px;
-
-  &-item {
-    background-color: var(--color-white);
-    border-top: 1px solid var(--color-neutral-2);
-    border-bottom: 1px solid var(--color-neutral-2);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
-    margin-top: -1px;
-
-    &:first-of-type {
-      margin-top: 0;
-    }
-
-    &--variant {
-      padding-left: 48px;
-      background-color: var(--color-neutral-1);
-    }
-
-    &[data-selected] {
-      background-color: var(--color-blue-1);
-    }
-
-    picture {
-      width: 80px;
-      height: 80px;
-      flex-shrink: 0;
-    }
-
-    &__detail {
-      min-width: 0;
-      flex-grow: 1;
-    }
-
-    &__delete {
-      flex-shrink: 0;
-      padding: 8px;
-    }
-
-    &__selected {
-      flex-shrink: 0;
-    }
-  }
-
-  &:first-of-type {
-    margin-top: 0;
-
-    .product-lists-item:first-of-type {
-      border-top-color: transparent;
-    }
-  }
-
-  &:last-of-type {
-    .product-lists-item:last-of-type {
-      border-bottom-color: transparent;
-    }
-  }
-
-  &--selection {
-    .product-lists-item {
-      cursor: pointer;
-
-      picture {
-        width: 60px;
-        height: 60px;
-      }
-    }
+.sales-products-selection {
+  .sales-product {
+    border-right-color: transparent;
+    border-left-color: transparent;
   }
 }
 

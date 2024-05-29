@@ -10,21 +10,21 @@ import { Bar } from '@components/Loader';
 import EmptyState from '@components/EmptyState';
 
 // View Components
-import ProductImage from '@/views/components/ProductImage.vue';
 import Pagination from '@/views/components/Pagination.vue';
-import ListSearch from '@/views/components/ListSearch.vue';
-import ListFooter from '@/views/components/ListFooter.vue';
+import ProductImage from '@/views/components/ProductImage.vue';
 import ListFab from '@/views/components/ListFab.vue';
+import ListFooter from '@/views/components/ListFooter.vue';
+import ListSearch from '@/views/components/ListSearch.vue';
 
 // Hooks
-import { useProductList } from '../hooks/Unified.hook';
+import { useProductList } from '../hooks/ProductList.hook';
 
 // Constants
 import GLOBAL from '@/views/constants';
 import { PRODUCT_LIST } from '../constants';
 
 // Assets
-import NoImage from '@assets/illustration/no_image.svg';
+import no_image from '@assets/illustration/no_image.svg';
 
 type ProductListProps = {
   type: 'product' | 'bundle';
@@ -53,7 +53,7 @@ const {
     :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
     :title="GLOBAL.ERROR_EMPTY_TITLE"
     :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-    margin="80px 0"
+    margin="56px 0"
   >
     <template #action>
       <Button @click="listRefetch">Try Again</Button>
@@ -65,7 +65,7 @@ const {
       :placeholder="type === 'product' ? 'Search Product' : 'Search Bundle'"
       @input="handleSearch"
     />
-    <Bar v-if="listLoading" margin="64px 0" />
+    <Bar v-if="listLoading" margin="56px 0" />
     <template v-else>
       <EmptyState
         v-if="isListEmpty && search_query === ''"
@@ -86,27 +86,27 @@ const {
           <template v-if="type === 'product'">
             <Card class="product" :key="product.id" v-for="product in list.products" :to="`/product/${product.id}`">
               <ProductImage class="product__image">
-                <img :src="product.image ? product.image : NoImage" :alt="`${product.name} image`" />
+                <img :src="product.image ? product.image : no_image" :alt="`${product.name} image`" />
               </ProductImage>
               <div class="product__detail">
                 <Text class="product__title" heading="4" margin="0 0 8px" :title="product.name">
                   {{ product.name }}
                 </Text>
-                <Label v-if="product.variant">{{ product.variant }} variants</Label>
+                <Label v-if="product.variants">{{ product.variants }} variants</Label>
                 <Label v-else variant="outline">No variant</Label>
               </div>
             </Card>
           </template>
           <template v-else>
-            <Card class="product" :key="bundle.id" v-for="bundle in list.bundles" :to="`/product/${bundle.id}`">
+            <Card class="product" :key="bundle.id" v-for="bundle in list.bundles" :to="`/bundle/${bundle.id}`">
               <ProductImage class="product__image">
                 <img
                   v-if="bundle.images.length"
                   v-for="image of bundle.images"
-                  :src="image ? image : NoImage"
+                  :src="image ? image : no_image"
                   :alt="`${bundle.name} image`"
                 />
-                <img v-else :src=" NoImage" :alt="`${bundle.name} image`" />
+                <img v-else :src=" no_image" :alt="`${bundle.name} image`" />
               </ProductImage>
               <div class="product__detail">
                 <Text class="product__title" heading="4" margin="0 0 8px" :title="bundle.name">
@@ -121,10 +121,15 @@ const {
       </template>
     </template>
   </template>
-  <ListFooter sticky :height="isListEmpty ? '82px' : '152px'">
+  <ListFooter
+    v-if="!listError"
+    :height="isListEmpty ? '82px' : '152px'"
+    bottom="var(--bottom-nav-height)"
+    sticky
+  >
     <ListFab align="flex-end" @click="router.push(`${type === 'product' ? '/product/add' : '/bundle/add'}`)" />
     <Pagination
-      v-if="!listLoading && !isListEmpty"
+      v-if="!isListEmpty"
       frame
       :page="page.current"
       :total_page="page.total"

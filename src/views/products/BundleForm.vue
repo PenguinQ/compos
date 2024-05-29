@@ -1,49 +1,66 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted, StyleValue } from 'vue';
+import { useRouter } from 'vue-router';
 
+// Common Components
 import Button from '@components/Button';
+import EmptyState from '@components/EmptyState';
 import Text from '@components/Text';
 import Textfield from '@components/Textfield';
 import Textarea from '@components/Textarea';
 import QuantityEditor from '@components/QuantityEditor';
+import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Row, Column } from '@components/Layout';
+import { Bar } from '@components/Loader';
+import { IconArrowLeftShort, IconXLarge } from '@icons';
+
+// Hooks
 import { useBundleForm } from './hooks/BundleForm.hook';
 
+// Constants
+import GLOBAL from '@/views/constants';
+
+const router = useRouter();
 const {
-  bundleID,
+  bundle_id,
   formData,
-  detailLoading,
+  bundleDetailError,
+  bundleDetailLoading,
+  bundleDetailRefetch,
   mutateAdd,
   mutateAddLoading,
   mutateEdit,
   mutateEditLoading,
 } = useBundleForm();
-
-const handleSubmit = (e: Event) => {
-  e.preventDefault();
-
-  bundleID ? mutateEdit() : mutateAdd();
-};
-
-const productStyle: StyleValue = {
-  border: '1px solid black',
-  borderRadius: '6px',
-  padding: '8px',
-  display: 'flex',
-  gap: '8px',
-  alignItems: 'center',
-};
-
-const imageStyle: StyleValue = {
-  width: '40px',
-  height: '40px',
-  objectFit: 'contain',
-};
 </script>
 
 <template>
+  <Toolbar sticky>
+    <ToolbarAction icon @click="router.back">
+      <IconArrowLeftShort size="40" />
+    </ToolbarAction>
+    <ToolbarTitle>{{ bundle_id ? 'Edit Bundle' : 'Add Bundle' }}</ToolbarTitle>
+    <ToolbarSpacer />
+    <ToolbarAction @click="() => {}">{{ mutateAddLoading || mutateEditLoading ? 'Loading' : 'Save' }}</ToolbarAction>
+  </Toolbar>
   <Container>
-    <Text v-if="detailLoading">Loading...</Text>
+    <EmptyState
+      v-if="bundleDetailError"
+      :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+      :title="GLOBAL.ERROR_EMPTY_TITLE"
+      :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+      margin="56px 0"
+    >
+      <template #action>
+        <Button @click="bundleDetailRefetch">Try Again</Button>
+      </template>
+    </EmptyState>
+    <template v-else>
+      <Bar v-if="bundleDetailLoading" margin="56px 0" />
+      <template v-else>
+        <form id="bundle-form"></form>
+      </template>
+    </template>
     <Row v-else>
       <Column col="6">
         <Text heading="4">Bundle Form Data</Text>

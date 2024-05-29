@@ -84,7 +84,7 @@ $root: '.cp-overlay';
   position: fixed;
   inset: 0;
   overflow-y: auto;
-  z-index: 100;
+  z-index: var(--z-5);
 
   &__wrapper {
     width: 100%;

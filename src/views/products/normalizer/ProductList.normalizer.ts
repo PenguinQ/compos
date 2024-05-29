@@ -16,7 +16,7 @@ type NormalizerData = {
 type ProductList = {
   id: string;
   name: string;
-  variant?: number;
+  variants?: number;
   image: string;
 };
 
@@ -33,13 +33,13 @@ export const productListNormalizer = (data: unknown) => {
   const product_list: ProductList[] = [];
 
   for (const product of products as ProductsData[]) {
-    const { id, variant, name, images } = product;
+    const { id, variants, name, images } = product;
     const product_image = images[0] || '';
 
     product_list.push({
       id,
       name,
-      variant: variant?.length,
+      variants: variants?.length,
       image: product_image,
     });
   }

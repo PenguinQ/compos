@@ -30,25 +30,25 @@ export type BundleListNormalizerReturn = {
 export const bundleListNormalizer = (data: unknown) => {
   const { data: bundles_data, data_count, page } = data as NormalizerData;
   const bundles = bundles_data || [];
-  const bundle_list: BundleList[] = [];
+  const bundles_list: BundleList[] = [];
 
   console.log(data);
 
   for (const bundle of bundles as BundlesData[]) {
-    const { id, name, images, product } = bundle;
+    const { id, name, images, products } = bundle;
 
-    bundle_list.push({
+    bundles_list.push({
       id,
       name,
       images: images || [],
-      count: product.length,
+      count: products.length,
     });
   }
 
   return {
     page,
-    bundles: bundle_list,
-    bundles_count: bundle_list.length,
+    bundles: bundles_list,
+    bundles_count: bundles_list.length,
     bundles_count_total: data_count,
   };
 };

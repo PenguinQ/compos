@@ -56,7 +56,7 @@ defineExpose({ items, add });
   position: fixed;
   top: 16px;
   left: 50%;
-  z-index: 60;
+  z-index: var(--z-max);
   transform: translateX(-50%);
   pointer-events: none;
   padding: 0 16px;

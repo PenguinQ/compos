@@ -54,22 +54,26 @@ export const salesFormListNormalizer = (data: unknown): ListNormalizerReturn => 
   const product_list = [];
 
   for (const product of products as ProductsData[]) {
-    const { id, variant: variants, name, image } = product;
+    const { id, variant: variants, name, images } = product;
     const variant_list = [];
 
+    console.log('Product images:', images);
+
     for (const variant of variants as VariantsData[]) {
-      const { id, image, name } = variant;
+      const { id, images, name } = variant;
+
+      console.log('Variant images:', images);
 
       variant_list.push({
         id: id || '',
-        image: image || '',
+        image: images[0] || '',
         name: name || '',
       });
     };
 
     product_list.push({
       id: id || '',
-      image: image || '',
+      image: images[0] || '',
       name: name || '',
       variant: variant_list,
     });

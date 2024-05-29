@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent, onMounted, onUnmounted } from 'vue';
+import { ref, computed, defineAsyncComponent, onMounted, onUnmounted, nextTick } from 'vue';
 
 export type ToolbarProps = {
-  title?: string;
+  autoHide?: boolean;
   sticky?: boolean;
+  title?: string;
   onBack?: () => void;
 };
 
@@ -32,15 +33,7 @@ const handleScroll = () => {
 };
 
 onMounted(() => {
-  if (typeof window !== 'undefined') {
-    const DOM_outer = outer_container.value;
-
-    if (props.sticky && DOM_outer) {
-      const bound = DOM_outer.getBoundingClientRect();
-
-      DOM_outer.style.top = `${bound.y}px`;
-    }
-
+  if (typeof window !== 'undefined' && props.autoHide) {
     window.addEventListener('scroll', handleScroll);
   }
 });
@@ -87,7 +80,7 @@ onUnmounted(() => {
   &--sticky {
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: var(--z-1);
   }
 
   &__main {

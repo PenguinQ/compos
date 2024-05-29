@@ -7,3 +7,4 @@ export { default as getPaginationSelector } from './getPaginationSelector';
 export { default as getPageStatus } from './getPageStatus';
 export { default as isImagesValid } from './isImagesValid';
 export { default as isSafari } from './isSafari';
+export { default as isVariant } from './isVariant';

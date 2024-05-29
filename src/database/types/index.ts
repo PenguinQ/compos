@@ -62,7 +62,7 @@ export type ProductDoc = {
   name: string;
   description?: string;
   by?: string;
-  variant?: string[];
+  variants?: string[];
   price: number;
   stock: number;
   sku?: string;
@@ -88,7 +88,6 @@ export type VariantCollection = RxCollection<VariantDoc>;
 
 export type BundleProduct = {
   id: string;
-  variant_id?: string;
   active: boolean;
 };
 
@@ -97,7 +96,7 @@ export type BundleDoc = {
   active: boolean;
   name: string;
   description?: string;
-  product: BundleProduct[];
+  products: BundleProduct[];
   price?: number;
   created_at: string;
   updated_at: string;

@@ -1,23 +1,42 @@
 import { blobToBase64String } from 'rxdb';
-import type { RxDocument, RxAttachment } from 'rxdb';
+import type { DeepReadonly, RxDocument, RxAttachment } from 'rxdb';
 
 import { db } from '@/database';
 import { IMAGE_ID_PREFIX } from '@/database/constants';
-import type { ProductDoc, VariantDoc } from '@/database/types';
 
-type GetBundleDetailParams = {
+// Helpers
+import { isVariant } from '@/database/utils';
+
+// Types
+import type { BundleDoc, ProductDoc, VariantDoc } from '@/database/types';
+
+export type ProductsListImages = {
   id: string;
-  normalizer?: (data: any) => void;
+  url: string;
 };
 
-export default async ({ id, normalizer }: GetBundleDetailParams): Promise<any> => {
+export type ProductsList = DeepReadonly<ProductDoc> & {
+  product_name?: string;
+  images: ProductsListImages[];
+};
+
+type GetBundleDetailQuery = {
+  id: string;
+  normalizer?: (data: unknown) => void;
+};
+
+export type GetBundleDetailQueryReturn = Omit<BundleDoc, 'product'> & {
+  products: ProductsList[];
+};
+
+export default async ({ id, normalizer }: GetBundleDetailQuery) => {
   try {
     const _queryBundle = await db.bundle.findOne({ selector: { id } }).exec();
 
-    if (!_queryBundle) throw { code: 404, message: 'Bundle not found.' };
+    if (!_queryBundle) throw 'Bundle not found.';
 
     const { product: products, ...bundleData } = _queryBundle.toJSON();
-    const product_list: any = [];
+    const products_list: ProductsList[] = [];
 
     /**
      * ---------------------------
@@ -25,15 +44,14 @@ export default async ({ id, normalizer }: GetBundleDetailParams): Promise<any> =
      * ---------------------------
      */
     for (const product of products) {
-      const { id, variant_id } = product;
-
+      const { id } = product;
       /**
        * ---------------------------------
        * 1.1 Flow if product is a variant.
        * ---------------------------------
        */
-      if (variant_id) {
-        const _queryVariant = await db.variant.findOne({ selector: { id: variant_id } }).exec();
+      if (isVariant(id)) {
+        const _queryVariant = await db.variant.findOne({ selector: { id } }).exec();
 
         if (!_queryVariant) continue;
 
@@ -41,21 +59,21 @@ export default async ({ id, normalizer }: GetBundleDetailParams): Promise<any> =
 
         if (!_queryProduct) continue;
 
-        const { name: p_name }     = _queryProduct.toJSON();
-        const variant_json         = _queryVariant.toJSON();
-        const variant_attachments  = _queryVariant.allAttachments();
-        const images               = variant_attachments.filter((att: RxAttachment<VariantDoc>) => att.id.startsWith(IMAGE_ID_PREFIX));
-        const variant_images       = [];
+        const { name: p_name }    = _queryProduct.toJSON();
+        const variant_json        = _queryVariant.toJSON();
+        const variant_attachments = _queryVariant.allAttachments();
+        const images              = variant_attachments.filter((att: RxAttachment<VariantDoc>) => att.id.startsWith(IMAGE_ID_PREFIX));
+        const variant_images      = [];
 
         for (const image of images) {
           const { id, type } = image;
           const image_data   = await image.getData();
           const image_base64 = await blobToBase64String(image_data);
 
-          variant_images.push({ id, data: `data:${type};base64,${image_base64}` });
+          variant_images.push({ id, url: `data:${type};base64,${image_base64}` });
         }
 
-        product_list.push({ product_name: p_name, image: variant_images, ...variant_json });
+        products_list.push({ product_name: p_name, images: variant_images, ...variant_json });
       }
       /**
        * -------------------------------------
@@ -77,19 +95,19 @@ export default async ({ id, normalizer }: GetBundleDetailParams): Promise<any> =
           const image_data   = await image.getData();
           const image_base64 = await blobToBase64String(image_data);
 
-          product_images.push({ id, data: `data:${type};base64,${image_base64}` });
+          product_images.push({ id, url: `data:${type};base64,${image_base64}` });
         }
 
-        product_list.push({ image: product_images, ...product_json });
+        products_list.push({ images: product_images, ...product_json });
       }
     }
 
     return {
       result: normalizer ? normalizer({
-        product: product_list,
+        products: products_list,
         ...bundleData
       }): {
-        product: product_list,
+        products: products_list,
         ...bundleData
       },
     };

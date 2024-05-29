@@ -28,14 +28,14 @@ export default async (id: string) => {
 
     if (!_queryProduct) throw `Cannot find product with id ${id}.`;
 
-    const { variant } = _queryProduct;
+    const { variants } = _queryProduct;
 
     /**
      * ----------------------------------------
      * 1. Delete flow for product with variant.
      * ----------------------------------------
      */
-    if (variant?.length) {
+    if (variants?.length) {
       /**
        * -----------------------
        * 1.1 Remove the product.
@@ -63,7 +63,7 @@ export default async (id: string) => {
        */
       const _queryBundle = await db.bundle.find({
         selector: {
-          product: {
+          products: {
             $elemMatch: {
               id,
             }
@@ -98,10 +98,9 @@ export default async (id: string) => {
        */
       const _queryBundle = await db.bundle.find({
         selector: {
-          product: {
+          products: {
             $elemMatch: {
               id,
-              variant_id: undefined,
             },
           },
         },

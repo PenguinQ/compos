@@ -1,16 +1,25 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import * as CSS from 'csstype';
 
 type ProductImageProps = {
   width?: CSS.Property.Width;
   height?: CSS.Property.Height;
+  borderless?: boolean;
 };
 
-defineProps<ProductImageProps>();
+const props = withDefaults(defineProps<ProductImageProps>(), {
+  borderless: false,
+});
+
+const classes = computed(() => ({
+  'vc-product-image': true,
+  'vc-product-image--borderless': props.borderless,
+}));
 </script>
 
 <template>
-  <picture class="vc-product-image" :style="{ width, height }">
+  <picture :class="classes" :style="{ width, height }">
     <slot />
   </picture>
 </template>
@@ -26,6 +35,11 @@ defineProps<ProductImageProps>();
   grid-template-columns: repeat(2, 1fr);
   overflow: hidden;
   margin: 0 auto;
+
+  &--borderless {
+    border: none;
+    border-radius: 0;
+  }
 
   img {
     min-height: 0;

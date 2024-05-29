@@ -16,15 +16,13 @@ export default {
     description: {
       type: 'string',
     },
-    product: {
+    products: {
       type: 'array',
+      uniqueItems: true,
       items: {
         type: 'object',
         properties: {
           id: {
-            type: 'string',
-          },
-          variant_id: {
             type: 'string',
           },
           active: {

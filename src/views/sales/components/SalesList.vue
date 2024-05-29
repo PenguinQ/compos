@@ -48,7 +48,7 @@ const {
     :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
     :title="GLOBAL.ERROR_EMPTY_TITLE"
     :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-    margin="80px 0"
+    margin="56px 0"
   >
     <template #action>
       <Button @click="salesRefetch">Try Again</Button>
@@ -60,7 +60,7 @@ const {
       placeholder="Search"
       @input="handleSearch"
     />
-    <Bar v-if="salesLoading" margin="64px 0" />
+    <Bar v-if="salesLoading" margin="56px 0" />
     <template v-else>
       <EmptyState
         v-if="!data.sales.length && search_query === ''"
@@ -108,7 +108,11 @@ const {
         </div>
       </template>
     </template>
-    <ListFooter sticky :height="isSalesEmpty ? '82px' : '152px'">
+    <ListFooter
+      sticky
+      :height="isSalesEmpty ? '82px' : '152px'"
+      bottom="var(--bottom-nav-height)"
+    >
       <ListFab
         v-if="status === 'running'"
         align="flex-end"

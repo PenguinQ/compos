@@ -1,69 +1,67 @@
 import { getUpdateTime, toIDR } from '@helpers';
+import type { GetBundleDetailQueryReturn } from '@/database/query/bundle/getBundleDetail';
 
-type Product = {
+type ProductsList = {
   id: string;
   active: boolean;
   name: string;
   product_id?: string;
   product_name?: string;
-  image: string[];
+  image: string;
   price: number;
   stock: number;
+  sku: string;
 };
 
-type DetailNormalizerReturns = {
+export type BundleDetailNormalizerReturn = {
   id: string;
   active: boolean;
   name: string;
   description: string;
-  image: string[];
+  images: string[];
   price: string;
-  product: object[];
+  products: ProductsList[];
   total_price: string;
   updated_at: string;
 };
 
-export const bundleDetailNormalizer = (data: any): DetailNormalizerReturns => {
-  const bundle = data || {};
-  const { product } = bundle;
-  let product_list: Product[] = [];
-  let bundle_image: string[] = [];
+export const bundleDetailNormalizer = (data: unknown): BundleDetailNormalizerReturn => {
+  const { id, active, name, description, price, products, updated_at } = data as GetBundleDetailQueryReturn;
+  let products_list: ProductsList[] = [];
+  let bundle_images: string[] = [];
   let total_price = 0;
 
-  if (product?.length) {
-    product.map((p: any) => {
-      const product_image: string[] = [];
+  if (products.length) {
+    products.map(product => {
+      const { id, active, images, name, product_name, price, stock, sku } = product;
+      const product_image = images[0] ? images[0].url : '';
 
-      // Only push the first image from every image of the product.
-      if (p.image.length) product_image.push(p.image[0].data);
+      if (product_image) bundle_images.push(product_image);
 
-      // Push every product image inside product_image array to bundle_image.
-      product_image.map((image: string) => bundle_image.push(image));
+      total_price += price;
 
-      total_price += p.price;
-
-      product_list.push({
-        id: p.id || '',
-        active: p.active || false,
-        name: p.name || '',
-        product_id: p.product_id || '',
-        product_name: p.product_name || '',
+      products_list.push({
+        id: id || '',
+        active: active || false,
+        name: name || '',
+        product_name: product_name || '',
         image: product_image,
-        price: p.price ? toIDR(p.price) : 0,
-        stock: p.stock || 0,
-      })
+        price: toIDR(price ? price : 0),
+        stock: stock || 0,
+        sku: sku || '-',
+      });
     });
   }
 
   return {
-    id: bundle.id || '',
-    active: bundle.active || false,
-    name: bundle.name || '',
-    description: bundle.description || '',
-    image: bundle_image,
-    price: bundle.price ? toIDR(bundle.price) : 0,
-    product: product_list,
+    id: id || '',
+    active: active || false,
+    name: name || '',
+    description: description || '',
+    images: bundle_images,
+    price: toIDR(price ? price : 0),
+    products: products_list,
     total_price: toIDR(total_price),
-    updated_at : getUpdateTime(bundle.updated_at),
+    updated_at : getUpdateTime(updated_at),
   };
 };
