@@ -42,6 +42,7 @@ interface Props extends /* @vue-ignore */ InputHTMLAttributes {
    * Set the value using v-model two way data binding.
    */
   modelValue?: string | number;
+  modelModifiers?: object;
   /**
    * Set the textarea placeholder.
    */
@@ -90,13 +91,13 @@ const togglePassword = () => {
 <template>
   <div
     v-bind="containerProps"
-    class="cp-form cp-form--textfield"
+    class="cp-form cp-form-textfield"
     :data-cp-disabled="disabled ? true : undefined"
     :data-cp-error="error ? true : undefined"
     :data-cp-success="success ? true : undefined"
     :style="{ margin }"
   >
-    <label v-if="label || $slots['label']" v-bind="labelProps">
+    <label v-if="label || $slots['label']" v-bind="labelProps" class="cp-form-label">
       <slot name="label" />
       {{ label }}
     </label>
@@ -148,7 +149,9 @@ const togglePassword = () => {
 
 <style src="../../assets/_form.scss" />
 <style lang="scss">
-.cp-form--textfield {
+.cp-form-textfield {
+  width: 100%;
+
   .cp-form-affix {
     color: inherit;
     font-size: 16px;

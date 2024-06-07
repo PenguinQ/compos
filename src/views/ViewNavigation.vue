@@ -21,6 +21,10 @@ import { IconArchive, IconArchiveFill, IconBasket, IconBasketFill } from '@icons
 </template>
 
 <style lang="scss">
+:root {
+  --bottom-nav-height: 68px;
+}
+
 #view-navigation {
   width: 100%;
   position: fixed;

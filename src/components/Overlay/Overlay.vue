@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, Teleport, Transition, onBeforeMount } from 'vue';
-import { useOverlayContainer } from '@hooks';
+import { computed, Teleport, Transition, onUnmounted } from 'vue';
 import type * as CSS from 'csstype';
+
+// Hooks
+import { useOverlayContainer } from '@/hooks';
 
 interface OverlayProps {
   duration?: number;
@@ -30,15 +32,11 @@ const emit = defineEmits([
   'leave-cancelled',
 ]);
 
-const { overlayContainer, createOverlayContainer } = useOverlayContainer();
+const { overlayContainer } = useOverlayContainer();
 const overlay_class = computed(() => ({
   'cp-overlay': true,
   'cp-overlay--fullscreen': props.fullscreen,
 }));
-
-onBeforeMount(() => {
-  createOverlayContainer();
-});
 
 const handleEnter = () => {
   document.body.style.overflow = 'hidden';
@@ -49,6 +47,10 @@ const handleLeave = () => {
   document.body.style.overflow = '';
   emit('leave');
 };
+
+onUnmounted(() => {
+  document.body.style.overflow = '';
+});
 </script>
 
 <template>
@@ -78,6 +80,15 @@ const handleLeave = () => {
 
 <style lang="scss">
 $root: '.cp-overlay';
+
+.cp-overlay-container {
+  contain: layout;
+  display: contents;
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
 
 .cp-overlay {
   pointer-events: auto;

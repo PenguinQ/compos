@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, defineAsyncComponent, onMounted, onUnmounted } from 'vue';
 
 export type ToolbarProps = {
   autoHide?: boolean;
@@ -14,6 +14,7 @@ const emit = defineEmits(['back']);
 const ToolbarTitle = defineAsyncComponent(() => import('./ToolbarTitle.vue'));
 const outer_container = ref<HTMLDivElement>();
 const inner_container = ref<HTMLDivElement>();
+const dialog = ref<Element | null>();
 const toolbar_class = computed(() => ({
   'cp-toolbar': true,
   'cp-toolbar--sticky': props.sticky,
@@ -22,9 +23,10 @@ const toolbar_class = computed(() => ({
 const handleScroll = () => {
   const DOM_outer = outer_container.value;
   const DOM_inner = inner_container.value;
+  const scrollTop = dialog.value ? dialog.value.scrollTop : window.scrollY;
 
   if (DOM_outer && DOM_inner) {
-    if (window.scrollY > DOM_inner.offsetHeight) {
+    if (scrollTop > DOM_inner.offsetHeight) {
       DOM_outer.style.transform = `translateY(-${DOM_inner.offsetHeight}px)`;
     } else {
       DOM_outer.style.transform = '';
@@ -36,11 +38,23 @@ onMounted(() => {
   if (typeof window !== 'undefined' && props.autoHide) {
     window.addEventListener('scroll', handleScroll);
   }
+
+  if (outer_container.value && props.autoHide) {
+    dialog.value = outer_container.value.closest('.cp-dialog-body');
+
+    if (dialog.value) {
+      dialog.value.addEventListener('scroll', handleScroll);
+    }
+  }
 });
 
 onUnmounted(() => {
   if (typeof window !== 'undefined') {
     window.removeEventListener('scroll', handleScroll);
+  }
+
+  if (dialog.value) {
+    dialog.value.removeEventListener('scroll', handleScroll);
   }
 });
 </script>

@@ -1,3 +1,4 @@
+import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 
 import QuantityEditor from './QuantityEditor.vue';
@@ -39,3 +40,28 @@ export const Default: Story = {
     template: `<QuantityEditor v-bind="args" />`,
   }),
 };
+
+// export const OnChange: Story = {
+//   render: (args) => ({
+//     components: { QuantityEditor },
+//     setup() {
+//       const quantity = ref(0);
+
+//       const handleButtons = (value: string) => {
+//         quantity.value = parseInt(value);
+//       };
+
+//       return { args, quantity, handleButtons };
+//     },
+//     template: `
+//       Quantity: {{ quantity }}
+//       <br />
+//       <br />
+//       <QuantityEditor
+//         value="quantity"
+//         @clickIncrement="handleButtons"
+//         @clickDecrement="handleButtons"
+//       />
+//     `,
+//   }),
+// };

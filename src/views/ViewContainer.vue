@@ -11,6 +11,6 @@ import { RouterView } from 'vue-router';
 <style lang="scss" scoped>
 #view-container {
   min-height: 100vh;
-  padding-bottom: 68px;
+  padding-bottom: var(--bottom-nav-height);
 }
 </style>

@@ -11,6 +11,7 @@ type ProductsList = {
   price: number;
   stock: number;
   sku: string;
+  quantity: number;
 };
 
 export type BundleDetailNormalizerReturn = {
@@ -31,25 +32,24 @@ export const bundleDetailNormalizer = (data: unknown): BundleDetailNormalizerRet
   let bundle_images: string[] = [];
   let total_price = 0;
 
-  if (products.length) {
-    products.map(product => {
-      const { id, active, images, name, product_name, price, stock, sku } = product;
-      const product_image = images[0] ? images[0].url : '';
+  for (const product of products) {
+    const { id, active, images, name, product_name, price, stock, sku, quantity } = product;
+    const product_image = images[0] ? images[0].url : '';
 
-      if (product_image) bundle_images.push(product_image);
+    if (product_image) bundle_images.push(product_image);
 
-      total_price += price;
+    total_price += price;
 
-      products_list.push({
-        id: id || '',
-        active: active || false,
-        name: name || '',
-        product_name: product_name || '',
-        image: product_image,
-        price: toIDR(price ? price : 0),
-        stock: stock || 0,
-        sku: sku || '-',
-      });
+    products_list.push({
+      id: id || '',
+      active: active || false,
+      name: name || '',
+      product_name: product_name || '',
+      image: product_image,
+      price: toIDR(price ? price : 0),
+      stock: stock || 0,
+      quantity: quantity || 0,
+      sku: sku || '-',
     });
   }
 

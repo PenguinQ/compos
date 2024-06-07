@@ -4,7 +4,7 @@ import type { DeepReadonlyArray, RxDocument } from 'rxdb';
 import { db } from '@/database';
 import { getPageStatus } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
-import type { ProductDoc, VariantDoc } from '@/database/types';
+import type { ProductDoc, VariantDoc, QueryPage } from '@/database/types';
 
 export type VariantsData = VariantDoc & {
   images: string[];
@@ -12,7 +12,7 @@ export type VariantsData = VariantDoc & {
 
 export type ProductsData = Omit<ProductDoc, 'variants'> & {
   images: string[];
-  variants?: DeepReadonlyArray<string> | VariantsData[];
+  variants: VariantsData[] | DeepReadonlyArray<string> ;
 };
 
 type ProductListQuery = {
@@ -24,6 +24,12 @@ type ProductListQuery = {
   search_query?: string;
   sort: 'asc' | 'desc';
   normalizer?: (data: unknown) => void;
+};
+
+export type ProductListQueryReturn = {
+  data: ProductsData[];
+  data_count: number;
+  page: QueryPage;
 };
 
 export default async ({
@@ -109,7 +115,7 @@ export default async ({
 
         product_data.push({
           images: product_thumbnails_base64,
-          variants: complete ? product_variant_detail : product_variants,
+          variants: complete ? product_variant_detail : product_variants || [],
           ...rest,
         });
       }

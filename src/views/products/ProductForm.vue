@@ -30,12 +30,12 @@ import no_image from '@assets/illustration/no_image.svg';
 
 const router = useRouter();
 const {
-  productID,
+  product_id,
   form_data,
   form_error,
-  isError,
-  isLoading,
-  refetch,
+  productDetailError,
+  productDetailLoading,
+  productDetailRefetch,
   handleAddImage,
   handleAddVariant,
   handleAddVariantImage,
@@ -53,30 +53,29 @@ const {
     <ToolbarAction icon @click="router.back">
       <IconArrowLeftShort size="40" />
     </ToolbarAction>
-    <ToolbarTitle>{{ productID ? 'Edit Product' : 'Add Product' }}</ToolbarTitle>
+    <ToolbarTitle>{{ product_id ? 'Edit Product' : 'Add Product' }}</ToolbarTitle>
     <ToolbarSpacer />
     <ToolbarAction @click="handleSubmit">{{ mutateAddLoading || mutateEditLoading ? 'Loading' : 'Save' }}</ToolbarAction>
   </Toolbar>
   <!--  -->
-  <EmptyState
-    v-if="isError"
-    :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-    :title="GLOBAL.ERROR_EMPTY_TITLE"
-    :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-    margin="56px 0"
-  >
-    <template #action>
-      <Button @click="refetch">Try Again</Button>
-    </template>
-  </EmptyState>
-  <!--  -->
-  <template v-else>
-    <Container class="pf-container">
-      <Bar v-if="isLoading" margin="80px 0" />
+  <Container class="page-container">
+    <EmptyState
+      v-if="productDetailError"
+      :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+      :title="GLOBAL.ERROR_EMPTY_TITLE"
+      :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+      margin="56px 0"
+    >
+      <template #action>
+        <Button @click="productDetailRefetch">Try Again</Button>
+      </template>
+    </EmptyState>
+    <template v-else>
+      <Bar v-if="productDetailLoading" margin="56px 0" />
       <form v-else id="product-form">
         <Row>
           <Column :col="{ default: 12, md: 'auto' }">
-            <div class="pf-image" :data-error="true">
+            <div class="product-form-image" :data-error="true">
               <label>
                 <ProductImage borderless>
                   <template v-if="form_data.image.length || form_data.new_image.length">
@@ -97,7 +96,7 @@ const {
                 </ProductImage>
                 <input type="file" accept=".jpg, .jpeg, .png, .webp" @change="handleAddImage" />
               </label>
-              <div v-if="form_data.image.length || form_data.new_image.length" class="pf-image__actions">
+              <div v-if="form_data.image.length || form_data.new_image.length" class="product-form-image__actions">
                 <Button @click="handleRemoveImage" variant="outline" color="red" full>Remove</Button>
               </div>
             </div>
@@ -105,12 +104,12 @@ const {
           <Column>
             <Row>
               <Column col="12">
-                <Card class="pf-card" variant="outline">
+                <Card class="section-card" variant="outline">
                   <CardHeader>
                     <CardTitle>General</CardTitle>
                   </CardHeader>
                   <CardBody>
-                    <div class="pf-fields">
+                    <div class="product-form-fields">
                       <Textfield
                         id="product-name"
                         label="Name"
@@ -158,13 +157,19 @@ const {
                           :message="form_error.stock"
                           v-model.number="form_data.stock"
                         />
+                        <Textfield
+                          id="product-sku"
+                          label="SKU"
+                          :labelProps="{ for: 'product-sku' }"
+                          v-model="form_data.sku"
+                        />
                       </template>
                     </div>
                   </CardBody>
                 </Card>
               </Column>
               <Column col="12">
-                <Card class="pf-card" variant="outline">
+                <Card class="section-card" variant="outline">
                   <CardHeader>
                     <CardTitle>Variants</CardTitle>
                   </CardHeader>
@@ -180,43 +185,42 @@ const {
                       </template>
                     </EmptyState>
                     <template v-else>
-                      <div class="pf-variants">
-                        <div class="pf-variant" v-for="(variant, index) of form_data.variants" :key="`variant-${index}`">
-                          <div class="pf-variant__header">
-                            <div class="pf-variant__title">
+                      <div class="product-form-variants">
+                        <div class="product-form-variant" v-for="(variant, index) of form_data.variants" :key="`variant-${index}`">
+                          <div class="product-form-variant__header">
+                            <div class="product-form-variant__title">
                               Variant {{ index + 1 }}
                             </div>
                             <button
                               type="button"
-                              class="pf-variant__remove"
+                              class="product-form-variant__remove"
                               @click="handleRemoveVariant(index, variant.id)"
                               >
                               <IconXLarge size="24" />
                             </button>
                           </div>
-                          <div class="pf-variant__body">
+                          <div class="product-form-variant__body">
                             <Row>
                               <Column :col="{ default: 12, md: 'auto' }">
-                                <div class="pf-image pf-image--variant">
+                                <div class="product-form-image product-form-image--variant">
                                   <label>
-                                    <picture v-if="variant.image.length || variant.new_image.length">
-                                      <img
-                                        v-if="!variant.new_image.length"
-                                        v-for="(image, index) of variant.image"
-                                        :key="`${form_data.name}-img-${index}`"
-                                        :alt="`${form_data.name} Image - ${index + 1}`"
-                                        :src="(image.url as string)"
-                                      />
-                                      <img
-                                        v-for="(image, index) of variant.new_image"
-                                        :key="`new-${form_data.name}-img-${index}`"
-                                        :alt="`New ${form_data.name} Image - ${index + 1}`"
-                                        :src="(image.url as string)"
-                                      />
-                                    </picture>
-                                    <picture v-else>
-                                      <img :src="no_image" alt="" />
-                                    </picture>
+                                    <ProductImage borderless>
+                                      <template v-if="variant.image.length || variant.new_image.length">
+                                        <img
+                                          v-if="variant.new_image.length"
+                                          :src="(variant.new_image[0].url as string)"
+                                          :alt="`${variant.name} image`"
+                                        />
+                                        <img
+                                          v-else
+                                          :src="(variant.image[0].url as string)"
+                                          :alt="`${variant.name} image`"
+                                        />
+                                      </template>
+                                      <template v-else>
+                                        <img :src="no_image" alt="" />
+                                      </template>
+                                    </ProductImage>
                                     <input
                                       type="file"
                                       accept=".jpg, .jpeg, .png, .webp"
@@ -225,7 +229,7 @@ const {
                                   </label>
                                   <div
                                     v-if="variant.image.length || variant.new_image.length"
-                                    class="pf-image__actions"
+                                    class="product-form-image__actions"
                                     >
                                     <Button
                                       full
@@ -239,7 +243,7 @@ const {
                                 </div>
                               </Column>
                               <Column>
-                                <div class="pf-fields">
+                                <div class="product-form-fields">
                                   <Textfield
                                     label="Name"
                                     :id="`variant-name-${index + 1}`"
@@ -264,12 +268,14 @@ const {
                                     :message="form_error.variants[index].stock"
                                     v-model.number="variant.stock"
                                   />
-                                  <Row>
-                                    <Column>
-                                    </Column>
-                                    <Column col="auto">
-                                    </Column>
-                                  </Row>
+                                  <Textfield
+                                    label="SKU"
+                                    :id="`variant-sku-${index + 1}`"
+                                    :labelProps="{ for: `variant-sku-${index + 1}` }"
+                                    :error="form_error.variants[index].sku ? true : false"
+                                    :message="form_error.variants[index].sku"
+                                    v-model.number="variant.sku"
+                                  />
                                 </div>
                               </Column>
                             </Row>
@@ -286,177 +292,8 @@ const {
           </Column>
         </Row>
       </form>
-    </Container>
-  </template>
+    </template>
+  </Container>
 </template>
 
 <style lang="scss" src="@assets/_page-form.scss" />
-<style lang="scss" scoped>
-.pf {
-  &-loading {
-    &-image {
-      width: 180px;
-      height: 180px;
-      margin: 0 auto;
-    }
-  }
-
-  &-image {
-    max-width: 180px;
-    width: 180px;
-    margin: 0 auto;
-
-    label {
-      max-height: 180px;
-      height: 180px;
-      background-color: var(--color-white);
-      border: 1px solid var(--color-neutral-2);
-      border-radius: 8px;
-      display: block;
-    }
-
-    picture {
-      width: 100%;
-      height: 100%;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      overflow: hidden;
-      cursor: pointer;
-    }
-
-    img {
-      min-height: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-
-      &:only-child {
-        grid-column: span 2;
-      }
-    }
-
-    input[type="file"] {
-      display: none;
-    }
-
-    &__actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-top: 8px;
-    }
-
-    &--variant {
-      max-width: 120px;
-      width: 120px;
-
-      label {
-        max-height: 120px;
-        height: 120px;
-      }
-    }
-  }
-
-  &-fields {
-    .cp-form {
-      margin-bottom: 20px;
-
-      &:last-of-type {
-        margin-bottom: 0;
-      }
-    }
-  }
-
-  &-variant {
-    position: relative;
-    margin-bottom: 16px;
-
-    &:last-of-type {
-      margin-bottom: 0;
-    }
-
-    &__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      background-color: var(--color-black);
-      border-top-left-radius: 4px;
-      border-top-right-radius: 4px;
-      overflow: hidden;
-    }
-
-    &__title {
-      color: var(--color-white);
-      font-size: 16px;
-      line-height: 28px;
-      font-weight: 600;
-      padding: 0 16px;
-    }
-
-    &__remove {
-      background-color: var(--color-red-4);
-      border: none;
-      cursor: pointer;
-      transition: box-shadow var(--transition-duration-normal) var(--transition-timing-function);
-      padding: 16px;
-      margin: 0;
-
-      .cp-icon {
-        fill: var(--color-white);
-        transition: transform var(--transition-duration-normal) var(--transition-timing-function);
-      }
-
-      &:active {
-        box-shadow: inset 0 0 56px rgba(37, 52, 70, 0.28);
-
-        .cp-icon {
-          transform: scale(0.86);
-        }
-      }
-    }
-
-    &__body {
-      border-width: 0 1px 1px 1px;
-      border-style: solid;
-      border-color: var(--color-black);
-      border-bottom-right-radius: 4px;
-      border-bottom-left-radius: 4px;
-      padding: 16px;
-    }
-  }
-}
-
-@include screen-md {
-  .pf {
-    &-loading {
-      &-image {
-        width: 240px;
-        height: 240px;
-      }
-    }
-
-    &-image {
-      max-width: 240px;
-      width: 240px;
-
-      label {
-        max-height: 240px;
-        height: 240px;
-        overflow: hidden;
-      }
-
-      &--variant {
-        max-width: 120px;
-        width: 120px;
-
-        label {
-          max-height: 120px;
-          height: 120px;
-        }
-      }
-    }
-  }
-}
-</style>

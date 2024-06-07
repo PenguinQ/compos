@@ -5,15 +5,49 @@ import type { InputHTMLAttributes } from 'vue';
 import { IconCheck } from '@icons';
 
 interface Props extends /* @vue-ignore */ InputHTMLAttributes {
+  /**
+   * Set the class for checkbox outer container.
+   */
   class?: string;
-  containerProps?: object;
+  /**
+   * Set the checkbox label additional properties.
+   */
+  labelProps?: object;
+  /**
+   * Set checkbox to disabled state.
+   */
   disabled?: boolean;
+  /**
+   * Set the false value for the checkbox without using v-model two way data binding.
+   */
   falseValue?: string | number | boolean;
+  /**
+   * Set the checkbox width to 100%.
+   */
   full?: boolean;
+  /**
+   * Set the checkbox label.
+   */
   label?: string;
+  /**
+   * Set the message for the quantity editor.
+   */
+  message?: string;
+  /**
+   * Set the value using v-model two way data binding.
+   */
   modelValue?: string | number | boolean | [];
+  /**
+   * Set the checkbox tabindex.
+   */
   tabindex?: string | number;
+  /**
+   * Set the true value for the checkbox without using v-model two way data binding.
+   */
   trueValue?: string | number | boolean;
+  /**
+   * Set the value for the checkbox without using v-model two way data binding.
+   */
   value?: string | number | boolean;
 }
 
@@ -44,9 +78,9 @@ const isChecked = computed((): any => {
     if (typeof props.modelValue !== 'string') return props.modelValue;
   }
 });
-const checkboxClass = computed(() => ({
-  'cp-checkbox': true,
-  'cp-checkbox--full': props.full,
+const classes = computed(() => ({
+  'cp-form-checkbox': true,
+  'cp-form-checkbox--full': props.full,
 }));
 
 const handleChange = (e: Event) => {
@@ -72,55 +106,67 @@ const handleKeydown = (e: KeyboardEvent) => {
 </script>
 
 <template>
-  <label
-    ref="container"
-    v-bind="containerProps"
-    :class="[checkboxClass, $props.class]"
-    :data-cp-disabled="disabled ? disabled : undefined"
-    @keydown="handleKeydown"
-  >
-    <div class="cp-checkbox__container">
-      <input
-        v-if="isArray"
-        ref="input"
-        type="checkbox"
-        v-bind="$attrs"
-        v-model="computedArray"
-        :tabindex="tabindex"
-        :checked="computedArray === computedValue"
-        :disabled="disabled"
-        :value="computedValue"
-      />
-      <input
-        v-else
-        ref="input"
-        type="checkbox"
-        v-bind="$attrs"
-        :tabindex="tabindex"
-        :checked="isChecked"
-        :disabled="disabled"
-        :value="computedValue"
-        @input="handleChange"
-      />
-      <div class="cp-checkbox__box">
-        <IconCheck color="var(--color-white)" />
+  <div :class="[classes, $props.class]" :data-cp-disabled="disabled ? disabled : undefined">
+    <label
+      ref="container"
+      v-bind="labelProps"
+      class="cp-form-checkbox__field"
+      @keydown="handleKeydown"
+    >
+      <div class="cp-form-checkbox__input">
+        <input
+          v-if="isArray"
+          ref="input"
+          type="checkbox"
+          v-bind="$attrs"
+          v-model="computedArray"
+          :tabindex="tabindex"
+          :checked="computedArray === computedValue"
+          :disabled="disabled"
+          :value="computedValue"
+        />
+        <input
+          v-else
+          ref="input"
+          type="checkbox"
+          v-bind="$attrs"
+          :tabindex="tabindex"
+          :checked="isChecked"
+          :disabled="disabled"
+          :value="computedValue"
+          @input="handleChange"
+        />
+        <div class="cp-form-checkbox__box">
+          <IconCheck color="var(--color-white)" />
+        </div>
       </div>
+      <span v-if="label && !$slots.label" class="cp-form-checkbox__label">{{ label }}</span>
+      <div v-if="$slots.label" class="cp-form-checkbox__label">
+        <slot name="label"></slot>
+      </div>
+    </label>
+    <div class="cp-form-message" v-if="message || $slots['message']">
+      <template v-if="!$slots.message">{{ message }}</template>
+      <slot name="message" />
     </div>
-    <span v-if="label" class="cp-checkbox__label">{{ label }}</span>
-    <div v-if="$slots.label" class="cp-checkbox__label">
-      <slot name="label"></slot>
-    </div>
-  </label>
+  </div>
 </template>
 
+<style src="../../assets/_form.scss" />
 <style lang="scss">
-.cp-checkbox {
+.cp-form-checkbox {
   display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
+  flex-direction: column;
+  align-items: flex-start;
 
-  &__container {
+  &__field {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  &__input {
     width: 18px;
     height: 18px;
     border-radius: 4px;
@@ -140,7 +186,7 @@ const handleKeydown = (e: KeyboardEvent) => {
     top: 0;
     opacity: 0;
 
-    &:checked + .cp-checkbox__box {
+    &:checked + .cp-form-checkbox__box {
       background-color: var(--color-black);
       border-color: var(--color-black);
 
@@ -176,13 +222,19 @@ const handleKeydown = (e: KeyboardEvent) => {
 
   &--full {
     width: 100%;
+
+    .cp-form-checkbox__field {
+      width: 100%;
+    }
   }
 
   &[data-cp-disabled] {
-    cursor: not-allowed;
+    .cp-form-checkbox__field {
+      cursor: not-allowed;
+    }
 
-    input[type="checkbox"] + .cp-checkbox__box,
-    input[type="checkbox"]:checked + .cp-checkbox__box {
+    input[type="checkbox"] + .cp-form-checkbox__box,
+    input[type="checkbox"]:checked + .cp-form-checkbox__box {
       background-color: var(--color-disabled-background);
       border-color: var(--color-disabled-border);
 

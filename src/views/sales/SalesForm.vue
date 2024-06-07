@@ -121,7 +121,7 @@ const {
                 v-if="!form_data.products.length"
                 title="Title"
                 description="Description"
-                margin="40px 0"
+                margin="56px 0"
               >
                 <template #action>
                   <Button @click="show_products_dialog = true">Add Product</Button>
@@ -151,7 +151,7 @@ const {
     v-model="show_products_dialog"
     fullscreen
     hideHeader
-    @enter="load_products = true"
+    @enter="handleDialogOpen"
     @leave="load_products = false"
   >
     <Toolbar sticky>

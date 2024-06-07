@@ -79,7 +79,7 @@ const {
   </EmptyState>
   <!--  -->
   <template v-else>
-    <Container class="pd-container">
+    <Container class="page-container">
       <Bar v-if="isLoading" margin="56px 0" />
       <template v-else>
         <Ticker
@@ -87,14 +87,14 @@ const {
           :items="[
             {
               title: 'Inactive Product',
-              description: `This product bundle currently inactive since any products of it has 0 stock, or doesn't have any products at all.`,
+              description: `This product bundle currently inactive since any or one of its products stock is empty or doesn't have any products at all.`,
             },
           ]"
           margin="0 0 16px"
         />
         <Row>
           <Column :col="{ default: 12, md: 'auto' }">
-            <ProductImage>
+            <ProductImage class="product-detail-image">
               <img
                 v-if="data.images.length"
                 v-for="image of data.images"
@@ -105,13 +105,13 @@ const {
             </ProductImage>
           </Column>
           <Column>
-            <Card class="pd-card" variant="outline">
+            <Card class="section-card" variant="outline">
               <CardBody>
                 <Text heading="3" margin="0 0 4px">{{ data.name }}</Text>
                 <Text v-if="data.description">{{ data.description }}</Text>
                 <Separator />
                 <DescriptionList
-                  class="pd-description-list"
+                  class="product-detail-list"
                   alignment="horizontal"
                   :items="[
                     {
@@ -132,22 +132,24 @@ const {
                   description="This bundle doesn't have any products."
                   margin="16px 0"
                 />
-                <div v-else class="pd-items">
+                <div v-else class="product-detail-items">
                   <div
                     v-for="product in data.products"
-                    class="pd-item"
+                    class="product-detail-item"
                     :data-inactive="!product.active ? true : undefined"
                   >
                     <ProductImage width="80px" height="80px">
                       <img :src="`${product.image ? product.image : no_image}`" :alt="`${product.name} image`" />
                     </ProductImage>
-                    <div class="pd-item__detail">
-                      <Text class="pd-item__name" body="large" as="h4">
+                    <div class="product-detail-item__body">
+                      <Text class="product-detail-item__name" body="large" as="h4">
                         <Label v-if="!product.active" color="red">Inactive</Label>
                         {{ product.product_name ? `${product.product_name} - ${product.name}` : product.name }}
                       </Text>
-                      <Text class="pd-item__description">
-                        Price: {{ product.price }} | Stock: {{ product.stock }} | SKU: {{ product.sku }}
+                      <Text class="product-detail-item__description">
+                        Price: {{ product.price }} <br />
+                        Quantity: {{ product.quantity }} <br />
+                        SKU: {{ product.sku }}
                       </Text>
                     </div>
                   </div>
@@ -158,9 +160,10 @@ const {
         </Row>
       </template>
     </Container>
-    <Dialog v-model="dialog_delete" class="pd-dialog-delete" :title="`Delete ${data?.name}?`">
+    <!--  -->
+    <Dialog v-model="dialog_delete" class="product-detail-delete" :title="`Delete ${data?.name}?`">
       <template #footer>
-        <div class="pd-dialog-delete__actions">
+        <div class="product-detail-delete__actions">
           <Button color="red" full @click="deleteBundle">
             {{ deleteBundleLoading ? 'Loading' : 'Delete' }}
           </Button>
@@ -171,4 +174,4 @@ const {
   </template>
 </template>
 
-<style lang="scss" src="./assets/_detail.scss" scoped />
+<style lang="scss" src="@assets/_page-detail.scss" />

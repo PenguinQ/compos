@@ -45,7 +45,6 @@ const DescriptionListItem = defineAsyncComponent(() => import('./DescriptionList
 
 <template>
   <template v-if="items">
-    <!-- v-bind="item.props" -->
     <dl :class="listClass" v-bind="$attrs">
       <component
         :is="DescriptionListItem"

@@ -54,6 +54,7 @@ type FormErrorVariant = {
   name: string;
   price: string;
   stock: string;
+  sku: string;
 };
 
 type FormError = {
@@ -90,10 +91,9 @@ export const useProductForm = () => {
   });
 
   const {
-    refetch,
-    isError,
-    isLoading,
-    isSuccess,
+    refetch: productDetailRefetch,
+    isError: productDetailError,
+    isLoading: productDetailLoading,
   } = useQuery({
     queryFn: () => getProductDetail({
       id: params.id as string,
@@ -134,6 +134,7 @@ export const useProductForm = () => {
             name: '',
             price: '',
             stock: '',
+            sku: '',
           });
         });
       }
@@ -287,6 +288,7 @@ export const useProductForm = () => {
       name: '',
       price: '',
       stock: '',
+      sku: '',
     });
   };
 
@@ -383,12 +385,12 @@ export const useProductForm = () => {
   };
 
   return {
-    productID: params.id,
+    product_id: params.id,
     form_data,
     form_error,
-    isError,
-    isLoading,
-    isSuccess,
+    productDetailError,
+    productDetailLoading,
+    productDetailRefetch,
     handleAddImage,
     handleRemoveImage,
     handleAddVariant,
@@ -396,7 +398,6 @@ export const useProductForm = () => {
     handleRemoveVariant,
     handleRemoveVariantImage,
     handleSubmit,
-    refetch,
     mutateAddLoading,
     mutateAdd,
     mutateEditLoading,

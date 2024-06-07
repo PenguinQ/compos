@@ -7,6 +7,9 @@ const meta: Meta<typeof Checkbox> = {
   component: Checkbox,
   tags: ['autodocs'],
   argTypes: {
+    class: {
+      type: 'string',
+    },
     disabled: {
       type: 'boolean',
     },
@@ -19,13 +22,16 @@ const meta: Meta<typeof Checkbox> = {
     label: {
       type: 'string',
     },
+    message: {
+      type: 'string',
+    },
+    tabindex: {
+      type: 'string',
+    },
     trueValue: {
       type: 'string',
     },
     value: {
-      type: 'string',
-    },
-    tabindex: {
       type: 'string',
     },
     ['modelValue']: {
@@ -35,9 +41,15 @@ const meta: Meta<typeof Checkbox> = {
     },
   },
   args: {
+    class: '',
     disabled: false,
+    falseValue: '',
     full: false,
+    label: '',
+    message: '',
     tabindex: '0',
+    trueValue: '',
+    value: '',
   },
 };
 

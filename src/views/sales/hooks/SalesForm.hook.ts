@@ -243,7 +243,7 @@ export const useSalesForm = () => {
   };
 
   const handleDialogOpen = () => {
-    // selected_products.value = form_data.products;
+    selected_products.value = [...form_data.products];
     load_products.value = true;
   };
 

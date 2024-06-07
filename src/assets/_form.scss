@@ -1,5 +1,5 @@
 .cp-form {
-  label {
+  &-label {
     max-width: 100%;
     color: var(--color-black);
     font-size: 14px;
@@ -49,7 +49,8 @@
     color: var(--color-black);
     font-size: 12px;
     line-height: 16px;
-    margin: 4px 0 0;
+    word-break: break-word;
+    margin: 8px 0 0;
   }
 
   &[data-cp-success] {

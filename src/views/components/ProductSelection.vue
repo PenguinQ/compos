@@ -1,113 +1,157 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, defineAsyncComponent } from 'vue';
 
-import Checkbox from '@components/Checkbox';
+// Common Components
+import Text from '@components/Text';
 import Button from '@components/Button';
-import Dialog from '@components/Dialog';
-import { Tabs, Tab } from '@components/Tabs';
-import Toolbar, { ToolbarAction, ToolbarSpacer } from '@components/Toolbar';
-import { IconX } from '@icons';
+import { IconCheckLarge, IconXLarge } from '@components/icons';
 
-import { useProductSelection } from './hooks/ProductSelection.hook';
+// View Components
+import ProductImage from '@/views/components/ProductImage.vue';
 
-type ProductSelectionProps = {
-  type?: 'product' | 'bundle';
+// Assets
+import no_image from '@assets/illustration/no_image.svg';
+
+type SalesProductProps = {
+  display?: boolean;
+  image?: string;
+  name: string;
+  price?: number;
+  quantity?: number;
+  selected?: boolean;
+  small?: boolean;
+  variant?: boolean;
+  clickRemove?: () => void;
 };
 
-const props = defineProps<ProductSelectionProps>();
-const {
-  dialog,
-  load_product,
-  load_bundle,
-  productsData,
-  productsPending,
-  productsLoading,
-  productsError,
-  productsRefetch,
-} = useProductSelection();
-const default_tab_index = 1;
-const active_tab_index = ref(default_tab_index);
+const props = withDefaults(defineProps<SalesProductProps>(), {
+  display: false,
+  selected: false,
+  small: false,
+});
+const emit = defineEmits([
+  'inputQuantity',
+  'changeQuantity',
+  'clickQuantityDecrement',
+  'clickQuantityIncrement',
+]);
 
-watch(
-  active_tab_index,
-  (new_index) => {
-    if (new_index === 0) load_product.value = true;
-    if (new_index === 1) load_bundle.value = true;
-  },
-);
-
-const loadSelection = () => {
-  if (active_tab_index.value === 0) load_product.value = true;
-  if (active_tab_index.value === 1) load_bundle.value = true;
-};
-
-const handleEnter = () => {
-  if (!load_product.value) {
-    load_product.value = true;
-  } else {
-    productsRefetch();
-  }
-}
+const QuantityEditor = defineAsyncComponent(() => import('@components/QuantityEditor'));
+const classes = computed(() => ({
+  'vc-product-selection': true,
+  'vc-product-selection--small': props.small,
+  'vc-product-selection--display': props.display,
+  'vc-product-selection--variant': props.variant,
+}));
 </script>
 
 <template>
-  <div class="product-selector">
-    <div>{{ productsData }}</div>
-    {{ productsPending }}
-    <Button @click="dialog = true">Open Dialog</Button>
-    <Dialog
-      v-model="dialog"
-      fullscreen
-      @enter="load_product = true"
-      @leave="load_product = false"
+  <div
+    :class="classes" :data-selected="selected ? true : undefined"
+    role="checkbox"
+    :aria-checked="selected"
+    tabindex="0"
+  >
+    <ProductImage>
+      <img :src="image ? image : no_image" :alt="`${name} image`">
+    </ProductImage>
+    <div class="vc-product-selection__body">
+      <Text body="large" truncate margin="0">{{ name }}</Text>
+      <Text v-if="price" truncate>{{ price }}</Text>
+    </div>
+    <QuantityEditor
+      v-if="quantity !== undefined"
+      :value="quantity"
+      :min="1"
+      @change="$emit('changeQuantity', $event)"
+      @input="$emit('inputQuantity', $event)"
+      @clickDecrement="$emit('clickQuantityDecrement', $event)"
+      @clickIncrement="$emit('clickQuantityIncrement', $event)"
+    />
+    <IconCheckLarge v-if="selected" class="vc-product-selection__marker" />
+    <Button
+      v-if="$attrs.onClickRemove"
+      class="vc-product-selection__action"
+      color="red"
+      icon
+      :aria-label="`Remove ${name}`"
+      @click="$attrs.onClickRemove"
     >
-      <template #header>
-        <Toolbar>
-          <ToolbarAction icon>
-            <IconX @click="dialog = false" size="40" />
-          </ToolbarAction>
-          <ToolbarSpacer />
-        </Toolbar>
-      </template>
-      <div v-if="productsLoading || productsPending">Loading...</div>
-      <div v-else v-for="product of productsData.products">
-        <picture>
-          <img :src="product.image" :alt="`${product.name} image`" />
-        </picture>
-        {{ product.name }}
-        <div v-for="variant of product.variant">
-          <picture>
-            <img :src="variant.image" :alt="`${variant.name} image`" />
-          </picture>
-          {{ variant.name }}
-        </div>
-      </div>
-    </Dialog>
-
-    <!-- <Dialog
-      v-model="dialog"
-      fullscreen
-      @enter="loadSelection"
-      @after-leave="active_tab_index = default_tab_index"
-    >
-      <template #header>
-        <Toolbar>
-          <ToolbarAction icon>
-            <IconX @click="dialog = false" size="40" />
-          </ToolbarAction>
-          <ToolbarSpacer />
-        </Toolbar>
-      </template>
-      <Tabs v-model="active_tab_index" grow>
-        <Tab title="Product">
-          {{ productsData }}
-        </Tab>
-        <Tab title="Bundle">
-          {{ bundlesData }}
-        </Tab>
-      </Tabs>
-    </Dialog> -->
+      <IconXLarge size="18" />
+    </Button>
   </div>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss">
+.vc-product-selection {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-neutral-2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+
+  & + .vc-product-selection {
+    margin-top: -1px;
+  }
+
+  > * {
+    flex-shrink: 0;
+  }
+
+  picture {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    display: none;
+  }
+
+  &__body {
+    min-width: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+
+  &--small {
+    picture {
+      width: 60px;
+      height: 60px;
+    }
+  }
+
+  &--variant {
+    background-color: var(--color-neutral-1);
+    padding-left: 48px;
+  }
+
+  &--display {
+    &:first-of-type {
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+
+    &:last-of-type {
+      border-bottom-right-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+  }
+
+  &[data-selected] {
+    background-color: var(--color-blue-1);
+  }
+
+  &[role="button"] {
+    cursor: pointer;
+  }
+}
+
+@include screen-rwd(360) {
+  .vc-product-selection {
+    gap: 16px;
+
+    picture {
+      display: grid;
+    }
+  }
+}
+</style>

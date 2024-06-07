@@ -18,6 +18,7 @@ export type ProductsListImages = {
 export type ProductsList = DeepReadonly<ProductDoc> & {
   product_name?: string;
   images: ProductsListImages[];
+  quantity: number;
 };
 
 type GetBundleDetailQuery = {
@@ -35,7 +36,7 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
 
     if (!_queryBundle) throw 'Bundle not found.';
 
-    const { product: products, ...bundleData } = _queryBundle.toJSON();
+    const { products, ...bundleData } = _queryBundle.toJSON();
     const products_list: ProductsList[] = [];
 
     /**
@@ -44,7 +45,7 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
      * ---------------------------
      */
     for (const product of products) {
-      const { id } = product;
+      const { id, quantity } = product;
       /**
        * ---------------------------------
        * 1.1 Flow if product is a variant.
@@ -73,7 +74,12 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
           variant_images.push({ id, url: `data:${type};base64,${image_base64}` });
         }
 
-        products_list.push({ product_name: p_name, images: variant_images, ...variant_json });
+        products_list.push({
+          quantity,
+          product_name: p_name,
+          images: variant_images,
+          ...variant_json,
+        });
       }
       /**
        * -------------------------------------
@@ -98,7 +104,7 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
           product_images.push({ id, url: `data:${type};base64,${image_base64}` });
         }
 
-        products_list.push({ images: product_images, ...product_json });
+        products_list.push({ quantity, images: product_images, ...product_json });
       }
     }
 

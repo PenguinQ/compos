@@ -1,22 +1,10 @@
-.pd {
-  &-container {
-    padding: 16px 0;
+.product-detail {
+  &-image {
+    width: 180px;
+    height: 180px;
   }
 
-  &-card {
-    border-right: none;
-    border-left: none;
-    border-radius: 0;
-
-    hr {
-      height: 1px;
-      background-color: var(--color-neutral-2);
-      border: none;
-      margin: 20px 0;
-    }
-  }
-
-  &-description-list {
+  &-list {
     > div {
       padding-left: 0;
       padding-right: 0;
@@ -37,27 +25,69 @@
     }
   }
 
-  &-dialog {
-    &--delete {
-      .pd-dialog__actions {
-        display: flex;
-        gap: 16px;
-        padding: 16px;
+  &-items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    &__image {
+      width: 80px;
+      height: 80px;
+      border: 1px solid rgba(46, 64, 87, 0.4);
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
       }
+    }
+
+    &__body {
+      flex: 1 1 auto;
+    }
+
+    &__name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    &__description {
+      opacity: 0.8;
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
+
+    &[data-inactive] {
+      filter: grayscale(1);
+    }
+  }
+
+  &-delete {
+    .product-detail-delete__actions {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
     }
   }
 }
 
 @include screen-md {
-  .pd {
-    &-container {
-      padding: 16px;
-    }
-
-    &-card {
-      border-right: 1px solid var(--color-neutral-2);
-      border-left: 1px solid var(--color-neutral-2);
-      border-radius: 8px;
+  .product-detail {
+    &-image {
+      width: 240px;
+      height: 240px;
     }
   }
 }

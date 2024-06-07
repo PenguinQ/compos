@@ -10,7 +10,7 @@ export default async (data: any, bundle: any) => {
   product.forEach((data: any) => {
     const { id, active } = data;
 
-    productArr.push({ id, active });
+    productArr.push({ id, active, quantity: 1 });
   });
 
   return await db.bundle.bulkInsert([

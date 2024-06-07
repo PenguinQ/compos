@@ -1,18 +1,16 @@
 import { createApp } from 'vue';
-import { createPinia } from 'pinia';
 import { initDB } from '@database';
+
+import './assets/main.scss';
+import './assets/global.scss';
 
 import App from './App.vue';
 import router from './router';
 import toast from '@/plugins/toast';
 
-import './assets/main.scss';
-
-const pinia = createPinia();
 const app = createApp(App);
 
 app.use(router);
-app.use(pinia);
 app.use(toast);
 
 initDB();

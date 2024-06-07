@@ -32,8 +32,6 @@ export const bundleListNormalizer = (data: unknown) => {
   const bundles = bundles_data || [];
   const bundles_list: BundleList[] = [];
 
-  console.log(data);
-
   for (const bundle of bundles as BundlesData[]) {
     const { id, name, images, products } = bundle;
 

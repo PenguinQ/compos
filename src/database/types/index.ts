@@ -1,5 +1,12 @@
 import type { RxDatabase, RxDocument, RxCollection } from 'rxdb';
 
+export type QueryPage = {
+  current: number;
+  first: boolean;
+  last: boolean;
+  total: number;
+};
+
 export type QueryParams = {
   active?: boolean;
   limit?: number;
@@ -89,6 +96,7 @@ export type VariantCollection = RxCollection<VariantDoc>;
 export type BundleProduct = {
   id: string;
   active: boolean;
+  quantity: number;
 };
 
 export type BundleDoc = {

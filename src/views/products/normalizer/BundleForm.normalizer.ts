@@ -1,83 +1,109 @@
-type ProductsList = {
+import type { QueryPage } from '@/database/types';
+import type { ProductListQueryReturn, VariantsData } from '@/database/query/product/getProductList';
+import type { GetBundleDetailQueryReturn } from '@/database/query/bundle/getBundleDetail';
+
+export type DetailProduct = {
   id: string;
   image: string;
   name: string;
   price: number;
+  total_price: number;
   quantity: number;
+  sku: string;
 };
 
-export type FormNormalizerReturn = {
+export type BundleFormDetailNormalizerReturn = {
   id: string;
   name: string;
   description: string;
   price: number;
-  products: ProductsList[];
+  products: DetailProduct[];
 };
 
-export const formDetailNormalizer = (data: unknown): FormNormalizerReturn => {
-  const { id, name, description, price, products } = data as any;
-  const products_list: ProductsList[] = [];
+export type ListVariant = {
+  id: string;
+  image: string;
+  name: string;
+  price: number;
+  total_price: number;
+  sku: string;
+};
 
-  products.forEach((product: any) => {
-    const { id, images, name, price, quantity  } = product;
-    const product_image = images.length ? images[0] : '';
+export type ListProduct = {
+  id: string;
+  image: string;
+  name: string;
+  price: number;
+  total_price: number;
+  sku: string;
+  variants: ListVariant[];
+};
+
+export type BundleFormListNormalizerReturn = {
+  products: ListProduct[];
+  page: QueryPage;
+};
+
+export const bundleFormDetailNormalizer = (data: unknown): BundleFormDetailNormalizerReturn => {
+  const { id, name, description, price, products } = data as GetBundleDetailQueryReturn;
+  const products_list: DetailProduct[] = [];
+
+  for (const product of products) {
+    const { id, images, name, product_name, price, quantity, sku } = product;
+    const product_image = images[0] ? images[0].url : '';
 
     products_list.push({
-      id,
+      id: id || '',
       image: product_image,
-      name,
-      price,
-      quantity
-    })
-  });
-
-  return {
-    id,
-    name,
-    description,
-    price,
-    products: products_list,
-  };
-};
-
-export const bundleFormNormalizer = (data: any) => {
-  const bundle_data = data || {};
-  let product: any = [];
-  let total_product_price = 0;
-
-  if (bundle_data.product.length) {
-    bundle_data.product.forEach((p: any) => {
-      const product_attachments: string[] = [];
-
-      if (p.attachment.length) {
-        const attachment = p.attachment[0];
-
-        product_attachments.push(URL.createObjectURL(attachment.data));
-      }
-
-      total_product_price += p.price;
-
-      product.push({
-        id: p.id || '',
-        active: p.active || false,
-        name: p.name || '',
-        product_id: p.product_id || undefined,
-        product_name: p.product_name || undefined,
-        image: product_attachments || [],
-        price: p.price || 0,
-        stock: p.stock || 0,
-      })
+      name: product_name ? `${product_name} - ${name}` : name,
+      price: price || 0,
+      total_price: price || 0,
+      quantity: quantity || 0,
+      sku: sku || '',
     });
   }
 
   return {
-    id: bundle_data.id || '',
-    name: bundle_data.name || '',
-    description: bundle_data.description || '',
-    active: bundle_data.active || false,
-    price: bundle_data.price,
-    fixed_price: bundle_data.fixed_price || false,
-    product,
-    total_product_price,
+    id: id || '',
+    name: name || '',
+    description: description || '',
+    price: price || 0,
+    products: products_list,
+  };
+};
+
+export const bundleFormListNormalizer = (data: unknown): BundleFormListNormalizerReturn => {
+  const { data: products_data, page } = data as ProductListQueryReturn;
+  const products = products_data || [];
+  const product_list = [];
+
+  for (const product of products) {
+    const { id, variants, name, images, sku, price } = product;
+    const variant_list = [];
+
+    for (const variant of variants as VariantsData[]) {
+      const { id, images, name, price, sku } = variant;
+
+      variant_list.push({
+        id: id || '',
+        image: images[0] || '',
+        name: name || '',
+        price: price || 0,
+        total_price: price || 0,
+        sku: sku || '',
+      });
+    }
+
+    product_list.push({
+      id: id || '',
+      image: images[0] || '',
+      name: name || '',
+      price: price || 0,
+      total_price: price || 0,
+      variants: variant_list,
+      sku: sku || '',
+    });
   }
+
+  return { page, products: product_list };
 };

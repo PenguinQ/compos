@@ -28,6 +28,9 @@ export default {
           active: {
             type: 'boolean',
           },
+          quantity: {
+            type: 'number',
+          }
         },
       },
       default: [],

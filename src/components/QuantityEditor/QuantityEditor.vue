@@ -61,17 +61,17 @@ const props = withDefaults(defineProps<QuantityEditorProps>(), {
 
 const emit = defineEmits([
   'update:modelValue',
-  'onChange',
-  'onClickDecrement',
-  'onClickIncrement',
+  'change',
+  'clickDecrement',
+  'clickIncrement',
 ]);
 
 let timeout: ReturnType<typeof setTimeout>;
 const input = ref<HTMLInputElement | null>(null);
 const quantityClass = computed(() => ({
   'cp-form': true,
-  'cp-form--quantity': true,
-  'cp-form--quantity--small': props.small,
+  'cp-form-quantity': true,
+  'cp-form-quantity--small': props.small,
 }));
 
 const updateQuantity = (e: Event | undefined, increment: boolean = true) => {
@@ -85,6 +85,7 @@ const updateQuantity = (e: Event | undefined, increment: boolean = true) => {
   timeout = setTimeout(() => updateQuantity(e, increment), 200);
 
   emit('update:modelValue', el?.value)
+  increment ? emit('clickIncrement', el?.value) : emit('clickDecrement', el?.value);
 };
 
 const stopQuantityUpdate = () => clearTimeout(timeout);
@@ -94,13 +95,13 @@ const handleKeyDown = (e: KeyboardEvent, increment: boolean = true) => {
 };
 
 const handleInput = (e: Event) => {
-  emit('update:modelValue', (e.target as HTMLInputElement).value)
+  emit('update:modelValue', (e.target as HTMLInputElement).value);
 };
 
 watch(
   () => props.modelValue,
   () => {
-    emit('onChange');
+    emit('change');
   },
 );
 </script>
@@ -111,21 +112,20 @@ watch(
     :data-cp-disabled="disabled ? disabled : undefined"
     :data-cp-error="error ? true : undefined"
   >
-    <label v-if="label || $slots['label']" v-bind="labelProps">
+    <label v-if="label || $slots['label']" v-bind="labelProps" class="cp-form-label">
       <slot name="label" />
       {{ label }}
     </label>
-    <div class="cp-form--quantity__field">
+    <div class="cp-form-quantity__field">
       <button
         type="button"
         :disabled="disabled"
-        @click="$emit('onClickDecrement')"
-        @mousedown="(e) => updateQuantity(e, false)"
+        @mousedown="updateQuantity($event, false)"
         @mouseup="stopQuantityUpdate"
         @mouseleave="stopQuantityUpdate"
-        @touchstart="(e) => updateQuantity(e, false)"
+        @touchstart="updateQuantity($event, false)"
         @touchend="stopQuantityUpdate"
-        @keydown="(e) => handleKeyDown(e, false)"
+        @keydown="handleKeyDown($event, false)"
         @keyup="stopQuantityUpdate"
       >
         <IconDash size="28" />
@@ -139,19 +139,18 @@ watch(
         :min="min"
         :value="value || modelValue"
         @input="handleInput"
-        @change="$emit('onChange')"
+        @change="$emit('change', $event)"
         :style="{ width: `calc(${width}ch + 16px)` }"
       />
       <button
         type="button"
         :disabled="disabled"
-        @click="$emit('onClickIncrement')"
-        @mousedown="(e) => updateQuantity(e)"
+        @mousedown="updateQuantity($event)"
         @mouseup="stopQuantityUpdate"
         @mouseleave="stopQuantityUpdate"
-        @touchstart="(e) => updateQuantity(e)"
+        @touchstart="updateQuantity($event)"
         @touchend="stopQuantityUpdate"
-        @keydown="(e) => handleKeyDown(e)"
+        @keydown="handleKeyDown($event)"
         @keyup="stopQuantityUpdate"
       >
         <IconPlus size="28" />
@@ -166,7 +165,7 @@ watch(
 
 <style src="../../assets/_form.scss" />
 <style lang="scss">
-.cp-form--quantity {
+.cp-form-quantity {
   display: inline-grid;
   justify-items: start;
 

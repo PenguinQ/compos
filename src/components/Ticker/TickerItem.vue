@@ -6,7 +6,7 @@ import Text from '@components/Text';
 import Icon from '@icons';
 
 export type TickerItemProps = {
-  title: string;
+  title?: string;
   description: string;
   type?: 'error' | 'info' | 'warning';
 };

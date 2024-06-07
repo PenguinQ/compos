@@ -9,9 +9,3 @@ import { ToastProvider } from '@components/Toast';
     <RouterView name="navigation" />
   </ToastProvider>
 </template>
-
-<style lang="scss">
-:root {
-  --bottom-nav-height: 68px;
-}
-</style>

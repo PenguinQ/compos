@@ -4,9 +4,10 @@ import type { RxDocument } from 'rxdb';
 
 import { db } from '@/database';
 import { addImages, compressProductImage, isImagesValid } from '@/database/utils';
-import { isNumeric } from '@/helpers';
 import { THUMBNAIL_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
 import type { ProductDoc, VariantDoc } from '@/database/types';
+
+import { isNumeric } from '@/helpers';
 
 type MutateEditProductQueryVariant = {
   id?: string;

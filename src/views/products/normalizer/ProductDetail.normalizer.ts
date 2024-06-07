@@ -12,6 +12,7 @@ type ProductVariants = {
   image: string;
   price: number;
   stock: number;
+  sku: string;
 };
 
 export type ProductDetailNormalizerReturn = {
@@ -46,17 +47,18 @@ export const detailNormalizer = (data: unknown): ProductDetailNormalizerReturn =
   const product_variants: ProductVariants[] = [];
 
   variants.forEach(variant => {
-    const { id, product_id, active, name, images, price, stock } = variant;
+    const { id, product_id, active, name, images, price, stock, sku } = variant;
     const variant_image = images[0] ? images[0].url : '';
 
     product_variants.push({
-      id        : id || '',
-      active    : active || false,
+      id: id || '',
+      active: active || false,
       product_id: product_id || '',
-      name      : name || '',
-      image     : variant_image,
-      price     : toIDR(price ? price : 0),
-      stock     : stock || 0,
+      name: name || '',
+      image: variant_image,
+      price: toIDR(price ? price : 0),
+      stock: stock || 0,
+      sku: sku || '-',
     });
   });
 
