@@ -70,6 +70,10 @@ onUnmounted(() => {
   transition: transform var(--transition-duration-very-fast) var(--transition-timing-function);
 
   &--sticky {
+    border-bottom-color: transparent;
+    box-shadow:
+      rgba(0, 0, 0, 0.16) 0 3px 6px,
+      rgba(0, 0, 0, 0.23) 0 3px 6px;
     position: sticky;
     top: 0;
     z-index: var(--z-4);

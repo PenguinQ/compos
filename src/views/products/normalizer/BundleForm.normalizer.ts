@@ -2,6 +2,9 @@ import type { QueryPage } from '@/database/types';
 import type { ProductListQueryReturn, VariantsData } from '@/database/query/product/getProductList';
 import type { GetBundleDetailQueryReturn } from '@/database/query/bundle/getBundleDetail';
 
+// Common Helpers
+import { toIDR } from '@/helpers';
+
 export type DetailProduct = {
   id: string;
   product_id: string;
@@ -9,7 +12,7 @@ export type DetailProduct = {
   image: string;
   name: string;
   price: number;
-  total_price: number;
+  total_price: string;
   quantity: number;
   sku: string;
 };
@@ -30,7 +33,7 @@ export type ListVariant = {
   image: string;
   name: string;
   price: number;
-  total_price: number;
+  total_price: string;
   sku: string;
 };
 
@@ -40,7 +43,7 @@ export type ListProduct = {
   image: string;
   name: string;
   price: number;
-  total_price: number;
+  total_price: string;
   sku: string;
   variants: ListVariant[];
 };
@@ -56,6 +59,8 @@ export const bundleFormDetailNormalizer = (data: unknown): BundleFormDetailNorma
 
   for (const product of products) {
     const { id, product_id, active, images, name, product_name, price, quantity, sku } = product;
+    const product_price = price || 0;
+    const product_quantity = quantity || 0;
 
     products_list.push({
       id: id || '',
@@ -63,9 +68,9 @@ export const bundleFormDetailNormalizer = (data: unknown): BundleFormDetailNorma
       active: active,
       image: images[0] ? images[0].url : '',
       name: product_name ? `${product_name} - ${name}` : name,
-      price: price || 0,
-      total_price: price || 0,
-      quantity: quantity || 0,
+      price: product_price,
+      total_price: toIDR(product_price * product_quantity),
+      quantity: product_quantity,
       sku: sku || '',
     });
   }
@@ -87,10 +92,12 @@ export const bundleFormListNormalizer = (data: unknown): BundleFormListNormalize
 
   for (const product of products) {
     const { id: product_id, active, variants, name, images, sku, price } = product;
+    const product_price = price || 0;
     const variant_list = [];
 
     for (const variant of variants as VariantsData[]) {
       const { id: variant_id, active, images, name, price, sku } = variant;
+      const variant_price = price || 0;
 
       variant_list.push({
         id: variant_id || '',
@@ -98,8 +105,8 @@ export const bundleFormListNormalizer = (data: unknown): BundleFormListNormalize
         active: active || false,
         image: images[0] || '',
         name: name || '',
-        price: price || 0,
-        total_price: price || 0,
+        price: variant_price,
+        total_price: toIDR(variant_price * 1),
         sku: sku || '',
       });
     }
@@ -109,8 +116,8 @@ export const bundleFormListNormalizer = (data: unknown): BundleFormListNormalize
       active: active || false,
       image: images[0] || '',
       name: name || '',
-      price: price || 0,
-      total_price: price || 0,
+      price: product_price,
+      total_price: toIDR(product_price * 1),
       variants: variant_list,
       sku: sku || '',
     });

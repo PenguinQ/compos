@@ -16,7 +16,8 @@ type SalesProductProps = {
   display?: boolean;
   image?: string;
   name: string;
-  price?: number;
+  price?: string;
+  sku?: string;
   quantity?: number;
   selected?: boolean;
   small?: boolean;
@@ -57,7 +58,10 @@ const classes = computed(() => ({
     </ProductImage>
     <div class="vc-product-selection__body">
       <Text body="large" truncate margin="0">{{ name }}</Text>
-      <Text v-if="price" truncate>{{ price }}</Text>
+      <div v-if="price || sku" class="vc-product-selection__info">
+        <Text v-if="price" body="small" truncate margin="0 0 2px">Price: {{ price }}</Text>
+        <Text v-if="sku" body="small" truncate margin="0">SKU: {{ sku }}</Text>
+      </div>
     </div>
     <QuantityEditor
       v-if="quantity !== undefined"
@@ -110,6 +114,11 @@ const classes = computed(() => ({
     min-width: 0;
     flex-grow: 1;
     flex-shrink: 1;
+  }
+
+  &__info {
+    opacity: 0.8;
+    margin-top: 4px;
   }
 
   &--small {

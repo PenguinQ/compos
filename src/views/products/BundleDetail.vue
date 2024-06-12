@@ -159,7 +159,7 @@ const {
                         <Label v-if="!product.active" color="red">Inactive</Label>
                         {{ product.product_name ? `${product.product_name} - ${product.name}` : product.name }}
                       </Text>
-                      <div class="product-detail-item__body">
+                      <div class="product-detail-item__info">
                         <Text body="small" margin="0 0 2px">Price: {{ product.price }}</Text>
                         <Text body="small" margin="0 0 2px">Quantity: {{ product.quantity }}</Text>
                         <Text body="small" margin="0">SKU: {{ product.sku || '-' }}</Text>

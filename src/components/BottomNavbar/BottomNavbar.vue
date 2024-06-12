@@ -14,6 +14,9 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  box-shadow:
+    rgba(0, 0, 0, 0.16) 0 -3px 6px,
+    rgba(0, 0, 0, 0.23) 0 -3px 6px;
   z-index: var(--z-1);
 }
 </style>

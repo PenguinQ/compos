@@ -149,24 +149,25 @@ const {
                         <Textfield
                           id="product-price"
                           label="Price"
+                          prepend="Rp"
+                          v-model.number="form_data.price"
                           :labelProps="{ for: 'product-price' }"
                           :error="form_error.price ? true : false"
                           :message="form_error.price"
-                          v-model.number="form_data.price"
                         />
                         <QuantityEditor
                           id="product-stock"
                           label="Stock"
+                          v-model.number="form_data.stock"
                           :labelProps="{ for: 'product-stock' }"
                           :error="form_error.stock ? true : false"
                           :message="form_error.stock"
-                          v-model.number="form_data.stock"
                         />
                         <Textfield
                           id="product-sku"
                           label="SKU"
-                          :labelProps="{ for: 'product-sku' }"
                           v-model="form_data.sku"
+                          :labelProps="{ for: 'product-sku' }"
                         />
                       </template>
                     </div>

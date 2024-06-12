@@ -49,6 +49,7 @@ $root: '.vc-button-block';
   transition-timing-function: var(--transition-timing-function);
 
   span {
+    line-height: 1px;
     transition: transform var(--transition-duration-very-fast) var(--transition-timing-function);
   }
 

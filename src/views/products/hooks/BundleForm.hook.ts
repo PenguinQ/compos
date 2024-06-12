@@ -10,8 +10,8 @@ import { getProductList } from '@/database/query/product';
 // Normalizers
 import { bundleFormListNormalizer, bundleFormDetailNormalizer } from '../normalizer/BundleForm.normalizer'
 
-// Helpers
-import { debounce, isNumeric } from '@/helpers';
+// Common Helpers
+import { debounce, isNumeric, toIDR } from '@/helpers';
 
 // Types
 import type {
@@ -29,7 +29,7 @@ type FormDataProduct = {
   image: string;
   name: string;
   price: number;
-  total_price: number;
+  total_price: string;
   quantity: number;
   sku: string;
 };
@@ -114,7 +114,7 @@ export const useBundleForm = () => {
             image: p.image,
             name: p.name,
             price: p.price,
-            total_price: p.price * p.quantity,
+            total_price: p.total_price,
             quantity: p.quantity,
             sku: p.sku,
           });
@@ -185,7 +185,7 @@ export const useBundleForm = () => {
     },
     onSuccess: () => {
       // @ts-ignore
-      toast.add({ message: 'Product added.', type: 'success', duration: 2000 });
+      toast.add({ message: 'Bundle added.', type: 'success', duration: 2000 });
       router.back();
     },
   });
@@ -325,7 +325,7 @@ export const useBundleForm = () => {
               image,
               name: `${name} - ${variant_name}`,
               price,
-              total_price: price * 1,
+              total_price: toIDR(price * 1),
               quantity: 1,
               sku: sku || '',
             });
@@ -349,7 +349,7 @@ export const useBundleForm = () => {
           image,
           name,
           price,
-          total_price: price * 1,
+          total_price: toIDR(price * 1),
           quantity: 1,
           sku: sku || '',
         });
@@ -376,7 +376,7 @@ export const useBundleForm = () => {
         image,
         name: `${product_name} - ${name}`,
         price,
-        total_price: price * 1,
+        total_price: toIDR(price * 1),
         quantity: 1,
         sku: sku || '',
       });
@@ -411,7 +411,7 @@ export const useBundleForm = () => {
 
     if (!isNumeric(target.value)) {
       product.quantity = 1;
-      product.total_price = product.price * 1;
+      product.total_price = toIDR(product.price * 1);
     }
   };
 
@@ -426,7 +426,7 @@ export const useBundleForm = () => {
     }
 
     product.quantity = quantity;
-    product.total_price = product.price * quantity;
+    product.total_price = toIDR(product.price * quantity);
   };
 
   const getUpdatedPrice = (products: FormDataProduct[]) => {

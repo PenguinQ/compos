@@ -118,6 +118,7 @@ const {
                 <Textfield
                   id="bundle-price"
                   label="Price"
+                  prepend="Rp"
                   v-model.number="form_data.price"
                   :readonly="form_data.auto_price"
                   :labelProps="{ for: 'bundle-price' }"
@@ -157,6 +158,7 @@ const {
                     :image="product.image"
                     :name="product.name"
                     :price="product.total_price"
+                    :sku="product.sku || '-'"
                     :quantity="product.quantity"
                     display
                     @clickRemove="handleRemoveProduct(index)"
