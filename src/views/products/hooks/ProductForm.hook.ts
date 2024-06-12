@@ -207,16 +207,14 @@ export const useProductForm = () => {
       });
 
       return mutateAddProduct({
-        data: {
-          name: form_data.name,
-          description: form_data.description,
-          by: form_data.by,
-          price: form_data.price,
-          stock: form_data.stock,
-          sku: form_data.sku,
-          variant: variants_data,
-          new_image: new_product_image,
-        },
+        name: form_data.name,
+        description: form_data.description,
+        by: form_data.by,
+        price: form_data.price,
+        stock: form_data.stock,
+        sku: form_data.sku,
+        variants: variants_data,
+        new_image: new_product_image,
       });
     },
     onError: error => {
@@ -380,7 +378,7 @@ export const useProductForm = () => {
       params.id ? mutateEdit() : mutateAdd();
     } else {
       // @ts-ignore
-      toast.add({ message: 'There\'s some error on some form input, please check again.', type: 'error' });
+      toast.add({ message: 'There is an error in some form input; please check again.', type: 'error' });
     }
   };
 

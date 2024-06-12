@@ -26,7 +26,7 @@ type GetBundleDetailQuery = {
   normalizer?: (data: unknown) => void;
 };
 
-export type GetBundleDetailQueryReturn = Omit<BundleDoc, 'product'> & {
+export type GetBundleDetailQueryReturn = BundleDoc & {
   products: ProductsList[];
 };
 

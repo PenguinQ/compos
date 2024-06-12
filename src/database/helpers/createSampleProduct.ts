@@ -57,18 +57,9 @@ export default async () => {
         },
       ];
 
-      // Push sample product variant as a product in a bundle.
-      // One variant version
-      bundle_data.push({ id: testIDOne, active: productArray[0].active });
+      bundle_data.push({ id: testIDOne, product_id: productID, active: productArray[0].active });
       bundle_price += productArray[0].price;
       bundle_available = productArray[0].active ? true : false;
-
-      // Two variant version
-      // bundle_data.push({ id: productID, variant_id: testIDOne, active: productArray[0].active });
-      // bundle_data.push({ id: productID, variant_id: testIDTwo, active: productArray[1].active });
-      // bundle_price += productArray[0].price;
-      // bundle_price += productArray[1].price;
-      // bundle_available = productArray[0].active && productArray[1].active ? true : false;
 
       await db.variant.bulkInsert(productArray);
     }
@@ -77,7 +68,7 @@ export default async () => {
   }
 
   // Push sample product with no variant as a product in a bundle.
-  bundle_data.push({ id: productObj[1].id, active: productObj[1].active });
+  bundle_data.push({ id: productObj[1].id, product_id: '', active: productObj[1].active });
   bundle_price += productObj[1].price;
 
   if (bundle_available) {

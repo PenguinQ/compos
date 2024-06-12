@@ -2,13 +2,16 @@
 import type * as CSS from 'csstype';
 
 type BarProps = {
-  width?: CSS.Property.Width;
+  color?: CSS.Property.BackgroundColor;
   height?: CSS.Property.Height;
-  size?: CSS.Property.Width | CSS.Property.Height;
   margin?: CSS.Property.Margin;
+  size?: CSS.Property.Width | CSS.Property.Height;
+  width?: CSS.Property.Width;
 };
 
-defineProps<BarProps>();
+withDefaults(defineProps<BarProps>(), {
+  color: 'var(--color-black)',
+});
 </script>
 
 <template>
@@ -19,7 +22,7 @@ defineProps<BarProps>();
 
 <style lang="scss">
 .cp-loader--bar {
-  --background: no-repeat linear-gradient(var(--color-black) calc(50% - 10px), transparent 0 calc(50% + 10px), var(--color-black) 0);
+  --loader-color: no-repeat linear-gradient(v-bind(color) calc(50% - 10px), transparent 0 calc(50% + 10px), v-bind(color) 0);
   height: 100%;
   display: flex;
   align-items: center;
@@ -30,9 +33,9 @@ defineProps<BarProps>();
     height: 45px;
     display: block;
     background:
-      var(--background) 0% 100%,
-      var(--background) 50% 100%,
-      var(--background) 100% 100%;
+      var(--loader-color) 0% 100%,
+      var(--loader-color) 50% 100%,
+      var(--loader-color) 100% 100%;
     background-size: 20% calc(200% + 20px);
     animation: bar-loader 1s infinite linear;
   }

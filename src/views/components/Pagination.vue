@@ -4,6 +4,7 @@ import * as CSS from 'csstype';
 
 // Common Components
 import Text from '@components/Text';
+import { Bar } from '@components/Loader';
 import { IconChevronDoubleRight, IconChevronDoubleLeft, IconChevronLeft, IconChevronRight } from '@icons';
 
 // View Components
@@ -16,6 +17,7 @@ type Props = {
   frame?: boolean;
   grow?: boolean;
   last_page?: boolean;
+  loading?: boolean;
   page?: number;
   size?: 'large';
   total_page?: number;
@@ -27,10 +29,14 @@ const props = withDefaults(defineProps<Props>(), {
   frame: false,
   grow: false,
   last_page: true,
+  loading: false,
 });
 
-defineEmits(['clickFirst', 'clickPrev', 'clickNext', 'clickLast']);
+const emit = defineEmits(['clickFirst', 'clickPrev', 'clickNext', 'clickLast']);
 
+const is_loading = computed(() => props.loading);
+const prev_disabled = computed(() => props.loading || props.disabled || props.first_page ? true : false);
+const next_disabled = computed(() => props.loading || props.disabled || props.last_page ? true : false);
 const classes = computed(() => ({
   'vc-pagination': true,
   'vc-pagination--frame': props.frame,
@@ -45,20 +51,23 @@ const classes = computed(() => ({
     :data-cp-disabled="disabled ? true : !page && !total_page ? true : undefined"
     :style="{ alignSelf: align }"
   >
-    <ButtonBlock @click="$emit('clickFirst')" :disabled="disabled ? true : first_page ? true : false">
+    <ButtonBlock @click="!is_loading && $emit('clickFirst')" :disabled="prev_disabled">
       <IconChevronDoubleLeft color="var(--color-white)" />
     </ButtonBlock>
-    <ButtonBlock @click="$emit('clickPrev')" :disabled="disabled ? true : first_page ? true : false">
+    <ButtonBlock @click="!is_loading && $emit('clickPrev')" :disabled="prev_disabled">
       <IconChevronLeft color="var(--color-white)" />
     </ButtonBlock>
     <div class="vc-pagination__detail">
-      <Text as="span" v-if="disabled || (!page && !total_page)">-</Text>
-      <Text as="span" v-else>Page {{ page }} of {{ total_page }}</Text>
+      <Bar v-if="is_loading" size="24px" margin="0" />
+      <template v-else>
+        <Text as="span" v-if="disabled || (!page && !total_page)">-</Text>
+        <Text as="span" v-else>Page {{ page }} of {{ total_page }}</Text>
+      </template>
     </div>
-    <ButtonBlock @click="$emit('clickNext')" :disabled="disabled ? true : last_page ? true : false">
+    <ButtonBlock @click="!is_loading && $emit('clickNext')" :disabled="next_disabled">
       <IconChevronRight color="var(--color-white)" />
     </ButtonBlock>
-    <ButtonBlock @click="$emit('clickLast')" :disabled="disabled ? true : last_page ? true : false">
+    <ButtonBlock @click="!is_loading && $emit('clickLast')" :disabled="next_disabled">
       <IconChevronDoubleRight color="var(--color-white)" />
     </ButtonBlock>
   </div>

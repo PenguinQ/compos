@@ -3,14 +3,14 @@ import { useRouter } from 'vue-router';
 
 // Common Components
 import Button from '@components/Button';
-import Card, { CardBody } from '@components/Card';
-import DescriptionList from '@components/DescriptionList';
 import Dialog from '@components/Dialog';
 import EmptyState from '@components/EmptyState';
 import Label from '@components/Label';
 import Separator from '@components/Separator';
 import Text from '@components/Text';
 import Ticker from '@components/Ticker';
+import Card, { CardHeader, CardTitle, CardSubtitle, CardBody } from '@components/Card';
+import DescriptionList, { DescriptionListItem } from '@components/DescriptionList';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Bar } from '@components/Loader';
 import { Column, Row, Container } from '@components/Layout';
@@ -21,6 +21,7 @@ import ProductImage from '@/views/components/ProductImage.vue';
 
 // Constants
 import GLOBAL from '@/views/constants';
+import { BUNDLE_DETAIL } from './constants';
 
 // Assets
 import no_image from '@assets/illustration/no_image.svg';
@@ -84,9 +85,10 @@ const {
       <template v-else>
         <Ticker
           v-if="!data.active"
+          class="page-ticker"
           :items="[
             {
-              title: 'Inactive Product',
+              title: 'Inactive Bundle',
               description: `This product bundle currently inactive since any or one of its products stock is empty or doesn't have any products at all.`,
             },
           ]"
@@ -110,27 +112,38 @@ const {
                 <Text heading="3" margin="0 0 4px">{{ data.name }}</Text>
                 <Text v-if="data.description">{{ data.description }}</Text>
                 <Separator />
-                <DescriptionList
-                  class="product-detail-list"
-                  alignment="horizontal"
-                  :items="[
-                    {
-                      title: 'Price',
-                      description: data.price || data.total_price,
-                    },
-                    {
-                      title: 'Updated At',
-                      description: data.updated_at || 'None',
-                    },
-                  ]"
-                />
-                <Separator />
-                <Text as="h4" heading="5">Products</Text>
+                <DescriptionList class="product-detail-list" alignment="horizontal">
+                  <DescriptionListItem alignItems="center">
+                    <dt>Status</dt>
+                    <dd>
+                      <Label :color="data.active ? 'green' : 'red'">
+                        {{ data.active ? 'Active' : 'Inactive' }}
+                      </Label>
+                    </dd>
+                  </DescriptionListItem>
+                  <DescriptionListItem>
+                    <dt>Price</dt>
+                    <dd>{{ data.price || data.total_price }}</dd>
+                  </DescriptionListItem>
+                  <DescriptionListItem>
+                    <dt>Updated At</dt>
+                    <dd>{{ data.updated_at || '-' }}</dd>
+                  </DescriptionListItem>
+                </DescriptionList>
+              </CardBody>
+            </Card>
+            <Card class="section-card" variant="outline">
+              <CardHeader>
+                <CardTitle>Products</CardTitle>
+                <CardSubtitle>Products available in this bundle.</CardSubtitle>
+              </CardHeader>
+              <CardBody>
                 <EmptyState
                   v-if="!data.products.length"
-                  title="Hmm..."
-                  description="This bundle doesn't have any products."
-                  margin="16px 0"
+                  emoji="🍃"
+                  :title="BUNDLE_DETAIL.EMPTY_PRODUCT_TITLE"
+                  :description="BUNDLE_DETAIL.EMPTY_PRODUCT_DESCRIPTION"
+                  margin="56px 0"
                 />
                 <div v-else class="product-detail-items">
                   <div
@@ -146,11 +159,11 @@ const {
                         <Label v-if="!product.active" color="red">Inactive</Label>
                         {{ product.product_name ? `${product.product_name} - ${product.name}` : product.name }}
                       </Text>
-                      <Text class="product-detail-item__description">
-                        Price: {{ product.price }} <br />
-                        Quantity: {{ product.quantity }} <br />
-                        SKU: {{ product.sku }}
-                      </Text>
+                      <div class="product-detail-item__body">
+                        <Text body="small" margin="0 0 2px">Price: {{ product.price }}</Text>
+                        <Text body="small" margin="0 0 2px">Quantity: {{ product.quantity }}</Text>
+                        <Text body="small" margin="0">SKU: {{ product.sku || '-' }}</Text>
+                      </div>
                     </div>
                   </div>
                 </div>

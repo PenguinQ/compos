@@ -95,6 +95,7 @@ export type VariantCollection = RxCollection<VariantDoc>;
 
 export type BundleProduct = {
   id: string;
+  product_id: string;
   active: boolean;
   quantity: number;
 };
@@ -105,7 +106,8 @@ export type BundleDoc = {
   name: string;
   description?: string;
   products: BundleProduct[];
-  price?: number;
+  price: number;
+  auto_price?: boolean;
   created_at: string;
   updated_at: string;
 };

@@ -1,5 +1,4 @@
 import type { RxDocument } from 'rxdb';
-import { ProductDoc, VariantDoc } from '../types';
 
 type Image = {
   id: string;
@@ -8,7 +7,7 @@ type Image = {
 
 export default async (
   images: Image[],
-  doc: RxDocument<ProductDoc> | RxDocument<VariantDoc>
+  doc: RxDocument<unknown>,
 ) => {
   for (const image of images) {
     const { id, data } = image;

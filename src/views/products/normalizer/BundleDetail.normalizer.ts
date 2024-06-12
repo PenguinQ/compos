@@ -49,7 +49,7 @@ export const bundleDetailNormalizer = (data: unknown): BundleDetailNormalizerRet
       price: toIDR(price ? price : 0),
       stock: stock || 0,
       quantity: quantity || 0,
-      sku: sku || '-',
+      sku: sku || '',
     });
   }
 

@@ -1,4 +1,5 @@
 import type { RxDocument } from 'rxdb';
+
 import { db } from '@database';
 
 type GetPageStatusParams = {

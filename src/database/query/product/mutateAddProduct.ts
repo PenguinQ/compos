@@ -1,32 +1,31 @@
 import { monotonicFactory } from 'ulidx';
 import { sanitize } from 'isomorphic-dompurify';
+import type { RxDocument } from 'rxdb';
 
 import { db } from '@/database';
 import { addImages, compressProductImage, isImagesValid } from '@/database/utils';
 import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
 import type { VariantDoc } from '@/database/types';
+
+// Common Helpers
 import { isNumeric } from '@/helpers';
 
-type ProductVariant = VariantDoc & {
+type MutateAddProductVariant = Partial<VariantDoc> & {
   new_image: File[];
 };
 
-type MutateAddProductQueryData = {
+type MutateAddProductQuery = {
   name: string;
   description?: string;
   by?: string;
   price: number;
   stock: number;
   sku?: string;
-  variant: any[];
+  variants: MutateAddProductVariant[];
   new_image?: File[];
 };
 
-type MutateAddProductQuery = {
-  data: MutateAddProductQueryData;
-};
-
-export default async ({ data }: MutateAddProductQuery) => {
+export default async (data: MutateAddProductQuery) => {
   try {
     const ulid       = monotonicFactory();
     const product_id = PRODUCT_ID_PREFIX + ulid();
@@ -37,7 +36,7 @@ export default async ({ data }: MutateAddProductQuery) => {
       sku,
       price      = 0,
       stock      = 0,
-      variant    = [],
+      variants   = [],
       new_image  = [],
     } = data;
     const clean_name        = sanitize(name);
@@ -45,25 +44,26 @@ export default async ({ data }: MutateAddProductQuery) => {
     const clean_by          = by && sanitize(by);
     const clean_sku         = sku && sanitize(sku);
 
-    if (clean_name.trim() === '') throw 'Name cannot be empty.';
-    if (!isNumeric(price))        throw 'Price must be a number.';
-    if (!isNumeric(stock))        throw 'Stock must be a number.';
+    if (clean_name.trim() === '') throw 'Product name cannot be empty.';
+    if (!isNumeric(price))        throw 'Product price must be a number.';
+    if (!isNumeric(stock))        throw 'Product stock must be a number.';
 
     const clean_price = parseInt(price as unknown as string);
     const clean_stock = parseInt(stock as unknown as string);
+    const is_active   = clean_stock >= 1 ? true : false;
 
     /**
      * ----------------------
      * 1. With variants flow.
      * ----------------------
      */
-    if (variant.length) {
+    if (variants.length) {
       let product_active                  = true;
       const variant_ids: string[]         = [];
       const variant_array: VariantDoc[]   = [];
       const variant_attachments: File[][] = [];
 
-      variant.map((v: ProductVariant) => {
+      for (const variant of variants) {
         const v_id = VARIANT_ID_PREFIX + ulid();
         const {
           name     : v_name,
@@ -71,7 +71,7 @@ export default async ({ data }: MutateAddProductQuery) => {
           price    : v_price     = 0,
           stock    : v_stock     = 0,
           new_image: v_new_image = [],
-        } = v;
+        } = variant;
         const clean_v_name = sanitize(v_name);
         const clean_v_sku  = v_sku && sanitize(v_sku);
 
@@ -95,7 +95,7 @@ export default async ({ data }: MutateAddProductQuery) => {
         });
         variant_ids.push(v_id);
         variant_attachments.push(v_new_image);
-      });
+      }
 
       const inactive_variant = variant_array.filter(v => v.active === false);
 
@@ -115,7 +115,7 @@ export default async ({ data }: MutateAddProductQuery) => {
         sku        : clean_sku,
         price      : 0,
         stock      : 0,
-        variant    : variant_ids,
+        variants   : variant_ids,
         created_at : new Date().toISOString(),
         updated_at : new Date().toISOString(),
       });
@@ -130,8 +130,8 @@ export default async ({ data }: MutateAddProductQuery) => {
 
         const { thumbnails, images } = await compressProductImage(new_image);
 
-        if (thumbnails.length) await addImages(thumbnails, _queryProduct);
-        if (images.length)     await addImages(images, _queryProduct);
+        if (thumbnails.length) await addImages(thumbnails, _queryProduct as RxDocument<unknown>);
+        if (images.length)     await addImages(images, _queryProduct as RxDocument<unknown>);
       }
 
       /**
@@ -140,22 +140,22 @@ export default async ({ data }: MutateAddProductQuery) => {
        * ----------------------------
        */
       const _variantQuery = await db.variant.bulkInsert(variant_array);
-      const { success: variants }  = _variantQuery;
+      const { success: variantQuerySuccess }  = _variantQuery;
 
       /**
        * -----------------------------
        * 1.4. Variant images handling.
        * -----------------------------
        */
-      if (variants.length) {
+      if (variantQuerySuccess.length) {
         for (const [index, variant] of variants.entries()) {
           if (variant_attachments[index].length) {
             if (!isImagesValid(variant_attachments[index])) throw 'Invalid file types.';
 
             const { thumbnails, images } = await compressProductImage(variant_attachments[index]);
 
-            if (thumbnails.length) await addImages(thumbnails, variant);
-            if (images.length)     await addImages(images, variant);
+            if (thumbnails.length) await addImages(thumbnails, variant as unknown as RxDocument<unknown>);
+            if (images.length)     await addImages(images, variant as unknown as  RxDocument<unknown>);
           }
         }
       }
@@ -172,7 +172,7 @@ export default async ({ data }: MutateAddProductQuery) => {
        * --------------------
        */
       const _queryProduct = await db.product.insert({
-        active     : clean_stock >= 1 ? true : false,
+        active     : is_active,
         id         : product_id,
         name       : clean_name,
         description: clean_description,
@@ -180,7 +180,7 @@ export default async ({ data }: MutateAddProductQuery) => {
         sku        : clean_sku,
         price      : clean_price,
         stock      : clean_stock,
-        variant    : [],
+        variants   : [],
         created_at : new Date().toISOString(),
         updated_at : new Date().toISOString(),
       });
@@ -195,8 +195,8 @@ export default async ({ data }: MutateAddProductQuery) => {
 
         const { thumbnails, images } = await compressProductImage(new_image);
 
-        if (thumbnails.length) await addImages(thumbnails, _queryProduct);
-        if (images.length)     await addImages(images, _queryProduct);
+        if (thumbnails.length) await addImages(thumbnails, _queryProduct as RxDocument<unknown>);
+        if (images.length)     await addImages(images, _queryProduct as RxDocument<unknown>);
       }
     }
   } catch (error) {

@@ -8,9 +8,9 @@ export default async (data: any, bundle: any) => {
   const { product, price, available } = bundle;
 
   product.forEach((data: any) => {
-    const { id, active } = data;
+    const { id, product_id, active } = data;
 
-    productArr.push({ id, active, quantity: 1 });
+    productArr.push({ id, product_id, active, quantity: 1 });
   });
 
   return await db.bundle.bulkInsert([

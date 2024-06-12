@@ -10,6 +10,10 @@
     border-right: none;
     border-left: none;
     border-radius: 0;
+
+    + .section-card {
+      margin-top: 16px;
+    }
   }
 }
 
@@ -44,6 +48,16 @@
 
     &:active {
       transform: scale(0.9);
+    }
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .cp-ticker {
+    &.page-ticker {
+      border-left: none;
+      border-right: none;
+      border-radius: 0;
     }
   }
 }

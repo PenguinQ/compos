@@ -4,6 +4,8 @@ import type { GetBundleDetailQueryReturn } from '@/database/query/bundle/getBund
 
 export type DetailProduct = {
   id: string;
+  product_id: string;
+  active: boolean;
   image: string;
   name: string;
   price: number;
@@ -17,11 +19,14 @@ export type BundleFormDetailNormalizerReturn = {
   name: string;
   description: string;
   price: number;
+  auto_price: boolean;
   products: DetailProduct[];
 };
 
 export type ListVariant = {
   id: string;
+  product_id: string;
+  active: boolean;
   image: string;
   name: string;
   price: number;
@@ -31,6 +36,7 @@ export type ListVariant = {
 
 export type ListProduct = {
   id: string;
+  active: boolean;
   image: string;
   name: string;
   price: number;
@@ -45,16 +51,17 @@ export type BundleFormListNormalizerReturn = {
 };
 
 export const bundleFormDetailNormalizer = (data: unknown): BundleFormDetailNormalizerReturn => {
-  const { id, name, description, price, products } = data as GetBundleDetailQueryReturn;
+  const { id, name, description, price, auto_price, products } = data as GetBundleDetailQueryReturn;
   const products_list: DetailProduct[] = [];
 
   for (const product of products) {
-    const { id, images, name, product_name, price, quantity, sku } = product;
-    const product_image = images[0] ? images[0].url : '';
+    const { id, product_id, active, images, name, product_name, price, quantity, sku } = product;
 
     products_list.push({
       id: id || '',
-      image: product_image,
+      product_id: product_id || '',
+      active: active,
+      image: images[0] ? images[0].url : '',
       name: product_name ? `${product_name} - ${name}` : name,
       price: price || 0,
       total_price: price || 0,
@@ -68,6 +75,7 @@ export const bundleFormDetailNormalizer = (data: unknown): BundleFormDetailNorma
     name: name || '',
     description: description || '',
     price: price || 0,
+    auto_price: auto_price ? auto_price : false,
     products: products_list,
   };
 };
@@ -78,14 +86,16 @@ export const bundleFormListNormalizer = (data: unknown): BundleFormListNormalize
   const product_list = [];
 
   for (const product of products) {
-    const { id, variants, name, images, sku, price } = product;
+    const { id: product_id, active, variants, name, images, sku, price } = product;
     const variant_list = [];
 
     for (const variant of variants as VariantsData[]) {
-      const { id, images, name, price, sku } = variant;
+      const { id: variant_id, active, images, name, price, sku } = variant;
 
       variant_list.push({
-        id: id || '',
+        id: variant_id || '',
+        product_id: product_id || '',
+        active: active || false,
         image: images[0] || '',
         name: name || '',
         price: price || 0,
@@ -95,7 +105,8 @@ export const bundleFormListNormalizer = (data: unknown): BundleFormListNormalize
     }
 
     product_list.push({
-      id: id || '',
+      id: product_id || '',
+      active: active || false,
       image: images[0] || '',
       name: name || '',
       price: price || 0,

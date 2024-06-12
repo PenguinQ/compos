@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 
 // Common Components
 import Text from '@components/Text';

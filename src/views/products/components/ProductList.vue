@@ -131,6 +131,7 @@ const {
     <Pagination
       v-if="!isListEmpty"
       frame
+      :loading="listLoading"
       :page="page.current"
       :total_page="page.total"
       :first_page="page.current <= 1"

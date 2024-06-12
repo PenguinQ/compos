@@ -4,7 +4,7 @@ export default async (id: string): Promise<any> => {
   try {
     const _queryBundle = await db.bundle.findOne(id).exec();
 
-    if (!_queryBundle) throw `Bundle didn't exist.`;
+    if (!_queryBundle) throw `Cannot find bundle with id ${id}.`;
 
     await _queryBundle.remove();
   } catch (error) {

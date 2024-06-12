@@ -1,5 +1,5 @@
 import { reactive, ref, inject, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 
 // Databases
@@ -11,7 +11,7 @@ import { getProductList } from '@/database/query/product';
 import { bundleFormListNormalizer, bundleFormDetailNormalizer } from '../normalizer/BundleForm.normalizer'
 
 // Helpers
-import { debounce, toIDR } from '@helpers';
+import { debounce, isNumeric } from '@/helpers';
 
 // Types
 import type {
@@ -24,6 +24,8 @@ import type {
 
 type FormDataProduct = {
   id: string;
+  product_id: string;
+  active: boolean;
   image: string;
   name: string;
   price: number;
@@ -53,12 +55,12 @@ type FormError = {
 
 export const useBundleForm = () => {
   const route = useRoute();
+  const router = useRouter();
   const toast = inject('ToastProvider');
   const { params } = route;
   const search_query = ref('');
   const load_products = ref(false);
   const show_products_dialog = ref(false);
-  // const selected_products = ref<FormDataProduct[]>([]);
   const form_data = reactive<FormData>({
     name: '',
     description: '',
@@ -99,13 +101,16 @@ export const useBundleForm = () => {
       const resp = response as BundleFormDetailNormalizerReturn;
 
       if (params.id) {
-        form_data.name         = resp.name;
-        form_data.description  = resp.description;
-        form_data.price        = resp.price;
+        form_data.name = resp.name;
+        form_data.description = resp.description;
+        form_data.price = resp.price;
+        form_data.auto_price = resp.auto_price,
 
-        resp.products.forEach((p: any) => {
+        resp.products.forEach(p => {
           form_data.products.push({
             id: p.id,
+            product_id: p.product_id,
+            active: p.active,
             image: p.image,
             name: p.name,
             price: p.price,
@@ -113,6 +118,7 @@ export const useBundleForm = () => {
             quantity: p.quantity,
             sku: p.sku,
           });
+          form_error.products.push({ quantity: '' });
         });
       }
     },
@@ -151,35 +157,72 @@ export const useBundleForm = () => {
     },
   })
 
-  // const {
-  //   mutate: mutateAdd,
-  //   isLoading: mutateAddLoading,
-  // } = useMutation({
-  //   queryFn: () => ({}),
-  //   onError: error => {
-  //     // @ts-ignore
-  //     toast.add({ message: `Error adding new bundle, ${error}`, type: 'error' });
-  //     console.error('[ERROR] Error adding new bundle,', error);
-  //   },
-  //   onSuccess: (response: any) => {
-  //     console.log(response);
-  //   },
-  // });
+  const {
+    mutate: mutateAdd,
+    isLoading: mutateAddLoading,
+  } = useMutation({
+    mutateFn: () => {
+      const bundle_products = [];
 
-  // const {
-  //   mutate: mutateEdit,
-  //   isLoading: mutateEditLoading,
-  // } = useMutation({
-  //   queryFn: () => ({}),
-  //   onError: error => {
-  //     // @ts-ignore
-  //     toast.add({ message: `Error updating the bundle, ${error}`, type: 'error' });
-  //     console.error('[ERROR] Error updating the bundle,', error);
-  //   },
-  //   onSuccess: (response: any) => {
-  //     console.log(response);
-  //   },
-  // });
+      for (const product of form_data.products) {
+        const { id, product_id, active, quantity } = product;
+
+        bundle_products.push({ id, product_id, active, quantity });
+      }
+
+      return mutateAddBundle({
+        name: form_data.name,
+        description: form_data.description,
+        price: form_data.price,
+        auto_price: form_data.auto_price,
+        products: bundle_products,
+      });
+    },
+    onError: error => {
+      // @ts-ignore
+      toast.add({ message: `Error adding new bundle, ${error}`, type: 'error' });
+      console.error('[ERROR] Error adding new bundle,', error);
+    },
+    onSuccess: () => {
+      // @ts-ignore
+      toast.add({ message: 'Product added.', type: 'success', duration: 2000 });
+      router.back();
+    },
+  });
+
+  const {
+    mutate: mutateEdit,
+    isLoading: mutateEditLoading,
+  } = useMutation({
+    mutateFn: () => {
+      const bundle_products = [];
+
+      for (const product of form_data.products) {
+        const { id, active, quantity } = product;
+
+        bundle_products.push({ id, active, quantity });
+      }
+
+      return mutateEditBundle({
+        id: params.id as string,
+        name: form_data.name,
+        description: form_data.description,
+        price: form_data.price,
+        auto_price: form_data.auto_price,
+        products: bundle_products,
+      });
+    },
+    onError: error => {
+      // @ts-ignore
+      toast.add({ message: `Error updating the bundle, ${error}`, type: 'error' });
+      console.error('[ERROR] Error updating the bundle,', error);
+    },
+    onSuccess: () => {
+      // @ts-ignore
+      toast.add({ message: 'Bundle detail updated.', type: 'success', duration: 2000 });
+      router.back();
+    },
+  });
 
   const handleSearch = debounce((e: Event) => {
     const target = e.target as HTMLInputElement;
@@ -187,6 +230,42 @@ export const useBundleForm = () => {
     page.current = 1;
     search_query.value = target.value;
   });
+
+  const handleSubmit = () => {
+    const errors = [];
+
+    if (form_data.name.trim() === '') {
+      form_error.name = 'Bundle name cannot be empty.';
+      errors.push('');
+    } else {
+      form_error.name = '';
+    }
+
+    if (!isNumeric(form_data.price)) {
+      form_error.price = 'Bundle price must be a number and cannot be empty.';
+      errors.push('');
+    } else {
+      form_error.price = '';
+    }
+
+    if (form_data.products.length) {
+      form_data.products.forEach((product, index) => {
+        if (!isNumeric(product.quantity)) {
+          form_error.products[index].quantity = 'Product quantity must be a number and cannot be empty.';
+          errors.push('');
+        } else {
+          form_error.products[index].quantity = '';
+        }
+      });
+    }
+
+    if (!errors.length) {
+      params.id ? mutateEdit() : mutateAdd();
+    } else {
+      // @ts-ignore
+      toast.add({ message: 'There is an error in some form input; please check again.', type: 'error' });
+    }
+  };
 
   const toPrevPage = (_e: Event, toFirst?: boolean) => {
     if (toFirst) {
@@ -224,7 +303,7 @@ export const useBundleForm = () => {
   };
 
   const handleSelectProduct = (data: ListProduct) => {
-    const { id, image, name, price, variants, sku } = data;
+    const { id, active, image, name, price, variants, sku } = data;
     const products = form_data.selected_products;
 
     if (variants.length) {
@@ -235,12 +314,14 @@ export const useBundleForm = () => {
         form_data.selected_products = products.filter(product => !variant_ids.some(id => id === product.id));
       } else {
         for (const variant of variants) {
-          const { id, image, name: variant_name, price, sku  } = variant;
+          const { id, product_id, active, image, name: variant_name, price, sku  } = variant;
           const is_variant_selected = products.find(product => product.id === id);
 
           if (!is_variant_selected) {
             products.push({
               id,
+              product_id,
+              active,
               image,
               name: `${name} - ${variant_name}`,
               price,
@@ -248,6 +329,7 @@ export const useBundleForm = () => {
               quantity: 1,
               sku: sku || '',
             });
+            form_error.products.push({ quantity: '' });
           }
         }
       }
@@ -258,9 +340,12 @@ export const useBundleForm = () => {
         const index = products.indexOf(is_product_selected);
 
         products.splice(index, 1);
+        form_error.products.splice(index, 1);
       } else {
         products.push({
           id,
+          product_id: '',
+          active,
           image,
           name,
           price,
@@ -268,12 +353,13 @@ export const useBundleForm = () => {
           quantity: 1,
           sku: sku || '',
         });
+        form_error.products.push({ quantity: '' });
       }
     }
   };
 
   const handleSelectVariant = (data: ListVariant, product_name: string) => {
-    const { id, image, name, price, sku } = data;
+    const { id, product_id, active, image, name, price, sku } = data;
     const products = form_data.selected_products;
     const selected = products.find(product => product.id === id);
 
@@ -281,9 +367,12 @@ export const useBundleForm = () => {
       const index = products.indexOf(selected);
 
       products.splice(index, 1);
+      form_error.products.splice(index, 1);
     } else {
       products.push({
         id,
+        product_id,
+        active,
         image,
         name: `${product_name} - ${name}`,
         price,
@@ -291,12 +380,13 @@ export const useBundleForm = () => {
         quantity: 1,
         sku: sku || '',
       });
+      form_error.products.push({ quantity: '' });
     }
   };
 
   const handleRemoveProduct = (index: number) => {
     form_data.products.splice(index, 1);
-    // form_data.selected_products = [...form_data.products];
+    form_error.products.splice(index, 1);
   };
 
   const isProductSelected = (data: ListProduct) => {
@@ -319,7 +409,7 @@ export const useBundleForm = () => {
   const handleChangeQuantity = (e: Event, product: DetailProduct) => {
     const target = e.target as HTMLInputElement;
 
-    if (target.value.trim() === '') {
+    if (!isNumeric(target.value)) {
       product.quantity = 1;
       product.total_price = product.price * 1;
     }
@@ -354,8 +444,6 @@ export const useBundleForm = () => {
   watch(
     () => form_data.products,
     (products) => {
-      console.log('berak')
-
       if (form_data.auto_price) {
         form_data.price = getUpdatedPrice(products);
       }
@@ -392,6 +480,7 @@ export const useBundleForm = () => {
     handleCloseDialog,
     handleChangeQuantity,
     handleUpdateQuantity,
+    handleSubmit,
     isProductSelected,
     isVariantSelected,
     handleSelectProduct,
@@ -399,9 +488,9 @@ export const useBundleForm = () => {
     handleRemoveProduct,
     toPrevPage,
     toNextPage,
-    // mutateAdd,
-    // mutateAddLoading,
-    // mutateEdit,
-    // mutateEditLoading
+    mutateAdd,
+    mutateAddLoading,
+    mutateEdit,
+    mutateEditLoading
   };
 };

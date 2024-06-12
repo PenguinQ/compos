@@ -1,30 +1,11 @@
-import type { RxDocument } from 'rxdb';
-
 import { db } from '@/database';
+
+// Database Utilities
+import { removeFromBundles } from '@/database/utils';
 
 export default async (id: string) => {
   try {
     const _queryProduct = await db.product.findOne(id).exec();
-
-    const removeFromBundles = async (bundles: RxDocument<any>[]) => {
-      for (const bundle of bundles) {
-        await bundle.incrementalModify((prev: RxDocument<any>) => {
-          const index = prev.product.findIndex((data: RxDocument<any>) => data.id === id);
-
-          prev.product.splice(index, 1);
-
-          if (prev.product.length) {
-            const inactive = prev.product.filter((data: RxDocument<any>) => data.active === false);
-
-            prev.active = inactive.length ? false : true;
-          } else {
-            prev.active = false;
-          }
-
-          return prev;
-        });
-      }
-    };
 
     if (!_queryProduct) throw `Cannot find product with id ${id}.`;
 
@@ -48,13 +29,13 @@ export default async (id: string) => {
        * 1.2 Get variants of the product and delete it.
        * ----------------------------------------------
        */
-      const _queryVariant = db.variant.find({
+      const _queryVariantConstruct = db.variant.find({
         selector: {
           product_id: id,
         },
       });
 
-      await _queryVariant.remove();
+      await _queryVariantConstruct.remove();
 
       /**
        * -------------------------------------------------------------------------------
@@ -65,10 +46,10 @@ export default async (id: string) => {
         selector: {
           products: {
             $elemMatch: {
-              id,
-            }
-          }
-        }
+              product_id: id,
+            },
+          },
+        },
       }).exec();
 
       /**
@@ -76,7 +57,7 @@ export default async (id: string) => {
        * 1.4 Recursively delete currently deleted product variant in each bundle.
        * ------------------------------------------------------------------------
        */
-      if (_queryBundle.length) await removeFromBundles(_queryBundle);
+      if (_queryBundle.length) await removeFromBundles(id, _queryBundle, true);
     }
     /**
      * -------------------------------------------
@@ -111,7 +92,7 @@ export default async (id: string) => {
        * 2.3 Recursively delete currently deleted product in each bundle.
        * ----------------------------------------------------------------
        */
-      if (_queryBundle.length) await removeFromBundles(_queryBundle);
+      if (_queryBundle.length) await removeFromBundles(id, _queryBundle);
     };
   } catch (error) {
     if (error instanceof Error) {

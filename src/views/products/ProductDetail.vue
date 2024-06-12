@@ -3,14 +3,14 @@ import { useRouter } from 'vue-router';
 
 // Common Components
 import Button from '@components/Button';
-import Card, { CardBody } from '@components/Card';
-import DescriptionList from '@components/DescriptionList';
 import Dialog from '@components/Dialog';
 import EmptyState from '@components/EmptyState';
 import Label from '@components/Label';
+import Separator from '@components/Separator'
 import Text from '@components/Text';
 import Ticker from '@components/Ticker';
-import Separator from '@components/Separator'
+import Card, { CardHeader, CardTitle, CardSubtitle, CardBody } from '@components/Card';
+import DescriptionList, { DescriptionListItem } from '@components/DescriptionList';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Bar } from '@components/Loader';
 import { Column, Row, Container } from '@components/Layout';
@@ -21,6 +21,7 @@ import ProductImage from '@/views/components/ProductImage.vue';
 
 // Constants
 import GLOBAL from '@/views/constants';
+import { PRODUCT_DETAIL } from './constants';
 
 // Assets
 import no_image from '@assets/illustration/no_image.svg';
@@ -116,40 +117,58 @@ const {
                   ]"
                   margin="0 0 20px"
                 />
-                <DescriptionList
-                  class="product-detail-list"
-                  alignment="horizontal"
-                  :items="data.variants.length ? [
-                    {
-                      title: 'Updated At',
-                      description: data.updated_at || '-',
-                    },
-                  ] : [
-                    {
-                      title: 'Price',
-                      description: data.price,
-                    },
-                    {
-                      title: 'Stock',
-                      description: data.stock || '-',
-                    },
-                    {
-                      title: 'SKU',
-                      description: data.sku || '-',
-                    },
-                    {
-                      title: 'Updated At',
-                      description: data.updated_at || '-',
-                    },
-                  ]"
-                />
-                <Separator />
-                <Text as="h4" heading="5">Variants</Text>
+                <DescriptionList class="product-detail-list" alignment="horizontal">
+                  <template v-if="data.variants.length">
+                    <DescriptionListItem alignItems="center">
+                      <dt>Status</dt>
+                      <dd>
+                        <Label :color="data.active ? 'green' : 'red'">
+                          {{ data.active ? 'Active' : 'Inactive' }}
+                        </Label>
+                      </dd>
+                    </DescriptionListItem>
+                  </template>
+                  <template v-else>
+                    <DescriptionListItem alignItems="center">
+                      <dt>Status</dt>
+                      <dd>
+                        <Label :color="data.active ? 'green' : 'red'">
+                          {{ data.active ? 'Active' : 'Inactive' }}
+                        </Label>
+                      </dd>
+                    </DescriptionListItem>
+                    <DescriptionListItem>
+                      <dt>Price</dt>
+                      <dd>{{ data.price }}</dd>
+                    </DescriptionListItem>
+                    <DescriptionListItem>
+                      <dt>Stock</dt>
+                      <dd>{{ data.stock }}</dd>
+                    </DescriptionListItem>
+                    <DescriptionListItem>
+                      <dt>SKU</dt>
+                      <dd>{{ data.sku || '-' }}</dd>
+                    </DescriptionListItem>
+                  </template>
+                  <DescriptionListItem>
+                    <dt>Updated At</dt>
+                    <dd>{{ data.updated_at }}</dd>
+                  </DescriptionListItem>
+                </DescriptionList>
+              </CardBody>
+            </Card>
+            <Card class="section-card" variant="outline">
+              <CardHeader>
+                <CardTitle>Variants</CardTitle>
+                <CardSubtitle>Variants available in this product.</CardSubtitle>
+              </CardHeader>
+              <CardBody>
                 <EmptyState
                   v-if="!data.variants.length"
-                  title="Hmm..."
-                  description="This product doesn't have any variants."
-                  margin="16px 0"
+                  emoji="🍃"
+                  :title="PRODUCT_DETAIL.EMPTY_VARIANT_TITLE"
+                  :description="PRODUCT_DETAIL.EMPTY_VARIANT_DESCRIPTION"
+                  margin="56px 0"
                 />
                 <div v-else class="product-detail-items">
                   <div
@@ -165,9 +184,11 @@ const {
                         <Label v-if="!variant.active" color="red">Inactive</Label>
                         {{ variant.name }}
                       </Text>
-                      <Text class="product-detail-item__description">
-                        Price: {{ variant.price }} | Stock: {{ variant.stock }} | SKU: {{ variant.sku }}
-                      </Text>
+                      <div class="product-detail-item__body">
+                        <Text body="small" margin="0 0 2px">Price: {{ variant.price }}</Text>
+                        <Text body="small" margin="0 0 2px">Quantity: {{ variant.stock }}</Text>
+                        <Text body="small" margin="0">SKU: {{ variant.sku || '-' }}</Text>
+                      </div>
                     </div>
                   </div>
                 </div>

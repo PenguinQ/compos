@@ -3,17 +3,16 @@ import { useRouter } from 'vue-router';
 
 // Common Components
 import Button from '@components/Button';
-import Text from '@components/Text';
-import Card, { CardHeader, CardTitle, CardBody } from '@components/Card';
 import EmptyState from '@components/EmptyState';
 import Textfield from '@components/Textfield';
 import Textarea from '@components/Textarea';
 import QuantityEditor from '@components/QuantityEditor';
 import Ticker from '@components/Ticker';
+import Card, { CardHeader, CardTitle, CardSubtitle, CardBody } from '@components/Card';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Row, Column } from '@components/Layout';
 import { Bar } from '@components/Loader';
-import { IconArrowLeftShort, IconXLarge } from '@icons';
+import { IconArrowLeftShort, IconSave, IconXLarge } from '@icons';
 
 // View Components
 import ProductImage from '@/views/components/ProductImage.vue';
@@ -23,7 +22,7 @@ import { useProductForm } from './hooks/ProductForm.hook';
 
 // Constants
 import GLOBAL from '@/views/constants';
-import { PRODUCT_DETAIL } from './constants';
+import { PRODUCT_FORM } from './constants';
 
 // Assets
 import no_image from '@assets/illustration/no_image.svg';
@@ -55,7 +54,12 @@ const {
     </ToolbarAction>
     <ToolbarTitle>{{ product_id ? 'Edit Product' : 'Add Product' }}</ToolbarTitle>
     <ToolbarSpacer />
-    <ToolbarAction @click="handleSubmit">{{ mutateAddLoading || mutateEditLoading ? 'Loading' : 'Save' }}</ToolbarAction>
+    <ToolbarAction v-if="mutateAddLoading || mutateEditLoading" backgroundColor="var(--color-blue-4)" icon>
+      <Bar size="24px" color="var(--color-white)" />
+    </ToolbarAction>
+    <ToolbarAction v-else backgroundColor="var(--color-blue-4)" icon @click="handleSubmit">
+      <IconSave size="24px" color="var(--color-white)" />
+    </ToolbarAction>
   </Toolbar>
   <!--  -->
   <Container class="page-container">
@@ -107,6 +111,7 @@ const {
                 <Card class="section-card" variant="outline">
                   <CardHeader>
                     <CardTitle>General</CardTitle>
+                    <CardSubtitle>General information about this product.</CardSubtitle>
                   </CardHeader>
                   <CardBody>
                     <div class="product-form-fields">
@@ -172,13 +177,15 @@ const {
                 <Card class="section-card" variant="outline">
                   <CardHeader>
                     <CardTitle>Variants</CardTitle>
+                    <CardSubtitle>Variants available for this product.</CardSubtitle>
                   </CardHeader>
                   <CardBody>
                     <EmptyState
                       v-if="!form_data.variants.length"
-                      title="Hmm..."
-                      description="This product doesn't have any variants."
-                      margin="16px 0"
+                      emoji="🍃"
+                      :title="PRODUCT_FORM.EMPTY_VARIANT_TITLE"
+                      :description="PRODUCT_FORM.EMPTY_VARIANT_DESCRIPTION"
+                      margin="56px 0"
                     >
                       <template #action>
                         <Button @click="handleAddVariant">Add Variant</Button>

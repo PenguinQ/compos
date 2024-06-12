@@ -49,7 +49,7 @@ export const useBundleDetail = () => {
       // @ts-ignore
       toast.add({ message: 'Bundle deleted', type: 'success', duration: 2000 });
       router.back();
-    }
+    },
   });
 
   return {

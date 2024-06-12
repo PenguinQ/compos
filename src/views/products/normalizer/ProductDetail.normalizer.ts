@@ -58,7 +58,7 @@ export const detailNormalizer = (data: unknown): ProductDetailNormalizerReturn =
       image: variant_image,
       price: toIDR(price ? price : 0),
       stock: stock || 0,
-      sku: sku || '-',
+      sku: sku || '',
     });
   });
 

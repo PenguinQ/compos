@@ -25,6 +25,9 @@ export default {
           id: {
             type: 'string',
           },
+          product_id: {
+            type: 'string',
+          },
           active: {
             type: 'boolean',
           },
@@ -34,6 +37,10 @@ export default {
         },
       },
       default: [],
+    },
+    auto_price: {
+      type: 'boolean',
+      default: true,
     },
     price: {
       type: 'number',
@@ -50,10 +57,9 @@ export default {
   required: [
     'id',
     'name',
-    'product',
+    'price',
+    'products',
     'created_at',
-    'upudated_at',
+    'updated_at',
   ],
 };
-
-// If price is filled, the price will be fixed, if not, it will sum the prices of the product.
