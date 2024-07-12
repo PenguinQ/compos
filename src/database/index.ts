@@ -97,11 +97,3 @@ export const initDB = async () => {
     }
   }
 };
-
-// export const setDBCache = (key: string, result: object) => {
-//   db_cache.set(key, result);
-// };
-
-// export const getDBCache = (key: string) => {
-//   return db_cache.get(key);
-// };

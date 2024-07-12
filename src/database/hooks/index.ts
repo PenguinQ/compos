@@ -64,21 +64,25 @@ export const useQuery = (params: UseQueryParams) => {
       const { data: cache_data, isStale } = queryCache.get(cache_key);
 
       if (cache_data) {
-        if (!isStale) {
-          if (delay) {
-            delayTimeout = setTimeout(() => {
+        if (delay) {
+          delayTimeout = setTimeout(() => {
+            states.data = cache_data;
+
+            if (!isStale) {
               states.isLoading = false;
               states.isSuccess = true;
-              states.data = cache_data;
 
               if (onSuccess) onSuccess(states.data);
 
               return;
-            }, delay);
-          } else {
+            }
+          }, delay);
+        } else {
+          states.data = cache_data;
+
+          if (!isStale) {
             states.isLoading = false;
             states.isSuccess = true;
-            states.data = cache_data;
 
             if (onSuccess) onSuccess(states.data);
 
