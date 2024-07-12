@@ -139,7 +139,7 @@ export default async ({
     if (observe) {
       const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> => {
         const products_count = await getProductsCount();
-        const total_page    = Math.ceil(products_count / query_limit);
+        const total_page     = Math.ceil(products_count / query_limit);
         const { first_page, last_page } = await getPageStatus({
           collection: 'product',
           data,

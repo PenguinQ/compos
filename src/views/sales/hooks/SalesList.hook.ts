@@ -1,37 +1,47 @@
-import { reactive, ref, inject } from 'vue';
+import { ref, inject, toRef, computed } from 'vue';
 import type { Ref } from 'vue';
 
+// Databases
 import { useQuery } from '@/database/hooks';
 import { getSalesList } from '@/database/query/sales';
-import { debounce } from '@helpers';
 
+// Common View Hooks
+import { usePagination } from '@/views/hooks';
+
+// Normalizers
 import { salesListNormalizer } from '../normalizer/SalesList.normalizer';
 import type { SalesListNormalizerReturn } from '../normalizer/SalesList.normalizer';
 
+// Common Helpers
+import { debounce } from '@/helpers';
+
 export const useSalesList = (status: 'running' | 'finished' = 'running') => {
+  const { page, toNext, toPrev } = usePagination();
   const toast = inject('ToastProvider');
   const search_query = ref('');
   const isSalesEmpty = ref(true);
-  const page = reactive({
-    current: 1,
-    total: 1,
-    limit: 10,
-    first: true,
-    last: true,
-  });
+  const current_page = computed(() => page.current);
 
+  /**
+   * ---------------
+   * Get sales list.
+   * ---------------
+   * Run on route(s):
+   * - /sales/list
+   */
   const {
     data,
     refetch: salesRefetch,
     isLoading: salesLoading,
     isError: salesError,
   } = useQuery({
-    queryKey: [search_query],
+    delay: 300,
+    queryKey: ['sales-list', search_query, status, current_page],
     queryFn: () => getSalesList({
       search_query: search_query.value,
       sort: 'desc',
       status,
-      limit: page.limit,
+      limit: 1,
       page: page.current,
       normalizer: salesListNormalizer,
     }),
@@ -60,37 +70,16 @@ export const useSalesList = (status: 'running' | 'finished' = 'running') => {
     search_query.value = target.value;
   });
 
-  const toPrevPage = (_e: Event, toFirst?: boolean) => {
-    if (toFirst) {
-      page.current = 1;
-    } else {
-      if (page.current > 1) page.current -= 1;
-    }
-
-    !page.first && salesRefetch();
-  };
-
-  const toNextPage = (e: Event, toLast?: boolean) => {
-    if (toLast) {
-      page.current = page.total;
-    } else {
-      if (page.current < page.total) page.current += 1;
-    }
-
-    !page.last && salesRefetch();
-  };
-
-
   return {
     data: data as Ref<SalesListNormalizerReturn>,
     search_query,
-    handleSearch,
+    page,
     isSalesEmpty,
     salesError,
     salesLoading,
+    handleSearch,
     salesRefetch,
-    toNextPage,
-    toPrevPage,
-    page,
+    toNext,
+    toPrev,
   };
 };

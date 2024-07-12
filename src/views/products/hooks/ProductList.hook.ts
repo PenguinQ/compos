@@ -1,4 +1,4 @@
-import { inject, ref, reactive } from 'vue';
+import { computed, inject, ref } from 'vue';
 import type { Ref } from 'vue';
 
 // Databases
@@ -6,26 +6,24 @@ import { useQuery } from '@/database/hooks';
 import { getProductList } from '@/database/query/product';
 import { getBundleList } from '@/database/query/bundle';
 
+// Common View Hooks
+import { usePagination } from '@/views/hooks';
+
 // Normalizers
 import { productListNormalizer } from '../normalizer/ProductList.normalizer';
 import { bundleListNormalizer } from '../normalizer/BundleList.normalizer';
 import type { ProductListNormalizerReturn } from '../normalizer/ProductList.normalizer';
 import type { BundleListNormalizerReturn } from '../normalizer/BundleList.normalizer';
 
-// Helpers
+// Common Helpers
 import { debounce } from '@helpers';
 
 export const useProductList = (type: 'product' | 'bundle') => {
+  const { page, toNext, toPrev } = usePagination();
   const toast = inject('ToastProvider');
   const search_query = ref('');
-  const page = reactive({
-    current: 1,
-    total: 1,
-    limit: 12,
-    first: true,
-    last: true,
-  });
   const isListEmpty = ref(true);
+  const current_page = computed(() => page.current);
 
   const {
     data: list,
@@ -33,10 +31,15 @@ export const useProductList = (type: 'product' | 'bundle') => {
     isLoading: listLoading,
     isError: listError,
   } = useQuery({
-    queryKey: [search_query],
+    delay: 300,
+    queryKey: [
+      type === 'product' ? 'product-list' : 'bundle-list',
+      search_query,
+      current_page,
+    ],
     queryFn: () => type === 'product' ? getProductList({
       search_query: search_query.value,
-      sort: 'asc',
+      sort: 'desc',
       limit: page.limit,
       page: page.current,
       complete: true,
@@ -48,7 +51,6 @@ export const useProductList = (type: 'product' | 'bundle') => {
       page: page.current,
       normalizer: bundleListNormalizer,
     }),
-    delay: 300,
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get product list,', type: 'error', duration: 2000 });
@@ -78,26 +80,6 @@ export const useProductList = (type: 'product' | 'bundle') => {
     search_query.value = target.value;
   });
 
-  const toPrevPage = (_e: Event, toFirst?: boolean) => {
-    if (toFirst) {
-      page.current = 1;
-    } else {
-      if (page.current > 1) page.current -= 1;
-    }
-
-    !page.first && listRefetch();
-  };
-
-  const toNextPage = (_e: Event, toLast?: boolean) => {
-    if (toLast) {
-      page.current = page.total;
-    } else {
-      if (page.current < page.total) page.current += 1;
-    }
-
-    !page.last && listRefetch();
-  };
-
   return {
     list: list as Ref<ProductListNormalizerReturn & BundleListNormalizerReturn>,
     search_query,
@@ -107,7 +89,7 @@ export const useProductList = (type: 'product' | 'bundle') => {
     listRefetch,
     handleSearch,
     isListEmpty,
-    toNextPage,
-    toPrevPage,
+    toNext,
+    toPrev,
   };
 };

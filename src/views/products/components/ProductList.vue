@@ -41,8 +41,8 @@ const {
   listError,
   listLoading,
   listRefetch,
-  toNextPage,
-  toPrevPage,
+  toPrev,
+  toNext,
   handleSearch,
 } = useProductList(props.type);
 </script>
@@ -82,7 +82,7 @@ const {
         margin="56px 0"
       />
       <template v-else>
-        <div class="product-grid" style="position: relative;">
+        <div class="product-grid">
           <template v-if="type === 'product'">
             <Card class="product" :key="product.id" v-for="product in list.products" :to="`/product/${product.id}`">
               <ProductImage class="product__image">
@@ -136,10 +136,10 @@ const {
       :total_page="page.total"
       :first_page="page.current <= 1"
       :last_page="page.current >= page.total"
-      @clickFirst="toPrevPage($event, true)"
-      @clickPrev="toPrevPage"
-      @clickNext="toNextPage"
-      @clickLast="toNextPage($event, true)"
+      @clickFirst="toPrev(true)"
+      @clickPrev="toPrev"
+      @clickNext="toNext"
+      @clickLast="toNext(true)"
     />
   </ListFooter>
 </template>

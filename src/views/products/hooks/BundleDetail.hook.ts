@@ -24,6 +24,7 @@ export const useBundleDetail = () => {
     isLoading,
     isSuccess,
   } = useQuery({
+    queryKey: ['bundle-details', params.id],
     queryFn: () => getBundleDetail({
       id: params.id as string,
       normalizer: bundleDetailNormalizer,

@@ -1,4 +1,4 @@
-import { inject, reactive, ref } from 'vue';
+import { computed, inject, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
 import { useRoute, useRouter } from "vue-router";
 
@@ -12,7 +12,7 @@ import { salesFormListNormalizer, salesFormNormalizer } from '../normalizer/Sale
 import type { ListVariant, ListProduct, ListNormalizerReturn, FormNormalizerReturn } from '../normalizer/SalesForm.normalizer';
 
 // Helpers
-import { debounce } from '@helpers';
+import { debounce } from '@/helpers';
 
 type FormDataProduct = {
   id: string;
@@ -51,13 +51,24 @@ export const useSalesForm = () => {
     first: true,
     last: true,
   });
+  const current_page = computed(() => page.current);
 
+  /**
+   * -----------------------
+   * Get sales form details.
+   * -----------------------
+   * Get sales form details if id from url params is exist.
+   *
+   * Run on route(s):
+   * - /sales/detail/:id
+   */
   const {
     refetch: salesDetailRefetch,
     isError: salesDetailError,
     isLoading: salesDetailLoading,
   } = useQuery({
     enabled: params.id ? true : false,
+    queryKey: ['sales-form-details', params.id],
     queryFn: () => getSalesDetail({
       id: params.id as string,
       normalizer: salesFormNormalizer,
@@ -67,7 +78,7 @@ export const useSalesForm = () => {
       toast.add({ message: `Error getting sales detail, ${error}`, type: 'error' });
       console.error('[ERROR] Error getting sales detail.', error);
     },
-    onSuccess: (response: unknown) => {
+    onSuccess: response => {
       const { name, products } = response as FormNormalizerReturn;
 
       form_data.name = name;
@@ -75,6 +86,16 @@ export const useSalesForm = () => {
     },
   });
 
+  /**
+   * ----------------------------
+   * Get sales form product list.
+   * ----------------------------
+   * Get sales form details list of available products.
+   *
+   * Run on route(s):
+   * - /sales/add
+   * - /sales/detail/:id
+   */
   const {
     data: product_list,
     refetch: productListRefetch,
@@ -82,11 +103,11 @@ export const useSalesForm = () => {
     isError: productListError,
   } = useQuery({
     enabled: load_products,
-    queryKey: [search_query],
+    queryKey: ['sales-form-products', search_query, current_page],
     queryFn: () => getProductList({
       active: true,
       search_query: search_query.value,
-      sort: 'asc',
+      sort: 'desc',
       complete: true,
       limit: page.limit,
       page: page.current,
@@ -97,7 +118,7 @@ export const useSalesForm = () => {
       toast.add({ message: `Error getting product list, ${error}`, type: 'error' });
       console.error('[ERROR] Error getting product list.', error);
     },
-    onSuccess: (response: unknown) => {
+    onSuccess: response => {
       if (response) {
         const { page: response_page } = response as ListNormalizerReturn;
 
@@ -108,6 +129,13 @@ export const useSalesForm = () => {
     },
   });
 
+  /**
+   * --------------
+   * Add new sales.
+   * --------------
+   * Run on route(s):
+   * - /sales/add
+   */
   const {
     mutate: mutateAdd,
     isLoading: mutateAddLoading,

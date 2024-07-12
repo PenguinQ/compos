@@ -21,6 +21,7 @@ export const useSalesDetail = () => {
     isError,
     isLoading,
   } = useQuery({
+    queryKey: ['sales-detail', params.id],
     queryFn: () => getSalesDetail({
       id: params.id as string,
       normalizer: salesDetailNormalizer,

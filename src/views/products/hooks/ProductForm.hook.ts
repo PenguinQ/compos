@@ -95,6 +95,7 @@ export const useProductForm = () => {
     isError: productDetailError,
     isLoading: productDetailLoading,
   } = useQuery({
+    queryKey: ['product-form-details', params.id],
     queryFn: () => getProductDetail({
       id: params.id as string,
       normalizer: formDetailNormalizer,

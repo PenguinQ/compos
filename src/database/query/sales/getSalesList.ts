@@ -1,6 +1,6 @@
 import type { RxDocument } from 'rxdb';
 
-import { db } from '@/database';
+import { db, setDBCache } from '@/database';
 import { getPageStatus } from '@/database/utils';
 import type { QueryParams } from '@/database/types';
 
@@ -83,7 +83,7 @@ export default async ({
         const total_page  = Math.ceil(sales_count / query_limit);
         const { first_page, last_page } = await getPageStatus({
           collection: 'sales',
-          data: _querySales as RxDocument<SalesDoc>[],
+          data,
           sort,
           sortBy: [{ id: sort }],
           query: {
@@ -91,7 +91,7 @@ export default async ({
             finished: { $eq: status === 'running' ? false : true },
           },
         });
-        const sales_data = await getSalesData(_querySales as RxDocument<SalesDoc>[]);
+        const sales_data = await getSalesData(data as RxDocument<SalesDoc>[]);
 
         return {
           data      : sales_data,
@@ -106,7 +106,7 @@ export default async ({
       };
 
       return {
-        observeabke: true,
+        observeable: true,
         result: _querySales,
         observeableProcessor,
         normalizer,

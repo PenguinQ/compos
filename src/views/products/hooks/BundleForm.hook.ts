@@ -1,4 +1,4 @@
-import { reactive, ref, inject, watch } from 'vue';
+import { computed, reactive, ref, inject, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 
@@ -81,12 +81,14 @@ export const useBundleForm = () => {
     first: true,
     last: true,
   });
+  const current_page = computed(() => page.current);
 
   const {
     refetch: bundleDetailRefetch,
     isError: bundleDetailError,
     isLoading: bundleDetailLoading,
   } = useQuery({
+    queryKey: ['bundle-form-details', params.id],
     queryFn: () => getBundleDetail({
       id: params.id as string,
       normalizer: bundleFormDetailNormalizer,
@@ -131,7 +133,7 @@ export const useBundleForm = () => {
     isError: productListError,
   } = useQuery({
     enabled: load_products,
-    queryKey: [search_query],
+    queryKey: ['bundle-form-products', search_query, current_page],
     queryFn: () => getProductList({
       active: true,
       search_query: search_query.value,

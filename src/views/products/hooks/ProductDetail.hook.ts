@@ -25,6 +25,7 @@ export const useProductDetail = () => {
     isLoading,
     isSuccess,
   } = useQuery({
+    queryKey: ['product-details', params.id],
     queryFn: () => getProductDetail({
       id: params.id as string,
       normalizer: detailNormalizer,

@@ -36,8 +36,8 @@ const {
   salesError,
   salesLoading,
   salesRefetch,
-  toNextPage,
-  toPrevPage,
+  toNext,
+  toPrev,
   handleSearch,
 } = useSalesList(props.status);
 </script>
@@ -63,14 +63,14 @@ const {
     <Bar v-if="salesLoading" margin="56px 0" />
     <template v-else>
       <EmptyState
-        v-if="!data.sales.length && search_query === ''"
+        v-if="isSalesEmpty && search_query === ''"
         emoji="🍃"
         :title="props.status === 'running' ? SALES_LIST.RUNNING_EMPTY_TITLE : SALES_LIST.FINISHED_EMPTY_TITLE"
         :description="props.status === 'running' ? SALES_LIST.RUNNING_EMPTY_DESCRIPTION : SALES_LIST.FINISHED_EMPTY_DESCRIPTION"
         margin="56px 0"
       />
       <EmptyState
-        v-else-if="!data.sales.length && search_query !== ''"
+        v-else-if="isSalesEmpty && search_query !== ''"
         emoji="😵‍💫"
         :title="SALES_LIST.SEARCH_EMPTY_TITLE"
         :description="SALES_LIST.SEARCH_EMPTY_DESCRIPTION"
@@ -108,30 +108,31 @@ const {
         </div>
       </template>
     </template>
-    <ListFooter
-      sticky
-      :height="isSalesEmpty ? '82px' : '152px'"
-      bottom="var(--bottom-nav-height)"
-    >
-      <ListFab
-        v-if="status === 'running'"
-        align="flex-end"
-        @click="router.push('/sales/add')"
-      />
-      <Pagination
-        v-if="!salesLoading && !isSalesEmpty"
-        frame
-        :page="page.current"
-        :total_page="page.total"
-        :first_page="page.current <= 1"
-        :last_page="page.current >= page.total"
-        @clickFirst="toPrevPage($event, true)"
-        @clickPrev="toPrevPage"
-        @clickNext="toNextPage"
-        @clickLast="toNextPage($event, true)"
-      />
-    </ListFooter>
   </template>
+  <ListFooter
+    sticky
+    :height="isSalesEmpty ? '82px' : '152px'"
+    bottom="var(--bottom-nav-height)"
+  >
+    <ListFab
+      v-if="status === 'running'"
+      align="flex-end"
+      @click="router.push('/sales/add')"
+    />
+    <Pagination
+      v-if="!isSalesEmpty"
+      frame
+      :loading="salesLoading"
+      :page="page.current"
+      :total_page="page.total"
+      :first_page="page.current <= 1"
+      :last_page="page.current >= page.total"
+      @clickFirst="toPrev(true)"
+      @clickPrev="toPrev"
+      @clickNext="toNext"
+      @clickLast="toNext(true)"
+    />
+  </ListFooter>
 </template>
 
 <style lang="scss" scoped>
