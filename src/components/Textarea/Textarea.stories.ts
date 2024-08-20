@@ -6,7 +6,6 @@ import Textarea from './Textarea.vue';
 
 const meta: Meta<typeof Textarea> = {
   component: Textarea,
-  tags: ['autodocs'],
   argTypes: {
     containerProps: {
       control: 'object',
@@ -27,7 +26,7 @@ const meta: Meta<typeof Textarea> = {
       control: 'text',
     },
     maxRows: {
-      control: 'number'
+      control: 'number',
     },
     message: {
       control: 'text',

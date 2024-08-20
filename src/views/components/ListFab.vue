@@ -3,7 +3,7 @@ import * as CSS from 'csstype';
 
 // Common Components
 import Button from '@components/Button';
-import { IconPlusLarge } from '@components/icons';
+import ComposIcon, { PlusLarge } from '@components/Icons';
 
 type ListFabProps = {
   align?: CSS.Property.AlignSelf;
@@ -14,7 +14,7 @@ defineProps<ListFabProps>();
 
 <template>
   <Button class="vc-list-fab" icon :style="{ alignSelf: align }">
-    <IconPlusLarge size="32" />
+    <ComposIcon :icon="PlusLarge" size="32" />
   </Button>
 </template>
 

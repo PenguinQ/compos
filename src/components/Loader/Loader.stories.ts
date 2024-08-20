@@ -5,7 +5,6 @@ import Bar from './Bar.vue';
 
 const meta: Meta<typeof Shimmer> = {
   component: Shimmer,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -38,7 +37,7 @@ export const ShimmerStory: StoryShimmer = {
     },
     margin: {
       control: 'text',
-    }
+    },
   },
   args: {
     animate: false,
@@ -57,12 +56,8 @@ export const BarStory: StoryBar = {
       <Bar v-bind="args" size="56px" />
     `,
   }),
-  argTypes: {
-
-  },
-  args: {
-
-  },
+  argTypes: {},
+  args: {},
 };
 
 BarStory.storyName = 'Bar';

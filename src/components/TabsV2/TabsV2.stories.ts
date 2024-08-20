@@ -9,7 +9,6 @@ import Text from '@components/Text';
 
 const meta: Meta<typeof TabControls> = {
   component: TabControls,
-  tags: ['autodocs'],
   argTypes: {
     grow: {
       control: 'boolean',

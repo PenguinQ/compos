@@ -12,7 +12,7 @@ import Card, { CardHeader, CardTitle, CardSubtitle, CardBody } from '@components
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Row, Column } from '@components/Layout';
 import { Bar } from '@components/Loader';
-import { IconArrowLeftShort, IconSave, IconXLarge } from '@icons';
+import ComposIcon, { ArrowLeftShort, Save, XLarge } from '@components/Icons';
 
 // View Components
 import ProductImage from '@/views/components/ProductImage.vue';
@@ -29,9 +29,9 @@ import no_image from '@assets/illustration/no_image.svg';
 
 const router = useRouter();
 const {
-  product_id,
-  form_data,
-  form_error,
+  productId,
+  formData,
+  formError,
   productDetailError,
   productDetailLoading,
   productDetailRefetch,
@@ -50,15 +50,15 @@ const {
 <template>
   <Toolbar sticky>
     <ToolbarAction icon @click="router.back">
-      <IconArrowLeftShort size="40" />
+      <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
-    <ToolbarTitle>{{ product_id ? 'Edit Product' : 'Add Product' }}</ToolbarTitle>
+    <ToolbarTitle>{{ productId ? 'Edit Product' : 'Add Product' }}</ToolbarTitle>
     <ToolbarSpacer />
     <ToolbarAction v-if="mutateAddLoading || mutateEditLoading" backgroundColor="var(--color-blue-4)" icon>
       <Bar size="24px" color="var(--color-white)" />
     </ToolbarAction>
     <ToolbarAction v-else backgroundColor="var(--color-blue-4)" icon @click="handleSubmit">
-      <IconSave size="24px" color="var(--color-white)" />
+      <ComposIcon :icon="Save" color="var(--color-white)" />
     </ToolbarAction>
   </Toolbar>
   <!--  -->
@@ -82,16 +82,16 @@ const {
             <div class="product-form-image" :data-error="true">
               <label>
                 <ProductImage borderless>
-                  <template v-if="form_data.image.length || form_data.new_image.length">
+                  <template v-if="formData.image.length || formData.new_image.length">
                     <img
-                      v-if="form_data.new_image.length"
-                      :src="(form_data.new_image[0].url as string)"
-                      :alt="`${form_data.name} Image`"
+                      v-if="formData.new_image.length"
+                      :src="(formData.new_image[0].url as string)"
+                      :alt="`${formData.name} Image`"
                     />
                     <img
                       v-else
-                      :src="(form_data.image[0].url as string)"
-                      :alt="`${form_data.name} Image`"
+                      :src="(formData.image[0].url as string)"
+                      :alt="`${formData.name} Image`"
                     />
                   </template>
                   <template v-else>
@@ -100,7 +100,7 @@ const {
                 </ProductImage>
                 <input type="file" accept=".jpg, .jpeg, .png, .webp" @change="handleAddImage" />
               </label>
-              <div v-if="form_data.image.length || form_data.new_image.length" class="product-form-image__actions">
+              <div v-if="formData.image.length || formData.new_image.length" class="product-form-image__actions">
                 <Button @click="handleRemoveImage" variant="outline" color="red" full>Remove</Button>
               </div>
             </div>
@@ -119,24 +119,24 @@ const {
                         id="product-name"
                         label="Name"
                         :labelProps="{ for: 'product-name' }"
-                        :error="form_error.name ? true : false"
-                        :message="form_error.name"
-                        v-model="form_data.name"
+                        :error="formError.name ? true : false"
+                        :message="formError.name"
+                        v-model="formData.name"
                       />
                       <Textarea
                         id="product-description"
                         label="Description"
                         :labelProps="{ for: 'product-description' }"
-                        v-model="form_data.description"
+                        v-model="formData.description"
                       />
                       <Textfield
                         id="product-by"
                         label="By"
                         :labelProps="{ for: 'product-by' }"
-                        v-model="form_data.by"
+                        v-model="formData.by"
                       />
                       <Ticker
-                        v-if="form_data.variants.length"
+                        v-if="formData.variants.length"
                         :items="[
                           {
                             title: 'Default Price and Stock Disabled',
@@ -150,23 +150,23 @@ const {
                           id="product-price"
                           label="Price"
                           prepend="Rp"
-                          v-model.number="form_data.price"
+                          v-model.number="formData.price"
                           :labelProps="{ for: 'product-price' }"
-                          :error="form_error.price ? true : false"
-                          :message="form_error.price"
+                          :error="formError.price ? true : false"
+                          :message="formError.price"
                         />
                         <QuantityEditor
                           id="product-stock"
                           label="Stock"
-                          v-model.number="form_data.stock"
+                          v-model.number="formData.stock"
                           :labelProps="{ for: 'product-stock' }"
-                          :error="form_error.stock ? true : false"
-                          :message="form_error.stock"
+                          :error="formError.stock ? true : false"
+                          :message="formError.stock"
                         />
                         <Textfield
                           id="product-sku"
                           label="SKU"
-                          v-model="form_data.sku"
+                          v-model="formData.sku"
                           :labelProps="{ for: 'product-sku' }"
                         />
                       </template>
@@ -182,7 +182,7 @@ const {
                   </CardHeader>
                   <CardBody>
                     <EmptyState
-                      v-if="!form_data.variants.length"
+                      v-if="!formData.variants.length"
                       emoji="🍃"
                       :title="PRODUCT_FORM.EMPTY_VARIANT_TITLE"
                       :description="PRODUCT_FORM.EMPTY_VARIANT_DESCRIPTION"
@@ -194,7 +194,7 @@ const {
                     </EmptyState>
                     <template v-else>
                       <div class="product-form-variants">
-                        <div class="product-form-variant" v-for="(variant, index) of form_data.variants" :key="`variant-${index}`">
+                        <div class="product-form-variant" v-for="(variant, index) of formData.variants" :key="`variant-${index}`">
                           <div class="product-form-variant__header">
                             <div class="product-form-variant__title">
                               Variant {{ index + 1 }}
@@ -204,7 +204,7 @@ const {
                               class="product-form-variant__remove"
                               @click="handleRemoveVariant(index, variant.id)"
                               >
-                              <IconXLarge size="24" />
+                              <ComposIcon :icon="XLarge" />
                             </button>
                           </div>
                           <div class="product-form-variant__body">
@@ -256,32 +256,32 @@ const {
                                     label="Name"
                                     :id="`variant-name-${index + 1}`"
                                     :labelProps="{ for: `variant-name-${index + 1}` }"
-                                    :error="form_error.variants[index].name ? true : false"
-                                    :message="form_error.variants[index].name"
+                                    :error="formError.variants[index].name ? true : false"
+                                    :message="formError.variants[index].name"
                                     v-model="variant.name"
                                   />
                                   <Textfield
                                     label="Price"
                                     :id="`variant-price-${index + 1}`"
                                     :labelProps="{ for: `variant-price-${index + 1}` }"
-                                    :error="form_error.variants[index].price ? true : false"
-                                    :message="form_error.variants[index].price"
+                                    :error="formError.variants[index].price ? true : false"
+                                    :message="formError.variants[index].price"
                                     v-model.number="variant.price"
                                   />
                                   <QuantityEditor
                                     label="Stock"
                                     :id="`variant-stock-${index + 1}`"
                                     :labelProps="{ for: `variant-stock-${index + 1}` }"
-                                    :error="form_error.variants[index].stock ? true : false"
-                                    :message="form_error.variants[index].stock"
+                                    :error="formError.variants[index].stock ? true : false"
+                                    :message="formError.variants[index].stock"
                                     v-model.number="variant.stock"
                                   />
                                   <Textfield
                                     label="SKU"
                                     :id="`variant-sku-${index + 1}`"
                                     :labelProps="{ for: `variant-sku-${index + 1}` }"
-                                    :error="form_error.variants[index].sku ? true : false"
-                                    :message="form_error.variants[index].sku"
+                                    :error="formError.variants[index].sku ? true : false"
+                                    :message="formError.variants[index].sku"
                                     v-model.number="variant.sku"
                                   />
                                 </div>

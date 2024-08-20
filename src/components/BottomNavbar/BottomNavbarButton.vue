@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { VNode } from 'vue';
+import ComposIcon from '@components/Icons';
 
 type Props = {
   active?: boolean;
-  icon?: VNode;
+  icon?: string;
   title: string;
-}
+};
 
 defineProps<Props>()
 </script>
@@ -13,7 +13,7 @@ defineProps<Props>()
 <template>
   <button class="cp-bottom-navbar-button" type="button" :data-cp-active="active ? true : undefined">
     <div class="cp-bottom-navbar-button__wrapper">
-      <component :is="icon" size="20" />
+      <ComposIcon :icon="icon" :size="20" />
       {{ title }}
     </div>
   </button>
@@ -54,8 +54,8 @@ defineProps<Props>()
     position: relative;
   }
 
-  .cp-icon {
-    fill: var(--color-white);
+  compos-icon {
+    color: var(--color-white);
   }
 
   &[data-cp-active] {

@@ -16,7 +16,7 @@ export const useProductDetail = () => {
   const router = useRouter();
   const { params } = route;
   const toast = inject('ToastProvider');
-  const dialog_delete = ref(false);
+  const dialogDelete = ref(false);
 
   const {
     data,
@@ -55,9 +55,9 @@ export const useProductDetail = () => {
   });
 
   return {
-    product_id: params.id,
+    productId: params.id,
     data: data as Ref<ProductDetailNormalizerReturn>,
-    dialog_delete,
+    dialogDelete,
     isError,
     isLoading,
     isSuccess,

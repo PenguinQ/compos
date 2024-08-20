@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router';
 import Button from '@/components/Button';
 import { Bar } from '@components/Loader';
 import EmptyState from '@components/EmptyState';
-import { IconChevronRight } from '@components/icons';
+import ComposIcon, { ChevronRight } from '@components/Icons';
 
 // View Components
 import ButtonBlock from '@/views/components/ButtonBlock.vue';
@@ -102,23 +102,15 @@ const {
               :aria-label="`Go to ${sales.name}`"
               @click=""
             >
-              <IconChevronRight size="28" />
+              <ComposIcon :icon="ChevronRight" size="28" />
             </ButtonBlock>
           </div>
         </div>
       </template>
     </template>
   </template>
-  <ListFooter
-    sticky
-    :height="isSalesEmpty ? '82px' : '152px'"
-    bottom="var(--bottom-nav-height)"
-  >
-    <ListFab
-      v-if="status === 'running'"
-      align="flex-end"
-      @click="router.push('/sales/add')"
-    />
+  <ListFooter sticky>
+    <ListFab v-if="status === 'running'" align="flex-end" @click="router.push('/sales/add')" />
     <Pagination
       v-if="!isSalesEmpty"
       frame

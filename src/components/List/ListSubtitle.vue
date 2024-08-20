@@ -27,6 +27,8 @@ const markup = ref(props.as);
   line-height: var(--text-body-medium-height);
   opacity: 0.8;
   margin: 4px 0 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
   line-clamp: 2;
 }
 </style>

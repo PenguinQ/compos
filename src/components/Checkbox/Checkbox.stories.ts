@@ -5,7 +5,6 @@ import Checkbox from './Checkbox.vue';
 
 const meta: Meta<typeof Checkbox> = {
   component: Checkbox,
-  tags: ['autodocs'],
   argTypes: {
     class: {
       type: 'string',

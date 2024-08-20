@@ -7,7 +7,7 @@ import EmptyState from '@components/EmptyState';
 import Text from '@components/Text';
 import QuantityEditor from '@components/QuantityEditor';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
-import { IconArrowLeftShort, IconXCircleFilled, IconList } from '@components/icons';
+import { IconArrowLeftShort, IconXCircleFilled, IconList } from '@components/Icons';
 
 import { toIDR } from '@/helpers';
 import no_image from '@assets/illustration/no_image.svg';

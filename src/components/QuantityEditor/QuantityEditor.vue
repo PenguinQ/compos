@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
-import { IconPlus, IconDash } from '@icons';
+import ComposIcon, { Plus, Dash } from '@components/Icons';
 
 interface QuantityEditorProps extends /* @vue-ignore */ InputHTMLAttributes {
   /**
@@ -128,7 +128,7 @@ watch(
         @keydown="handleKeyDown($event, false)"
         @keyup="stopQuantityUpdate"
       >
-        <IconDash size="28" />
+        <ComposIcon :icon="Dash" size="28" />
       </button>
       <input
         ref="input"
@@ -153,7 +153,7 @@ watch(
         @keydown="handleKeyDown($event)"
         @keyup="stopQuantityUpdate"
       >
-        <IconPlus size="28" />
+        <ComposIcon :icon="Plus" size="28" />
       </button>
     </div>
     <div class="cp-form-message" v-if="message || $slots['message']">
@@ -178,6 +178,7 @@ watch(
   }
 
   button {
+    color: var(--color-white);
     background-color: var(--color-black);
     border: 1px solid transparent;
     border-radius: 8px;

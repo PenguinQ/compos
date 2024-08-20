@@ -65,7 +65,7 @@ $root: '.vc-button-block';
     padding-right: 0;
     padding-left: 0;
 
-    .cp-icon {
+    compos-icon {
       max-width: 100%;
       min-height: 100%;
       fill: var(--color-white);

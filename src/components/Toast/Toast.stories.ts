@@ -9,13 +9,8 @@ import Ticker from '@components/Ticker';
 
 const meta: Meta<typeof Toast> = {
   component: Toast,
-  tags: ['autodocs'],
-  argTypes: {
-
-  },
-  args: {
-
-  },
+  argTypes: {},
+  args: {},
 };
 
 export default meta;

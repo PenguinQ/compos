@@ -69,7 +69,7 @@ export const useProductForm = () => {
   const router = useRouter();
   const toast = inject('ToastProvider');
   const { params } = route;
-  const form_data = reactive<FormData>({
+  const formData = reactive<FormData>({
     id: '',
     name: '',
     description: '',
@@ -83,7 +83,7 @@ export const useProductForm = () => {
     new_image: [],
     deleted_image: [],
   });
-  const form_error = reactive<FormError>({
+  const formError = reactive<FormError>({
     name: '',
     price: '',
     stock: '',
@@ -110,17 +110,17 @@ export const useProductForm = () => {
       const resp = response as ProductFormNormalizerReturn;
 
       if (params.id) {
-        form_data.id = resp.id;
-        form_data.name = resp.name;
-        form_data.description = resp.description;
-        form_data.by = resp.by;
-        form_data.image = resp.image;
-        form_data.price = resp.price;
-        form_data.stock = resp.stock;
-        form_data.sku = resp.sku;
+        formData.id = resp.id;
+        formData.name = resp.name;
+        formData.description = resp.description;
+        formData.by = resp.by;
+        formData.image = resp.image;
+        formData.price = resp.price;
+        formData.stock = resp.stock;
+        formData.sku = resp.sku;
 
         resp.variants.forEach(v => {
-          form_data.variants.push({
+          formData.variants.push({
             id: v.id,
             product_id: v.product_id,
             name: v.name,
@@ -131,7 +131,7 @@ export const useProductForm = () => {
             deleted_image: [],
           });
 
-          form_error.variants.push({
+          formError.variants.push({
             name: '',
             price: '',
             stock: '',
@@ -147,8 +147,8 @@ export const useProductForm = () => {
     isLoading: mutateEditLoading,
   } = useMutation({
     mutateFn: () => {
-      const new_product_image = form_data.new_image.length ? form_data.new_image.map(img => img.data) : [];
-      const variants_data = form_data.variants.map(variant => {
+      const new_product_image = formData.new_image.length ? formData.new_image.map(img => img.data) : [];
+      const variants_data = formData.variants.map(variant => {
         const { id, name, price, stock, sku, new_image, deleted_image } = variant;
         const new_variant_image = new_image.length ? new_image.map(img => img.data) : [];
 
@@ -163,19 +163,21 @@ export const useProductForm = () => {
         };
       });
 
+      console.log(formData.deleted_image);
+
       return mutateEditProduct({
         id: params.id as string,
         data: {
-          name: form_data.name,
-          description: form_data.description,
-          by: form_data.by,
-          price: form_data.price,
-          stock: form_data.stock,
-          sku: form_data.sku,
+          name: formData.name,
+          description: formData.description,
+          by: formData.by,
+          price: formData.price,
+          stock: formData.stock,
+          sku: formData.sku,
           new_images: new_product_image,
-          deleted_images: form_data.deleted_image,
+          deleted_images: formData.deleted_image,
           variants: variants_data,
-          deleted_variants: form_data.deleted_variants,
+          deleted_variants: formData.deleted_variants,
         },
       });
     },
@@ -196,8 +198,8 @@ export const useProductForm = () => {
     isLoading: mutateAddLoading,
   } = useMutation({
     mutateFn: () => {
-      const new_product_image = form_data.new_image.length ? form_data.new_image.map(img => img.data) : [];
-      const variants_data = form_data.variants.map(variant => {
+      const new_product_image = formData.new_image.length ? formData.new_image.map(img => img.data) : [];
+      const variants_data = formData.variants.map(variant => {
         const { new_image, ...rest } = variant;
         const new_variant_image = new_image.length ? new_image.map(image => image.data) : [];
 
@@ -208,12 +210,12 @@ export const useProductForm = () => {
       });
 
       return mutateAddProduct({
-        name: form_data.name,
-        description: form_data.description,
-        by: form_data.by,
-        price: form_data.price,
-        stock: form_data.stock,
-        sku: form_data.sku,
+        name: formData.name,
+        description: formData.description,
+        by: formData.by,
+        price: formData.price,
+        stock: formData.stock,
+        sku: formData.sku,
         variants: variants_data,
         new_image: new_product_image,
       });
@@ -239,11 +241,11 @@ export const useProductForm = () => {
       const reader = new FileReader();
 
       reader.onload = () => {
-        if (form_data.new_image.length) {
-          form_data.new_image[0].data = file;
-          form_data.new_image[0].url = reader.result;
+        if (formData.new_image.length) {
+          formData.new_image[0].data = file;
+          formData.new_image[0].url = reader.result;
         } else {
-          form_data.new_image.push({ data: file, url: reader.result });
+          formData.new_image.push({ data: file, url: reader.result });
         }
       };
 
@@ -262,11 +264,11 @@ export const useProductForm = () => {
       const reader = new FileReader();
 
       reader.onload = () => {
-        if (form_data.variants[index].new_image.length) {
-          form_data.variants[index].new_image[0].data = file;
-          form_data.variants[index].new_image[0].url = reader.result;
+        if (formData.variants[index].new_image.length) {
+          formData.variants[index].new_image[0].data = file;
+          formData.variants[index].new_image[0].url = reader.result;
         } else {
-          form_data.variants[index].new_image.push({ data: file, url: reader.result });
+          formData.variants[index].new_image.push({ data: file, url: reader.result });
         }
       };
 
@@ -275,7 +277,7 @@ export const useProductForm = () => {
   };
 
   const handleAddVariant = () => {
-    form_data.variants.push({
+    formData.variants.push({
       name: '',
       price: 0,
       stock: 0,
@@ -283,7 +285,7 @@ export const useProductForm = () => {
       new_image: [],
       deleted_image: [],
     });
-    form_error.variants.push({
+    formError.variants.push({
       name: '',
       price: '',
       stock: '',
@@ -292,25 +294,27 @@ export const useProductForm = () => {
   };
 
   const handleRemoveVariant = (index: number, id?: string) => {
-    id && form_data.deleted_variants.push(id);
-    form_data.variants.splice(index, 1);
+    id && formData.deleted_variants.push(id);
+    formData.variants.splice(index, 1);
   };
 
   const handleRemoveImage = () => {
-    if (form_data.image) {
-      if (form_data.new_image) {
-        form_data.new_image.splice(0, 1);
+    console.log(formData);
+
+    if (formData.image.length) {
+      if (formData.new_image.length) {
+        formData.new_image.splice(0, 1);
       } else {
-        form_data.deleted_image.push(form_data.image[0].id as string);
-        form_data.image.splice(0, 1);
+        formData.deleted_image.push(formData.image[0].id as string);
+        formData.image.splice(0, 1);
       }
     } else {
-      form_data.new_image.splice(0, 1);
+      formData.new_image.splice(0, 1);
     }
   };
 
   const handleRemoveVariantImage = (_e: Event, index: number) => {
-    const variant = form_data.variants[index];
+    const variant = formData.variants[index];
 
     if (variant.image.length) {
       if (variant.new_image.length) {
@@ -329,48 +333,48 @@ export const useProductForm = () => {
 
     const errors = [];
 
-    if (form_data.name.trim() === '') {
-      form_error.name = 'Product name cannot be empty.';
+    if (formData.name.trim() === '') {
+      formError.name = 'Product name cannot be empty.';
       errors.push('');
     } else {
-      form_error.name = '';
+      formError.name = '';
     }
 
-    if (!isNumeric(form_data.price)) {
-      form_error.price = 'Product price must be a number and cannot be empty.';
+    if (!isNumeric(formData.price)) {
+      formError.price = 'Product price must be a number and cannot be empty.';
       errors.push('');
     } else {
-      form_error.price = '';
+      formError.price = '';
     }
 
-    if (!isNumeric(form_data.stock)) {
-      form_error.stock = 'Product stock must be a number and cannot be empty..';
+    if (!isNumeric(formData.stock)) {
+      formError.stock = 'Product stock must be a number and cannot be empty..';
       errors.push('');
     } else {
-      form_error.stock = '';
+      formError.stock = '';
     }
 
-    if (form_data.variants.length) {
-      form_data.variants.map((variant, index) => {
+    if (formData.variants.length) {
+      formData.variants.map((variant, index) => {
         if (variant.name.trim() === '') {
-          form_error.variants[index].name = 'Variant name cannot be empty.';
+          formError.variants[index].name = 'Variant name cannot be empty.';
           errors.push('');
         } else {
-          form_error.variants[index].name = '';
+          formError.variants[index].name = '';
         }
 
         if (!isNumeric(variant.price)) {
-          form_error.variants[index].price = 'Variant price must be a number and cannot be empty.';
+          formError.variants[index].price = 'Variant price must be a number and cannot be empty.';
           errors.push('');
         } else {
-          form_error.variants[index].price = '';
+          formError.variants[index].price = '';
         }
 
         if (!isNumeric(variant.stock)) {
-          form_error.variants[index].stock = 'Variant stock must be a number and cannot be empty..';
+          formError.variants[index].stock = 'Variant stock must be a number and cannot be empty..';
           errors.push('');
         } else {
-          form_error.variants[index].stock = '';
+          formError.variants[index].stock = '';
         }
       });
     }
@@ -384,9 +388,9 @@ export const useProductForm = () => {
   };
 
   return {
-    product_id: params.id,
-    form_data,
-    form_error,
+    productId: params.id,
+    formData,
+    formError,
     productDetailError,
     productDetailLoading,
     productDetailRefetch,

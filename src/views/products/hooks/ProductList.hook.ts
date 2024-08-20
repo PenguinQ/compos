@@ -21,9 +21,9 @@ import { debounce } from '@helpers';
 export const useProductList = (type: 'product' | 'bundle') => {
   const { page, toNext, toPrev } = usePagination();
   const toast = inject('ToastProvider');
-  const search_query = ref('');
+  const searchQuery = ref('');
   const isListEmpty = ref(true);
-  const current_page = computed(() => page.current);
+  const currentPage = computed(() => page.current);
 
   const {
     data: list,
@@ -34,18 +34,18 @@ export const useProductList = (type: 'product' | 'bundle') => {
     delay: 300,
     queryKey: [
       type === 'product' ? 'product-list' : 'bundle-list',
-      search_query,
-      current_page,
+      searchQuery,
+      currentPage,
     ],
     queryFn: () => type === 'product' ? getProductList({
-      search_query: search_query.value,
+      search_query: searchQuery.value,
       sort: 'desc',
       limit: page.limit,
       page: page.current,
       complete: true,
       normalizer: productListNormalizer,
     }) : getBundleList({
-      search_query: search_query.value,
+      search_query: searchQuery.value,
       sort: 'desc',
       limit: page.limit,
       page: page.current,
@@ -77,12 +77,12 @@ export const useProductList = (type: 'product' | 'bundle') => {
     const target = e.target as HTMLInputElement;
 
     page.current = 1;
-    search_query.value = target.value;
+    searchQuery.value = target.value;
   });
 
   return {
     list: list as Ref<ProductListNormalizerReturn & BundleListNormalizerReturn>,
-    search_query,
+    searchQuery,
     page,
     listError,
     listLoading,

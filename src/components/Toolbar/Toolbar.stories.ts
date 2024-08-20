@@ -1,18 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Ticker,  { TickerItem } from '@components/Ticker';
+import Ticker, { TickerItem } from '@components/Ticker';
 import Button from '@components/Button';
 import Toolbar from './Toolbar.vue';
 import ToolbarAction from './ToolbarAction.vue';
 import ToolbarSpacer from './ToolbarSpacer.vue';
-import { IconBag } from '@icons';
+import ComposIcon, { Bag } from '@components/Icons';
 
 const meta: Meta<typeof Toolbar> = {
   component: Toolbar,
-  tags: ['autodocs'],
   argTypes: {
     title: {
-      control: 'text'
+      control: 'text',
     },
     ['onBack']: {
       table: {
@@ -45,7 +44,7 @@ export const WithAction: Story = {
   render: (args) => ({
     components: {
       Button,
-      IconBag,
+      ComposIcon,
       Toolbar,
       ToolbarAction,
       ToolbarSpacer,
@@ -53,7 +52,7 @@ export const WithAction: Story = {
       TickerItem,
     },
     setup() {
-      return { args };
+      return { args, Bag };
     },
     template: `
       <Ticker>
@@ -66,7 +65,7 @@ export const WithAction: Story = {
       <Toolbar v-bind="args">
         <ToolbarSpacer />
         <ToolbarAction icon>
-          <IconBag />
+          <ComposIcon :icon="Bag" />
         </ToolbarAction>
       </Toolbar>
       <br />
@@ -76,5 +75,4 @@ export const WithAction: Story = {
       </Toolbar>
     `,
   }),
-
 };

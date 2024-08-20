@@ -11,7 +11,7 @@ import Label from '@components/Label';
 import Text from '@components/Text';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Column, Row } from '@components/Layout';
-import { IconArrowLeftShort, IconPencilSquare, IconTrash } from '@icons';
+import ComposIcon, { ArrowLeftShort, PencilSquare, Trash } from '@components/Icons';
 
 // Hooks
 import { useSalesDetail } from './hooks/SalesDetail.hook';
@@ -39,7 +39,7 @@ const {
 <template>
   <Toolbar sticky>
     <ToolbarAction icon @click="router.back">
-      <IconArrowLeftShort size="40" />
+      <ComposIcon :icon="ArrowLeftShort" size="40" />
     </ToolbarAction>
     <ToolbarTitle>Sales Detail</ToolbarTitle>
     <ToolbarSpacer />
@@ -49,7 +49,7 @@ const {
       backgroundColor="var(--color-blue-4)"
       @click="router.push(`/sales/edit/${sales_id}`)"
     >
-      <IconPencilSquare />
+      <ComposIcon :icon="PencilSquare" />
     </ToolbarAction>
     <ToolbarAction
       v-if="!isError && !isLoading"
@@ -57,7 +57,7 @@ const {
       backgroundColor="var(--color-red-4)"
       @click="dialog_delete = true"
     >
-      <IconTrash />
+      <ComposIcon :icon="Trash" />
     </ToolbarAction>
   </Toolbar>
   <!--  -->

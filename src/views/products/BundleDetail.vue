@@ -14,7 +14,7 @@ import DescriptionList, { DescriptionListItem } from '@components/DescriptionLis
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Bar } from '@components/Loader';
 import { Column, Row, Container } from '@components/Layout';
-import { IconArrowLeftShort, IconPencilSquare, IconTrash } from '@icons';
+import ComposIcon, { ArrowLeftShort, PencilSquare, Trash } from '@components/Icons';
 
 // View Components
 import ProductImage from '@/views/components/ProductImage.vue';
@@ -31,9 +31,9 @@ import { useBundleDetail } from './hooks/BundleDetail.hook';
 
 const router = useRouter();
 const {
-  bundle_id,
+  bundleId,
   data,
-  dialog_delete,
+  dialogDelete,
   isError,
   isLoading,
   deleteBundle,
@@ -45,7 +45,7 @@ const {
 <template>
   <Toolbar sticky>
     <ToolbarAction icon @click="router.back">
-      <IconArrowLeftShort size="40" />
+      <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
     <ToolbarTitle>Bundle Detail</ToolbarTitle>
     <ToolbarSpacer />
@@ -53,17 +53,17 @@ const {
       v-if="!isError && !isLoading"
       icon
       backgroundColor="var(--color-blue-4)"
-      @click="router.push(`/bundle/edit/${bundle_id}`)"
+      @click="router.push(`/bundle/edit/${bundleId}`)"
     >
-      <IconPencilSquare />
+      <ComposIcon :icon="PencilSquare" />
     </ToolbarAction>
     <ToolbarAction
       v-if="!isError && !isLoading"
       icon
       backgroundColor="var(--color-red-4)"
-      @click="dialog_delete = true"
+      @click="dialogDelete = true"
     >
-      <IconTrash />
+      <ComposIcon :icon="Trash" />
     </ToolbarAction>
   </Toolbar>
   <!--  -->
@@ -174,13 +174,13 @@ const {
       </template>
     </Container>
     <!--  -->
-    <Dialog v-model="dialog_delete" class="product-detail-delete" :title="`Delete ${data?.name}?`">
+    <Dialog v-model="dialogDelete" class="product-detail-delete" :title="`Delete ${data?.name}?`">
       <template #footer>
         <div class="product-detail-delete__actions">
           <Button color="red" full @click="deleteBundle">
             {{ deleteBundleLoading ? 'Loading' : 'Delete' }}
           </Button>
-          <Button variant="outline" full @click="dialog_delete = false">Cancel</Button>
+          <Button variant="outline" full @click="dialogDelete = false">Cancel</Button>
         </div>
       </template>
     </Dialog>

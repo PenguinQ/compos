@@ -46,6 +46,7 @@ export default defineConfig({
       "@hooks": fileURLToPath(new URL("./src/hooks", import.meta.url)),
       "@plugins": fileURLToPath(new URL("./src/plugins", import.meta.url)),
       "@icons": fileURLToPath(new URL("./src/components/icons", import.meta.url)),
+      "@docs": fileURLToPath(new URL("./.storybook/", import.meta.url)),
     },
   },
   css: {

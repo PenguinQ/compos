@@ -8,7 +8,6 @@ import Text from '@components/Text';
 
 const meta: Meta<typeof Ticker> = {
   component: Ticker,
-  tags: ['autodocs'],
   argTypes: {
     activeIndex: {
       control: 'number',

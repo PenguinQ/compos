@@ -1,18 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Ticker,  { TickerItem } from '@components/Ticker';
+import Ticker, { TickerItem } from '@components/Ticker';
 import Button from '@components/Button';
 import Navbar from './Navbar.vue';
 import NavbarAction from './NavbarAction.vue';
 import NavbarSpacer from './NavbarSpacer.vue';
-import { IconBag } from '@icons';
+import { IconBag } from '@components/Icons';
 
 const meta: Meta<typeof Navbar> = {
   component: Navbar,
-  tags: ['autodocs'],
   argTypes: {
     title: {
-      control: 'text'
+      control: 'text',
     },
     ['onBack']: {
       table: {
@@ -101,5 +100,4 @@ export const WithActionButton: Story = {
       </Navbar>
     `,
   }),
-
 };

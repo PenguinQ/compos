@@ -1,13 +1,13 @@
 import optimizeSVG from './icons-optimize-svg.ts';
-import { generateVueComponents } from './icons-generate-vue.ts';
-import generateVueIndex from './icons-generate-index.ts';
+import generateSVG from './icons-generate-svg.ts';
+import generateComponent from './icons-generate-component.ts';
+import generateIndex from './icons-generate-index.ts';
+import type { ContentType } from './types.ts';
 
-export type ContentType = {
-  name: string;
-  source: string;
-};
+export const __foldername = 'Icons';
 
 optimizeSVG('src/assets/icons/**/*.svg', async (glyphs: ContentType[]) => {
-  await generateVueComponents(glyphs);
-  await generateVueIndex(glyphs);
+  await generateSVG(glyphs);
+  await generateComponent();
+  await generateIndex(glyphs);
 });

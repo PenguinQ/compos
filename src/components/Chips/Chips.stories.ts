@@ -4,7 +4,6 @@ import Chips from './Chips.vue';
 
 const meta: Meta<typeof Chips> = {
   component: Chips,
-  tags: ['autodocs'],
   argTypes: {
     default: {
       control: 'text',

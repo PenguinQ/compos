@@ -2,11 +2,10 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 
 import Tabs from './Tabs.vue';
 import Tab from './Tab.vue';
-import { IconX} from '@icons';
+import ComposIcon, { X } from '@components/Icons';
 
 const meta: Meta<typeof Tabs> = {
   component: Tabs,
-  tags: ['autodocs'],
   argTypes: {
     grow: {
       control: 'boolean',
@@ -29,7 +28,7 @@ const meta: Meta<typeof Tabs> = {
     variant: {
       control: 'select',
       options: ['alternate'],
-    }
+    },
   },
   args: {
     grow: false,
@@ -48,7 +47,7 @@ type Story = StoryObj<typeof Tabs>;
 
 export const Default: Story = {
   render: (args: any) => ({
-    components: { Tabs, Tab, IconX },
+    components: { Tabs, Tab, ComposIcon },
     setup() {
       const styleObj = {
         flex: '1 1 auto',
@@ -58,7 +57,7 @@ export const Default: Story = {
         padding: '0 8px',
       };
 
-      return { args, styleObj };
+      return { args, styleObj, X };
     },
     template: `
       <Tabs v-bind="args">
@@ -156,7 +155,7 @@ export const LazyTabs: Story = {
   }),
 };
 
-LazyTabs.storyName = 'Set Lazy Tab'
+LazyTabs.storyName = 'Set Lazy Tab';
 
 export const ProgrammaticalTabs: Story = {
   render: (args: any) => ({
@@ -187,4 +186,4 @@ export const ProgrammaticalTabs: Story = {
   },
 };
 
-ProgrammaticalTabs.storyName = 'Set Active Tab (v-model)'
+ProgrammaticalTabs.storyName = 'Set Active Tab (v-model)';

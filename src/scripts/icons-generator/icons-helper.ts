@@ -1,13 +1,27 @@
 import lodash from 'lodash';
+import type { ContentType } from './types.ts';
 
 const { upperFirst, camelCase } = lodash;
 
-const setComponentName = (name: string) => {
-  const splittedName = name.split('_');
-
-  return `Icon${upperFirst(camelCase(splittedName.join('-')))}`;
+const setIconName = (name: string) => {
+  return `${upperFirst(camelCase(name))}`;
 };
 
-const setFileName = (name: string) => `icon-${name.split('_').join('-')}`;
+const setFileName = (name: string) => name;
 
-export { setComponentName, setFileName };
+const sortIcon = (icons: ContentType[]) => icons.sort((a, b) => {
+  const nameA = a.name.toUpperCase();
+  const nameB = b.name.toUpperCase();
+
+  if (nameA < nameB) return -1;
+
+  if (nameA > nameB) return 1;
+
+  return 0;
+});
+
+export {
+  setFileName,
+  setIconName,
+  sortIcon,
+};

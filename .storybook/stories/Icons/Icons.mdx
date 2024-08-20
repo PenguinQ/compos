@@ -1,0 +1,37 @@
+import { Canvas, Meta, Story } from '@storybook/blocks';
+import * as IconsStories from './Icons.stories';
+
+import Icons from './Icons.vue';
+
+<Meta title="Icons" of={IconsStories} />
+
+# Icons
+All icons here are a **Web Component**, currently available icons properties are:
+
+- `icon`, to reference the type of icon should be rendered
+- `name`, same as `icon` property for fallback is there's any compability issues
+- `size`, in **number** or **CSS** format
+- `color`, in **CSS** format
+
+## Usage
+To start using the icons, import the component `ComposIcon` and the icon you needs.
+
+```tsx
+// Script
+<script setup lang="ts">
+  import ComposIcon, { Archive } from '@components/Icons';
+</script>
+
+// Template
+<template>
+  <ComposIcon :icon="Archive" />
+  // Or
+  <compos-icon :icon="Archive" />
+</template>
+```
+
+
+## List
+Below are currently available icons.
+
+<Story of={IconsStories.List} />

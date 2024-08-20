@@ -10,6 +10,8 @@ const preview: Preview = {
       },
     },
   },
+  // @ts-ignore
+  tags: ["autodocs"],
 };
 
 export default preview;

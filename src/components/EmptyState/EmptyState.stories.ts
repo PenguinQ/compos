@@ -5,7 +5,6 @@ import EmptyState from './EmptyState.vue';
 
 const meta: Meta<typeof EmptyState> = {
   component: EmptyState,
-  tags: ['autodocs'],
   argTypes: {
     image: {
       control: 'text',
@@ -24,7 +23,7 @@ const meta: Meta<typeof EmptyState> = {
       options: ['vertical', 'horizontal'],
     },
     width: {
-      control: 'text'
+      control: 'text',
     },
     height: {
       control: 'text',
@@ -40,7 +39,7 @@ const meta: Meta<typeof EmptyState> = {
   decorators: [
     () => ({
       template: '<div style="height: 400px; background-color: #FCF7F8;"><story /></div>',
-    })
+    }),
   ],
 };
 

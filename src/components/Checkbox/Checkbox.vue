@@ -2,7 +2,7 @@
 import { computed, reactive, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
-import { IconCheck } from '@icons';
+import ComposIcon, { Check } from '@components/Icons';
 
 interface Props extends /* @vue-ignore */ InputHTMLAttributes {
   /**
@@ -137,7 +137,7 @@ const handleKeydown = (e: KeyboardEvent) => {
           @input="handleChange"
         />
         <div class="cp-form-checkbox__box">
-          <IconCheck color="var(--color-white)" />
+          <ComposIcon :icon="Check" color="var(--color-white)" />
         </div>
       </div>
       <span v-if="label && !$slots.label" class="cp-form-checkbox__label">{{ label }}</span>
@@ -190,7 +190,7 @@ const handleKeydown = (e: KeyboardEvent) => {
       background-color: var(--color-black);
       border-color: var(--color-black);
 
-      .cp-icon {
+      compos-icon {
         opacity: 1;
       }
     }
@@ -205,7 +205,7 @@ const handleKeydown = (e: KeyboardEvent) => {
     position: absolute;
     inset: 0;
 
-    .cp-icon {
+    compos-icon {
       width: 100%;
       height: 100%;
       opacity: 0;
@@ -238,8 +238,8 @@ const handleKeydown = (e: KeyboardEvent) => {
       background-color: var(--color-disabled-background);
       border-color: var(--color-disabled-border);
 
-      .cp-icon {
-        fill: var(--color-disabled-border);
+      compos-icon {
+        color: var(--color-disabled-border);
       }
     }
   }

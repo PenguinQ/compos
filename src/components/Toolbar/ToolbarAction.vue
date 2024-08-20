@@ -69,10 +69,10 @@ const button_class = computed(() => ({
     padding-left: 0;
     padding-right: 0;
 
-    .cp-icon {
+    compos-icon {
       max-width: 100%;
       min-height: 100%;
-      fill: var(--color-white);
+      color: var(--color-white);
     }
 
     &:last-child {

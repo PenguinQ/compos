@@ -13,7 +13,7 @@ import Card, { CardHeader, CardTitle, CardBody, CardSubtitle } from '@components
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container } from '@components/Layout';
 import { Bar } from '@components/Loader';
-import { IconArrowLeftShort, IconSave, IconX } from '@icons';
+import ComposIcon, { ArrowLeftShort, Save, X } from '@components/Icons';
 
 // View Components
 import ListFooter from '@/views/components/ListFooter.vue';
@@ -29,14 +29,14 @@ import { BUNDLE_FORM } from './constants';
 
 const router = useRouter();
 const {
-  bundle_id,
-  form_data,
-  form_error,
+  bundleId,
+  formData,
+  formError,
   product_list,
   page,
-  search_query,
-  load_products,
-  show_products_dialog,
+  searchQuery,
+  loadProducts,
+  showProductsDialog,
   productListError,
   productListLoading,
   productListRefetch,
@@ -64,16 +64,16 @@ const {
 <template>
   <Toolbar sticky>
     <ToolbarAction icon @click="router.back">
-      <IconArrowLeftShort size="40" />
+      <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
-    <ToolbarTitle>{{ bundle_id ? 'Edit Bundle' : 'Add Bundle' }}</ToolbarTitle>
+    <ToolbarTitle>{{ bundleId ? 'Edit Bundle' : 'Add Bundle' }}</ToolbarTitle>
     <ToolbarSpacer />
     <template v-if="!bundleDetailError && !bundleDetailLoading">
       <ToolbarAction v-if="mutateAddLoading || mutateEditLoading" backgroundColor="var(--color-blue-4)" icon>
         <Bar size="24px" color="var(--color-white)" />
       </ToolbarAction>
       <ToolbarAction v-else backgroundColor="var(--color-blue-4)" icon @click="handleSubmit">
-        <IconSave size="24px" color="var(--color-white)" />
+        <ComposIcon :icon="Save" color="var(--color-white)" />
       </ToolbarAction>
     </template>
   </Toolbar>
@@ -105,28 +105,28 @@ const {
                   id="bundle-name"
                   label="Name"
                   :labelProps="{ for: 'bundle-name' }"
-                  :error="form_error.name ? true : false"
-                  :message="form_error.name"
-                  v-model="form_data.name"
+                  :error="formError.name ? true : false"
+                  :message="formError.name"
+                  v-model="formData.name"
                 />
                 <Textarea
                   id="bundle-description"
                   label="Description"
                   :labelProps="{ for: 'bundle-description' }"
-                  v-model="form_data.description"
+                  v-model="formData.description"
                 />
                 <Textfield
                   id="bundle-price"
                   label="Price"
                   prepend="Rp"
-                  v-model.number="form_data.price"
-                  :readonly="form_data.auto_price"
+                  v-model.number="formData.price"
+                  :readonly="formData.auto_price"
                   :labelProps="{ for: 'bundle-price' }"
-                  :error="form_error.price ? true : false"
-                  :message="form_error.price ? form_error.price : form_data.auto_price ? BUNDLE_FORM.PRICE_MESSAGE : ''"
+                  :error="formError.price ? true : false"
+                  :message="formError.price ? formError.price : formData.auto_price ? BUNDLE_FORM.PRICE_MESSAGE : ''"
                 />
                 <Checkbox
-                  v-model="form_data.auto_price"
+                  v-model="formData.auto_price"
                   label="Auto Price"
                   :message="BUNDLE_FORM.AUTO_PRICE_MESSAGE"
                 />
@@ -140,21 +140,21 @@ const {
             </CardHeader>
             <CardBody>
               <EmptyState
-                v-if="!form_data.products.length"
+                v-if="!formData.products.length"
                 emoji="📦"
                 :title="BUNDLE_FORM.PRODUCT_EMPTY_TITLE"
                 :description="BUNDLE_FORM.PRODUCT_EMPTY_DESCRIPTION"
                 margin="56px 0"
               >
                 <template #action>
-                  <Button @click="show_products_dialog = true">Add Product</Button>
+                  <Button @click="showProductsDialog = true">Add Product</Button>
                 </template>
               </EmptyState>
               <template v-else>
                 <div class="selected-products">
                   <ProductSelection
                     :key="product.id"
-                    v-for="(product, index) in form_data.products"
+                    v-for="(product, index) in formData.products"
                     :image="product.image"
                     :name="product.name"
                     :price="product.total_price"
@@ -168,7 +168,7 @@ const {
                     @clickQuantityIncrement="handleUpdateQuantity($event, product)"
                   />
                 </div>
-                <Button full @click="show_products_dialog = true">Add Product</Button>
+                <Button full @click="showProductsDialog = true">Add Product</Button>
               </template>
             </CardBody>
           </Card>
@@ -177,15 +177,15 @@ const {
       <!--  -->
       <Dialog
         class="product-selection"
-        v-model="show_products_dialog"
+        v-model="showProductsDialog"
         fullscreen
         hideHeader
         @enter="handleOpenDialog"
-        @leave="load_products = false"
+        @leave="loadProducts = false"
       >
         <Toolbar sticky>
           <ToolbarAction icon @click="handleCloseDialog">
-            <IconX size="40" />
+            <ComposIcon :icon="X" :size="40" />
           </ToolbarAction>
           <input class="product-selection-search" placeholder="Search Product" @input="handleSearch" />
           <ToolbarAction @click="handleCloseDialog($event, true)">
@@ -207,14 +207,14 @@ const {
           <Bar v-if="productListLoading" margin="56px 0" />
           <template v-else>
             <EmptyState
-              v-if="!product_list?.products.length && search_query === ''"
+              v-if="!product_list?.products.length && searchQuery === ''"
               emoji="🍃"
               :title="BUNDLE_FORM.PRODUCT_LIST_EMPTY_TITLE"
               :description="BUNDLE_FORM.PRODUCT_LIST_EMPTY_DESCRIPTION"
               margin="56px 0"
             />
             <EmptyState
-              v-else-if="!product_list?.products.length && search_query !== ''"
+              v-else-if="!product_list?.products.length && searchQuery !== ''"
               emoji="😵‍💫"
               :title="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_TITLE"
               :description="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_DESCRIPTION"

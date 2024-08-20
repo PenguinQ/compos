@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 import type * as CSS from 'csstype'
 
-import { IconEye, IconEyeSlash } from '@icons';
+import ComposIcon, { Eye, EyeSlash } from '@components/Icons';
 
 interface Props extends /* @vue-ignore */ InputHTMLAttributes {
   /**
@@ -133,8 +133,8 @@ const togglePassword = () => {
           type="button"
           @click="togglePassword"
         >
-          <IconEye v-if="!showPassword" />
-          <IconEyeSlash v-else />
+          <ComposIcon :icon="Eye" v-if="!showPassword" />
+          <ComposIcon :icon="EyeSlash" v-else />
         </button>
         <slot name="append" />
         {{ append }}

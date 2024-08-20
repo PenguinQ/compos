@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, Transition, onMounted, watch } from 'vue';
 
-import { IconX } from '@icons';
+import ComposIcon, { X } from '@components/Icons';
 
 export type ToastItemProps = {
   /**
@@ -145,7 +145,7 @@ watch(
         <div v-else class="cp-toast__content">{{ message }}</div>
       </template>
       <button class="cp-toast__close" @click="handleClose">
-        <IconX :size="24" color="var(--color-white)" />
+        <ComposIcon :icon="X" :size="24" color="var(--color-white)" />
       </button>
     </div>
   </Transition>

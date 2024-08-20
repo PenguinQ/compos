@@ -3,6 +3,8 @@ import type { StorybookConfig } from '@storybook/vue3-vite';
 
 const config: StorybookConfig = {
   stories: [
+    './stories/**/*.mdx',
+    './stories/**/*.stories.@(js|jsx|mjs|ts|tsx)',
     '../src/**/*.mdx',
     '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'
   ],
@@ -15,9 +17,7 @@ const config: StorybookConfig = {
     name: '@storybook/vue3-vite',
     options: {},
   },
-  docs: {
-    autodocs: 'tag',
-  },
+  docs: {},
   async viteFinal(config: any, {}) {
     return {
       ...config,
@@ -40,6 +40,7 @@ const config: StorybookConfig = {
           '@helpers': path.resolve(__dirname, '../src/helpers'),
           '@hooks': path.resolve(__dirname, '../src/hooks'),
           '@icons': path.resolve(__dirname, '../src/components/icons'),
+          '@docs': path.resolve(__dirname, '../.storybook'),
         },
       },
     };

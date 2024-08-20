@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, reactive, watchEffect } from 'vue';
+import { ref, computed, watchEffect } from 'vue';
 import type * as CSS from 'csstype';
 
 interface Props {
@@ -32,7 +32,7 @@ const headingMap: { [key: string]: string } = {
   5: 'h5',
   6: 'h6',
 };
-const textStyle = reactive({
+const textStyle = computed(() => ({
   color: props.color,
   fontSize: props.fontSize,
   fontStyle: props.fontStyle,
@@ -43,7 +43,7 @@ const textStyle = reactive({
   textTransform: props.textTransform,
   padding: props.padding,
   margin: props.margin,
-});
+}));
 
 watchEffect(() => {
   if (props.as) {

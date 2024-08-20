@@ -36,7 +36,7 @@ const router = useRouter();
 const {
   list,
   page,
-  search_query,
+  searchQuery,
   isListEmpty,
   listError,
   listLoading,
@@ -68,14 +68,14 @@ const {
     <Bar v-if="listLoading" margin="56px 0" />
     <template v-else>
       <EmptyState
-        v-if="isListEmpty && search_query === ''"
+        v-if="isListEmpty && searchQuery === ''"
         emoji="🍃"
         :title="type === 'product' ? PRODUCT_LIST.PRODUCT_EMPTY_TITLE : PRODUCT_LIST.BUNDLE_EMPTY_TITLE"
         :description="type === 'product' ? PRODUCT_LIST.PRODUCT_EMPTY_DESCRIPTION : PRODUCT_LIST.BUNDLE_EMPTY_DESCRIPTION"
         margin="56px 0"
       />
       <EmptyState
-        v-else-if="isListEmpty && search_query !== ''"
+        v-else-if="isListEmpty && searchQuery !== ''"
         emoji="😵‍💫"
         :title="PRODUCT_LIST.SEARCH_EMPTY_TITLE"
         :description="PRODUCT_LIST.SEARCH_EMPTY_DESCRIPTION"
@@ -93,7 +93,7 @@ const {
                   {{ product.name }}
                 </Text>
                 <Label v-if="product.variants">{{ product.variants }} variants</Label>
-                <Label v-else variant="outline">No variant</Label>
+                <Label v-else variant="outline">No variants</Label>
               </div>
             </Card>
           </template>
@@ -121,12 +121,7 @@ const {
       </template>
     </template>
   </template>
-  <ListFooter
-    v-if="!listError"
-    :height="isListEmpty ? '82px' : '152px'"
-    bottom="var(--bottom-nav-height)"
-    sticky
-  >
+  <ListFooter v-if="!listError" sticky>
     <ListFab align="flex-end" @click="router.push(`${type === 'product' ? '/product/add' : '/bundle/add'}`)" />
     <Pagination
       v-if="!isListEmpty"

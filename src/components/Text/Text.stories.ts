@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
+import { CSS } from '@docs/constants';
 import Text from './Text.vue';
 
 const meta: Meta<typeof Text> = {
   component: Text,
-  tags: ['autodocs'],
   argTypes: {
     as: {
       control: 'select',
@@ -12,7 +12,7 @@ const meta: Meta<typeof Text> = {
     },
     heading: {
       control: 'select',
-      options: ['1' , '2', '3', '4', '5', '6'],
+      options: ['1', '2', '3', '4', '5', '6'],
     },
     body: {
       control: 'select',
@@ -34,13 +34,18 @@ const meta: Meta<typeof Text> = {
       control: 'text',
     },
     textAlign: {
-      control: 'text',
+      control: 'select',
+      options: CSS.textAlign,
     },
     textDecoration: {
       control: 'text',
     },
     textTransform: {
-      control: 'text',
+      control: 'select',
+      options: CSS.textTransform,
+    },
+    truncate: {
+      control: 'boolean',
     },
     margin: {
       control: 'text',
@@ -48,6 +53,22 @@ const meta: Meta<typeof Text> = {
     padding: {
       control: 'text',
     },
+  },
+  args: {
+    as: undefined,
+    heading: undefined,
+    body: undefined,
+    color: '',
+    fontSize: '',
+    fontStyle: '',
+    fontWeight: '',
+    lineHeight: '',
+    textAlign: undefined,
+    textDecoration: '',
+    textTransform: undefined,
+    truncate: false,
+    margin: '',
+    padding: '',
   },
 };
 
@@ -62,13 +83,10 @@ export const Default: Story = {
     },
     template: `
       <Text v-bind="args">
-        {{ args.default }}
+        An adventurous scientist who encountered and repaired a stranded train as a child, she now ventures across the universe with the Astral Express as its navigator.
       </Text>
     `,
   }),
-  args: {
-    default: 'An adventurous scientist who encountered and repaired a stranded train as a child, she now ventures across the universe with the Astral Express as its navigator.',
-  }
 };
 
 export const Heading: Story = {
@@ -113,4 +131,3 @@ export const Body: Story = {
     `,
   }),
 };
-

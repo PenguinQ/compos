@@ -9,17 +9,7 @@ import EmptyState from '@components/EmptyState';
 import Textfield from '@components/Textfield';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Row, Column } from '@components/Layout';
-import {
-  IconArrowLeftShort,
-  IconX,
-  IconChevronDoubleLeft,
-  IconChevronDoubleRight,
-  IconChevronLeft,
-  IconChevronRight,
-  IconCheckLarge,
-  IconSaveFilled,
-  IconSave,
-} from '@components/icons';
+import ComposIcon, { ArrowLeftShort, X } from '@components/Icons';
 
 // View Components
 import ButtonBlock from '@/views/components/ButtonBlock.vue';
@@ -70,7 +60,7 @@ const {
 <template>
   <Toolbar sticky>
     <ToolbarAction icon @click="$router.back">
-      <IconArrowLeftShort size="40" />
+      <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
     <ToolbarTitle>{{ sales_id ? 'Edit Sales' : 'Add Sales' }}</ToolbarTitle>
     <ToolbarSpacer />
@@ -156,7 +146,7 @@ const {
   >
     <Toolbar sticky>
       <ToolbarAction icon @click="handleDialogClose">
-        <IconX size="40" />
+        <ComposIcon :icon="X" :size="40" />
       </ToolbarAction>
       <input class="temp-search" placeholder="Search Product" @input="handleSearch" />
       <ToolbarAction @click="handleDialogClose($event, true)">

@@ -5,7 +5,6 @@ import QuantityEditor from './QuantityEditor.vue';
 
 const meta: Meta<typeof QuantityEditor> = {
   component: QuantityEditor,
-  tags: ['autodocs'],
   argTypes: {
     disabled: {
       control: 'boolean',

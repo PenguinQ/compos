@@ -4,7 +4,7 @@ import Text from '@components/Text';
 import Card, { CardHeader, CardTitle, CardBody } from '@components/Card';
 import EmptyState from '@components/EmptyState';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
-import { IconArrowLeftShort } from '@components/icons';
+import { IconArrowLeftShort } from '@components/Icons';
 
 import { useSalesForm } from './hooks/SalesForm.hook';
 

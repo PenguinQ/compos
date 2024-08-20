@@ -1,11 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
 import Button from './Button.vue';
-import { IconArchive } from '@icons';
+import ComposIcon, { Archive } from '@components/Icons';
 
 const meta: Meta<typeof Button> = {
   component: Button,
-  tags: ['autodocs'],
   argTypes: {
     color: {
       control: 'select',
@@ -50,13 +49,13 @@ export const Default: Story = {
 
 export const IconButton: Story = {
   render: (args) => ({
-    components: { Button, IconArchive },
+    components: { Button, ComposIcon },
     setup() {
-      return { args };
+      return { args, Archive };
     },
     template: `
       <Button v-bind="args">
-        <IconArchive color="white" />
+        <ComposIcon :icon="Archive" />
       </Button>
     `,
   }),

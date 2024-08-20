@@ -4,7 +4,7 @@ import { computed } from 'vue';
 // Common Components
 import Text from '@components/Text';
 import Button from '@components/Button';
-import { IconCheckLarge, IconXLarge } from '@components/icons';
+import ComposIcon, { CheckLarge, XLarge } from '@components/Icons';
 
 // View Components
 import ProductImage from '@/views/components/ProductImage.vue';
@@ -41,7 +41,7 @@ const classes = computed(() => ({
     <div class="sales-product__detail">
       <Text body="large" truncate margin="0">{{ name }}</Text>
     </div>
-    <IconCheckLarge v-if="selected" class="sales-product__selected" />
+    <ComposIcon :icon="CheckLarge" v-if="selected" class="sales-product__selected" />
     <Button
       v-if="$attrs.onClickRemove"
       class="sales-product__remove"
@@ -50,7 +50,7 @@ const classes = computed(() => ({
       :aria-label="`Remove ${name}`"
       @click="$emit('clickRemove')"
     >
-      <IconXLarge size="18" />
+      <ComposIcon :icon="XLarge" size="18" />
     </Button>
   </div>
 </template>

@@ -4,7 +4,7 @@ import type * as CSS from 'csstype';
 import { useScopeId } from '@hooks';
 
 import Overlay from '@components/Overlay';
-import { IconX } from '@icons';
+import ComposIcon, { X } from '@components/Icons';
 
 type DialogProps = {
   /**
@@ -129,7 +129,7 @@ watch(
             aria-label="Close"
             @click="closeDialog"
           >
-            <IconX size="24" />
+            <ComposIcon :icon="X" />
           </button>
         </div>
       </div>
@@ -176,10 +176,10 @@ $headerFullHeight: 56px;
     transform: translate(50%, -50%);
     padding: 0;
 
-    .cp-icon {
+    compos-icon {
       width: 100%;
       height: 100%;
-      fill: var(--color-white);
+      color: var(--color-white);
     }
 
     &:active {
@@ -241,13 +241,13 @@ $headerFullHeight: 56px;
       position: relative;
       transform: none;
 
-      .cp-icon {
+      compos-icon {
         width: 40px;
         height: 40px;
         transition: transform var(--transition-duration-normal) var(--transition-timing-function);
       }
 
-      &:active .cp-icon {
+      &:active compos-icon {
         transform: scale(0.85);
       }
     }

@@ -4,7 +4,7 @@ import { computed, defineAsyncComponent } from 'vue';
 // Common Components
 import Text from '@components/Text';
 import Button from '@components/Button';
-import { IconCheckLarge, IconXLarge } from '@components/icons';
+import ComposIcon, { CheckLarge, XLarge } from '@components/Icons';
 
 // View Components
 import ProductImage from '@/views/components/ProductImage.vue';
@@ -72,7 +72,7 @@ const classes = computed(() => ({
       @clickDecrement="$emit('clickQuantityDecrement', $event)"
       @clickIncrement="$emit('clickQuantityIncrement', $event)"
     />
-    <IconCheckLarge v-if="selected" class="vc-product-selection__marker" />
+    <ComposIcon v-if="selected" :icon="CheckLarge" class="vc-product-selection__marker" />
     <Button
       v-if="$attrs.onClickRemove"
       class="vc-product-selection__action"
@@ -81,7 +81,7 @@ const classes = computed(() => ({
       :aria-label="`Remove ${name}`"
       @click="$attrs.onClickRemove"
     >
-      <IconXLarge size="18" />
+      <ComposIcon :icon="XLarge" size="18" />
     </Button>
   </div>
 </template>

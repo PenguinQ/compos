@@ -58,9 +58,10 @@
   --color-disabled: #FCF7F8;
   --color-disabled-2: #B5B3BA;
 
+  --color-border: var(--color-neutral-2);
   --color-focus-outline: var(--color-blue-5);
 
-  // Typpography
+  // Typography
   --text-heading-family: "Nunito", sans-serif;
   --text-body-family: "DM Sans", sans-serif;
   --text-heading-1-size: 26px;
@@ -104,6 +105,9 @@
   --z-8: 80;
   --z-9: 90;
   --z-max: 100;
+
+  --safe-area-top: env(safe-area-inset-top);
+  --safe-area-bottom: env(safe-area-inset-bottom);
 }
 
 @include screen-md {

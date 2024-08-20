@@ -38,7 +38,20 @@ defineProps<ListItemProps>();
 .cp-list-item {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
   gap: 16px;
+  border-bottom: 1px solid var(--color-border);
+  padding: 12px 16px;
+
+  &__content {
+    flex-grow: 1;
+  }
+
+  &__prepend {
+    margin-right: auto;
+  }
+
+  &__append {
+    margin-left: auto;
+  }
 }
 </style>

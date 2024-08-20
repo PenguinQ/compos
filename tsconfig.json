@@ -9,7 +9,8 @@
       "@helpers/*": ["src/helpers/*"],
       "@hooks/*": ["src/components/hooks/*"],
       "@plugins/*": ["src/components/plugins/*"],
-      "@icons/*": ["src/components/icons/*"]
+      "@icons/*": ["src/components/icons/*"],
+      "@docs/*": [".storybook/*"]
     },
     "target": "ES2020",
     "useDefineForClassFields": true,

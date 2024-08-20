@@ -6,7 +6,6 @@ import RadioGroup from './RadioGroup.vue';
 
 const meta: Meta<typeof Radio> = {
   component: Radio,
-  tags: ['autodocs'],
   argTypes: {
     disabled: {
       type: 'boolean',

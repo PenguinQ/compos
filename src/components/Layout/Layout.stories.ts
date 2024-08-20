@@ -6,7 +6,6 @@ import Row from './Row.vue';
 
 const meta: Meta<typeof Container> = {
   component: Container,
-  tags: ['autodocs'],
 };
 
 export default meta;
@@ -82,12 +81,7 @@ export const RowStory: StoryRow = {
     },
     direction: {
       control: 'select',
-      options: [
-        'row',
-        'row-reverse',
-        'column',
-        'column-reverse',
-      ],
+      options: ['row', 'row-reverse', 'column', 'column-reverse'],
     },
     gutter: {
       control: 'text',

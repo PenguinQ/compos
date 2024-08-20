@@ -92,36 +92,20 @@ const buttonClass = computed(() => ({
   &--icon {
     border-radius: 50%;
     padding: 8px;
-
-    .cp-icon {
-      fill: var(--color-white);
-    }
   }
 
   &--outline,
   &--text {
     &.cp-button--red {
       color: var(--color-red-4);
-
-      &.cp-button--icon .cp-icon {
-        fill: var(--color-red-4);
-      }
     }
 
     &.cp-button--green {
       color: var(--color-green-4);
-
-      &.cp-button--icon .cp-icon {
-        fill: var(--color-green-4);
-      }
     }
 
     &.cp-button--blue {
       color: var(--color-blue-4);
-
-      &.cp-button--icon .cp-icon {
-        fill: var(--color-blue-4);
-      }
     }
   }
 

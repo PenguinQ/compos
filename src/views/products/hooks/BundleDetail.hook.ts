@@ -15,7 +15,7 @@ export const useBundleDetail = () => {
   const router = useRouter();
   const { params } = route;
   const toast = inject('ToastProvider');
-  const dialog_delete = ref(false);
+  const dialogDelete = ref(false);
 
   const {
     data,
@@ -54,9 +54,9 @@ export const useBundleDetail = () => {
   });
 
   return {
-    bundle_id: params.id,
+    bundleId: params.id,
     data: data as Ref<BundleDetailNormalizerReturn>,
-    dialog_delete,
+    dialogDelete,
     isError,
     isLoading,
     isSuccess,

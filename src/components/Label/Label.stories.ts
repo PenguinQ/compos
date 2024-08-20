@@ -4,7 +4,6 @@ import Label from './Label.vue';
 
 const meta: Meta<typeof Label> = {
   component: Label,
-  tags: ['autodocs'],
   argTypes: {
     default: {
       control: 'text',

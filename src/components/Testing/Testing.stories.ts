@@ -6,13 +6,8 @@ import TestingBody from './TestingBody.vue';
 
 const meta: Meta<typeof Testing> = {
   component: Testing,
-  tags: ['autodocs'],
-  argTypes: {
-
-  },
-  args: {
-
-  },
+  argTypes: {},
+  args: {},
 };
 
 export default meta;

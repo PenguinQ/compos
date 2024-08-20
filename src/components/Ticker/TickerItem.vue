@@ -3,7 +3,9 @@ export default { name: 'TickerItem' };
 </script>
 <script setup lang="ts">
 import Text from '@components/Text';
-import Icon from '@icons';
+// import Icon from '@icons';
+
+import ComposIcon, { InfoCircleFilled, XCircleFilled, WarningCircleFilled } from '@components/Icons';
 
 export type TickerItemProps = {
   title?: string;
@@ -15,14 +17,14 @@ const props = withDefaults(defineProps<TickerItemProps>(), {
   type: 'info',
 });
 
-let icon_type = 'info-circle-filled';
+let icon_type = InfoCircleFilled;
 
 switch (props.type) {
   case 'error':
-    icon_type = 'x-circle-filled';
+    icon_type = XCircleFilled;
     break;
   case 'warning':
-    icon_type = 'warning-circle-filled';
+    icon_type = WarningCircleFilled;
     break;
   default:
     break;
@@ -31,7 +33,8 @@ switch (props.type) {
 
 <template>
   <div class="cp-ticker-item">
-    <Icon class="cp-ticker-item__icon" :name="icon_type" size="72" />
+    <ComposIcon class="cp-ticker-item__icon" :name="icon_type" size="72" />
+    <!-- <Icon class="cp-ticker-item__icon" :name="icon_type" size="72" /> -->
     <div class="cp-ticker-item__content">
       <div class="cp-ticker-item__title">
         <Text v-if="title" heading="6" as="h4" margin="0" v-html="title" />
@@ -56,7 +59,7 @@ $root: '.cp-ticker-item';
   padding: 16px 24px;
 
   &__icon {
-    fill: var(--color-neutral-5);
+    color: var(--color-neutral-5);
     position: absolute;
     top: -12px;
     left: -12px;
@@ -66,15 +69,15 @@ $root: '.cp-ticker-item';
     transition: all var(--transition-duration-slow) 160ms var(--transition-timing-function);
 
     #{$root-container}--error & {
-      fill: var(--color-red-7);
+      color: var(--color-red-7);
     }
 
     #{$root-container}--info & {
-      fill: var(--color-blue-7);
+      color: var(--color-blue-7);
     }
 
     #{$root-container}--warning & {
-      fill: var(--color-yellow-7);
+      color: var(--color-yellow-7);
     }
   }
 

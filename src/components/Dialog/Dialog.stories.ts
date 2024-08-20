@@ -3,14 +3,13 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 
 import Button from '@components/Button';
 import Text from '@components/Text';
-import Ticker,  { TickerItem } from '@components/Ticker';
+import Ticker, { TickerItem } from '@components/Ticker';
 import Toolbar, { ToolbarAction, ToolbarSpacer, ToolbarTitle } from '@components/Toolbar';
-import { IconX, IconWarningCircle } from '@icons';
+import ComposIcon, { X, WarningCircle } from '@components/Icons';
 import Dialog from './Dialog.vue';
 
 const meta: Meta<typeof Dialog> = {
   component: Dialog,
-  tags: ['autodocs'],
   argTypes: {
     fullscreen: {
       control: 'boolean',
@@ -39,7 +38,7 @@ const meta: Meta<typeof Dialog> = {
     noClose: false,
     persistent: false,
     title: 'Kafka',
-  }
+  },
 };
 
 export default meta;
@@ -53,7 +52,7 @@ export const Default: Story = {
       Text,
     },
     setup() {
-      const show = ref(false)
+      const show = ref(false);
 
       return { args, show };
     },
@@ -80,7 +79,7 @@ export const Activator: Story = {
       TickerItem,
     },
     setup() {
-      const show = ref(false)
+      const show = ref(false);
 
       return { args, show };
     },
@@ -108,7 +107,7 @@ export const Activator: Story = {
   }),
 };
 
-Activator.storyName = 'Show using activator slot'
+Activator.storyName = 'Show using activator slot';
 
 export const FullscreenCustom: Story = {
   render: (args) => ({
@@ -122,17 +121,16 @@ export const FullscreenCustom: Story = {
       ToolbarAction,
       ToolbarSpacer,
       ToolbarTitle,
-      IconX,
-      IconWarningCircle,
+      ComposIcon,
     },
     setup() {
-      const show = ref(false)
+      const show = ref(false);
 
       const alertAction = () => {
         alert('Action clicked!');
       };
 
-      return { args, show, alertAction };
+      return { args, show, alertAction, X, WarningCircle };
     },
     template: `
       <Ticker>
@@ -149,12 +147,12 @@ export const FullscreenCustom: Story = {
         <template #header>
           <Toolbar>
             <ToolbarAction icon>
-              <IconX @click="show = false" size="40" />
+              <ComposIcon :icon="X" @click="show = false" :size="40" />
             </ToolbarAction>
             <ToolbarTitle>{{ args.title }}</ToolbarTitle>
             <ToolbarSpacer />
             <ToolbarAction icon @click="alertAction">
-              <IconWarningCircle />
+              <ComposIcon :icon="WarningCircle" />
             </ToolbarAction>
           </Toolbar>
         </template>

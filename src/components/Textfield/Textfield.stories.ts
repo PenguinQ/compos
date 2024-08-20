@@ -7,7 +7,6 @@ import Textfield from './Textfield.vue';
 
 const meta: Meta<typeof Textfield> = {
   component: Textfield,
-  tags: ['autodocs'],
   argTypes: {
     append: {
       control: 'text',
@@ -134,7 +133,7 @@ export const AppendPrependSlot: Story = {
         disable: true,
       },
     },
-  }
+  },
 };
 
 AppendPrependSlot.storyName = 'Append/prepend slot';

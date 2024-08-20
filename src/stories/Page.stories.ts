@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
-import { within, userEvent } from '@storybook/testing-library';
+import { within, userEvent } from '@storybook/test';
 import MyPage from './Page.vue';
 
 const meta = {
@@ -14,7 +14,6 @@ const meta = {
     layout: 'fullscreen',
   },
   // This component will have an automatically generated docsPage entry: https://storybook.js.org/docs/vue/writing-docs/autodocs
-  tags: ['autodocs'],
 } satisfies Meta<typeof MyPage>;
 
 export default meta;

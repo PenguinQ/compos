@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import * as CSS from 'csstype';
+import { onMounted, computed, ref, nextTick, onUpdated } from 'vue';
 
 type ListActionsProps = {
-  bottom?: CSS.Property.Bottom;
-  height?: CSS.Property.Height;
   sticky?: boolean;
 };
 
@@ -14,10 +11,43 @@ const props = withDefaults(defineProps<ListActionsProps>(), {
 
 const container = ref<HTMLDivElement>();
 const spacer = ref<HTMLDivElement>();
+const measured_height = ref(0);
 const classes = computed(() => ({
   'vc-list-footer': true,
   'vc-list-footer--sticky': props.sticky,
 }));
+
+const setHeight = async () => {
+  await nextTick();
+  measured_height.value = container.value!.offsetHeight;
+};
+
+onMounted(() => {
+  const DOM_container = container.value;
+
+  if (DOM_container && props.sticky) {
+    setHeight();
+
+    const in_dialog = DOM_container.closest('.cp-dialog-body');
+
+    if (!in_dialog) {
+      const bottom_nav = document.getElementsByClassName('cp-bottom-navbar')[0];
+
+      if (bottom_nav) {
+        const bottom_nav_rect = bottom_nav.getBoundingClientRect();
+        const { height } = bottom_nav_rect;
+
+        DOM_container.style.bottom = `calc(var(--safe-area-bottom, 0) + ${height}px)`;
+      }
+    }
+  }
+});
+
+onUpdated(() => {
+  if (container.value && props.sticky) {
+    if (container.value.offsetHeight !== measured_height.value) setHeight();
+  }
+});
 </script>
 
 <template>
@@ -26,13 +56,9 @@ const classes = computed(() => ({
       ref="spacer"
       v-if="sticky"
       class="vc-list-footer__spacer"
-      :style="{ height: sticky ? height : undefined }"
+      :style="{ height: sticky ? `calc(var(--safe-area-bottom, 0) + ${measured_height}px)` : undefined }"
     />
-    <div
-      ref="container"
-      class="vc-list-footer__container"
-      :style="{ bottom }"
-    >
+    <div ref="container" class="vc-list-footer__container">
       <slot />
     </div>
   </footer>

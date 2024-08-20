@@ -83,15 +83,15 @@
       padding: 16px;
       margin: 0;
 
-      .cp-icon {
-        fill: var(--color-white);
+      compos-icon {
+        color: var(--color-white);
         transition: transform var(--transition-duration-normal) var(--transition-timing-function);
       }
 
       &:active {
         box-shadow: inset 0 0 56px rgba(37, 52, 70, 0.28);
 
-        .cp-icon {
+        compos-icon {
           transform: scale(0.86);
         }
       }

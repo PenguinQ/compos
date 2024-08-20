@@ -5,7 +5,7 @@ import * as CSS from 'csstype';
 // Common Components
 import Text from '@components/Text';
 import { Bar } from '@components/Loader';
-import { IconChevronDoubleRight, IconChevronDoubleLeft, IconChevronLeft, IconChevronRight } from '@icons';
+import ComposIcon, { ChevronDoubleRight, ChevronDoubleLeft, ChevronLeft, ChevronRight } from '@components/Icons';
 
 // View Components
 import ButtonBlock from './ButtonBlock.vue';
@@ -52,10 +52,10 @@ const classes = computed(() => ({
     :style="{ alignSelf: align }"
   >
     <ButtonBlock @click="!is_loading && $emit('clickFirst')" :disabled="prev_disabled">
-      <IconChevronDoubleLeft color="var(--color-white)" />
+      <ComposIcon :icon="ChevronDoubleLeft" color="var(--color-white)" />
     </ButtonBlock>
     <ButtonBlock @click="!is_loading && $emit('clickPrev')" :disabled="prev_disabled">
-      <IconChevronLeft color="var(--color-white)" />
+      <ComposIcon :icon="ChevronLeft" color="var(--color-white)" />
     </ButtonBlock>
     <div class="vc-pagination__detail">
       <Bar v-if="is_loading" size="24px" margin="0" />
@@ -65,10 +65,10 @@ const classes = computed(() => ({
       </template>
     </div>
     <ButtonBlock @click="!is_loading && $emit('clickNext')" :disabled="next_disabled">
-      <IconChevronRight color="var(--color-white)" />
+      <ComposIcon :icon="ChevronRight" color="var(--color-white)" />
     </ButtonBlock>
     <ButtonBlock @click="!is_loading && $emit('clickLast')" :disabled="next_disabled">
-      <IconChevronDoubleRight color="var(--color-white)" />
+      <ComposIcon :icon="ChevronDoubleRight" color="var(--color-white)" />
     </ButtonBlock>
   </div>
 </template>
@@ -86,7 +86,7 @@ const classes = computed(() => ({
     height: 46px;
     border-radius: 0;
 
-    .cp-icon {
+    compos-icon {
       width: 18px;
       height: 18px;
     }
@@ -144,7 +144,7 @@ const classes = computed(() => ({
       width: 56px;
       height: 56px;
 
-      .cp-icon {
+      compos-icon {
         width: 24px;
         height: 24px;
       }

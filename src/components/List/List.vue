@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, reactive } from 'vue';
 import ListItem from './ListItem.vue';
 import type { ListItemProps } from './ListItem.vue';
 
@@ -7,14 +8,22 @@ type ItemProps = {
 };
 
 type ListProps = {
+  inset?: boolean;
   items?: ListItemProps[];
 };
 
-defineProps<ListProps>();
+const props = withDefaults(defineProps<ListProps>(), {
+  inset: false,
+});
+
+const classes = computed(() => ({
+  'cp-list': true,
+  'cp-list--inset': props.inset,
+}));
 </script>
 
 <template>
-  <div class="cp-list">
+  <div :class="classes">
     <ListItem
       :key="item.title"
       v-for="item of items"
@@ -28,4 +37,12 @@ defineProps<ListProps>();
   </div>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss">
+.cp-list {
+  background-color: var(--color-white);
+
+  &--inset {
+    margin: 16px;
+  }
+}
+</style>

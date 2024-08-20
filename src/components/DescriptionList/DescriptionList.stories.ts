@@ -5,7 +5,6 @@ import DescriptionList from './DescriptionList.vue';
 
 const meta: Meta<typeof DescriptionList> = {
   component: DescriptionList,
-  tags: ['autodocs'],
   argTypes: {
     alignment: {
       control: 'select',
@@ -45,7 +44,7 @@ const meta: Meta<typeof DescriptionList> = {
         title: 'Price',
         description: 'Rp100,000',
       },
-    ]
+    ],
   },
 };
 
