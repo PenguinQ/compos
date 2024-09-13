@@ -199,12 +199,12 @@ const {
       </template>
     </Container>
     <!--  -->
-    <Dialog v-model="dialogDelete" class="product-detail-delete" :title="`Delete ${data?.name}?`">
+    <Dialog v-model="dialogDelete" :title="`Delete ${data?.name}?`">
       <Text body="large" textAlign="center" margin="0">
         Deleting this product will automatically remove this products or any of it's variants in any bundles.
       </Text>
       <template #footer>
-        <div class="product-detail-delete__actions">
+        <div class="dialog-actions">
           <Button color="red" full @click="deleteProduct">
             {{ deleteProductLoading ? 'Loading' : 'Delete' }}
           </Button>

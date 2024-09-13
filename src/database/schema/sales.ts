@@ -7,6 +7,10 @@ export default {
       type: 'string',
       maxLength: 1000,
     },
+    finished: {
+      type: 'boolean',
+      default: false,
+    },
     name: {
       type: 'string',
       maxLength: 1000,
@@ -14,8 +18,17 @@ export default {
     products: {
       type: 'array',
       uniqueItems: true,
-      items: {
-        type: 'string',
+      items : {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+          },
+          quantity: {
+            type: 'integer',
+            minimum: 1,
+          },
+        },
       },
       default: [],
     },
@@ -31,10 +44,16 @@ export default {
           name: {
             type: 'string',
           },
+          price: {
+            type: 'number',
+            minimum: 0,
+          },
           quantity: {
             type: 'integer',
-            minimum: 0,
-            default: 0,
+            minimum: 1,
+          },
+          sku: {
+            type: 'string',
           },
         },
       },
@@ -42,21 +61,27 @@ export default {
     },
     orders: {
       type: 'array',
-      ref: 'order',        // Refer to populate order schema. Usage: populate('orders');
+      ref: 'order', // Refer to populate order schema. Usage: populate('orders');
       uniqueItems: true,
       items: {
         type: 'string',
       },
       default: [],
     },
-    revenue: {
+    discount: {
       type: 'number',
       minimum: 0,
       default: 0,
     },
-    finished: {
-      type: 'boolean',
-      default: false,
+    discount_type: {
+      type: 'string',
+      maxLength: 100,
+      default: 'percentage',
+    },
+    revenue: {
+      type: 'number',
+      minimum: 0,
+      default: 0,
     },
     created_at: {
       type: 'date-time',
@@ -67,11 +92,12 @@ export default {
   },
   required: [
     'id',
-    'name',
-    'orders',
-    'products',
-    'revenue',
     'finished',
+    'name',
+    'products',
+    'products_sold',
+    'orders',
+    'revenue',
     'created_at',
     'updated_at',
   ],

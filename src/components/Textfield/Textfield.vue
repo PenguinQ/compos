@@ -5,7 +5,7 @@ import type * as CSS from 'csstype'
 
 import ComposIcon, { Eye, EyeSlash } from '@components/Icons';
 
-interface Props extends /* @vue-ignore */ InputHTMLAttributes {
+interface TextfieldProps extends /* @vue-ignore */ InputHTMLAttributes {
   /**
    * Append text to the textfield.
    */
@@ -65,19 +65,23 @@ interface Props extends /* @vue-ignore */ InputHTMLAttributes {
   value?: string | number;
 }
 
+export interface TextfieldExpose {
+  input: typeof input;
+}
+
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<TextfieldProps>(), {
   disabled: false,
   error: false,
   success: false,
   type: 'text',
 });
-
 const emits = defineEmits(['update:modelValue']);
 
 const isPassword = computed(() => props.type === 'password');
 const showPassword = ref(false);
+const input = ref<HTMLInputElement | null>(null);
 
 const handleInput = (e: Event) => {
   emits('update:modelValue', (e.target as HTMLInputElement).value);
@@ -86,6 +90,9 @@ const handleInput = (e: Event) => {
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
 };
+
+// Expose
+defineExpose<TextfieldExpose>({ input });
 </script>
 
 <template>
@@ -108,6 +115,7 @@ const togglePassword = () => {
       </div>
       <input
         v-if="isPassword"
+        ref="input"
         class="cp-form-field"
         v-bind="$attrs"
         :disabled="disabled"
@@ -118,6 +126,7 @@ const togglePassword = () => {
       />
       <input
         v-else
+        ref="input"
         class="cp-form-field"
         v-bind="$attrs"
         :disabled="disabled"

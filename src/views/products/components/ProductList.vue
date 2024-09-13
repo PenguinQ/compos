@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-
 // Common Components
 import Button from '@components/Button';
 import Card from '@components/Card';
@@ -32,7 +30,6 @@ type ProductListProps = {
 
 const props = defineProps<ProductListProps>();
 
-const router = useRouter();
 const {
   list,
   page,
@@ -41,9 +38,10 @@ const {
   listError,
   listLoading,
   listRefetch,
-  toPrev,
-  toNext,
+  handlePaginationPrev,
+  handlePaginationNext,
   handleSearch,
+  handleSearchClear,
 } = useProductList(props.type);
 </script>
 
@@ -63,7 +61,9 @@ const {
     <ListSearch
       sticky
       :placeholder="type === 'product' ? 'Search Product' : 'Search Bundle'"
+      v-model="searchQuery"
       @input="handleSearch"
+      @clear="handleSearchClear"
     />
     <Bar v-if="listLoading" margin="56px 0" />
     <template v-else>
@@ -122,7 +122,7 @@ const {
     </template>
   </template>
   <ListFooter v-if="!listError" sticky>
-    <ListFab align="flex-end" @click="router.push(`${type === 'product' ? '/product/add' : '/bundle/add'}`)" />
+    <ListFab align="flex-end" @click="$router.push(`${type === 'product' ? '/product/add' : '/bundle/add'}`)" />
     <Pagination
       v-if="!isListEmpty"
       frame
@@ -131,10 +131,10 @@ const {
       :total_page="page.total"
       :first_page="page.current <= 1"
       :last_page="page.current >= page.total"
-      @clickFirst="toPrev(true)"
-      @clickPrev="toPrev"
-      @clickNext="toNext"
-      @clickLast="toNext(true)"
+      @clickFirst="handlePaginationPrev(true)"
+      @clickPrev="handlePaginationPrev"
+      @clickNext="handlePaginationNext"
+      @clickLast="handlePaginationNext(true)"
     />
   </ListFooter>
 </template>

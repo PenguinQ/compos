@@ -124,14 +124,21 @@ export const useQuery = (params: UseQueryParams) => {
   };
 
   // Watch changes in queryKey value and run the query if the queryKey value changes.
-  watch(() => queryKey, () => {
-    if (query_enabled.value) query();
-  }, { deep: true });
+  watch(
+    () => queryKey,
+    () => {
+      if (query_enabled.value) query();
+    },
+    { deep: true },
+  );
 
   // Watch changes if the query enabled status are changed, and run the query if it's true.
-  watch(query_enabled, (enabled) => {
-    if (enabled) query();
-  });
+  watch(
+    query_enabled,
+    (enabled) => {
+      if (enabled) query();
+    }
+  );
 
   // Run query for the first time if the query is enabled.
   if (query_enabled.value) query();
@@ -215,14 +222,21 @@ export const useObservableQuery = (params: Omit<UseQueryParams, 'cache'>) => {
   });
 
   // Watch changes in queryKey value and run the query if the queryKey value changes.
-  watch(() => queryKey, () => {
-    if (query_enabled.value) query();
-  }, { deep: true });
+  watch(
+    () => queryKey,
+    () => {
+      if (query_enabled.value) query();
+    },
+    { deep: true }
+  );
 
   // Watch changes if the query enabled status are changed, and run the query if it's true.
-  watch(query_enabled, (enabled) => {
-    if (enabled) query();
-  });
+  watch(
+    query_enabled,
+    (enabled) => {
+      if (enabled) query();
+    }
+  );
 
   // Run query for the first time if the query is enabled.
   if (query_enabled.value) query();

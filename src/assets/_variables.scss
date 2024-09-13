@@ -108,6 +108,8 @@
 
   --safe-area-top: env(safe-area-inset-top);
   --safe-area-bottom: env(safe-area-inset-bottom);
+  --focus-outline: 2px dashed var(--color-blue-4);
+  --focus-outline-offset: 4px;
 }
 
 @include screen-md {

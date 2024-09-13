@@ -50,7 +50,7 @@ export const useProductDetail = () => {
     onSuccess: () => {
       // @ts-ignore
       toast.add({ message: 'Product deleted.', type: 'success', duration: 2000 });
-      router.back();
+      router.push('/product');
     }
   });
 

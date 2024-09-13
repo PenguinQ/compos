@@ -52,7 +52,6 @@ export default {
   },
   attachments: {
     encrypted: false,
-    compression: 'gzip',
   },
   required: [
     'id',

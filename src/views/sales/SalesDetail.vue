@@ -11,7 +11,8 @@ import Label from '@components/Label';
 import Text from '@components/Text';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Column, Row } from '@components/Layout';
-import ComposIcon, { ArrowLeftShort, PencilSquare, Trash } from '@components/Icons';
+import Separator from '@components/Separator';
+import ComposIcon, { ArrowLeftShort, PencilSquare, Trash, CheckLarge } from '@components/Icons';
 
 // Hooks
 import { useSalesDetail } from './hooks/SalesDetail.hook';
@@ -25,8 +26,9 @@ import no_image from '@assets/illustration/no_image.svg';
 
 const router = useRouter();
 const {
-  sales_id,
-  dialog_delete,
+  salesId,
+  dialogDelete,
+  dialogFinish,
   data,
   isError,
   isLoading,
@@ -47,17 +49,27 @@ const {
       v-if="!isError && !isLoading"
       icon
       backgroundColor="var(--color-blue-4)"
-      @click="router.push(`/sales/edit/${sales_id}`)"
+      @click="router.push(`/sales/edit/${salesId}`)"
     >
       <ComposIcon :icon="PencilSquare" />
     </ToolbarAction>
+    <!-- If there are no sales yet, show delete button instead finish button -->
     <ToolbarAction
       v-if="!isError && !isLoading"
       icon
       backgroundColor="var(--color-red-4)"
-      @click="dialog_delete = true"
+      @click="dialogDelete = true"
     >
       <ComposIcon :icon="Trash" />
+    </ToolbarAction>
+    <!-- If there are some sales been done, show finish button instead delete button -->
+    <ToolbarAction
+      v-if="!isError && !isLoading"
+      icon
+      backgroundColor="var(--color-green-4)"
+      @click="dialogFinish = true"
+    >
+      <ComposIcon :icon="CheckLarge" :size="32" />
     </ToolbarAction>
   </Toolbar>
   <!--  -->
@@ -72,17 +84,17 @@ const {
       <Button @click="refetch">Try Again</Button>
     </template>
   </EmptyState>
-  <Container v-else class="pd-container">
+  <Container v-else class="page-container">
     <template v-if="isLoading">
       Loading
     </template>
     <template v-else>
       <Row>
         <Column col="12">
-          <Card class="pd-card" variant="outline">
+          <Card class="section-card" variant="outline">
             <CardBody>
               <Text heading="3" as="h2" margin="0">{{ data.name }}</Text>
-              <hr />
+              <Separator />
               <DescriptionList class="pd-description-list" alignment="horizontal">
                 <DescriptionListItem alignItems="center">
                   <dt>Status</dt>
@@ -101,7 +113,7 @@ const {
                   <dd>{{ data.updated_at || '-' }}</dd>
                 </DescriptionListItem>
               </DescriptionList>
-              <hr />
+              <Separator />
               <Text heading="5" as="h3" margin="0 0 16px">Products</Text>
               <div class="sales-products">
                 <div class="sales-product" v-for="product in data.products">
@@ -121,10 +133,10 @@ const {
           </Card>
         </Column>
         <Column :col="{ default: 12, md: 6 }">
-          <Card class="pd-card" variant="outline">
+          <Card class="section-card" variant="outline">
             <CardBody>
               <Text heading="4" as="h2" margin="0">Order</Text>
-              <hr>
+              <Separator />
               <div class="sales-orders">
                 <EmptyState
                   v-if="!data.orders.length"
@@ -142,10 +154,10 @@ const {
           </Card>
         </Column>
         <Column :col="{ default: 12, md: 6 }">
-          <Card class="pd-card" variant="outline">
+          <Card class="section-card" variant="outline">
             <CardBody>
               <Text heading="4" as="h2" margin="0">Products Sold</Text>
-              <hr>
+              <Separator />
               <div class="sales-orders">
                 <EmptyState
                   v-if="!data.orders.length"
@@ -166,13 +178,29 @@ const {
     </template>
   </Container>
   <!--  -->
-  <Dialog v-model="dialog_delete" class="pd-dialog pd-dialog--delete" :title="`Delete ${data?.name}?`">
+  <Dialog v-model="dialogFinish" :title="`Finish ${data?.name}?`">
+    <Text body="large" textAlign="center" margin="0">
+      Finishing this product will finish this sales dashboard session and set the status as finished.
+    </Text>
     <template #footer>
-      <div class="pd-dialog__actions">
+      <div class="dialog-actions">
+        <Button color="green" full @click="mutateDelete">
+          {{ mutateDeleteLoading ? 'Loading' : 'Finish' }}
+        </Button>
+        <Button variant="outline" full @click="dialogFinish = false">Cancel</Button>
+      </div>
+    </template>
+  </Dialog>
+  <Dialog v-model="dialogDelete" :title="`Delete ${data?.name}?`">
+    <Text body="large" textAlign="center" margin="0">
+      Currently there's no order on this sales yet, delete it?
+    </Text>
+    <template #footer>
+      <div class="dialog-actions">
         <Button color="red" full @click="mutateDelete">
           {{ mutateDeleteLoading ? 'Loading' : 'Delete' }}
         </Button>
-        <Button variant="outline" full @click="dialog_delete = false">Cancel</Button>
+        <Button variant="outline" full @click="dialogDelete = false">Cancel</Button>
       </div>
     </template>
   </Dialog>

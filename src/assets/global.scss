@@ -25,7 +25,9 @@
 }
 
 .button {
-  &-clear {
+  color: var(--color-black);
+
+  &--clear {
     border: none;
     outline: none;
     background: none;
@@ -35,7 +37,7 @@
     margin: 0;
   }
 
-  &-icon {
+  &--icon {
     line-height: 1px;
     border: none;
     outline: none;
@@ -49,6 +51,19 @@
     &:active {
       transform: scale(0.9);
     }
+  }
+
+  &:focus {
+    outline: 2px dashed var(--color-blue-4);
+    outline-offset: 4px;
+  }
+}
+
+.dialog {
+  &-actions {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
   }
 }
 

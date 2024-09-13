@@ -24,41 +24,52 @@ export type QueryReturn = {
   observeableProcessor?: (data: RxDocument<unknown>[]) => Promise<object>;
 };
 
-export type SalesProductsSold = {
-  id: string;
-  name: string;
-  quantity: number;
-};
-
 export type SalesDoc = {
   id: string;
+  finished: boolean;
   name: string;
-  products: string[];
-  products_sold: SalesProductsSold[];
+  products: SalesDocProduct[];
+  products_sold: SalesDocProductSold[];
   orders: string[];
   revenue: number;
-  finished: boolean;
+  discount?: number;
+  discount_type?: 'percentage' | 'fixed';
   created_at: string;
   updated_at: string;
 };
 
-export type SalesCollection = RxCollection<SalesDoc>;
-
-export type OrderProduct = {
+export type SalesDocProduct = {
   id: string;
-  name: string;
-  subtotal: number;
   quantity: number;
 };
+
+export type SalesDocProductSold = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  sku: string;
+};
+
+export type SalesCollection = RxCollection<SalesDoc>;
 
 export type OrderDoc = {
   id: string;
   sales_id: string;
   name: string;
-  products: OrderProduct[];
+  products: OrderDocProduct[];
+  discount?: number;
+  discount_type?: 'percentage' | 'fixed';
   subtotal: number;
   created_at: string;
   updated_at: string;
+};
+
+export type OrderDocProduct = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
 };
 
 export type OrderCollection = RxCollection<OrderDoc>;
@@ -93,23 +104,23 @@ export type VariantDoc = {
 
 export type VariantCollection = RxCollection<VariantDoc>;
 
-export type BundleProduct = {
-  id: string;
-  product_id: string;
-  active: boolean;
-  quantity: number;
-};
-
 export type BundleDoc = {
   id: string;
   active: boolean;
   name: string;
   description?: string;
-  products: BundleProduct[];
+  products: BundleDocProduct[];
   price: number;
   auto_price?: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type BundleDocProduct = {
+  id: string;
+  product_id: string;
+  active: boolean;
+  quantity: number;
 };
 
 export type BundleCollection = RxCollection<BundleDoc>;

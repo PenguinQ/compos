@@ -96,6 +96,7 @@ class ComposIcon extends HTMLElement {
         :host {
           width: \${size};
           height: \${size};
+          vertical-align: middle;
           display: inline-block;
         }
 

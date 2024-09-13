@@ -1,3 +1,7 @@
 import Textfield from './Textfield.vue';
+import type { TextfieldExpose }  from './Textfield.vue';
 
-export default Textfield;
+export {
+  Textfield as default,
+  TextfieldExpose,
+};

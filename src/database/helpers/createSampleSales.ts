@@ -2,8 +2,9 @@ import { monotonicFactory } from 'ulidx';
 
 import { db } from '@/database';
 import { SALES_ID_PREFIX } from '@/database/constants';
+import type { SalesDoc, SalesDocProduct } from '../types';
 
-export default async (products: string[]) => {
+export default async (products: SalesDocProduct[]) => {
   const ulid = monotonicFactory();
   const products_array = [];
   const item_max = 3;
@@ -14,17 +15,7 @@ export default async (products: string[]) => {
     item_count += 1;
   };
 
-  // while (item_count < products.length) {
-  //   if (item_count > 0) {
-  //     products_array.push(products.slice(item_count, item_count + item_max));
-  //   } else {
-  //     products_array.push(products.slice(item_count, item_max));
-  //   }
-
-  //   item_count += item_max;
-  // };
-
-  const sales_obj = [];
+  const sales_obj: SalesDoc[] = [];
 
   for (const [index, products] of products_array.entries()) {
     const sales_id = SALES_ID_PREFIX + ulid();
@@ -37,6 +28,8 @@ export default async (products: string[]) => {
       products_sold: [],
       orders: [],
       revenue: 0,
+      discount: 0,
+      discount_type: 'percentage',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });

@@ -41,6 +41,16 @@ export default {
       },
       default: [],
     },
+    discount: {
+      type: 'number',
+      minimum: 0,
+      default: 0,
+    },
+    discount_type: {
+      type: 'string',
+      maxLength: 100,
+      default: 'percentage',
+    },
     subtotal: {
       type: 'number',
       minimum: 0,

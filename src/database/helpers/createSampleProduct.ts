@@ -3,16 +3,16 @@ import { monotonicFactory } from 'ulidx';
 import { db } from '../';
 
 export default async () => {
-  const productObj = [];
   const ulid = monotonicFactory();
+  const productObj = [];
   let bundle_data = [];
   let bundle_price = 0;
   let bundle_available = true;
 
   for (let i = 1; i < 30; i++) {
-    const productID = 'PRD_' + ulid();
-    const obj: any = {
-      id: productID,
+    const productId = 'PRD_' + ulid();
+    const product: any = {
+      id: productId,
       active: i < 3 ? true : false,
       name: `Product ${i}`,
       description: `This is description for Product ${i}`,
@@ -25,17 +25,22 @@ export default async () => {
       updated_at: new Date().toISOString(),
     };
 
+    /**
+     * --------------------------------------
+     * Create 2 variant for the first product
+     * --------------------------------------
+     */
     if (i === 1) {
       const testIDOne = 'VAR_' + ulid();
       const testIDTwo = 'VAR_' + ulid();
 
-      obj.variants.push(testIDOne);
-      obj.variants.push(testIDTwo);
+      product.variants.push(testIDOne);
+      product.variants.push(testIDTwo);
 
       const productArray = [
         {
           id: testIDOne,
-          product_id: productID,
+          product_id: productId,
           active: true,
           name: 'Variant 1',
           price: 100000,
@@ -46,7 +51,7 @@ export default async () => {
         },
         {
           id: testIDTwo,
-          product_id: productID,
+          product_id: productId,
           active: true,
           name: 'Variant 2',
           price: 200000,
@@ -57,14 +62,14 @@ export default async () => {
         },
       ];
 
-      bundle_data.push({ id: testIDOne, product_id: productID, active: productArray[0].active });
+      bundle_data.push({ id: testIDOne, product_id: productId, active: productArray[0].active });
       bundle_price += productArray[0].price;
       bundle_available = productArray[0].active ? true : false;
 
       await db.variant.bulkInsert(productArray);
     }
 
-    productObj.push(obj);
+    productObj.push(product);
   }
 
   // Push sample product with no variant as a product in a bundle.

@@ -15,6 +15,7 @@ export default defineConfig({
       manifest: {
         name: 'ComPOS',
         short_name: 'ComPOS',
+        description: 'Simple Web POS',
         theme_color: '#FFFFFF',
         icons: [
           {

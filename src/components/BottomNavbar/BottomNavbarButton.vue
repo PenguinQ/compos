@@ -35,6 +35,11 @@ defineProps<Props>()
   align-items: center;
   justify-content: center;
 
+  &:focus {
+    outline: 2px dashed var(--color-blue);
+    outline-offset: 4px;
+  }
+
   &::before {
     content: "";
     width: 0;

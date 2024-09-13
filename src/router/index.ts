@@ -18,7 +18,7 @@ const router = createRouter({
     },
     {
       path: '/',
-      redirect: '/sales',
+      redirect: '/product',
       components: {
         default: () => import('../views/ViewContainer.vue'),
         navigation: () => import('../views/ViewNavigation.vue'),
@@ -34,6 +34,19 @@ const router = createRouter({
               name: 'sales-list',
               meta: { title: 'Sales - ComPOS' },
               component: () => import('../views/sales/SalesList.vue'),
+              beforeEnter: (to, _, next) => {;
+                // If have tab & page query, go through
+                if (to.query.tab && to.query.page) {
+                  next();
+                }
+                // If doesn't have tab & page query, set the query with default tab to product and page to 1
+                else {
+                  const query = { tab: 'running', page: 1 };
+                  const updatedQuery = { ...to.query, ...query };
+
+                  next({ ...to, query: updatedQuery });
+                }
+              },
             },
             {
               path: '/sales/detail/:id',
@@ -72,16 +85,19 @@ const router = createRouter({
               name: 'product-list',
               meta: { title: 'Product List - ComPOS' },
               component: () => import('../views/products/ProductList.vue'),
-              // beforeEnter: (to, _from, next) => {;
-              //   if (!to.query.tab && !to.query.page) {
-              //     const query = { tab: 'product', page: '1' };
-              //     const updatedQuery = { ...to.query, ...query };
+              beforeEnter: (to, _, next) => {;
+                // If have tab & page query, go through
+                if (to.query.tab && to.query.page) {
+                  next();
+                }
+                // If doesn't have tab & page query, set the query with default tab to product and page to 1
+                else {
+                  const query = { tab: 'product', page: 1 };
+                  const updatedQuery = { ...to.query, ...query };
 
-              //     next({ ...to, query: updatedQuery });
-              //   } else {
-              //     next();
-              //   }
-              // },
+                  next({ ...to, query: updatedQuery });
+                }
+              },
             },
             {
               path: '/product/:id',
@@ -150,8 +166,24 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach(async (to, from) => {
+router.beforeEach(async (_to, from) => {
+  // 1. Set last visited page meta data on sales route
+  if (from.path.startsWith('/sales')) {
+    const salesRoot = from.matched.find(record => record.path === '/sales');
 
+    if (salesRoot) salesRoot.meta.lastVisited = from.fullPath;
+
+    // console.log('sales beforeEach', salesRoot?.meta.lastVisited);
+  }
+
+  // 2. Set last visited page meta data on product route
+  if (from.path.startsWith('/product') || from.path.startsWith('/bundle')) {
+    const productRoot = from.matched.find(record => record.path === '/product');
+
+    if (productRoot) productRoot.meta.lastVisited = from.fullPath;
+
+    // console.log('product beforeEach', productRoot?.meta.lastVisited);
+  }
 });
 
 export default router;

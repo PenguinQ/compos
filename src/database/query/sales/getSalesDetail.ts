@@ -3,20 +3,39 @@ import type { RxAttachment, RxDocument, DeepReadonly } from 'rxdb';
 
 import { db } from '@/database';
 import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX, THUMBNAIL_ID_PREFIX } from '@/database/constants';
-import type { OrderDoc, ProductDoc } from '@/database/types';
+import type { OrderDoc, ProductDoc, SalesDocProduct } from '@/database/types';
 
 export type ProductData = {
-  id: string;
+  images: string[];
   name: string;
   price: number;
-  stock: number;
+  quantity: number;
   sku: string;
+};
+
+export type ProductSoldData = {
+  id: string;
+  name: string;
   images: string[];
-  created_at: string;
-  updated_at: string;
+  quantity: number;
+  subtotal: number;
 };
 
 export type OrderData = DeepReadonly<OrderDoc>;
+
+export type SalesDetailQueryReturn = {
+  id: string;
+  finished: boolean;
+  name: string;
+  products: ProductData[];
+  products_sold: ProductSoldData[];
+  orders: OrderData[];
+  revenue: number;
+  discount: number;
+  discount_type: 'percentage' | 'fixed';
+  created_at: string;
+  updated_at: string;
+};
 
 type SalesDetailQuery = {
   id: string;
@@ -48,15 +67,15 @@ export default async ({ id, normalizer }: SalesDetailQuery) => {
      */
     const products_data = <ProductData[]>[];
 
-    for (const product_id of products) {
+    for (const product of products) {
       let _queryProduct;
       let is_variant = false;
       let variant_product_name = '';
 
-      if (product_id.startsWith(PRODUCT_ID_PREFIX)) {
-        _queryProduct = await db.product.findOne({ selector: { id: product_id } }).exec();
-      } else if (product_id.startsWith(VARIANT_ID_PREFIX)) {
-        _queryProduct = await db.variant.findOne({ selector: { id: product_id } }).exec();
+      if (product.id.startsWith(PRODUCT_ID_PREFIX)) {
+        _queryProduct = await db.product.findOne({ selector: { id: product.id } }).exec();
+      } else if (product.id.startsWith(VARIANT_ID_PREFIX)) {
+        _queryProduct = await db.variant.findOne({ selector: { id: product.id } }).exec();
         is_variant = true;
       }
 
@@ -76,18 +95,15 @@ export default async ({ id, normalizer }: SalesDetailQuery) => {
         variant_product_name = _queryName.toJSON().name;
       }
 
-      const { id, name, price, stock, sku, created_at, updated_at } = _queryProduct.toJSON();
+      const { name, price, sku } = _queryProduct.toJSON();
       const product_attachments = _queryProduct.allAttachments()
       const images              = (product_attachments as RxAttachment<unknown>[]).filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
       const product_data: ProductData = {
-        id,
+        images: [],
         name: is_variant ? `${variant_product_name} - ${name}` : name,
         price,
-        stock,
+        quantity: product.quantity,
         sku: sku ? sku : '',
-        images: [],
-        created_at,
-        updated_at,
       };
 
       for (const image of images) {
@@ -114,6 +130,12 @@ export default async ({ id, normalizer }: SalesDetailQuery) => {
 
       orders_data.push(order_json);
     }
+
+    /**
+     * ------------------------------------------------------------------
+     * 3. Calculate the number of products sold based on completed orders
+     * ------------------------------------------------------------------
+     */
 
     return {
       result: normalizer ? normalizer({

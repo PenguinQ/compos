@@ -1,4 +1,5 @@
-import { ref, inject, toRef, computed } from 'vue';
+import { computed, inject, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 
 // Databases
@@ -13,22 +14,33 @@ import { salesListNormalizer } from '../normalizer/SalesList.normalizer';
 import type { SalesListNormalizerReturn } from '../normalizer/SalesList.normalizer';
 
 // Common Helpers
-import { debounce } from '@/helpers';
+import { cleanWhitespace, debounce } from '@/helpers';
+
+import type { TabDataProvider } from '@/views/sales/SalesList.vue';
 
 export const useSalesList = (status: 'running' | 'finished' = 'running') => {
-  const { page, toNext, toPrev } = usePagination();
+  const { tabData, updateTabData } = inject('TabData') as TabDataProvider;
   const toast = inject('ToastProvider');
-  const search_query = ref('');
+  const route = useRoute();
+  const router = useRouter();
   const isSalesEmpty = ref(true);
-  const current_page = computed(() => page.current);
+  const searchQuery = ref(tabData[status].search);
+  const { page, toNext, toPrev } = usePagination({ current: tabData[status].page });
+  const currentPage = computed(() => tabData[status].page);
+  const currentSearch = computed(() => tabData[status].search);
 
   /**
-   * ---------------
-   * Get sales list.
-   * ---------------
-   * Run on route(s):
-   * - /sales/list
+   * -------------------------------------------------------------------
+   * Watcher to update searchQuery value when navigating through history
+   * -------------------------------------------------------------------
    */
+  watch(
+    () => route.query.search,
+    (newSearch) => {
+      searchQuery.value = newSearch ? String(newSearch) : '';
+    },
+  );
+
   const {
     data,
     refetch: salesRefetch,
@@ -36,24 +48,25 @@ export const useSalesList = (status: 'running' | 'finished' = 'running') => {
     isError: salesError,
   } = useQuery({
     delay: 300,
-    queryKey: ['sales-list', search_query, status, current_page],
+    queryKey: ['sales-list', searchQuery, status, currentPage],
     queryFn: () => getSalesList({
-      search_query: search_query.value,
+      search_query: currentSearch.value,
       sort: 'desc',
       status,
       limit: 1,
-      page: page.current,
+      page: currentPage.value,
       normalizer: salesListNormalizer,
     }),
     onError: (error: Error) => {
       // @ts-ignore
-      toast.add({ message: 'Failed to get product list.', type: 'error', duration: 2000 });
-      console.error('Failed to get product list:', error);
+      toast.add({ message: 'Failed to get sales list.', type: 'error', duration: 2000 });
+      console.error('Failed to get sales list:', error);
     },
     onSuccess: (response: unknown) => {
       if (response) {
         const { page: response_page, sales } = response as SalesListNormalizerReturn;
 
+        page.current = response_page.current;
         page.total = response_page.total;
         page.first = response_page.first;
         page.last = response_page.last;
@@ -65,21 +78,72 @@ export const useSalesList = (status: 'running' | 'finished' = 'running') => {
 
   const handleSearch = debounce((e: Event) => {
     const target = e.target as HTMLInputElement;
+    const value = cleanWhitespace(target.value);
 
     page.current = 1;
-    search_query.value = target.value;
+    searchQuery.value = target.value;
+    // Update provider
+    updateTabData(status, { search: value ? value : undefined, page: 1 });
+    // Update route query
+    router.push({
+      query: {
+        ...route.query,
+        search: value ? value : undefined,
+        page: 1,
+      },
+    });
   });
+
+  const handleSearchClear = () => {
+    // Update provider
+    updateTabData(status, { search: undefined, page: 1 });
+    // Update route query
+    router.push({
+      query: {
+        ...route.query,
+        search: undefined,
+        page: 1,
+      }
+    });
+  };
+
+  const handlePaginationPrev = (first?: boolean) => {
+    first ? toPrev(true) : toPrev();
+    // Update provider
+    updateTabData(status, { page: first ? 1 : page.current })
+    // Update route query
+    router.push({
+      query: {
+        ...route.query,
+        page: first ? 1 : page.current,
+      },
+    });
+  };
+
+  const handlePaginationNext = (last?: boolean) => {
+    last ? toNext(true) : toNext();
+    // Update context
+    updateTabData(status, { page: last ? page.total : page.current })
+    // Update route query
+    router.push({
+      query: {
+        ...route.query,
+        page: last ? page.total : page.current
+      },
+    });
+  };
 
   return {
     data: data as Ref<SalesListNormalizerReturn>,
-    search_query,
+    searchQuery,
     page,
-    isSalesEmpty,
     salesError,
     salesLoading,
+    isSalesEmpty,
     handleSearch,
+    handleSearchClear,
+    handlePaginationPrev,
+    handlePaginationNext,
     salesRefetch,
-    toNext,
-    toPrev,
   };
 };

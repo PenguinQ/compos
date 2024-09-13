@@ -1,7 +1,7 @@
 import { db } from '@/database';
 
 // Database Utilities
-import { removeFromBundles } from '@/database/utils';
+import { removeFromBundles, removeFromSales } from '@/database/utils';
 
 export default async (id: string) => {
   try {
@@ -89,10 +89,32 @@ export default async (id: string) => {
 
       /**
        * ----------------------------------------------------------------
-       * 2.3 Recursively delete currently deleted product in each bundle.
+       * 2.2 Recursively delete currently deleted product in each bundle.
        * ----------------------------------------------------------------
        */
       if (_queryBundle.length) await removeFromBundles(id, _queryBundle);
+
+      /**
+       * -------------------------------------------------------------------------------
+       * 2.3 Get list of order that contain the deleted product as one of it's product.
+       * -------------------------------------------------------------------------------
+       */
+      const _querySales = await db.sales.find({
+        selector: {
+          products: {
+            $elemMatch: {
+              id,
+            },
+          },
+        },
+      }).exec();
+
+      /**
+       * ----------------------------------------------------------------
+       * 2.4 Recursively delete currently deleted product in each bundle.
+       * ----------------------------------------------------------------
+       */
+      // if (_querySales.length) await removeFromSales(id, _querySales);
     };
   } catch (error) {
     if (error instanceof Error) {

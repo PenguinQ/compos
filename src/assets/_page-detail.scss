@@ -73,14 +73,6 @@
       filter: grayscale(1);
     }
   }
-
-  &-delete {
-    .product-detail-delete__actions {
-      display: flex;
-      gap: 16px;
-      padding: 16px;
-    }
-  }
 }
 
 @include screen-md {

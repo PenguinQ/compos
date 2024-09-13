@@ -32,13 +32,14 @@ const {
   data,
   isSalesEmpty,
   page,
-  search_query,
+  searchQuery,
   salesError,
   salesLoading,
   salesRefetch,
-  toNext,
-  toPrev,
+  handlePaginationPrev,
+  handlePaginationNext,
   handleSearch,
+  handleSearchClear,
 } = useSalesList(props.status);
 </script>
 
@@ -57,20 +58,22 @@ const {
   <template v-else>
     <ListSearch
       sticky
-      placeholder="Search"
+      v-model="searchQuery"
+      :placeholder="status === 'running' ? 'Search running sales' : 'Search finished sales'"
       @input="handleSearch"
+      @clear="handleSearchClear"
     />
     <Bar v-if="salesLoading" margin="56px 0" />
     <template v-else>
       <EmptyState
-        v-if="isSalesEmpty && search_query === ''"
+        v-if="isSalesEmpty && searchQuery === ''"
         emoji="🍃"
-        :title="props.status === 'running' ? SALES_LIST.RUNNING_EMPTY_TITLE : SALES_LIST.FINISHED_EMPTY_TITLE"
-        :description="props.status === 'running' ? SALES_LIST.RUNNING_EMPTY_DESCRIPTION : SALES_LIST.FINISHED_EMPTY_DESCRIPTION"
+        :title="status === 'running' ? SALES_LIST.RUNNING_EMPTY_TITLE : SALES_LIST.FINISHED_EMPTY_TITLE"
+        :description="status === 'running' ? SALES_LIST.RUNNING_EMPTY_DESCRIPTION : SALES_LIST.FINISHED_EMPTY_DESCRIPTION"
         margin="56px 0"
       />
       <EmptyState
-        v-else-if="isSalesEmpty && search_query !== ''"
+        v-else-if="isSalesEmpty && searchQuery !== ''"
         emoji="😵‍💫"
         :title="SALES_LIST.SEARCH_EMPTY_TITLE"
         :description="SALES_LIST.SEARCH_EMPTY_DESCRIPTION"
@@ -119,10 +122,10 @@ const {
       :total_page="page.total"
       :first_page="page.current <= 1"
       :last_page="page.current >= page.total"
-      @clickFirst="toPrev(true)"
-      @clickPrev="toPrev"
-      @clickNext="toNext"
-      @clickLast="toNext(true)"
+      @clickFirst="handlePaginationPrev(true)"
+      @clickPrev="handlePaginationPrev"
+      @clickNext="handlePaginationNext"
+      @clickLast="handlePaginationNext(true)"
     />
   </ListFooter>
 </template>

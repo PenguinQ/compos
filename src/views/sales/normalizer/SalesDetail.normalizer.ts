@@ -1,37 +1,80 @@
 import { getUpdateTime, toIDR } from '@/helpers';
-import type { ProductData, OrderData } from '@/database/query/sales/getSalesDetail';
+import type { SalesDetailQueryReturn, ProductData, OrderData } from '@/database/query/sales/getSalesDetail';
 
-type SalesProduct = {
+/**
+ * --------------------------------------
+ * I. Yang dibutuhkan untuk daftar produk
+ * --------------------------------------
+ * 1. gambar produk
+ * 2. nama produk
+ * 3. kuantitas produk
+ * 4. harga produk
+ * 5. sku (probably)
+ */
+type SalesDetailProduct = {
   name: string;
   price: string;
   image: string;
 };
 
-type NormalizerData = {
-  finished: boolean;
-  id: string;
-  name: string;
-  orders: OrderData[];
-  products: ProductData[];
-  products_sold: any[];
-  revenue: number;
-  created_at: string;
-  updated_at: string;
+/**
+ * ----------------------------------------------------
+ * II. Yang dibutuhkan untuk daftar produk yang terjual
+ * ----------------------------------------------------
+ * 1. gambar produk
+ * 2. nama produk
+ * 3. jumlah produk yang terjual
+ * 4. total harga produk yang terjual
+ */
+type SalesDetailProductSold = {
+
+};
+
+/**
+ * ---------------------------------------
+ * III. Yang dibutuhkan untuk daftar order
+ * ---------------------------------------
+ * 1. nama order
+ * 2. daftar produk di setiap order (nama, jumlah, harga, total produk)
+ * 4. total harga dari semua produk yang ada di order masing-masing
+ *
+ * Eg:
+ * Order #1
+ * -------------------------
+ * Product 1 x5   @Rp100,000
+ * Product 2 x1    @Rp25,000
+ * -------------------------
+ *          Total: Rp125,000
+ */
+type SalesDetailOrder = {
+
 };
 
 export type SalesDetailNormalizerReturn = {
   name: string;
   finished: boolean;
-  products: SalesProduct[];
-  products_sold: any[];
-  orders: any[];
+  products: SalesDetailProduct[];
+  products_sold: SalesDetailProductSold[];
+  orders: SalesDetailOrder[];
   revenue: string;
+  discount?: number;
+  discount_type?: 'percentage' | 'fixed';
   updated_at: string;
 };
 
 export const salesDetailNormalizer = (data: unknown): SalesDetailNormalizerReturn => {
-  const { name, finished, products, products_sold, orders, revenue, updated_at } = data as NormalizerData || {};
-  const sales_products: SalesProduct[] = [];
+  const {
+    finished,
+    name,
+    products,
+    products_sold,
+    orders,
+    revenue,
+    discount,
+    discount_type,
+    updated_at,
+  } = data as SalesDetailQueryReturn || {};
+  const sales_products: any[] = [];
   const sales_orders: any[] = [];
   const sales_sold: any[] = [];
 

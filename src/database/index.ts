@@ -7,14 +7,18 @@ import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 
 // Types
-import type { Database, DatabaseCollection } from './types';
+import type {
+  Database,
+  DatabaseCollection,
+  SalesDocProduct,
+} from './types';
 
 // Development
 import {
   createSampleProduct,
   createSampleBundle,
   createSampleSales,
-  createSampleOrder,
+  getSampleVariants,
 } from './helpers';
 
 // Database Schema
@@ -72,27 +76,33 @@ export const initDB = async () => {
   const { success: productSuccess } = productResult;
 
   if (productSuccess.length) {
-    const productSales = <string[]>[];
+    const productSales = <SalesDocProduct[]>[];
+    const products = productSuccess.slice(0, 2);
 
-    productSuccess.slice(1, 2).map((product: any) => {
-      const { id, variants } = product;
+    for (const product of products) {
+      const { id } = product;
+      const variants = await getSampleVariants(id);
 
-      productSales.push(variants.length ? variants[0] : id);
-    });
+      if (variants.length) {
+        productSales.push({ id: variants[0].id, quantity: 1 })
+      } else {
+        productSales.push({ id, quantity: 1 });
+      }
+    }
 
-    console.info('Sample product successfully created.');
+    console.info('Sample product successfully created.', productSuccess);
 
     const sampleBundle = await createSampleBundle(productResult.success, productBundle);
     const { success: bundleSuccess } = sampleBundle;
 
     if (bundleSuccess.length) {
-      console.info('Sample bundle successfully created.');
+      console.info('Sample bundle successfully created.', bundleSuccess);
 
       const sampleSales = await createSampleSales(productSales);
       const { success: salesSuccess } = sampleSales;
 
       if (salesSuccess.length) {
-        console.info('Sample sales successfully created.');
+        console.info('Sample sales successfully created.', salesSuccess);
       }
     }
   }

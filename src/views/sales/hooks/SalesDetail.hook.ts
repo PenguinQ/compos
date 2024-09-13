@@ -13,7 +13,8 @@ export const useSalesDetail = () => {
   const router = useRouter();
   const toast = inject('ToastProvider');
   const { params } = route;
-  const dialog_delete = ref(false);
+  const dialogDelete = ref(false);
+  const dialogFinish = ref(false);
 
   const {
     data,
@@ -30,6 +31,9 @@ export const useSalesDetail = () => {
       // @ts-ignore
       toast.add({ message: `Error getting sales detail, ${error}`, type: 'error' });
       console.error('[ERROR] Error getting sales detail.', error);
+    },
+    onSuccess: (data) => {
+      // console.log(data);
     },
   });
 
@@ -51,9 +55,10 @@ export const useSalesDetail = () => {
   });
 
   return {
-    sales_id: params.id,
-    dialog_delete,
+    salesId: params.id,
     data: data as Ref<SalesDetailNormalizerReturn>,
+    dialogDelete,
+    dialogFinish,
     isError,
     isLoading,
     refetch,
