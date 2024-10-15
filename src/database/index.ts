@@ -7,11 +7,7 @@ import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 
 // Types
-import type {
-  Database,
-  DatabaseCollection,
-  SalesDocProduct,
-} from './types';
+import type { Database, DatabaseCollection, SalesDocProduct } from './types';
 
 // Development
 import {
@@ -22,13 +18,10 @@ import {
 } from './helpers';
 
 // Database Schema
-import {
-  sales,
-  order,
-  product,
-  variant,
-  bundle,
-} from './schema';
+import { sales, order, product, variant, bundle } from './schema';
+
+// Database ORMs
+import { productsORMs, variantsORMs, bundlesORMs } from './orms';
 
 export let db: Database;
 
@@ -53,7 +46,7 @@ export const initDB = async () => {
 
   if (!db) await createDB();
 
-  await db.addCollections({
+  const collections = await db.addCollections({
     sales: {
       schema: sales,
     },
@@ -62,15 +55,60 @@ export const initDB = async () => {
     },
     product: {
       schema: product,
+      methods: productsORMs,
     },
     variant: {
       schema: variant,
+      methods: variantsORMs,
     },
     bundle: {
       schema: bundle,
+      methods: bundlesORMs,
     },
   });
 
+  // Product Hooks
+  collections.product.preRemove(async (data) => {
+    const product = await collections.product.findOne(data.id).exec();
+
+    if (product) {
+      const { variants } = product;
+
+      if (variants.length) {
+        await product.removeVariants();
+        await product.removeFromBundles(true);
+        await product.removeFromSales();
+      } else {
+        await product.removeFromBundles();
+        await product.removeFromSales();
+      }
+    }
+  }, false);
+
+  // Variant Hooks
+  collections.variant.preRemove(async (data) => {
+    const variant = await collections.variant.findOne(data.id).exec();
+
+    if (variant) {
+      await variant.removeFromBundles();
+      await variant.removeFromSales();
+    }
+  }, false);
+
+  // Bundle Hooks
+  collections.bundle.preRemove(async (data) => {
+    const bundle = await collections.bundle.findOne(data.id).exec();
+
+    if (bundle) {
+      await bundle.removeFromSales();
+    }
+  }, false);
+
+  /**
+   * -------------------------------
+   * Create sample development data.
+   * -------------------------------
+   */
   const sampleProduct = await createSampleProduct();
   const { bundle: productBundle, result: productResult } = sampleProduct;
   const { success: productSuccess } = productResult;

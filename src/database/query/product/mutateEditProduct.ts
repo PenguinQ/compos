@@ -10,9 +10,6 @@ import type { ProductDoc, VariantDoc } from '@/database/types';
 // Common Helpers
 import { isNumeric } from '@/helpers';
 
-// Database Utilities
-import { removeFromBundles } from '@/database/utils';
-
 type MutateEditProductQueryVariant = {
   id?: string;
   name: string;
@@ -74,18 +71,6 @@ const removeVariant = async (variantsID: string[], product: RxDocument<ProductDo
         return prev;
       });
     }
-
-    const _queryBundles = await db.bundle.find({
-      selector: {
-        products: {
-          $elemMatch: {
-            id,
-          },
-        }
-      },
-    }).exec();
-
-    await removeFromBundles(id, _queryBundles);
   }
 };
 
@@ -155,16 +140,16 @@ export default async ({ id, data }: MutateEditProductQuery) => {
     if (!_queryProduct) throw `Cannot find product with id ${id}.`;
 
     /**
-     * --------------------------------------
-     * 1. Update flow if product has variants
-     * --------------------------------------
+     * ---------------------------------------
+     * 1. Update flow if product has variants.
+     * ---------------------------------------
      */
     if (variants.length) {
       /**
-       * ---------------------------------------------------
-       * 1.1 Check if the product already exist in a bundle.
-       * ---------------------------------------------------
-       * If there are any bundle that contain the product without variant, throw error until the product removed from
+       * ----------------------------------------------------
+       * 1.1. Check if the product already exist in a bundle.
+       * ----------------------------------------------------
+       * If there are any bundle that contain the product where this product doesn't have any variant, throw error until the product removed from
        * every bundle.
        */
       const _queryBundles = await db.bundle.find({
@@ -180,9 +165,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       if (_queryBundles.length) throw `Cannot add new variant into this product since this product already included in some bundle, please remove it from the bundle first.`;
 
       /**
-       * ------------------------------
-       * 1.2 Update the product detail.
-       * ------------------------------
+       * -------------------------------
+       * 1.2. Update the product detail.
+       * -------------------------------
        */
       const is_stocked = variants.filter(variant => variant.stock !== 0).length;
 
@@ -200,9 +185,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       });
 
       /**
-       * --------------------------
-       * 1.3 Update product images.
-       * --------------------------
+       * ---------------------------
+       * 1.3. Update product images.
+       * ---------------------------
        */
       if (deleted_images.length) await removeImages(deleted_images, _queryProduct);
 
@@ -218,18 +203,18 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       }
 
       /**
-       * -------------------------------------------
-       * 1.4 Check if there are any variant removed.
-       * -------------------------------------------
+       * --------------------------------------------
+       * 1.4. Check if there are any variant removed.
+       * --------------------------------------------
        * If there are any deleted variant id in the array, remove variant from the collection and the product,
        * then remove the variant from any bundle.
        */
       if (deleted_variants.length) await removeVariant(deleted_variants, _queryProduct);
 
       /**
-       * -------------------------------------------
-       * 1.5 Iterate and update each variant detail.
-       * -------------------------------------------
+       * --------------------------------------------
+       * 1.5. Iterate and update each variant detail.
+       * --------------------------------------------
        */
       for (const variant of variants) {
         const {
@@ -253,9 +238,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
         const v_is_active   = clean_v_stock >= 1 ? true : false;
 
         /**
-         * ------------------------------------
-         * 1.5.1 Check for existing variant ID.
-         * ------------------------------------
+         * -------------------------------------
+         * 1.5.1. Check for existing variant ID.
+         * -------------------------------------
          * If current variant iteration has existing ID (or variant currently exist), update the detail.
          */
         if (v_id) {
@@ -270,9 +255,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           if (!_queryVariant) throw `Cannot find product variant with id ${id}.`;
 
           /**
-           * --------------------------------------------------
-           * 1.5.1.1 Update current iteration variation detail.
-           * --------------------------------------------------
+           * ---------------------------------------------------
+           * 1.5.1.1. Update current iteration variation detail.
+           * ---------------------------------------------------
            */
           await _queryVariant.update({
             $set: {
@@ -288,9 +273,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           const updated_variant = _queryVariant.getLatest();
 
           /**
-           * --------------------------------------------------
-           * 1.5.1.2 Update current iteration variation images.
-           * --------------------------------------------------
+           * ---------------------------------------------------
+           * 1.5.1.2. Update current iteration variation images.
+           * ---------------------------------------------------
            */
           if (v_deleted_images.length) await removeImages(v_deleted_images, _queryVariant);
 
@@ -306,9 +291,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           }
 
           /**
-           * -----------------------------------------------------------------------------------------
-           * 1.5.1.3 Update any bundle that contains current variant iteration as one of it's product.
-           * -----------------------------------------------------------------------------------------
+           * ------------------------------------------------------------------------------------------
+           * 1.5.1.3. Update any bundle that contains current variant iteration as one of it's product.
+           * ------------------------------------------------------------------------------------------
            */
           if (
             _queryVariant.stock === 0 && updated_variant.stock > 0 ||
@@ -318,16 +303,16 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           }
         }
         /**
-         * --------------------------------
-         * 1.5.2 Doesn't have a variant ID.
-         * --------------------------------
+         * ---------------------------------
+         * 1.5.2. Doesn't have a variant ID.
+         * ---------------------------------
          * If current variant iteration doesn't have an ID, create new variant for the product.
          */
         else {
           /**
-           * ---------------------------
-           * 1.5.2.1 Create new variant.
-           * ---------------------------
+           * ----------------------------
+           * 1.5.2.1. Create new variant.
+           * ----------------------------
            */
           const ulid       = monotonicFactory();
           const variant_id = VARIANT_ID_PREFIX + ulid();
@@ -345,9 +330,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           });
 
           /**
-           * --------------------------------------------
-           * 1.5.2.2 Add images to newly created variant.
-           * --------------------------------------------
+           * ---------------------------------------------
+           * 1.5.2.2. Add images to newly created variant.
+           * ---------------------------------------------
            */
           if (v_new_images.length) {
             if (!isImagesValid(v_new_images)) throw 'Invalid file types.';
@@ -359,9 +344,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           }
 
           /**
-           * ----------------------------------------------------------------------------
-           * 1.5.2.3 Add currently added variant into list of variant on current product.
-           * ----------------------------------------------------------------------------
+           * -----------------------------------------------------------------------------
+           * 1.5.2.3. Add currently added variant into list of variant on current product.
+           * -----------------------------------------------------------------------------
            */
           await _queryProduct.incrementalModify(prev => {
             if (prev.variants) prev.variants.push(variant_id);
@@ -379,9 +364,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
      */
     else {
       /**
-       * ------------------------------
-       * 2.1 Update the product detail.
-       * ------------------------------
+       * -------------------------------
+       * 2.1. Update the product detail.
+       * -------------------------------
        */
       const is_active = clean_stock >= 1 ? true : false;
 
@@ -401,9 +386,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       const updated_product = _queryProduct.getLatest();
 
       /**
-       * ------------------------------
-       * 2.2 Update the product images.
-       * ------------------------------
+       * -------------------------------
+       * 2.2. Update the product images.
+       * -------------------------------
        */
       if (deleted_images.length) await removeImages(deleted_images, _queryProduct);
 
@@ -419,18 +404,18 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       }
 
       /**
-       * -------------------------------------------
-       * 2.3 Check if there are any variant removed.
-       * -------------------------------------------
+       * --------------------------------------------
+       * 2.3. Check if there are any variant removed.
+       * --------------------------------------------
        * If there are any deleted variant id in the array, remove variant from the collection and the product,
        * then remove the variant from any bundle.
        */
-      deleted_variants.length && await removeVariant(deleted_variants, _queryProduct);
+      if (deleted_variants.length) await removeVariant(deleted_variants, _queryProduct);
 
       /**
-       * ---------------------------------------------------------------------------
-       * 2.4 Update any bundle that contains current product as one of it's product.
-       * ---------------------------------------------------------------------------
+       * ----------------------------------------------------------------------------
+       * 2.4. Update any bundle that contains current product as one of it's product.
+       * ----------------------------------------------------------------------------
        * Update bundle if:
        * - Previous stock is equal to 0 and new stock is more than 0
        * - Previous stock is more than 0 and new stock is equal to 0

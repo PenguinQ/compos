@@ -163,8 +163,6 @@ export const useProductForm = () => {
         };
       });
 
-      console.log(formData.deleted_image);
-
       return mutateEditProduct({
         id: params.id as string,
         data: {
