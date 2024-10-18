@@ -70,6 +70,7 @@ export type OrderDocProduct = {
   name: string;
   price: number;
   quantity: number;
+  total: number;
 };
 
 export type OrderCollection = RxCollection<OrderDoc>;

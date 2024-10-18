@@ -1,6 +1,6 @@
 import type { RxDocument } from 'rxdb';
 
-import { db, setDBCache } from '@/database';
+import { db } from '@/database';
 import { getPageStatus } from '@/database/utils';
 import type { QueryParams } from '@/database/types';
 

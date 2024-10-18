@@ -6,6 +6,8 @@ import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX, THUMBNAIL_ID_PREFIX } from '@/dat
 import type { OrderDoc, ProductDoc, SalesDocProduct } from '@/database/types';
 
 export type ProductData = {
+  id: string;
+  product_id?: string;
   images: string[];
   name: string;
   price: number;
@@ -69,14 +71,15 @@ export default async ({ id, normalizer }: SalesDetailQuery) => {
 
     for (const product of products) {
       let _queryProduct;
-      let is_variant = false;
+      let is_variant           = false;
+      let variant_product_id   = '';
       let variant_product_name = '';
 
       if (product.id.startsWith(PRODUCT_ID_PREFIX)) {
         _queryProduct = await db.product.findOne({ selector: { id: product.id } }).exec();
       } else if (product.id.startsWith(VARIANT_ID_PREFIX)) {
         _queryProduct = await db.variant.findOne({ selector: { id: product.id } }).exec();
-        is_variant = true;
+        is_variant    = true;
       }
 
       if (!_queryProduct) throw 'Product not found.';
@@ -92,22 +95,25 @@ export default async ({ id, normalizer }: SalesDetailQuery) => {
 
         if (!_queryName) throw 'Product for the variant not found.';
 
+        variant_product_id   = _queryName.toJSON().id;
         variant_product_name = _queryName.toJSON().name;
       }
 
       const { name, price, sku } = _queryProduct.toJSON();
-      const product_attachments = _queryProduct.allAttachments()
-      const images              = (product_attachments as RxAttachment<unknown>[]).filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
+      const product_attachments  = _queryProduct.allAttachments()
+      const images               = (product_attachments as RxAttachment<unknown>[]).filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
       const product_data: ProductData = {
-        images: [],
-        name: is_variant ? `${variant_product_name} - ${name}` : name,
+        id        : product.id,
+        product_id: variant_product_id,
+        images    : [],
+        name      : is_variant ? `${variant_product_name} - ${name}` : name,
+        quantity  : product.quantity,
+        sku       : sku ? sku : '',
         price,
-        quantity: product.quantity,
-        sku: sku ? sku : '',
       };
 
       for (const image of images) {
-        const { type } = image;
+        const { type }     = image;
         const image_data   = await image.getData();
         const image_base64 = await blobToBase64String(image_data);
 

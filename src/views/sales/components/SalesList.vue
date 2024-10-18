@@ -103,7 +103,7 @@ const {
               backgroundColor="var(--color-blue-4)"
               icon
               :aria-label="`Go to ${sales.name}`"
-              @click=""
+              @click="$router.push(`/sales/dashboard/${sales.id}`)"
             >
               <ComposIcon :icon="ChevronRight" size="28" />
             </ButtonBlock>

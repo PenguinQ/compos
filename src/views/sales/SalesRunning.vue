@@ -7,10 +7,23 @@ import EmptyState from '@components/EmptyState';
 import Text from '@components/Text';
 import QuantityEditor from '@components/QuantityEditor';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
-import { IconArrowLeftShort, IconXCircleFilled, IconList } from '@components/Icons';
+import ComposIcon, { ArrowLeftShort, XCircleFilled, List } from '@components/Icons';
 
 import { toIDR } from '@/helpers';
 import no_image from '@assets/illustration/no_image.svg';
+
+// Hooks
+import { useSalesDashboard } from './hooks/SalesDashboard.hook';
+
+const {
+  detailsData,
+  isDetailsLoading,
+  isDetailsError,
+  isProductsError,
+  isProductsLoading,
+  isOrdersError,
+  isOrdersLoading,
+} = useSalesDashboard();
 
 type ProductList = {
   id: string;
@@ -121,12 +134,17 @@ const handleSubmitPayment = () => {
   <div class="temp-container">
     <Toolbar>
       <ToolbarAction icon @click="">
-        <IconArrowLeftShort size="40" />
+        <ComposIcon :icon="ArrowLeftShort" size="40" />
       </ToolbarAction>
-      <ToolbarTitle>Sales XXX</ToolbarTitle>
+      <ToolbarTitle>{{ isDetailsLoading ? '' : detailsData.name }}</ToolbarTitle>
     </Toolbar>
-    <div class="temp-container-view">
-      <!--  -->
+    <div>
+      <pre>
+        {{ detailsData }}
+      </pre>
+    </div>
+    <!-- <div class="temp-container-view">
+
       <div class="sales-container">
         <div class="sales-item-wrapper">
           <div class="sales-item-grid">
@@ -268,8 +286,8 @@ const handleSubmitPayment = () => {
           </div>
         </div>
       </div>
-      <!--  -->
-    </div>
+
+    </div> -->
   </div>
 
 </template>
