@@ -1,6 +1,7 @@
 import { getUpdateTime, toIDR } from '@/helpers';
 import type { SalesDetailQueryReturn, ProductData, OrderData } from '@/database/query/sales/getSalesDetail';
 
+import type { ObservableReturns as ProductsQueryReturns } from '@/database/query/sales/getSalesProducts';
 // Data Separation
 // Sales Detail
 /**
@@ -101,7 +102,29 @@ export const detailsNormalizer = (data: unknown): SalesDashboardDetailNormalizer
 };
 
 export const productsNormalizer = (data: unknown) => {
-  return data;
+  const { data: productsData, data_count  } = data as ProductsQueryReturns;
+  const products = [];
+
+  for (const product of productsData) {
+    const { active, id, images, name, price, quantity, sku, stock } = product;
+    const image = images[0] ? images[0].url : '';
+
+    products.push({
+      id,
+      active,
+      image,
+      name,
+      sku,
+      price,
+      stock,
+      quantity,
+    });
+  }
+
+  return {
+    products,
+    count: data_count,
+  };
 };
 
 export const ordersNormalizer = (data: unknown) => {

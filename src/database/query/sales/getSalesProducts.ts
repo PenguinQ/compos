@@ -17,15 +17,26 @@ type ProductData = Omit<ProductDoc, 'by' | 'description' | 'variants'> & {
   product_id?: string;
 };
 
-export type ObservableReturns = {
+type ObservableDataImage = {
   id: string;
+  url: string;
+}
+
+type ObserveableData = {
+  active: boolean;
+  id: string;
+  images: ObservableDataImage[];
+  name: string;
+  price: number;
   product_id?: string;
-  active: boolean,
-  images: string[],
-  name: string,
-  stock: number,
-  price: number,
-  sku?: string,
+  quantity: number;
+  sku?: string;
+  stock: number;
+};
+
+export type ObservableReturns = {
+  data: ObserveableData[];
+  data_count: number;
 };
 
 interface GetSalesProducts extends Omit<QueryParams, 'page' | 'limit'> {
@@ -38,14 +49,15 @@ export default async ({ products, normalizer }: GetSalesProducts) => {
     const _queryVariants = products.filter(product => isVariant(product.id)).map(variant => db.variant.findOne({ selector: { id: variant.id } }).$);
     const _queries = [..._queryProducts, ..._queryVariants];
 
-    const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> => {
+    const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<ObservableReturns> => {
       const filtered_products = data.filter(Boolean);
-      const products = [];
+      const products_data = [];
 
       for (const product of filtered_products) {
         const { id, product_id, active, name, stock, price, sku } = product as RxDocument<ProductData>;
         const attachments    = product.allAttachments();
         const images         = attachments.filter(image => image.id.startsWith(IMAGE_ID_PREFIX));
+        const quantity       = products.filter(product => product.id === id)[0]?.quantity;
         const product_images = [];
         let product_name     = name;
 
@@ -63,21 +75,22 @@ export default async ({ products, normalizer }: GetSalesProducts) => {
           if (_queryProduct) product_name = `${_queryProduct.name} - ${name}`;
         }
 
-        products.push({
+        products_data.push({
           id,
           product_id,
           active,
-          images: product_images,
-          name: product_name,
           stock,
           price,
           sku,
+          quantity,
+          images: product_images,
+          name  : product_name,
         });
       }
 
       return {
-        data      : products,
-        data_count: products.length,
+        data      : products_data,
+        data_count: products_data.length,
       };
     };
 

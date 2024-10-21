@@ -22,6 +22,10 @@ interface QuantityEditorProps extends /* @vue-ignore */ InputHTMLAttributes {
    */
   labelProps?: object;
   /**
+   * Set the maximum number allowed in quantity editor.
+   */
+  max?: number;
+  /**
    * Set the minimum number allowed in quantity editor.
    */
   min?: number;
@@ -37,6 +41,10 @@ interface QuantityEditorProps extends /* @vue-ignore */ InputHTMLAttributes {
    * Reduce the size of the quantity editor.
    */
   small?: boolean;
+  /**
+   * Set the increment/decrement number of steps.
+   */
+  step?: number;
   /**
    * Set the value for the quantity editor without using v-model two way data binding.
    */
@@ -56,6 +64,7 @@ const props = withDefaults(defineProps<QuantityEditorProps>(), {
   error: false,
   min: 0,
   small: false,
+  step: 1,
   width: 2,
 });
 
@@ -80,7 +89,7 @@ const updateQuantity = (e: Event | undefined, increment: boolean = true) => {
 
   const el = input.value;
 
-  increment ? el?.stepUp() : el?.stepDown();
+  increment ? el?.stepUp(props.step) : el?.stepDown(props.step);
 
   timeout = setTimeout(() => updateQuantity(e, increment), 200);
 
@@ -137,6 +146,7 @@ watch(
         inputmode="numeric"
         :disabled="disabled"
         :min="min"
+        :max="max"
         :value="value || modelValue"
         @input="handleInput"
         @change="$emit('change', $event)"
