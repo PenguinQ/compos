@@ -3,14 +3,14 @@ import type { RxDocument, RxAttachment } from 'rxdb';
 
 import { db } from '@/database';
 import { IMAGE_ID_PREFIX } from '@/database/constants';
-import { ProductDoc, VariantDoc } from '@/database/types';
+import type { ProductDoc, VariantDoc } from '@/database/types';
 
 type ImageData = {
   id: string;
   url: string;
 };
 
-type ProductData = ProductDoc & {
+type ProductData = Omit<ProductDoc, 'variants'> & {
   images: ImageData[];
 };
 
@@ -23,7 +23,7 @@ type ProductDetailQuery = {
   normalizer?: (data: unknown) => void;
 };
 
-export type ProductDetailQueryReturn = Omit<ProductData, 'variants'> & {
+export type ProductDetailQueryReturn = ProductData & {
   variants: VariantData[];
 };
 
@@ -31,7 +31,7 @@ export default async ({ id, normalizer }: ProductDetailQuery) => {
   try {
     const _queryProduct = await db.product.findOne({ selector: { id } }).exec();
 
-    if (!_queryProduct) throw 'Product not found.';
+    if (!_queryProduct) throw '[getProductDetail] Product not found.';
 
     const _queryVariants: RxDocument<VariantDoc>[] = await _queryProduct.populate('variants');
 
@@ -88,9 +88,9 @@ export default async ({ id, normalizer }: ProductDetailQuery) => {
     };
   } catch (error) {
     if (error instanceof Error) {
-      throw error.message;
+      throw error;
     }
 
-    throw error;
+    throw new Error(String(error));
   }
 };

@@ -10,9 +10,9 @@ export default async (id: string) => {
      * ---------------------------------------
      */
     if (_querySales) {
-      const { order } = _querySales;
+      const { orders } = _querySales;
 
-      if (order?.length) {
+      if (orders?.length) {
         const _queryOrders = await _querySales.populate('order');
 
         for (const order of _queryOrders) {
@@ -29,9 +29,9 @@ export default async (id: string) => {
     }
   } catch (error) {
     if (error instanceof Error) {
-      throw error.message;
+      throw error;
     }
 
-    throw error;
+    throw new Error(String(error));
   }
 };

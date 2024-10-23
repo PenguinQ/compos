@@ -32,7 +32,7 @@ export default {
             type: 'boolean',
           },
           quantity: {
-            type: 'number',
+            type: 'integer',
           }
         },
       },
@@ -42,10 +42,14 @@ export default {
       type: 'boolean',
       default: true,
     },
+    // price: {
+    //   type: 'integer',
+    //   minimum: 0,
+    //   default: 0,
+    // },
     price: {
-      type: 'number',
-      minimum: 0,
-      default: 0,
+      type: 'string',
+      default: '0',
     },
     created_at: {
       type: 'date-time',

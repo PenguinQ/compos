@@ -11,10 +11,10 @@ import { bundleDetailNormalizer } from '../normalizer/BundleDetail.normalizer';
 import type { BundleDetailNormalizerReturn } from '../normalizer/BundleDetail.normalizer';
 
 export const useBundleDetail = () => {
-  const route = useRoute();
+  const toast  = inject('ToastProvider');
+  const route  = useRoute();
   const router = useRouter();
   const { params } = route;
-  const toast = inject('ToastProvider');
   const dialogDelete = ref(false);
 
   const {
@@ -29,33 +29,36 @@ export const useBundleDetail = () => {
       id: params.id as string,
       normalizer: bundleDetailNormalizer,
     }),
-    onError: (error: Error) => {
+    onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get the bundle detail.', type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to get the bundle detail.', error);
+      console.error('Failed to get the bundle detail.', error.message);
+    },
+    onSuccess: resp => {
+      console.log(resp);
     },
   });
 
   const {
-    mutate: deleteBundle,
+    mutate   : deleteBundle,
     isLoading: deleteBundleLoading,
   } = useMutation({
     mutateFn: () => mutateDeleteBundle(params.id as string),
-    onError: (error: Error) => {
+    onError: error => {
       // @ts-ignore
-      toast.add({ message: error, type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to delete the bundle', error);
+      toast.add({ message: 'Failed to delete the bundle.', type: 'error', duration: 2000 });
+      console.error('Failed to delete the bundle.', error.message);
     },
     onSuccess: () => {
       // @ts-ignore
-      toast.add({ message: 'Bundle deleted', type: 'success', duration: 2000 });
+      toast.add({ message: 'Bundle deleted.', type: 'success', duration: 2000 });
       router.back();
     },
   });
 
   return {
     bundleId: params.id,
-    data: data as Ref<BundleDetailNormalizerReturn>,
+    data    : data as Ref<BundleDetailNormalizerReturn>,
     dialogDelete,
     isError,
     isLoading,

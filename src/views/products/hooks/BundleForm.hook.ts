@@ -1,5 +1,6 @@
 import { computed, reactive, ref, inject, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import Big from 'big.js';
 import type { Ref } from 'vue';
 
 // Databases
@@ -8,18 +9,18 @@ import { getBundleDetail, mutateAddBundle, mutateEditBundle } from '@/database/q
 import { getProductList } from '@/database/query/product';
 
 // Normalizers
-import { bundleFormListNormalizer, bundleFormDetailNormalizer } from '../normalizer/BundleForm.normalizer'
+import { formDetailNormalizer, formProductListNormalizer } from '../normalizer/BundleForm.normalizer'
 
 // Common Helpers
-import { debounce, isNumeric, toIDR } from '@/helpers';
+import { debounce, isNumeric } from '@/helpers';
 
 // Types
 import type {
-  BundleFormDetailNormalizerReturn,
-  BundleFormListNormalizerReturn,
-  DetailProduct,
-  ListProduct,
-  ListVariant,
+  FormDetailNormalizerReturn,
+  FormDetailProduct,
+  FormProductListNormalizerReturn,
+  FormProductListProduct,
+  FormProductListVariant,
 } from '../normalizer/BundleForm.normalizer';
 
 type FormDataProduct = {
@@ -28,16 +29,17 @@ type FormDataProduct = {
   active: boolean;
   image: string;
   name: string;
-  price: number;
+  price: string;
   total_price: string;
   quantity: number;
+  stock: number;
   sku: string;
 };
 
 type FormData = {
   name: string;
   description: string;
-  price: number;
+  price: string;
   auto_price: boolean;
   products: FormDataProduct[];
   selected_products: FormDataProduct[];
@@ -54,85 +56,85 @@ type FormError = {
 };
 
 export const useBundleForm = () => {
-  const route = useRoute();
+  const toast  = inject('ToastProvider');
+  const route  = useRoute();
   const router = useRouter();
-  const toast = inject('ToastProvider');
   const { params } = route;
-  const searchQuery = ref('');
-  const loadProducts = ref(false);
+  const searchQuery        = ref('');
+  const loadProducts       = ref(false);
   const showProductsDialog = ref(false);
-  const formData = reactive<FormData>({
-    name: '',
-    description: '',
-    price: 0,
-    auto_price: true,
-    products: [],
+  const formData: FormData = reactive({
+    name             : '',
+    description      : '',
+    price            : '0',
+    auto_price       : true,
+    products         : [],
     selected_products: [],
   });
-  const formError = reactive<FormError>({
-    name: '',
-    price: '',
+  const formError: FormError = reactive({
+    name    : '',
+    price   : '',
     products: [],
   });
   const page = reactive({
     current: 1,
-    total: 1,
-    limit: 12,
-    first: true,
-    last: true,
+    total  : 1,
+    limit  : 12,
+    first  : true,
+    last   : true,
   });
   const current_page = computed(() => page.current);
 
   const {
-    refetch: bundleDetailRefetch,
-    isError: bundleDetailError,
+    refetch  : bundleDetailRefetch,
+    isError  : bundleDetailError,
     isLoading: bundleDetailLoading,
   } = useQuery({
     queryKey: ['bundle-form-details', params.id],
     queryFn: () => getBundleDetail({
       id: params.id as string,
-      normalizer: bundleFormDetailNormalizer,
+      normalizer: formDetailNormalizer,
     }),
     enabled: params.id ? true : false,
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error getting the bundle detail, ${error}`, type: 'error' });
-      console.error('[ERROR] Error getting the bundle detail,', error);
+      toast.add({ message: `Error getting the bundle detail.`, type: 'error' });
+      console.error('[ERROR] Error getting the bundle detail.', error);
     },
     onSuccess: (response: unknown) => {
-      const resp = response as BundleFormDetailNormalizerReturn;
+      const resp = response as FormDetailNormalizerReturn;
 
       if (params.id) {
-        formData.name = resp.name;
+        formData.name        = resp.name;
         formData.description = resp.description;
-        formData.price = resp.price;
-        formData.auto_price = resp.auto_price,
+        formData.price       = resp.price;
+        formData.auto_price  = resp.auto_price;
 
-        resp.products.forEach(p => {
+        for (const product of resp.products) {
           formData.products.push({
-            id: p.id,
-            product_id: p.product_id,
-            active: p.active,
-            image: p.image,
-            name: p.name,
-            price: p.price,
-            total_price: p.total_price,
-            quantity: p.quantity,
-            sku: p.sku,
+            id         : product.id,
+            product_id : product.product_id,
+            active     : product.active,
+            image      : product.image,
+            name       : product.name,
+            price      : product.price,
+            total_price: product.total_price,
+            quantity   : product.quantity,
+            stock      : product.stock,
+            sku        : product.sku,
           });
           formError.products.push({ quantity: '' });
-        });
+        }
       }
     },
   });
 
   const {
-    data: product_list,
-    refetch: productListRefetch,
+    data     : product_list,
+    refetch  : productListRefetch,
     isLoading: productListLoading,
-    isError: productListError,
+    isError  : productListError,
   } = useQuery({
-    enabled: loadProducts,
     queryKey: ['bundle-form-products', searchQuery, current_page],
     queryFn: () => getProductList({
       active: true,
@@ -141,11 +143,12 @@ export const useBundleForm = () => {
       complete: true,
       limit: page.limit,
       page: page.current,
-      normalizer: bundleFormListNormalizer,
+      normalizer: formProductListNormalizer,
     }),
+    enabled: loadProducts,
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error getting product list, ${error}`, type: 'error' });
+      toast.add({ message: `Error getting product list.`, type: 'error' });
       console.error('[ERROR] Error getting product list.', error);
     },
     onSuccess: (response: unknown) => {
@@ -154,13 +157,13 @@ export const useBundleForm = () => {
 
         page.total = response_page.total;
         page.first = response_page.first;
-        page.last = response_page.last;
+        page.last  = response_page.last;
       }
     },
   })
 
   const {
-    mutate: mutateAdd,
+    mutate   : mutateAdd,
     isLoading: mutateAddLoading,
   } = useMutation({
     mutateFn: () => {
@@ -173,17 +176,17 @@ export const useBundleForm = () => {
       }
 
       return mutateAddBundle({
-        name: formData.name,
+        name       : formData.name,
         description: formData.description,
-        price: formData.price,
-        auto_price: formData.auto_price,
-        products: bundle_products,
+        price      : formData.price,
+        auto_price : formData.auto_price,
+        products   : bundle_products,
       });
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error adding new bundle, ${error}`, type: 'error' });
-      console.error('[ERROR] Error adding new bundle,', error);
+      toast.add({ message: `Error adding new bundle. ${error.message}`, type: 'error' });
+      console.error('[ERROR] Error adding new bundle.', error);
     },
     onSuccess: () => {
       // @ts-ignore
@@ -193,31 +196,31 @@ export const useBundleForm = () => {
   });
 
   const {
-    mutate: mutateEdit,
+    mutate   : mutateEdit,
     isLoading: mutateEditLoading,
   } = useMutation({
     mutateFn: () => {
       const bundle_products = [];
 
       for (const product of formData.products) {
-        const { id, active, quantity } = product;
+        const { id, product_id, active, quantity } = product;
 
-        bundle_products.push({ id, active, quantity });
+        bundle_products.push({ id, product_id, active, quantity });
       }
 
       return mutateEditBundle({
-        id: params.id as string,
-        name: formData.name,
+        id         : params.id as string,
+        name       : formData.name,
         description: formData.description,
-        price: formData.price,
-        auto_price: formData.auto_price,
-        products: bundle_products,
+        price      : formData.price,
+        auto_price : formData.auto_price,
+        products   : bundle_products,
       });
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error updating the bundle, ${error}`, type: 'error' });
-      console.error('[ERROR] Error updating the bundle,', error);
+      toast.add({ message: `Error updating the bundle.`, type: 'error' });
+      console.error('[ERROR] Error updating the bundle.', error);
     },
     onSuccess: () => {
       // @ts-ignore
@@ -300,12 +303,12 @@ export const useBundleForm = () => {
     }
 
     formData.selected_products = [];
-    showProductsDialog.value = false;
-    page.current = 1;
+    showProductsDialog.value   = false;
+    page.current               = 1;
   };
 
-  const handleSelectProduct = (data: ListProduct) => {
-    const { id, active, image, name, price, variants, sku } = data;
+  const handleSelectProduct = (data: FormProductListProduct) => {
+    const { id, active, image, name, price, variants, sku, stock } = data;
     const products = formData.selected_products;
 
     if (variants.length) {
@@ -316,20 +319,21 @@ export const useBundleForm = () => {
         formData.selected_products = products.filter(product => !variant_ids.some(id => id === product.id));
       } else {
         for (const variant of variants) {
-          const { id, product_id, active, image, name: variant_name, price, sku  } = variant;
+          const { id, product_id, active, image, name: variant_name, price, sku, stock } = variant;
           const is_variant_selected = products.find(product => product.id === id);
 
           if (!is_variant_selected) {
             products.push({
+              name       : `${name} - ${variant_name}`,
+              total_price: Big(price).times(1).toString(),
+              quantity   : 1,
+              sku        : sku || '',
               id,
               product_id,
               active,
               image,
-              name: `${name} - ${variant_name}`,
               price,
-              total_price: toIDR(price * 1),
-              quantity: 1,
-              sku: sku || '',
+              stock,
             });
             formError.products.push({ quantity: '' });
           }
@@ -345,23 +349,24 @@ export const useBundleForm = () => {
         formError.products.splice(index, 1);
       } else {
         products.push({
+          product_id : '',
+          total_price: Big(price).times(1).toString(),
+          quantity   : 1,
+          sku        : sku || '',
           id,
-          product_id: '',
           active,
           image,
           name,
           price,
-          total_price: toIDR(price * 1),
-          quantity: 1,
-          sku: sku || '',
+          stock,
         });
         formError.products.push({ quantity: '' });
       }
     }
   };
 
-  const handleSelectVariant = (data: ListVariant, product_name: string) => {
-    const { id, product_id, active, image, name, price, sku } = data;
+  const handleSelectVariant = (data: FormProductListVariant, product_name: string) => {
+    const { id, product_id, active, image, name, price, sku, stock } = data;
     const products = formData.selected_products;
     const selected = products.find(product => product.id === id);
 
@@ -372,15 +377,16 @@ export const useBundleForm = () => {
       formError.products.splice(index, 1);
     } else {
       products.push({
+        name       : `${product_name} - ${name}`,
+        total_price: Big(price).times(1).toString(),
+        quantity   : 1,
+        sku        : sku || '',
         id,
         product_id,
         active,
         image,
-        name: `${product_name} - ${name}`,
         price,
-        total_price: toIDR(price * 1),
-        quantity: 1,
-        sku: sku || '',
+        stock,
       });
       formError.products.push({ quantity: '' });
     }
@@ -391,7 +397,7 @@ export const useBundleForm = () => {
     formError.products.splice(index, 1);
   };
 
-  const isProductSelected = (data: ListProduct) => {
+  const isProductSelected = (data: FormProductListProduct) => {
     const { id, variants } = data;
     const products = formData.selected_products;
 
@@ -408,16 +414,17 @@ export const useBundleForm = () => {
     return formData.selected_products.find(product => product.id === id);
   };
 
-  const handleChangeQuantity = (e: Event, product: DetailProduct) => {
+  const handleChangeQuantity = (e: Event, product: FormDetailProduct) => {
+
     const target = e.target as HTMLInputElement;
 
     if (!isNumeric(target.value)) {
       product.quantity = 1;
-      product.total_price = toIDR(product.price * 1);
+      product.total_price = Big(product.price).times(1).toString();
     }
   };
 
-  const handleUpdateQuantity = (e: Event | string, product: DetailProduct) => {
+  const handleUpdateQuantity = (e: Event | string, product: FormDetailProduct) => {
     let quantity = 0;
 
     if (typeof e === 'string') {
@@ -428,19 +435,19 @@ export const useBundleForm = () => {
     }
 
     product.quantity = quantity;
-    product.total_price = toIDR(product.price * quantity);
+    product.total_price = Big(product.price).times(quantity).toString();
   };
 
   const getUpdatedPrice = (products: FormDataProduct[]) => {
-    let total_price = 0;
+    let total_price = Big(0);
 
     for (const product of products) {
       const { price, quantity } = product;
 
-      total_price += price * quantity;
+      total_price = total_price.plus(Big(price).times(quantity));
     }
 
-    return total_price;
+    return total_price.toString();
   };
 
   watch(
@@ -470,7 +477,7 @@ export const useBundleForm = () => {
     searchQuery,
     loadProducts,
     showProductsDialog,
-    product_list: product_list as Ref<BundleFormListNormalizerReturn>,
+    product_list: product_list as Ref<FormProductListNormalizerReturn>,
     productListError,
     productListLoading,
     productListRefetch,

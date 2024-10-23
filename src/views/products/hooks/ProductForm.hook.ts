@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useQuery, useMutation } from '@/database/hooks';
 import { getProductDetail, mutateAddProduct, mutateEditProduct } from '@/database/query/product'
 
-// Normalizer
+// Normalizers
 import { formDetailNormalizer } from '../normalizer/ProductForm.normalizer';
 import type { ProductFormNormalizerReturn } from '../normalizer/ProductForm.normalizer';
 
@@ -27,12 +27,12 @@ type FormDataVariant = {
   id?: string;
   product_id?: string;
   name: string;
-  price: number;
+  price: string;
   stock: number;
   sku?: string;
   image: Image[];
   new_image: NewImage[];
-  deleted_image: string[];
+  deleted_images: string[];
 };
 
 type FormData = {
@@ -40,14 +40,14 @@ type FormData = {
   name: string;
   description: string;
   by: string;
-  price: number;
+  price: string;
   stock: number;
   sku: string;
   variants: FormDataVariant[];
   deleted_variants: string[];
   image: Image[];
   new_image: NewImage[];
-  deleted_image: string[];
+  deleted_images: string[];
 };
 
 type FormErrorVariant = {
@@ -65,34 +65,34 @@ type FormError = {
 };
 
 export const useProductForm = () => {
-  const route = useRoute();
+  const toast  = inject('ToastProvider');
+  const route  = useRoute();
   const router = useRouter();
-  const toast = inject('ToastProvider');
   const { params } = route;
   const formData = reactive<FormData>({
-    id: '',
-    name: '',
-    description: '',
-    by: '',
-    price: 0,
-    stock: 0,
-    sku: '',
-    variants: [],
+    id              : '',
+    name            : '',
+    description     : '',
+    by              : '',
+    price           : '0',
+    stock           : 0,
+    sku             : '',
+    variants        : [],
     deleted_variants: [],
-    image: [],
-    new_image: [],
-    deleted_image: [],
+    image           : [],
+    new_image       : [],
+    deleted_images  : [],
   });
   const formError = reactive<FormError>({
-    name: '',
-    price: '',
-    stock: '',
+    name    : '',
+    price   : '',
+    stock   : '',
     variants: [],
   });
 
   const {
-    refetch: productDetailRefetch,
-    isError: productDetailError,
+    refetch  : productDetailRefetch,
+    isError  : productDetailError,
     isLoading: productDetailLoading,
   } = useQuery({
     queryKey: ['product-form-details', params.id],
@@ -110,71 +110,79 @@ export const useProductForm = () => {
       const resp = response as ProductFormNormalizerReturn;
 
       if (params.id) {
-        formData.id = resp.id;
-        formData.name = resp.name;
+        formData.id          = resp.id;
+        formData.name        = resp.name;
         formData.description = resp.description;
-        formData.by = resp.by;
-        formData.image = resp.image;
-        formData.price = resp.price;
-        formData.stock = resp.stock;
-        formData.sku = resp.sku;
+        formData.by          = resp.by;
+        formData.image       = resp.image;
+        formData.price       = resp.price;
+        formData.stock       = resp.stock;
+        formData.sku         = resp.sku;
 
-        resp.variants.forEach(v => {
+        for (const variant of resp.variants) {
           formData.variants.push({
-            id: v.id,
-            product_id: v.product_id,
-            name: v.name,
-            price: v.price,
-            stock: v.stock,
-            image: v.image,
-            new_image: [],
-            deleted_image: [],
+            id            : variant.id,
+            product_id    : variant.product_id,
+            name          : variant.name,
+            price         : variant.price,
+            stock         : variant.stock,
+            image         : variant.image,
+            new_image     : [],
+            deleted_images: [],
           });
 
           formError.variants.push({
-            name: '',
+            name : '',
             price: '',
             stock: '',
-            sku: '',
+            sku  : '',
           });
-        });
+        }
       }
     },
   });
 
   const {
-    mutate: mutateEdit,
+    mutate   : mutateEdit,
     isLoading: mutateEditLoading,
   } = useMutation({
     mutateFn: () => {
       const new_product_image = formData.new_image.length ? formData.new_image.map(img => img.data) : [];
       const variants_data = formData.variants.map(variant => {
-        const { id, name, price, stock, sku, new_image, deleted_image } = variant;
+        const {
+          id,
+          name,
+          price,
+          stock,
+          sku,
+          new_image,
+          deleted_images,
+        } = variant;
         const new_variant_image = new_image.length ? new_image.map(img => img.data) : [];
 
         return {
+          new_images : new_variant_image,
+          deleted_images,
           id,
           name,
           sku,
           price,
           stock,
-          new_images: new_variant_image,
-          deleted_images: deleted_image,
         };
       });
 
       return mutateEditProduct({
-        id: params.id as string,
+        id  : params.id as string,
         data: {
-          name: formData.name,
-          description: formData.description,
-          by: formData.by,
-          price: formData.price,
-          stock: formData.stock,
-          sku: formData.sku,
-          new_images: new_product_image,
-          deleted_images: formData.deleted_image,
-          variants: variants_data,
+          name            : formData.name,
+          description     : formData.description,
+          by              : formData.by,
+          price           : formData.price,
+          stock           : formData.stock,
+          sku             : formData.sku,
+          new_images      : new_product_image,
+          deleted_images  : formData.deleted_images,
+          variants        : variants_data,
           deleted_variants: formData.deleted_variants,
         },
       });
@@ -192,7 +200,7 @@ export const useProductForm = () => {
   });
 
   const {
-    mutate: mutateAdd,
+    mutate   : mutateAdd,
     isLoading: mutateAddLoading,
   } = useMutation({
     mutateFn: () => {
@@ -208,14 +216,14 @@ export const useProductForm = () => {
       });
 
       return mutateAddProduct({
-        name: formData.name,
+        name       : formData.name,
         description: formData.description,
-        by: formData.by,
-        price: formData.price,
-        stock: formData.stock,
-        sku: formData.sku,
-        variants: variants_data,
-        new_image: new_product_image,
+        by         : formData.by,
+        price      : formData.price,
+        stock      : formData.stock,
+        sku        : formData.sku,
+        variants   : variants_data,
+        new_image  : new_product_image,
       });
     },
     onError: error => {
@@ -232,16 +240,16 @@ export const useProductForm = () => {
 
   const handleAddImage = (e: Event) => {
     const target = e.target as HTMLInputElement;
-    const files = target.files as FileList;
+    const files  = target.files as FileList;
 
     if (isImagesValid([...files])) {
-      const file = files[0];
+      const file   = files[0];
       const reader = new FileReader();
 
       reader.onload = () => {
         if (formData.new_image.length) {
           formData.new_image[0].data = file;
-          formData.new_image[0].url = reader.result;
+          formData.new_image[0].url  = reader.result;
         } else {
           formData.new_image.push({ data: file, url: reader.result });
         }
@@ -256,7 +264,7 @@ export const useProductForm = () => {
 
   const handleAddVariantImage = (e: Event, index: number) => {
     const target = e.target as HTMLInputElement;
-    const files = target.files as FileList;
+    const files  = target.files as FileList;
 
     [...files].forEach(async (file: File) => {
       const reader = new FileReader();
@@ -264,7 +272,7 @@ export const useProductForm = () => {
       reader.onload = () => {
         if (formData.variants[index].new_image.length) {
           formData.variants[index].new_image[0].data = file;
-          formData.variants[index].new_image[0].url = reader.result;
+          formData.variants[index].new_image[0].url  = reader.result;
         } else {
           formData.variants[index].new_image.push({ data: file, url: reader.result });
         }
@@ -276,18 +284,18 @@ export const useProductForm = () => {
 
   const handleAddVariant = () => {
     formData.variants.push({
-      name: '',
-      price: 0,
-      stock: 0,
-      image: [],
-      new_image: [],
-      deleted_image: [],
+      name          : '',
+      price         : '0',
+      stock         : 0,
+      image         : [],
+      new_image     : [],
+      deleted_images: [],
     });
     formError.variants.push({
-      name: '',
+      name : '',
       price: '',
       stock: '',
-      sku: '',
+      sku  : '',
     });
   };
 
@@ -297,13 +305,11 @@ export const useProductForm = () => {
   };
 
   const handleRemoveImage = () => {
-    console.log(formData);
-
     if (formData.image.length) {
       if (formData.new_image.length) {
         formData.new_image.splice(0, 1);
       } else {
-        formData.deleted_image.push(formData.image[0].id as string);
+        formData.deleted_images.push(formData.image[0].id as string);
         formData.image.splice(0, 1);
       }
     } else {
@@ -318,7 +324,7 @@ export const useProductForm = () => {
       if (variant.new_image.length) {
         variant.new_image.splice(0, 1);
       } else {
-        variant.deleted_image.push(variant.image[0].id as string);
+        variant.deleted_images.push(variant.image[0].id as string);
         variant.image.splice(0, 1);
       }
     } else {

@@ -27,7 +27,7 @@ export default async ({ id, normalizer }: GetSalesOrders) => {
       const orders = [];
 
       for (const order of data) {
-        const { id, name, products, subtotal } = order as RxDocument<OrderDoc>;
+        const { id, name, products, total } = order as RxDocument<OrderDoc>;
         const order_products = [];
 
         for (const product of products) {
@@ -40,7 +40,7 @@ export default async ({ id, normalizer }: GetSalesOrders) => {
           id,
           name,
           products: order_products,
-          subtotal,
+          total,
         });
       }
 

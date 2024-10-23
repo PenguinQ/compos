@@ -1,8 +1,9 @@
 import { monotonicFactory } from 'ulidx';
+import Big from 'big.js';
 
 import { db } from '../';
 
-export default async (data: any, bundle: any) => {
+export default async (_: any, bundle: any) => {
   const ulid = monotonicFactory();
   const productArr: any = [];
   const { product, price, available } = bundle;

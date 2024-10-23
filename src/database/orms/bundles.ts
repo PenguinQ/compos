@@ -4,7 +4,7 @@ export default {
   async removeFromSales() {
     /**
      * ---------------------------------------------------------------------------
-     *  Get list of sales that contain the deleted bundle as one of it's products
+     *  Get list of sales that contain the deleted bundle as one of it's products.
      * ---------------------------------------------------------------------------
      */
     const sales = await db.sales.find({

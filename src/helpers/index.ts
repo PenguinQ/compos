@@ -5,6 +5,7 @@ export { default as deepClone } from './deepClone';
 export { default as getUpdateTime } from './getUpdateTime';
 export { default as removeClass } from './removeClass';
 export { default as sanitizeHTML } from './sanitizeHTML';
+export { default as sanitizeNumeric } from './sanitizeNumeric';
 export { default as isImagesValid } from './isImagesValid';
 export { default as isNumeric } from './isNumeric';
 export { default as isVisible } from './isVisible';

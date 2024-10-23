@@ -1,6 +1,42 @@
-import { db } from "../";
+import Big from 'big.js';
+import type { RxDocument } from 'rxdb';
+
+import { db } from '../';
+import type { ProductDoc } from '../types';
 
 export default {
+  async updateProductStatus(product: RxDocument<ProductDoc>) {
+    const { variants } = product;
+    const actives = [];
+
+    /**
+     * -----------------------------------------------
+     * Recursively get active status for each variant.
+     * -----------------------------------------------
+     */
+    for (const id of variants) {
+      const _queryVariant = await db.variant.findOne(id).exec();
+
+      if (_queryVariant) {
+        const { active } = _queryVariant;
+
+        actives.push(active);
+      }
+    }
+
+    /**
+     * ---------------------------------------------------------------------
+     * Set the product active status as false if every variants is inactive.
+     * ---------------------------------------------------------------------
+     */
+    if (actives.every(active => !active)) {
+      await product.modify(oldData => {
+        oldData.active = false;
+
+        return oldData;
+      });
+    }
+  },
   async removeFromBundles() {
     /**
      * ---------------------------------------------------------------------------
@@ -25,7 +61,7 @@ export default {
     for (const bundle of bundles) {
       const { active, price, auto_price, products } = bundle;
       const newProducts = products.filter(product => product.id !== (this as any).id);
-      let newPrice      = auto_price ? 0 : price;
+      let newPrice      = auto_price ? '0' : price;
       let newActive     = newProducts.length ? active : false;
 
       for (const product of newProducts) {
@@ -36,7 +72,7 @@ export default {
         if (_queryCollection) {
           const { active, price } = _queryCollection;
 
-          if (auto_price) newPrice += price;
+          if (auto_price) newPrice = Big(newPrice).plus(price).toString();
           newActive = active ? true : false;
         }
       }
@@ -48,8 +84,6 @@ export default {
 
         return prev;
       });
-
-      console.log('Variant ORMs:', newProducts);
     }
   },
   async removeFromSales() {

@@ -27,12 +27,18 @@ export default {
           name: {
             type: 'string',
           },
-          total: {
-            type: 'number',
+          // price: {
+          //   type: 'integer',
+          // },
+          price: {
+            type: 'string',
+          },
+          quantity: {
+            type: 'integer',
             minimum: 0,
             default: 0,
           },
-          quantity: {
+          total: {
             type: 'integer',
             minimum: 0,
             default: 0,
@@ -41,20 +47,30 @@ export default {
       },
       default: [],
     },
+    // OLD
+    // discount: {
+    //   type: 'number',
+    //   minimum: 0,
+    //   default: 0,
+    // },
     discount: {
-      type: 'number',
-      minimum: 0,
-      default: 0,
+      type: 'string',
+      default: '0',
     },
     discount_type: {
       type: 'string',
       maxLength: 100,
       default: 'percentage',
     },
-    subtotal: {
-      type: 'number',
-      minimum: 0,
-      default: 0,
+    // OLD
+    // total: {
+    //   type: 'number',
+    //   minimum: 0,
+    //   default: 0,
+    // },
+    total: {
+      type: 'string',
+      default: '0',
     },
     created_at: {
       type: 'date-time',
@@ -68,7 +84,7 @@ export default {
     'sales_id',
     'name',
     'products',
-    'subtotal',
+    'total',
     'created_at',
     'updated_at',
   ],

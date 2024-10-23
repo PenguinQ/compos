@@ -2,26 +2,18 @@ import { monotonicFactory } from 'ulidx';
 import { sanitize } from 'isomorphic-dompurify';
 
 import { db } from '@/database';
-
-// Common Helpers
-import { isNumeric } from '@helpers';
-
-// Database Constants
 import { BUNDLE_ID_PREFIX } from '@/database/constants';
+import type { BundleDocProduct } from '@/database/types';
 
-type MutateAddBundleProduct = {
-  id: string;
-  product_id: string;
-  active: boolean;
-  quantity: number;
-};
+// Helpers
+import { isNumeric, sanitizeNumeric } from '@/helpers';
 
 type MutateAddBundleQuery = {
   name: string;
   description: string;
-  price: number;
+  price: string;
   auto_price: boolean;
-  products: MutateAddBundleProduct[];
+  products: BundleDocProduct[];
 };
 
 export default async (data: MutateAddBundleQuery) => {
@@ -29,39 +21,39 @@ export default async (data: MutateAddBundleQuery) => {
     const ulid       = monotonicFactory();
     const bundle_id = BUNDLE_ID_PREFIX + ulid();
     const {
-      name,
-      description,
-      price      = 0,
-      auto_price = true,
-      products   = [],
+      name        = '',
+      description = '',
+      price       = '0',
+      auto_price  = true,
+      products    = [],
     } = data;
     const clean_name        = sanitize(name);
-    const clean_description = description && sanitize(description);
+    const clean_description = sanitize(description);
 
     if (clean_name.trim() === '') throw 'Bundle name cannot be empty.';
     if (!isNumeric(price))        throw 'Bundle price must be a number.';
     if (!products.length)         throw 'Bundle must have at least one product.';
 
-    const clean_price = parseInt(price as unknown as string);
+    const clean_price = sanitizeNumeric(price) as string;
 
     let bundle_active     = true;
-    const bundle_products = [];
+    const bundle_products = <BundleDocProduct[]>[];
 
     for (const product of products) {
       const { id, product_id, active, quantity } = product;
 
-      if (!isNumeric(quantity)) throw 'Product quantity must be a number';
-      if (!quantity)            throw 'Product quantity cannot be zero';
+      if (!isNumeric(quantity)) throw 'Product quantity must be a number.';
+      if (!quantity)            throw 'Product quantity cannot be zero.';
 
-      const clean_quantity = parseInt(quantity as unknown as string);
+      const clean_quantity = sanitizeNumeric(quantity) as number;
 
       if (!active) bundle_active = false;
 
       bundle_products.push({
+        quantity: clean_quantity,
         id,
         product_id,
         active,
-        quantity: clean_quantity,
       });
     }
 
@@ -78,9 +70,9 @@ export default async (data: MutateAddBundleQuery) => {
     });
   } catch (error) {
     if (error instanceof Error) {
-      throw error.message;
+      throw error;
     }
 
-    throw error;
+    throw new Error(String(error));
   }
 };

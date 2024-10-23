@@ -3,7 +3,7 @@ import type { RxAttachment, RxDocument, DeepReadonly } from 'rxdb';
 
 import { db } from '@/database';
 import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX, THUMBNAIL_ID_PREFIX } from '@/database/constants';
-import type { OrderDoc, ProductDoc, SalesDocProduct } from '@/database/types';
+import type { OrderDoc, ProductDoc, SalesDocProduct, VariantDoc } from '@/database/types';
 
 export type ProductData = {
   id: string;
@@ -76,9 +76,9 @@ export default async ({ id, normalizer }: SalesDetailQuery) => {
       let variant_product_name = '';
 
       if (product.id.startsWith(PRODUCT_ID_PREFIX)) {
-        _queryProduct = await db.product.findOne({ selector: { id: product.id } }).exec();
+        _queryProduct = await db.product.findOne({ selector: { id: product.id } }).exec() as RxDocument<ProductDoc>;
       } else if (product.id.startsWith(VARIANT_ID_PREFIX)) {
-        _queryProduct = await db.variant.findOne({ selector: { id: product.id } }).exec();
+        _queryProduct = await db.variant.findOne({ selector: { id: product.id } }).exec() as RxDocument<VariantDoc>;
         is_variant    = true;
       }
 
@@ -142,7 +142,6 @@ export default async ({ id, normalizer }: SalesDetailQuery) => {
      * 3. Calculate the number of products sold based on completed orders
      * ------------------------------------------------------------------
      */
-
     return {
       result: normalizer ? normalizer({
         id,
@@ -151,7 +150,7 @@ export default async ({ id, normalizer }: SalesDetailQuery) => {
         revenue,
         products: products_data,
         products_sold, // UNFINISHED
-        order: orders_data,
+        orders: orders_data,
         created_at,
         updated_at,
       }) : {
@@ -161,16 +160,16 @@ export default async ({ id, normalizer }: SalesDetailQuery) => {
         revenue,
         products: products_data,
         products_sold, // UNFINISHED
-        order: orders_data,
+        orders: orders_data,
         created_at,
         updated_at,
       },
     }
   } catch (error) {
     if (error instanceof Error) {
-      throw error.message;
+      throw error;
     }
 
-    throw error;
+    throw new Error(String(error));
   }
 };

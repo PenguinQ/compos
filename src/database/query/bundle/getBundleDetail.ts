@@ -1,23 +1,19 @@
 import { blobToBase64String } from 'rxdb';
-import type { DeepReadonly, RxDocument, RxAttachment } from 'rxdb';
+import type { RxDocument, RxAttachment } from 'rxdb';
 
 import { db } from '@/database';
-import { IMAGE_ID_PREFIX } from '@/database/constants';
-
-// Helpers
 import { isVariant } from '@/database/utils';
-
-// Types
+import { IMAGE_ID_PREFIX } from '@/database/constants';
 import type { BundleDoc, ProductDoc, VariantDoc } from '@/database/types';
 
-export type ProductsListImages = {
+export type BundleDetailProductImage = {
   id: string;
   url: string;
 };
 
-export type ProductsList = DeepReadonly<ProductDoc> & {
+export type BundleDetailProduct = Omit<ProductDoc, 'variants'> & {
   product_name?: string;
-  images: ProductsListImages[];
+  images: BundleDetailProductImage[];
   quantity: number;
 };
 
@@ -27,7 +23,7 @@ type GetBundleDetailQuery = {
 };
 
 export type GetBundleDetailQueryReturn = BundleDoc & {
-  products: ProductsList[];
+  products: BundleDetailProduct[];
 };
 
 export default async ({ id, normalizer }: GetBundleDetailQuery) => {
@@ -37,7 +33,7 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
     if (!_queryBundle) throw 'Bundle not found.';
 
     const { products, ...bundleData } = _queryBundle.toJSON();
-    const products_list: ProductsList[] = [];
+    const products_list: BundleDetailProduct[] = [];
 
     /**
      * ---------------------------
@@ -46,6 +42,7 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
      */
     for (const product of products) {
       const { id, quantity } = product;
+
       /**
        * ---------------------------------
        * 1.1 Flow if product is a variant.
@@ -75,9 +72,9 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
         }
 
         products_list.push({
-          quantity,
+          images      : variant_images,
           product_name: p_name,
-          images: variant_images,
+          quantity,
           ...variant_json,
         });
       }
@@ -104,7 +101,11 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
           product_images.push({ id, url: `data:${type};base64,${image_base64}` });
         }
 
-        products_list.push({ quantity, images: product_images, ...product_json });
+        products_list.push({
+          images: product_images,
+          quantity,
+          ...product_json,
+        });
       }
     }
 
@@ -119,9 +120,9 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
     };
   } catch (error) {
     if (error instanceof Error) {
-      throw error.message;
+      throw error;
     }
 
-    throw error;
+    throw new Error(String(error));
   }
 };

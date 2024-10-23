@@ -1,4 +1,6 @@
-import { db } from "../";
+import Big from 'big.js';
+
+import { db } from '../';
 
 export default {
   async removeVariants() {
@@ -39,7 +41,7 @@ export default {
     for (const bundle of bundles) {
       const { active, price, auto_price, products } = bundle;
       const newProducts = products.filter(product => product[hasVariants ? 'product_id' : 'id'] !== (this as any).id);
-      let newPrice      = auto_price ? 0 : price;
+      let newPrice      = auto_price ? '0' : price;
       let newActive     = newProducts.length ? active : false;
 
       for (const product of newProducts) {
@@ -50,7 +52,7 @@ export default {
         if (_queryCollection) {
           const { active, price } = _queryCollection;
 
-          if (auto_price) newPrice += price;
+          if (auto_price) newPrice = Big(newPrice).plus(price).toString();
           newActive = active ? true : false;
         }
       }

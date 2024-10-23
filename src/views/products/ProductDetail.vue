@@ -139,7 +139,7 @@ const {
                     </DescriptionListItem>
                     <DescriptionListItem>
                       <dt>Price</dt>
-                      <dd>{{ data.price }}</dd>
+                      <dd>{{ data.price_formatted }}</dd>
                     </DescriptionListItem>
                     <DescriptionListItem>
                       <dt>Stock</dt>
@@ -185,8 +185,8 @@ const {
                         {{ variant.name }}
                       </Text>
                       <div class="product-detail-item__body">
-                        <Text body="small" margin="0 0 2px">Price: {{ variant.price }}</Text>
-                        <Text body="small" margin="0 0 2px">Quantity: {{ variant.stock }}</Text>
+                        <Text body="small" margin="0 0 2px">Price: {{ variant.price_formatted }}</Text>
+                        <Text body="small" margin="0 0 2px">Stock: {{ variant.stock }}</Text>
                         <Text body="small" margin="0">SKU: {{ variant.sku || '-' }}</Text>
                       </div>
                     </div>

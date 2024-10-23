@@ -150,7 +150,7 @@ const {
                           id="product-price"
                           label="Price"
                           prepend="Rp"
-                          v-model.number="formData.price"
+                          v-model="formData.price"
                           :labelProps="{ for: 'product-price' }"
                           :error="formError.price ? true : false"
                           :message="formError.price"
@@ -266,7 +266,7 @@ const {
                                     :labelProps="{ for: `variant-price-${index + 1}` }"
                                     :error="formError.variants[index].price ? true : false"
                                     :message="formError.variants[index].price"
-                                    v-model.number="variant.price"
+                                    v-model="variant.price"
                                   />
                                   <QuantityEditor
                                     label="Stock"

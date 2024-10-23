@@ -123,7 +123,7 @@ const {
                   </DescriptionListItem>
                   <DescriptionListItem>
                     <dt>Price</dt>
-                    <dd>{{ data.price || data.total_price }}</dd>
+                    <dd>{{ data.price_formatted }}</dd>
                   </DescriptionListItem>
                   <DescriptionListItem>
                     <dt>Updated At</dt>
@@ -160,7 +160,8 @@ const {
                         {{ product.product_name ? `${product.product_name} - ${product.name}` : product.name }}
                       </Text>
                       <div class="product-detail-item__info">
-                        <Text body="small" margin="0 0 2px">Price: {{ product.price }}</Text>
+                        <Text body="small" margin="0 0 2px">Price: {{ product.price_formatted }}</Text>
+                        <Text body="small" margin="0 0 2px">Stock: {{ product.stock }}</Text>
                         <Text body="small" margin="0 0 2px">Quantity: {{ product.quantity }}</Text>
                         <Text body="small" margin="0">SKU: {{ product.sku || '-' }}</Text>
                       </div>

@@ -102,7 +102,7 @@ export const detailsNormalizer = (data: unknown): SalesDashboardDetailNormalizer
 };
 
 export const productsNormalizer = (data: unknown) => {
-  const { data: productsData, data_count  } = data as ProductsQueryReturns;
+  const { data: productsData, data_count } = data as ProductsQueryReturns;
   const products = [];
 
   for (const product of productsData) {

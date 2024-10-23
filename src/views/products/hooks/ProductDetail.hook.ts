@@ -32,20 +32,20 @@ export const useProductDetail = () => {
     }),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to get the product detail,', type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to get the product detail,', error);
+      toast.add({ message: 'Failed to get the product detail.', type: 'error', duration: 2000 });
+      console.error('[ERROR] Failed to get the product detail.', error.message);
     },
   });
 
   const {
-    mutate: deleteProduct,
+    mutate   : deleteProduct,
     isLoading: deleteProductLoading,
   } = useMutation({
     mutateFn: () => mutateDeleteProduct(params.id as string),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to delete the product,', type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to delete the product,', error);
+      toast.add({ message: 'Failed to delete the product.', type: 'error', duration: 2000 });
+      console.error('[ERROR] Failed to delete the product.', error.message);
     },
     onSuccess: () => {
       // @ts-ignore

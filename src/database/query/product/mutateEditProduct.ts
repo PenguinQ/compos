@@ -1,5 +1,6 @@
 import { monotonicFactory } from 'ulidx';
 import { sanitize } from 'isomorphic-dompurify';
+import Big from 'big.js';
 import type { RxDocument } from 'rxdb';
 
 import { db } from '@/database';
@@ -8,12 +9,12 @@ import { THUMBNAIL_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
 import type { ProductDoc, VariantDoc } from '@/database/types';
 
 // Common Helpers
-import { isNumeric } from '@/helpers';
+import { isNumeric, sanitizeNumeric } from '@/helpers';
 
 type MutateEditProductQueryVariant = {
   id?: string;
   name: string;
-  price: number;
+  price: string;
   stock: number;
   sku?: string;
   new_images: File[];
@@ -24,7 +25,7 @@ type MutateEditProductQueryData = {
   name: string;
   description?: string;
   by?: string;
-  price: number;
+  price: string;
   stock: number;
   sku?: string;
   new_images?: File[];
@@ -74,6 +75,28 @@ const removeVariant = async (variantsID: string[], product: RxDocument<ProductDo
   }
 };
 
+const updateBundlePrice = async ({ id, old_price, new_price }: { id: string; old_price: string; new_price: string; }) => {
+  const _queryBundles = await db.bundle.find({
+    selector: {
+      products: {
+        $elemMatch: {
+          id,
+        },
+      }
+    },
+  }).exec();
+
+  for (const bundle of _queryBundles) {
+    await bundle.incrementalModify(prev => {
+      prev.price = Big(prev.price).minus(old_price).plus(new_price).toString();
+
+      console.log(prev.price);
+
+      return prev;
+    });
+  }
+};
+
 const updateBundlesStatus = async ({ id, active }: { id: string; active: boolean; }) => {
   const _queryBundles = await db.bundle.find({
     selector: {
@@ -110,7 +133,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       by,
       description,
       sku,
-      price            = 0,
+      price            = '0',
       stock            = 0,
       new_images       = [],
       variants         = [],
@@ -126,8 +149,11 @@ export default async ({ id, data }: MutateEditProductQuery) => {
     if (!isNumeric(price))        throw 'Price must be a number.';
     if (!isNumeric(stock))        throw 'Stock must be a number.';
 
-    const clean_price = parseInt(price as unknown as string);
-    const clean_stock = parseInt(stock as unknown as string);
+    // OLD
+    // const clean_price = parseInt(price);
+    // const clean_stock = parseInt(stock as unknown as string);
+    const clean_price = sanitizeNumeric(price) as string;
+    const clean_stock = sanitizeNumeric(stock) as number;
 
     const _queryProduct = await db.product.findOne({
       selector: {
@@ -178,7 +204,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           by         : clean_by,
           sku        : clean_sku,
           active     : is_stocked ? true : false,
-          price      : 0,
+          price      : '0',
           stock      : 0,
           updated_at : new Date().toISOString(),
         },
@@ -221,7 +247,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           id            : v_id,
           name          : v_name,
           sku           : v_sku,
-          price         : v_price          = 0,
+          price         : v_price          = '0',
           stock         : v_stock          = 0,
           new_images    : v_new_images     = [],
           deleted_images: v_deleted_images = [],
@@ -233,8 +259,11 @@ export default async ({ id, data }: MutateEditProductQuery) => {
         if (!isNumeric(v_price))        throw 'Variant price must be a number.';
         if (!isNumeric(v_stock))        throw 'Variant stock must be a number.';
 
-        const clean_v_price = parseInt(v_price as unknown as string);
-        const clean_v_stock = parseInt(v_stock as unknown as string);
+        // OLD
+        // const clean_v_price = parseInt(v_price as unknown as string);
+        // const clean_v_stock = parseInt(v_stock as unknown as string);
+        const clean_v_price = sanitizeNumeric(v_price) as string;
+        const clean_v_stock = sanitizeNumeric(v_stock) as number;
         const v_is_active   = clean_v_stock >= 1 ? true : false;
 
         /**
@@ -291,9 +320,23 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           }
 
           /**
-           * ------------------------------------------------------------------------------------------
-           * 1.5.1.3. Update any bundle that contains current variant iteration as one of it's product.
-           * ------------------------------------------------------------------------------------------
+           * ------------------------------------------------------------------------------------------------
+           * 1.5.1.3. Update any bundle price that contains current variant iteration as one of it's product.
+           * ------------------------------------------------------------------------------------------------
+           */
+          if (_queryVariant.price !== updated_variant.price) {
+            await updateBundlePrice({ id: v_id, old_price: _queryVariant.price, new_price: updated_variant.price });
+          }
+
+          /**
+           * -------------------------------------------------------------------------------------------------
+           * 1.5.1.4. Update any bundle status that contains current variant iteration as one of it's product.
+           * -------------------------------------------------------------------------------------------------
+           * * Update bundle if:
+           * - Previous stock is equal to 0 and new stock is more than 0
+           * - Previous stock is more than 0 and new stock is equal to 0
+           *
+           * This to update active status of each variant on the bundle.
            */
           if (
             _queryVariant.stock === 0 && updated_variant.stock > 0 ||
@@ -413,9 +456,18 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       if (deleted_variants.length) await removeVariant(deleted_variants, _queryProduct);
 
       /**
-       * ----------------------------------------------------------------------------
-       * 2.4. Update any bundle that contains current product as one of it's product.
-       * ----------------------------------------------------------------------------
+       * ---------------------------------------------------------------------------------------
+       * 2.4. Update any bundle price price that contains current productas one of it's product.
+       * ---------------------------------------------------------------------------------------
+       */
+      if (_queryProduct.price !== updated_product.price) {
+        await updateBundlePrice({ id, old_price: _queryProduct.price, new_price: updated_product.price });
+      }
+
+      /**
+       * -----------------------------------------------------------------------------------
+       * 2.5. Update any bundle status that contains current product as one of it's product.
+       * -----------------------------------------------------------------------------------
        * Update bundle if:
        * - Previous stock is equal to 0 and new stock is more than 0
        * - Previous stock is more than 0 and new stock is equal to 0

@@ -17,10 +17,14 @@ export default {
     name: {
       type: 'string',
     },
+    // price: {
+    //   type: 'integer',
+    //   minimum: 0,
+    //   default: 0,
+    // },
     price: {
-      type: 'number',
-      minimum: 0,
-      default: 0,
+      type: 'string',
+      default: '0',
     },
     stock: {
       type: 'integer',

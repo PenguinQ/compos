@@ -1,14 +1,18 @@
-import { getUpdateTime, toIDR } from '@helpers';
+// Helpers
+import { getUpdateTime, toIDR } from '@/helpers';
+
+// Databases
 import type { GetBundleDetailQueryReturn } from '@/database/query/bundle/getBundleDetail';
 
-type ProductsList = {
+type BundleDetailProduct = {
   id: string;
   active: boolean;
   name: string;
   product_id?: string;
   product_name?: string;
   image: string;
-  price: number;
+  price: string;
+  price_formatted: string;
   stock: number;
   sku: string;
   quantity: number;
@@ -21,16 +25,15 @@ export type BundleDetailNormalizerReturn = {
   description: string;
   images: string[];
   price: string;
-  products: ProductsList[];
-  total_price: string;
+  price_formatted: string;
+  products: BundleDetailProduct[];
   updated_at: string;
 };
 
 export const bundleDetailNormalizer = (data: unknown): BundleDetailNormalizerReturn => {
   const { id, active, name, description, price, products, updated_at } = data as GetBundleDetailQueryReturn;
-  let products_list: ProductsList[] = [];
-  let bundle_images: string[] = [];
-  let total_price = 0;
+  let products_list: BundleDetailProduct[] = [];
+  let bundle_images: string[]  = [];
 
   for (const product of products) {
     const { id, active, images, name, product_name, price, stock, sku, quantity } = product;
@@ -38,30 +41,31 @@ export const bundleDetailNormalizer = (data: unknown): BundleDetailNormalizerRet
 
     if (product_image) bundle_images.push(product_image);
 
-    total_price += price;
-
     products_list.push({
-      id: id || '',
-      active: active || false,
-      name: name || '',
-      product_name: product_name || '',
-      image: product_image,
-      price: toIDR(price ? price : 0),
-      stock: stock || 0,
-      quantity: quantity || 0,
-      sku: sku || '',
+      id             : id || '',
+      active         : active || false,
+      name           : name || '',
+      product_name   : product_name || '',
+      image          : product_image,
+      price          : price ?? '0',
+      price_formatted: toIDR(price ?? '0'),
+      stock          : stock ?? 0,
+      quantity       : quantity ?? 0,
+      sku            : sku || '',
     });
   }
 
+  console.log(price);
+
   return {
-    id: id || '',
-    active: active || false,
-    name: name || '',
-    description: description || '',
-    images: bundle_images,
-    price: toIDR(price ? price : 0),
-    products: products_list,
-    total_price: toIDR(total_price),
-    updated_at : getUpdateTime(updated_at),
+    id             : id || '',
+    active         : active || false,
+    name           : name || '',
+    description    : description || '',
+    images         : bundle_images,
+    price          : price ?? '0',
+    price_formatted: toIDR(price ?? '0'),
+    products       : products_list,
+    updated_at     : getUpdateTime(updated_at),
   };
 };

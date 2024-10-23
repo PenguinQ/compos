@@ -45,7 +45,7 @@ export default {
             type: 'string',
           },
           price: {
-            type: 'number',
+            type: 'integer',
             minimum: 0,
           },
           quantity: {
@@ -68,20 +68,30 @@ export default {
       },
       default: [],
     },
+    // OLD
+    // discount: {
+    //   type: 'number',
+    //   minimum: 0,
+    //   default: 0,
+    // },
     discount: {
-      type: 'number',
-      minimum: 0,
-      default: 0,
+      type: 'string',
+      default: '0',
     },
     discount_type: {
       type: 'string',
       maxLength: 100,
       default: 'percentage',
     },
+    // OLD
+    // revenue: {
+    //   type: 'integer',
+    //   minimum: 0,
+    //   default: 0,
+    // },
     revenue: {
-      type: 'number',
-      minimum: 0,
-      default: 0,
+      type: 'string',
+      default: '0',
     },
     created_at: {
       type: 'date-time',

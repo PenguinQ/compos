@@ -1,34 +1,29 @@
 import { sanitize } from 'isomorphic-dompurify';
 
 import { db } from '@/database';
+import type { BundleDocProduct } from '@/database/types';
 
-// Common Helpers
-import { isNumeric } from '@/helpers';
-
-type MutateEditBundleProduct = {
-  id: string;
-  active: boolean;
-  quantity: number;
-};
+// Helpers
+import { isNumeric, sanitizeNumeric } from '@/helpers';
 
 type MutateEditBundleQuery = {
   id: string;
   name: string;
   description: string;
-  price: number;
+  price: string;
   auto_price: boolean;
-  products: MutateEditBundleProduct[];
+  products: BundleDocProduct[];
 };
 
 export default async (data: MutateEditBundleQuery) => {
   try {
     const {
-      id,
-      name,
-      description,
+      name        = '',
+      description = '',
       price       = 0,
       auto_price  = true,
       products    = [],
+      id,
     } = data;
 
     /**
@@ -44,7 +39,7 @@ export default async (data: MutateEditBundleQuery) => {
       },
     }).exec();
 
-    if (!_queryBundle) throw `Cannot edit the current bundle, there's no bundle with id ${id}`;
+    if (!_queryBundle) throw `Cannot edit the current bundle, there's no bundle with id ${id}.`;
 
     /**
      * -------------------------------
@@ -52,31 +47,33 @@ export default async (data: MutateEditBundleQuery) => {
      * -------------------------------
      */
     const clean_name        = sanitize(name);
-    const clean_description = description && sanitize(description);
+    const clean_description = sanitize(description);
 
     if (clean_name.trim() === '') throw 'Bundle name cannot be empty.';
     if (!isNumeric(price))        throw 'Price must be a number.';
     if (!products.length)         throw 'Bundle must have at least one product.';
 
-    const clean_price = parseInt(price as unknown as string);
+    const clean_price = sanitizeNumeric(price) as string;
 
     let bundle_active     = true;
-    const bundle_products = [];
+    const bundle_products = <BundleDocProduct[]>[];
 
     for (const product of products) {
-      const { id, active, quantity } = product;
+      console.log(product);
+      const { id, product_id, active, quantity } = product;
 
-      if (!isNumeric(quantity)) throw 'Product quantity must be a number';
-      if (!quantity)            throw 'Product quantity cannot be zero';
+      if (!isNumeric(quantity)) throw 'Product quantity must be a number.';
+      if (!quantity)            throw 'Product quantity cannot be zero.';
 
-      const clean_quantity = parseInt(quantity as unknown as string);
+      const clean_quantity = sanitizeNumeric(quantity) as number;
 
       if (!active) bundle_active = false;
 
       bundle_products.push({
-        id,
-        active,
         quantity: clean_quantity,
+        id,
+        product_id,
+        active,
       });
     }
 
@@ -92,15 +89,15 @@ export default async (data: MutateEditBundleQuery) => {
         description: clean_description,
         price      : clean_price,
         products   : bundle_products,
-        auto_price,
         updated_at : new Date().toISOString(),
+        auto_price,
       },
     });
   } catch (error) {
     if (error instanceof Error) {
-      throw error.message;
+      throw error;
     }
 
-    throw error;
+    throw new Error(String(error));
   }
 };

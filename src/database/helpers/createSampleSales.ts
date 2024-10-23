@@ -28,7 +28,7 @@ export default async (products: SalesDocProduct[]) => {
       products_sold: [],
       orders: [],
       revenue: 0,
-      discount: 0,
+      discount: '0',
       discount_type: 'percentage',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

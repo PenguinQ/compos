@@ -1,7 +1,7 @@
 // Helpers
-import { getUpdateTime, toIDR } from '@helpers';
+import { getUpdateTime, toIDR } from '@/helpers';
 
-// Types
+// Databases
 import type { ProductDetailQueryReturn } from '@/database/query/product/getProductDetail';
 
 type ProductVariants = {
@@ -10,7 +10,8 @@ type ProductVariants = {
   product_id: string;
   name: string;
   image: string;
-  price: number;
+  price: string;
+  price_formatted: string;
   stock: number;
   sku: string;
 };
@@ -22,7 +23,8 @@ export type ProductDetailNormalizerReturn = {
   description: string;
   image: string;
   by: string;
-  price: number;
+  price: string;
+  price_formatted: string;
   stock: number;
   sku: string;
   variants: ProductVariants[];
@@ -43,36 +45,47 @@ export const detailNormalizer = (data: unknown): ProductDetailNormalizerReturn =
     variants,
     updated_at,
   } = data as ProductDetailQueryReturn || {};
-  const product_image = images[0] ? images[0].url : '';
-  const product_variants: ProductVariants[] = [];
+  const product_image    = images[0] ? images[0].url : '';
+  const product_variants = <ProductVariants[]>[];
 
-  variants.forEach(variant => {
-    const { id, product_id, active, name, images, price, stock, sku } = variant;
+  for (const variant of variants) {
+    const {
+      id,
+      product_id,
+      active,
+      name,
+      images,
+      price,
+      stock,
+      sku,
+    } = variant;
     const variant_image = images[0] ? images[0].url : '';
 
     product_variants.push({
-      id: id || '',
-      active: active || false,
-      product_id: product_id || '',
-      name: name || '',
-      image: variant_image,
-      price: toIDR(price ? price : 0),
-      stock: stock || 0,
-      sku: sku || '',
+      id             : id || '',
+      active         : active || false,
+      product_id     : product_id || '',
+      name           : name || '',
+      image          : variant_image,
+      price          : price ?? '0',
+      price_formatted: toIDR(price ?? '0'),
+      stock          : stock || 0,
+      sku            : sku || '',
     });
-  });
+  }
 
   return {
-    id: id || '',
-    active: active || false,
-    name: name || '',
-    description: description || '',
-    image: product_image,
-    by: by || '',
-    price: toIDR(price ? price : 0),
-    stock: stock || 0,
-    sku: sku || '',
-    variants: product_variants,
-    updated_at: getUpdateTime(updated_at),
+    id             : id || '',
+    active         : active || false,
+    name           : name || '',
+    description    : description || '',
+    image          : product_image,
+    by             : by || '',
+    price          : price ?? '0',
+    price_formatted: toIDR(price ?? '0'),
+    stock          : stock || 0,
+    sku            : sku || '',
+    variants       : product_variants,
+    updated_at     : getUpdateTime(updated_at),
   };
 };

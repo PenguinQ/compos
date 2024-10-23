@@ -11,7 +11,7 @@ type ProductVariants = {
   product_id: string;
   name: string;
   image: Image[];
-  price: number;
+  price: string;
   stock: number;
   sku: string,
 };
@@ -23,7 +23,7 @@ export type ProductFormNormalizerReturn = {
   description: string;
   image: Image[];
   by: string;
-  price: number;
+  price: string;
   stock: number;
   sku: string;
   variants: ProductVariants[];
@@ -45,32 +45,40 @@ export const formDetailNormalizer = (data: unknown): ProductFormNormalizerReturn
   const product_image = images[0] ? [{ id: images[0].id, url: images[0].url }] : [];
   const product_variants: ProductVariants[] = [];
 
-  variants.forEach(v => {
-    const { id, product_id, name, images, price, stock, sku } = v;
+  for (const variant of variants) {
+    const {
+      id,
+      product_id,
+      name,
+      images,
+      price,
+      stock,
+      sku,
+    } = variant;
     const variant_image = images[0] ? [{ id: images[0].id, url: images[0].url }] : [];
 
     product_variants.push({
-      id: id || '',
-      active: active || false,
+      id        : id || '',
+      active    : active || false,
       product_id: product_id || '',
-      name: name || '',
-      image: variant_image,
-      price: price || 0,
-      stock: stock || 0,
-      sku: sku || '',
+      image     : variant_image,
+      name      : name || '',
+      price     : price ?? '0',
+      stock     : stock ?? 0,
+      sku       : sku || '',
     });
-  });
+  }
 
   return {
-    id: id || '',
-    active: active || false,
-    name: name || '',
+    id         : id || '',
+    active     : active || false,
+    image      : product_image,
+    name       : name || '',
     description: description || '',
-    image: product_image,
-    by: by || '',
-    price: price || 0,
-    stock: stock || 0,
-    sku: sku || '',
-    variants: product_variants,
+    by         : by || '',
+    price      : price ?? '0',
+    stock      : stock ?? 0,
+    sku        : sku || '',
+    variants   : product_variants,
   };
 };

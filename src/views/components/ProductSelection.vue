@@ -9,23 +9,28 @@ import ComposIcon, { CheckLarge, XLarge } from '@components/Icons';
 // View Components
 import ProductImage from '@/views/components/ProductImage.vue';
 
+// Helpers
+import { toIDR } from '@/helpers';
+
 // Assets
 import no_image from '@assets/illustration/no_image.svg';
 
-type SalesProductProps = {
+type ProductSelection = {
   display?: boolean;
   image?: string;
   name: string;
   price?: string;
   sku?: string;
+  stock?: number;
   quantity?: number;
+  quantityMax?: number;
   selected?: boolean;
   small?: boolean;
   variant?: boolean;
   clickRemove?: () => void;
 };
 
-const props = withDefaults(defineProps<SalesProductProps>(), {
+const props = withDefaults(defineProps<ProductSelection>(), {
   display: false,
   selected: false,
   small: false,
@@ -59,7 +64,8 @@ const classes = computed(() => ({
     <div class="vc-product-selection__body">
       <Text body="large" truncate margin="0">{{ name }}</Text>
       <div v-if="price || sku" class="vc-product-selection__info">
-        <Text v-if="price" body="small" truncate margin="0 0 2px">Price: {{ price }}</Text>
+        <Text v-if="price" body="small" truncate margin="0 0 2px">Price: {{ toIDR(price) }}</Text>
+        <Text v-if="stock" body="small" truncate margin="0 0 2px">Stock: {{ stock }}</Text>
         <Text v-if="sku" body="small" truncate margin="0">SKU: {{ sku }}</Text>
       </div>
     </div>
@@ -67,6 +73,7 @@ const classes = computed(() => ({
       v-if="quantity !== undefined"
       :value="quantity"
       :min="1"
+      :max="quantityMax"
       @change="$emit('changeQuantity', $event)"
       @input="$emit('inputQuantity', $event)"
       @clickDecrement="$emit('clickQuantityDecrement', $event)"

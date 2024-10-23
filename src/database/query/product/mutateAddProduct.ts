@@ -2,13 +2,14 @@ import { monotonicFactory } from 'ulidx';
 import { sanitize } from 'isomorphic-dompurify';
 import type { RxDocument } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import { addImages, compressProductImage, isImagesValid } from '@/database/utils';
 import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
 import type { VariantDoc } from '@/database/types';
 
-// Common Helpers
-import { isNumeric } from '@/helpers';
+// Helpers
+import { isNumeric, sanitizeNumeric } from '@/helpers';
 
 type MutateAddProductVariant = Partial<VariantDoc> & {
   new_image: File[];
@@ -18,7 +19,9 @@ type MutateAddProductQuery = {
   name: string;
   description?: string;
   by?: string;
-  price: number;
+  // OLD
+  // price: number;
+  price: string;
   stock: number;
   sku?: string;
   variants: MutateAddProductVariant[];
@@ -34,7 +37,7 @@ export default async (data: MutateAddProductQuery) => {
       description,
       by,
       sku,
-      price      = 0,
+      price      = '0',
       stock      = 0,
       variants   = [],
       new_image  = [],
@@ -48,8 +51,11 @@ export default async (data: MutateAddProductQuery) => {
     if (!isNumeric(price))        throw 'Product price must be a number.';
     if (!isNumeric(stock))        throw 'Product stock must be a number.';
 
-    const clean_price = parseInt(price as unknown as string);
-    const clean_stock = parseInt(stock as unknown as string);
+    // OLD
+    // const clean_price = parseInt(price as unknown as string);
+    // const clean_stock = parseInt(stock as unknown as string);
+    const clean_price = sanitizeNumeric(price) as string;
+    const clean_stock = sanitizeNumeric(stock) as number;
     const is_active   = clean_stock >= 1 ? true : false;
 
     /**
@@ -66,21 +72,24 @@ export default async (data: MutateAddProductQuery) => {
       for (const variant of variants) {
         const v_id = VARIANT_ID_PREFIX + ulid();
         const {
-          name     : v_name,
-          sku      : v_sku,
+          name     : v_name      = '',
+          sku      : v_sku       = '',
           price    : v_price     = 0,
           stock    : v_stock     = 0,
           new_image: v_new_image = [],
         } = variant;
         const clean_v_name = sanitize(v_name);
-        const clean_v_sku  = v_sku && sanitize(v_sku);
+        const clean_v_sku  = sanitize(v_sku);
 
         if (clean_v_name.trim() === '') throw 'Variant name cannot be empty.';
         if (!isNumeric(v_price))        throw 'Price must be a number.';
         if (!isNumeric(v_stock))        throw 'Stock must be a number.';
 
-        const clean_v_price = parseInt(v_price as unknown as string);
-        const clean_v_stock = parseInt(v_stock as unknown as string);
+        // OLD
+        // const clean_v_price = parseInt(v_price as unknown as string);
+        // const clean_v_stock = parseInt(v_stock as unknown as string);
+        const clean_v_price = sanitizeNumeric(v_price) as string;
+        const clean_v_stock = sanitizeNumeric(v_stock) as number;
 
         variant_array.push({
           id        : v_id,
@@ -113,7 +122,7 @@ export default async (data: MutateAddProductQuery) => {
         description: clean_description,
         by         : clean_by,
         sku        : clean_sku,
-        price      : 0,
+        price      : '0',
         stock      : 0,
         variants   : variant_ids,
         created_at : new Date().toISOString(),

@@ -16,6 +16,8 @@ import ComposIcon, {
   PlusLarge,
   DashLarge,
   CashCoin,
+  BoxSeam,
+  ClockHistory,
 } from '@components/Icons';
 
 // View Components
@@ -47,9 +49,13 @@ const {
   isProductsLoading,
   isOrdersError,
   isOrdersLoading,
+  handleClickDecrement,
+  handleClickIncrement,
+  handleClickQuantityDecrement,
   handleClickCalculator,
   handleClickCancel,
   handleClickClear,
+  handlePayment,
 } = useSalesDashboard();
 
 type ProductList = {
@@ -67,132 +73,6 @@ type OrderItem = {
   price: number;
   amount: number;
 };
-
-const dummy_product_list = reactive<ProductList[]>([
-  {
-    id: 'XV1',
-    image: '',
-    name: 'Item 1',
-    price: 10000,
-    stock: 1,
-  },
-  {
-    id: 'XV2',
-    image: '',
-    name: 'Item 2',
-    price: 20000,
-    stock: 99,
-  },
-  {
-    id: 'XV3',
-    image: '',
-    name: 'Item 3',
-    price: 30000,
-    stock: 99,
-  },
-]);
-
-const toast = inject('ToastProvider');
-const dummy_order_items = ref<OrderItem[]>([]);
-const show_payment = ref(false);
-const show_history = ref(false);
-const order_total_amount = computed(() => dummy_order_items.value.reduce((acc, item) => acc += item.amount, 0));
-const order_total_price = computed(() => dummy_order_items.value.reduce((acc, item) => acc += (item.amount * item.price), 0));
-const payment_amount = ref('0');
-const payment_amount_int = computed(() => parseInt(payment_amount.value));
-const payment_change = computed(() => totalProductsPrice.value > payment_amount_int.value ? 0 : payment_amount_int.value - totalProductsPrice.value);
-
-const currentOrders = ref([]);
-
-onMounted(() => {
-
-});
-
-const handleProductClick = (product: ProductList) => {
-  const { id, image, name, price } = product;
-  const item = dummy_order_items.value.filter(item => item.id === id);
-
-  if (item.length) {
-    item[0].amount += 1;
-  } else {
-    dummy_order_items.value.push({
-      id,
-      image,
-      name,
-      price,
-      amount: 1,
-    });
-  }
-};
-
-const handleChange = (id: string, amount: number) => {
-  if (amount === 0) dummy_order_items.value = dummy_order_items.value.filter(item => item.id !== id);
-};
-
-
-const handleCancelPayment = () => {
-  show_payment.value = false
-  payment_amount.value = '0';
-};
-
-const handleSubmitPayment = () => {
-  if (order_total_price.value > payment_amount_int.value) {
-    // @ts-ignore
-    toast.add({ message: 'Order canceled, payment amount is less than total price.', type: 'error', duration: 2000 });
-  } else {
-    dummy_order_items.value = [];
-    payment_amount.value = '0';
-    show_payment.value = false;
-
-    // @ts-ignore
-    toast.add({ message: 'Order completed.', type: 'success', duration: 2000 });
-  }
-};
-
-// New Functions
-const handleClickIncrement = (product: any) => {
-  const { id, image, name, stock, price, quantity } = product;
-  const order = orderedProducts.value.find(product => product.id === id);
-
-  if (order) {
-    if (order.amount < stock) order.amount += quantity;
-  } else {
-    orderedProducts.value.push({
-      id,
-      image,
-      name,
-      price,
-      stock,
-      amount: quantity,
-      quantity,
-    });
-  }
-};
-
-const handleClickDecrement = (product: any) => {
-  const { id, quantity } = product;
-  const order = orderedProducts.value.find(product => product.id === id);
-
-  if (order) {
-    if (order.amount > 1) {
-      order.amount -= quantity;
-    } else {
-      const filtered = orderedProducts.value.filter(product => product.id !== id);
-
-      orderedProducts.value = filtered;
-    }
-  }
-};
-
-const handleQuantityDecrement = (value: string, id: string) => {
-  const intValue = parseInt(value);
-
-  if (!intValue) {
-    const filtered = orderedProducts.value.filter(product => product.id !== id);
-
-    orderedProducts.value = filtered;
-  }
-};
 </script>
 
 <template>
@@ -208,7 +88,11 @@ const handleQuantityDecrement = (value: string, id: string) => {
         <!-- Products -->
         <div class="dashboard-content">
           <div v-if="isProductsLoading">Loading</div>
-          <div v-else v-for="product of productsData?.products" class="product">
+          <div
+            v-else
+            v-for="product of productsData?.products"
+            :class="`product${product.active ? '' : ' product--inactive'}`"
+          >
             <ProductImage class="product-image">
               <img :src="product.image ? product.image : no_image" :alt="`${product.name} image`" />
             </ProductImage>
@@ -221,10 +105,18 @@ const handleQuantityDecrement = (value: string, id: string) => {
               </div>
             </div>
             <div class="product-actions">
-              <ButtonBlock backgroundColor="var(--color-red-4)" @click="handleClickDecrement(product)">
+              <ButtonBlock
+                :disabled="!product.active"
+                backgroundColor="var(--color-red-4)"
+                @click="handleClickDecrement(product)"
+              >
                 <ComposIcon :icon="DashLarge" />
               </ButtonBlock>
-              <ButtonBlock backgroundColor="var(--color-blue-4)" @click="handleClickIncrement(product)">
+              <ButtonBlock
+                :disabled="!product.active"
+                backgroundColor="var(--color-blue-4)"
+                @click="handleClickIncrement(product)"
+              >
                 <ComposIcon :icon="PlusLarge" />
               </ButtonBlock>
             </div>
@@ -235,14 +127,17 @@ const handleQuantityDecrement = (value: string, id: string) => {
         <div class="dashboard-control">
           <div class="dashboard-control-header">
             <Text heading="5" margin="0">{{ controlsView === 'order-history' ? 'Order History' : 'Order'  }}</Text>
+            <button class="button button--icon" type="button" @click="controlsView = 'order-history'">
+              <ComposIcon :icon="ClockHistory" />
+            </button>
           </div>
           <div class="dashboard-control-body">
             <template v-if="controlsView === 'order-default'">
               <div class="order-product-list">
                 <div v-for="product of orderedProducts" class="order-product">
-                  <picture>
+                  <ProductImage>
                     <img :src="product.image ? product.image : no_image" :alt="`${product.name} image`" />
-                  </picture>
+                  </ProductImage>
                   <div class="order-product__details">
                     <div class="order-product__name">{{ product.name }}</div>
                     <div class="order-product__total">Total: {{ product.price }}</div>
@@ -254,7 +149,7 @@ const handleQuantityDecrement = (value: string, id: string) => {
                     v-model.number="product.amount"
                     :max="product.stock"
                     :step="product.quantity"
-                    @clickDecrement="handleQuantityDecrement($event, product.id)"
+                    @clickDecrement="handleClickQuantityDecrement($event, product.id)"
                   />
                 </div>
               </div>
@@ -296,7 +191,7 @@ const handleQuantityDecrement = (value: string, id: string) => {
                   <button
                     v-if="paymentAmountStr !== '0'"
                     type="button"
-                    class="button-icon"
+                    class="button button--icon"
                     aria-label="Clear calculator"
                     @click="paymentAmountStr = '0'"
                   >
@@ -332,7 +227,7 @@ const handleQuantityDecrement = (value: string, id: string) => {
               </template>
               <template v-if="controlsView === 'order-payment'">
                 <Button full color="red" variant="outline" @click="handleClickCancel" small>Cancel</Button>
-                <Button full @click="handleSubmitPayment">Pay</Button>
+                <Button full @click="handlePayment">Pay</Button>
               </template>
               <template v-if="controlsView === 'order-history'">
                 <Button full color="red" variant="outline" @click="controlsView = 'order-default'" small>Back</Button>
@@ -645,6 +540,9 @@ const handleQuantityDecrement = (value: string, id: string) => {
       background-color: var(--color-white);
       border-bottom: 1px solid var(--color-border);
       padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     &-body {
@@ -679,6 +577,10 @@ const handleQuantityDecrement = (value: string, id: string) => {
 
   &:first-of-type {
     margin-top: 0;
+  }
+
+  &--inactive {
+    filter: grayscale(1);
   }
 
   &-image {
@@ -720,7 +622,7 @@ const handleQuantityDecrement = (value: string, id: string) => {
   gap: 12px;
   padding: 12px 16px;
 
-  picture {
+  .vc-product-image {
     width: 60px;
     height: 60px;
     flex: 0 0 auto;
@@ -784,7 +686,7 @@ const handleQuantityDecrement = (value: string, id: string) => {
       align-items: center;
       gap: 8px;
       overflow: hidden;
-      flex: 1 0 auto;
+      flex: 0 0 auto;
 
       compos-icon {
         flex-shrink: 0;
