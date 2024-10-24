@@ -104,7 +104,7 @@ export const useProductForm = () => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get the product detail.', type: 'error' });
-      console.error('[ERROR] Failed to get the product detail.', error);
+      console.error('Failed to get the product detail.', error.message);
     },
     onSuccess: (response: unknown) => {
       const resp = response as ProductFormNormalizerReturn;
@@ -190,7 +190,7 @@ export const useProductForm = () => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: `Error updating product detail, ${error}`, type: 'error' });
-      console.error('[ERROR] Error mutating product detail.', error);
+      console.error('Error updating product detail.', error.message);
     },
     onSuccess: () => {
       // @ts-ignore
@@ -229,7 +229,7 @@ export const useProductForm = () => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Error adding new product.', type: 'error' });
-      console.error('[ERROR] Error adding new product.', error);
+      console.error('Error adding new product.', error.message);
     },
     onSuccess: () => {
       // @ts-ignore

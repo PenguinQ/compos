@@ -12,7 +12,7 @@ export type VariantsData = VariantDoc & {
 
 export type ProductsData = Omit<ProductDoc, 'variants'> & {
   images: string[];
-  variants: VariantsData[] | DeepReadonlyArray<string> ;
+  variants: VariantsData[] | DeepReadonlyArray<string>;
 };
 
 type ProductListQuery = {
@@ -114,7 +114,7 @@ export default async ({
         }
 
         product_data.push({
-          images: product_thumbnails_base64,
+          images  : product_thumbnails_base64,
           variants: complete ? product_variant_detail : product_variants || [],
           ...rest,
         });
@@ -142,13 +142,13 @@ export default async ({
         const total_page     = Math.ceil(products_count / query_limit);
         const { first_page, last_page } = await getPageStatus({
           collection: 'product',
-          data,
-          sort,
-          sortBy: [{ id: sort }],
-          query: {
+          sortBy    : [{ id: sort }],
+          query     : {
             name: { $regex: `.*${search_query}.*`, $options: 'i' },
             ...(active !== undefined && { active: { $eq: active } }),
           },
+          data,
+          sort,
         });
         const products_data = await getProductsData(data as RxDocument<ProductDoc>[]);
 
@@ -157,16 +157,16 @@ export default async ({
           data_count: products_count,
           page      : {
             current: page,
-            first: first_page,
-            last: last_page,
-            total: total_page,
+            first  : first_page,
+            last   : last_page,
+            total  : total_page,
           },
         };
       };
 
       return {
         observeable: true,
-        result : _queryProduct,
+        result     : _queryProduct,
         observeableProcessor,
         normalizer,
       };
@@ -181,13 +181,13 @@ export default async ({
     const total_page    = Math.ceil(products_count / query_limit);
     const { first_page, last_page } = await getPageStatus({
       collection: 'product',
-      data: _queryProduct as RxDocument<ProductDoc>[],
-      sort,
-      sortBy: [{ id: sort }],
-      query: {
+      data      : _queryProduct as RxDocument<ProductDoc>[],
+      sortBy    : [{ id: sort }],
+      query     : {
         name: { $regex: `.*${search_query}.*`, $options: 'i' },
         ...(active !== undefined && { active: { $eq: active } }),
       },
+      sort,
     });
     const products_data = await getProductsData(_queryProduct as RxDocument<ProductDoc>[]);
 
@@ -196,9 +196,9 @@ export default async ({
       data_count: products_count,
       page      : {
         current: page,
-        first: first_page,
-        last: last_page,
-        total: total_page,
+        first  : first_page,
+        last   : last_page,
+        total  : total_page,
       },
     };
 

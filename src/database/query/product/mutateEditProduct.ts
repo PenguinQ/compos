@@ -87,10 +87,20 @@ const updateBundlePrice = async ({ id, old_price, new_price }: { id: string; old
   }).exec();
 
   for (const bundle of _queryBundles) {
-    await bundle.incrementalModify(prev => {
-      prev.price = Big(prev.price).minus(old_price).plus(new_price).toString();
+    const product          = bundle.products.filter(product => product.id === id);
+    let   product_quantity = 0;
 
-      console.log(prev.price);
+    if (product.length) {
+      const { quantity } = product[0];
+
+      product_quantity = quantity;
+    }
+
+    await bundle.incrementalModify(prev => {
+      const old_total_price = Big(old_price).times(product_quantity);
+      const new_total_price = Big(new_price).times(product_quantity);
+
+      prev.price = Big(prev.price).minus(old_total_price).plus(new_total_price).toString();
 
       return prev;
     });
@@ -149,9 +159,6 @@ export default async ({ id, data }: MutateEditProductQuery) => {
     if (!isNumeric(price))        throw 'Price must be a number.';
     if (!isNumeric(stock))        throw 'Stock must be a number.';
 
-    // OLD
-    // const clean_price = parseInt(price);
-    // const clean_stock = parseInt(stock as unknown as string);
     const clean_price = sanitizeNumeric(price) as string;
     const clean_stock = sanitizeNumeric(stock) as number;
 
@@ -259,9 +266,6 @@ export default async ({ id, data }: MutateEditProductQuery) => {
         if (!isNumeric(v_price))        throw 'Variant price must be a number.';
         if (!isNumeric(v_stock))        throw 'Variant stock must be a number.';
 
-        // OLD
-        // const clean_v_price = parseInt(v_price as unknown as string);
-        // const clean_v_stock = parseInt(v_stock as unknown as string);
         const clean_v_price = sanitizeNumeric(v_price) as string;
         const clean_v_stock = sanitizeNumeric(v_stock) as number;
         const v_is_active   = clean_v_stock >= 1 ? true : false;
@@ -325,7 +329,11 @@ export default async ({ id, data }: MutateEditProductQuery) => {
            * ------------------------------------------------------------------------------------------------
            */
           if (_queryVariant.price !== updated_variant.price) {
-            await updateBundlePrice({ id: v_id, old_price: _queryVariant.price, new_price: updated_variant.price });
+            await updateBundlePrice({
+              id: v_id,
+              old_price: _queryVariant.price,
+              new_price: updated_variant.price
+            });
           }
 
           /**
@@ -461,7 +469,11 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        * ---------------------------------------------------------------------------------------
        */
       if (_queryProduct.price !== updated_product.price) {
-        await updateBundlePrice({ id, old_price: _queryProduct.price, new_price: updated_product.price });
+        await updateBundlePrice({
+          id,
+          old_price: _queryProduct.price,
+          new_price: updated_product.price,
+        });
       }
 
       /**
@@ -483,9 +495,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
     }
   } catch (error) {
     if (error instanceof Error) {
-      throw error.message;
+      throw error;
     }
 
-    throw error;
+    throw new Error(String(error));
   }
 };

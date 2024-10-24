@@ -16,20 +16,20 @@ import { bundleListNormalizer } from '../normalizer/BundleList.normalizer';
 import type { ProductListNormalizerReturn } from '../normalizer/ProductList.normalizer';
 import type { BundleListNormalizerReturn } from '../normalizer/BundleList.normalizer';
 
-// Common Helpers
+// Helpers
 import { cleanWhitespace, debounce } from '@/helpers';
 
 import type { TabDataProvider } from '@/views/products/ProductList.vue';
 
 export const useProductList = (type: 'product' | 'bundle') => {
   const { tabData, updateTabData } = inject('TabData') as TabDataProvider;
-  const toast = inject('ToastProvider');
-  const route = useRoute();
+  const toast  = inject('ToastProvider');
+  const route  = useRoute();
   const router = useRouter();
   const isListEmpty = ref(true);
   const searchQuery = ref(tabData[type].search);
   const { page, toNext, toPrev } = usePagination({ current: tabData[type].page });
-  const currentPage = computed(() => tabData[type].page);
+  const currentPage   = computed(() => tabData[type].page);
   const currentSearch = computed(() => tabData[type].search);
 
   /**
@@ -45,10 +45,10 @@ export const useProductList = (type: 'product' | 'bundle') => {
   );
 
   const {
-    data: list,
-    refetch: listRefetch,
+    data     : list,
+    refetch  : listRefetch,
     isLoading: listLoading,
-    isError: listError,
+    isError  : listError,
   } = useQuery({
     delay: 300,
     queryKey: [
@@ -73,16 +73,16 @@ export const useProductList = (type: 'product' | 'bundle') => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get product list,', type: 'error', duration: 2000 });
-      console.error('Failed to get product list,', error);
+      console.error('Failed to get product list,', error.message);
     },
     onSuccess: (response: unknown) => {
       if (response) {
         const { page: response_page, products, bundles } = response as ProductListNormalizerReturn & BundleListNormalizerReturn;
 
         page.current = response_page.current;
-        page.total = response_page.total;
-        page.first = response_page.first;
-        page.last = response_page.last;
+        page.total   = response_page.total;
+        page.first   = response_page.first;
+        page.last    = response_page.last;
 
         if (type === 'product') {
           isListEmpty.value = products.length ? false : true;
@@ -95,18 +95,20 @@ export const useProductList = (type: 'product' | 'bundle') => {
 
   const handleSearch = debounce((e: Event) => {
     const target = e.target as HTMLInputElement;
-    const value = cleanWhitespace(target.value);
+    const value  = cleanWhitespace(target.value);
 
-    page.current = 1;
+    page.current      = 1;
     searchQuery.value = target.value;
+
     // Update provider
     updateTabData(type, { search: value ? value : undefined, page: 1 });
+
     // Update route query
     router.push({
       query: {
         ...route.query,
         search: value ? value : undefined,
-        page: 1,
+        page  : 1,
       },
     });
   }, 500);
@@ -114,20 +116,23 @@ export const useProductList = (type: 'product' | 'bundle') => {
   const handleSearchClear = () => {
     // Update provider
     updateTabData(type, { search: undefined, page: 1 });
+
     // Update route query
     router.push({
       query: {
         ...route.query,
         search: undefined,
-        page: 1,
+        page  : 1,
       }
     });
   };
 
   const handlePaginationPrev = (first?: boolean) => {
     first ? toPrev(true) : toPrev();
+
     // Update provider
     updateTabData(type, { page: first ? 1 : page.current })
+
     // Update route query
     router.push({
       query: {
@@ -139,8 +144,10 @@ export const useProductList = (type: 'product' | 'bundle') => {
 
   const handlePaginationNext = (last?: boolean) => {
     last ? toNext(true) : toNext();
+
     // Update provider
     updateTabData(type, { page: last ? page.total : page.current })
+
     // Update route query
     router.push({
       query: {

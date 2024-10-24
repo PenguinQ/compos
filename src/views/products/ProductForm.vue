@@ -48,6 +48,7 @@ const {
 </script>
 
 <template>
+  <!-- Header -->
   <Toolbar sticky>
     <ToolbarAction icon @click="router.back">
       <ComposIcon :icon="ArrowLeftShort" :size="40" />
@@ -61,7 +62,8 @@ const {
       <ComposIcon :icon="Save" color="var(--color-white)" />
     </ToolbarAction>
   </Toolbar>
-  <!--  -->
+
+  <!-- Body -->
   <Container class="page-container">
     <EmptyState
       v-if="productDetailError"

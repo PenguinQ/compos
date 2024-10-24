@@ -62,6 +62,7 @@ const {
 </script>
 
 <template>
+  <!-- Header -->
   <Toolbar sticky>
     <ToolbarAction icon @click="router.back">
       <ComposIcon :icon="ArrowLeftShort" :size="40" />
@@ -77,7 +78,8 @@ const {
       </ToolbarAction>
     </template>
   </Toolbar>
-  <!--  -->
+
+  <!-- Body -->
   <Container class="page-container">
     <EmptyState
       v-if="bundleDetailError"

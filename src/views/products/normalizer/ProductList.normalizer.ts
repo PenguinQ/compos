@@ -29,25 +29,25 @@ export type ProductListNormalizerReturn = {
 
 export const productListNormalizer = (data: unknown) => {
   const { data: products_data, data_count, page } = data as NormalizerData;
-  const products = products_data || [];
-  const product_list: ProductList[] = [];
+  const products     = products_data || [];
+  const product_list = <ProductList[]>[];
 
   for (const product of products as ProductsData[]) {
     const { id, variants, name, images } = product;
     const product_image = images[0] || '';
 
     product_list.push({
+      variants: variants?.length,
+      image   : product_image,
       id,
       name,
-      variants: variants?.length,
-      image: product_image,
     });
   }
 
   return {
-    page,
-    products: product_list,
-    products_count: product_list.length,
+    products            : product_list,
+    products_count      : product_list.length,
     products_count_total: data_count,
+    page,
   };
 };

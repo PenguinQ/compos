@@ -19,8 +19,6 @@ type MutateAddProductQuery = {
   name: string;
   description?: string;
   by?: string;
-  // OLD
-  // price: number;
   price: string;
   stock: number;
   sku?: string;
@@ -51,9 +49,6 @@ export default async (data: MutateAddProductQuery) => {
     if (!isNumeric(price))        throw 'Product price must be a number.';
     if (!isNumeric(stock))        throw 'Product stock must be a number.';
 
-    // OLD
-    // const clean_price = parseInt(price as unknown as string);
-    // const clean_stock = parseInt(stock as unknown as string);
     const clean_price = sanitizeNumeric(price) as string;
     const clean_stock = sanitizeNumeric(stock) as number;
     const is_active   = clean_stock >= 1 ? true : false;
@@ -85,9 +80,6 @@ export default async (data: MutateAddProductQuery) => {
         if (!isNumeric(v_price))        throw 'Price must be a number.';
         if (!isNumeric(v_stock))        throw 'Stock must be a number.';
 
-        // OLD
-        // const clean_v_price = parseInt(v_price as unknown as string);
-        // const clean_v_stock = parseInt(v_stock as unknown as string);
         const clean_v_price = sanitizeNumeric(v_price) as string;
         const clean_v_stock = sanitizeNumeric(v_stock) as number;
 
@@ -210,9 +202,9 @@ export default async (data: MutateAddProductQuery) => {
     }
   } catch (error) {
     if (error instanceof Error) {
-      throw error.message;
+      throw error;
     }
 
-    throw error;
+    throw new Error(String(error));
   }
 };

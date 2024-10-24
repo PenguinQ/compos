@@ -34,9 +34,6 @@ export const useBundleDetail = () => {
       toast.add({ message: 'Failed to get the bundle detail.', type: 'error', duration: 2000 });
       console.error('Failed to get the bundle detail.', error.message);
     },
-    onSuccess: resp => {
-      console.log(resp);
-    },
   });
 
   const {

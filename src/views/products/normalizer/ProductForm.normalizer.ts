@@ -42,8 +42,8 @@ export const formDetailNormalizer = (data: unknown): ProductFormNormalizerReturn
     sku,
     variants,
   } = data as ProductDetailQueryReturn || {};
-  const product_image = images[0] ? [{ id: images[0].id, url: images[0].url }] : [];
-  const product_variants: ProductVariants[] = [];
+  const product_image    = images[0] ? [{ id: images[0].id, url: images[0].url }] : [];
+  const product_variants = <ProductVariants[]>[];
 
   for (const variant of variants) {
     const {

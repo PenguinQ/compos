@@ -40,6 +40,19 @@ type BundlesDocMethods = {
   removeFromSales: () => Promise<void>;
 };
 
+export type SalesDocProduct = {
+  id: string;
+  quantity: number;
+};
+
+export type SalesDocProductSold = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  sku: string;
+};
+
 export type SalesDoc = {
   id: string;
   finished: boolean;
@@ -52,19 +65,6 @@ export type SalesDoc = {
   discount_type?: 'percentage' | 'fixed';
   created_at: string;
   updated_at: string;
-};
-
-export type SalesDocProduct = {
-  id: string;
-  quantity: number;
-};
-
-export type SalesDocProductSold = {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  sku: string;
 };
 
 export type SalesCollection = RxCollection<SalesDoc>;

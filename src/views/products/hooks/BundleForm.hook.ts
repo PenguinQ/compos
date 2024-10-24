@@ -99,7 +99,7 @@ export const useBundleForm = () => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: `Error getting the bundle detail.`, type: 'error' });
-      console.error('[ERROR] Error getting the bundle detail.', error);
+      console.error('Error getting the bundle detail.', error.message);
     },
     onSuccess: (response: unknown) => {
       const resp = response as FormDetailNormalizerReturn;
@@ -149,7 +149,7 @@ export const useBundleForm = () => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: `Error getting product list.`, type: 'error' });
-      console.error('[ERROR] Error getting product list.', error);
+      console.error('Error getting product list.', error.message);
     },
     onSuccess: (response: unknown) => {
       if (response) {
@@ -185,8 +185,8 @@ export const useBundleForm = () => {
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error adding new bundle. ${error.message}`, type: 'error' });
-      console.error('[ERROR] Error adding new bundle.', error);
+      toast.add({ message: `Error adding new bundle.`, type: 'error' });
+      console.error('Error adding new bundle.', error.message);
     },
     onSuccess: () => {
       // @ts-ignore
@@ -220,7 +220,7 @@ export const useBundleForm = () => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: `Error updating the bundle.`, type: 'error' });
-      console.error('[ERROR] Error updating the bundle.', error);
+      console.error('Error updating the bundle.', error.message);
     },
     onSuccess: () => {
       // @ts-ignore

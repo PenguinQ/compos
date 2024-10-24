@@ -55,8 +55,6 @@ export const bundleDetailNormalizer = (data: unknown): BundleDetailNormalizerRet
     });
   }
 
-  console.log(price);
-
   return {
     id             : id || '',
     active         : active || false,

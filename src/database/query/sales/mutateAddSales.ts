@@ -3,10 +3,11 @@ import { sanitize } from 'isomorphic-dompurify';
 
 import { db } from '@/database';
 import { SALES_ID_PREFIX } from '@/database/constants';
+import type { SalesDocProduct } from '@/database/types';
 
 type MutateAddSalesQueryData = {
   name: string;
-  products: string[];
+  products: SalesDocProduct[];
 };
 
 type MutateAddSalesQuery = {
@@ -18,19 +19,16 @@ export default async ({ data }: MutateAddSalesQuery) => {
     const ulid     = monotonicFactory();
     const sales_id = SALES_ID_PREFIX + ulid();
     const { name, products = [] } = data;
-    const clean_name     = sanitize(name);
-    const clean_products = [] as string[];
+    const clean_name = sanitize(name);
 
     if (clean_name.trim() === '') throw 'Name cannot be empty.';
     if (!products.length)         throw 'Product cannot be empty.';
-
-    products.forEach(id => clean_products.push(sanitize(id)));
 
     await db.sales.insert({
       id           : sales_id,
       finished     : false,
       name         : clean_name,
-      products     : clean_products,
+      products     : products,
       products_sold: [],
       orders       : [],
       revenue      : 0,
@@ -39,9 +37,9 @@ export default async ({ data }: MutateAddSalesQuery) => {
     });
   } catch (error) {
     if (error instanceof Error) {
-      throw error.message;
+      throw error;
     }
 
-    throw error;
+    throw new Error(String(error));
   }
 };

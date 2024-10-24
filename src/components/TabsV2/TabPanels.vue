@@ -7,6 +7,7 @@ type TabPanelsProps = {
 
 defineOptions({ name: 'TabPanels' });
 const props = defineProps<TabPanelsProps>();
+
 const active = computed(() => props.modelValue);
 </script>
 

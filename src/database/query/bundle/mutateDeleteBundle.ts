@@ -9,9 +9,9 @@ export default async (id: string): Promise<any> => {
     await _queryBundle.remove();
   } catch (error) {
     if (error instanceof Error) {
-      throw error.message;
+      throw error;
     }
 
-    throw error;
+    throw new Error(String(error));
   }
 };

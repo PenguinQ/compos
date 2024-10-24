@@ -2,14 +2,9 @@ import { blobToBase64String } from 'rxdb';
 import type { RxAttachment, RxDocument } from 'rxdb';
 
 import { db } from '@/database';
-import { getPageStatus } from '@/database/utils';
+import { getPageStatus, isVariant } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
-
-// Helpers
-import { isVariant } from '@/database/utils';
-
-// Types
-import type { BundleDoc } from '@/database/types';
+import type { BundleDoc, QueryPage } from '@/database/types';
 
 export type BundlesData = BundleDoc & {
   images: string[];
@@ -23,6 +18,12 @@ type BundleListQuery = {
   search_query?: string;
   sort: 'asc' | 'desc';
   normalizer?: (data: unknown) => void;
+};
+
+export type BundleListQueryReturn = {
+  data: BundlesData[];
+  data_count: number;
+  page: QueryPage;
 };
 
 export default async ({
@@ -180,9 +181,9 @@ export default async ({
     };
   } catch (error) {
     if (error instanceof Error) {
-      throw error.message;
+      throw error;
     }
 
-    throw error;
+    throw new Error(String(error));
   }
 };

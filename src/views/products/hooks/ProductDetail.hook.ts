@@ -33,7 +33,7 @@ export const useProductDetail = () => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get the product detail.', type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to get the product detail.', error.message);
+      console.error('Failed to get the product detail.', error.message);
     },
   });
 
@@ -45,7 +45,7 @@ export const useProductDetail = () => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to delete the product.', type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to delete the product.', error.message);
+      console.error('Failed to delete the product.', error.message);
     },
     onSuccess: () => {
       // @ts-ignore

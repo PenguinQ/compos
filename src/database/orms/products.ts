@@ -45,14 +45,14 @@ export default {
       let newActive     = newProducts.length ? active : false;
 
       for (const product of newProducts) {
-        const { id, product_id } = product;
+        const { id, product_id, quantity } = product;
         const collection         = product_id ? 'variant' : 'product';
         const _queryCollection   = await db[collection].findOne(id).exec();
 
         if (_queryCollection) {
           const { active, price } = _queryCollection;
 
-          if (auto_price) newPrice = Big(newPrice).plus(price).toString();
+          if (auto_price) newPrice = Big(newPrice).plus(price).times(quantity).toString();
           newActive = active ? true : false;
         }
       }

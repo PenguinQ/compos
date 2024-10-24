@@ -4,6 +4,7 @@ import { computed } from 'vue';
 // Common Components
 import Text from '@components/Text';
 import Button from '@components/Button';
+import QuantityEditor from '@components/QuantityEditor';
 import ComposIcon, { CheckLarge, XLarge } from '@components/Icons';
 
 // View Components
@@ -13,18 +14,25 @@ import ProductImage from '@/views/components/ProductImage.vue';
 import no_image from '@assets/illustration/no_image.svg';
 
 type SalesProductProps = {
-  image?: string;
+  type?: 'form' | 'selection';
+  images?: string[];
   name: string;
   selected?: boolean;
   small?: boolean;
   variant?: boolean;
+  quantity?: number;
   clickRemove?: () => void;
 };
 
 const props = withDefaults(defineProps<SalesProductProps>(), {
+  images: () => [],
   selected: false,
   small: false,
+  type: 'selection',
+  variant: false,
 });
+
+const emits = defineEmits(['clickDecrement', 'clickIncrement']);
 
 const classes = computed(() => ({
   'sales-product': true,
@@ -36,22 +44,44 @@ const classes = computed(() => ({
 <template>
   <div :class="classes" :data-selected="selected ? true : undefined">
     <ProductImage>
-      <img :src="image ? image : no_image" :alt="`${name} image`">
+      <img v-if="!images.length" :src="no_image" :alt="`${name} image`">
+      <img v-else v-for="image of images" :src="image ? image : no_image" :alt="`${name} image`">
     </ProductImage>
     <div class="sales-product__detail">
-      <Text body="large" truncate margin="0">{{ name }}</Text>
+      <template v-if="type === 'form'">
+        <Text body="large" truncate margin="0 0 4px">{{ name }}</Text>
+        <Text body="small" truncate margin="0">Quantity per Order: {{ quantity }}</Text>
+      </template>
+      <template v-else>
+        <Text body="large" truncate margin="0">{{ name }}</Text>
+      </template>
     </div>
-    <ComposIcon :icon="CheckLarge" v-if="selected" class="sales-product__selected" />
-    <Button
-      v-if="$attrs.onClickRemove"
-      class="sales-product__remove"
-      color="red"
-      icon
-      :aria-label="`Remove ${name}`"
-      @click="$emit('clickRemove')"
-    >
-      <ComposIcon :icon="XLarge" size="18" />
-    </Button>
+    <template v-if="type === 'form'">
+      <QuantityEditor
+        v-if="quantity"
+        class="order-product__quantity"
+        readonly
+        :value="quantity"
+        :min="1"
+        @clickDecrement="$emit('clickDecrement', $event)"
+        @clickIncrement="$emit('clickIncrement', $event)"
+      />
+      <Button
+        v-if="$attrs.onClickRemove"
+        class="sales-product__remove"
+        color="red"
+        icon
+        :aria-label="`Remove ${name}`"
+        @click="$emit('clickRemove')"
+      >
+        <ComposIcon :icon="XLarge" size="18" />
+      </Button>
+    </template>
+    <ComposIcon
+      v-if="selected && type === 'selection'"
+      :icon="CheckLarge"
+      class="sales-product__selected"
+    />
   </div>
 </template>
 

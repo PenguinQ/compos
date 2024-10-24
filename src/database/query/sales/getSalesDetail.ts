@@ -10,7 +10,7 @@ export type ProductData = {
   product_id?: string;
   images: string[];
   name: string;
-  price: number;
+  price: string;
   quantity: number;
   sku: string;
 };
