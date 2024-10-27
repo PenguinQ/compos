@@ -24,6 +24,7 @@ import { useSalesForm } from './hooks/SalesForm.hook';
 
 // Constants
 import GLOBAL from '@/views/constants';
+import { SALES_FORM } from './constants';
 
 const {
   salesId,
@@ -121,8 +122,9 @@ const {
             <CardBody>
               <EmptyState
                 v-if="!formData.products.length"
-                title="Title"
-                description="Description"
+                :emoji="SALES_FORM.LIST_EMPTY_EMOJI"
+                :title="SALES_FORM.LIST_EMPTY_TITLE"
+                :description="SALES_FORM.LIST_EMPTY_DESCRIPTION"
                 margin="56px 0"
               >
                 <template #action>
@@ -193,109 +195,135 @@ const {
         <Bar v-if="isProductListLoading" margin="56px 0" />
         <template v-else>
           <EmptyState
-            v-if="!productList?.products.length && searchProductQuery === ''"
-            emoji="🍃"
-            :title="''"
-            :description="''"
+            v-if="isProductListError"
+            :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+            :title="GLOBAL.ERROR_EMPTY_TITLE"
+            :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
             margin="56px 0"
-          />
-          <EmptyState
-            v-else-if="!productList?.products.length && searchProductQuery !== ''"
-            emoji="😵‍💫"
-            :title="''"
-            :description="''"
-            margin="56px 0"
-          />
-          <div v-else class="sales-products-selection">
-            <template :key="product.id" v-for="product of productList?.products">
-              <SalesProduct
-                small
-                role="button"
-                :aria-label="`Add ${product.name}`"
-                :images="product.images"
-                :name="product.name"
-                :selected="isProductSelected(product) ? true : undefined"
-                @click="handleSelectProduct(product)"
-              />
-              <SalesProduct
-                :key="variant.id"
-                v-for="variant of product.variants"
-                small
-                variant
-                role="button"
-                :aria-label="`Add ${product.name} - ${variant.name}`"
-                :images="variant.images"
-                :name="variant.name"
-                :selected="isVariantSelected(variant.id) ? true : undefined"
-                @click="handleSelectVariant(product.name, variant)"
-              />
+          >
+            <template #action>
+              <Button @click="productListRefetch">Try Again</Button>
             </template>
-          </div>
-        </template>
-        <ListFooter sticky height="86px">
-          <template v-if="!isProductListLoading && !isProductListError">
-            <Pagination
-              v-if="productList?.products.length"
-              frame
-              :page="pageProduct.current"
-              :total_page="pageProduct.total"
-              :first_page="pageProduct.current <= 1"
-              :last_page="pageProduct.current >= pageProduct.total"
-              @clickFirst="toPrevPage('product', true)"
-              @clickPrev="toPrevPage('product')"
-              @clickNext="toNextPage('product')"
-              @clickLast="toNextPage('product', true)"
+          </EmptyState>
+          <template v-else>
+            <EmptyState
+              v-if="!productList?.products.length && searchProductQuery === ''"
+              :emoji="SALES_FORM.PRODUCT_EMPTY_EMOJI"
+              :title="SALES_FORM.PRODUCT_EMPTY_TITLE"
+              :description="SALES_FORM.PRODUCT_EMPTY_DESCRIPTION"
+              margin="56px 0"
             />
+            <EmptyState
+              v-else-if="!productList?.products.length && searchProductQuery !== ''"
+              :emoji="SALES_FORM.PRODUCT_EMPTY_SEARCH_EMOJI"
+              :title="SALES_FORM.PRODUCT_EMPTY_SEARCH_TITLE"
+              :description="SALES_FORM.PRODUCT_EMPTY_SEARCH_DESCRIPTION"
+              margin="56px 0"
+            />
+            <div v-else class="sales-products-selection">
+              <template :key="product.id" v-for="product of productList?.products">
+                <SalesProduct
+                  small
+                  role="button"
+                  :aria-label="`Add ${product.name}`"
+                  :images="product.images"
+                  :name="product.name"
+                  :selected="isProductSelected(product) ? true : undefined"
+                  @click="handleSelectProduct(product)"
+                />
+                <SalesProduct
+                  :key="variant.id"
+                  v-for="variant of product.variants"
+                  small
+                  variant
+                  role="button"
+                  :aria-label="`Add ${product.name} - ${variant.name}`"
+                  :images="variant.images"
+                  :name="variant.name"
+                  :selected="isVariantSelected(variant.id) ? true : undefined"
+                  @click="handleSelectVariant(product.name, variant)"
+                />
+              </template>
+            </div>
+            <ListFooter sticky height="86px">
+              <template v-if="!isProductListLoading && !isProductListError">
+                <Pagination
+                  v-if="productList?.products.length"
+                  frame
+                  :page="pageProduct.current"
+                  :total_page="pageProduct.total"
+                  :first_page="pageProduct.current <= 1"
+                  :last_page="pageProduct.current >= pageProduct.total"
+                  @clickFirst="toPrevPage('product', true)"
+                  @clickPrev="toPrevPage('product')"
+                  @clickNext="toNextPage('product')"
+                  @clickLast="toNextPage('product', true)"
+                />
+              </template>
+            </ListFooter>
           </template>
-        </ListFooter>
+        </template>
       </TabPanel>
       <TabPanel lazy>
         <Bar v-if="isBundleListLoading" margin="56px 0" />
-        <EmptyState
-          v-if="!bundleList?.bundles.length && searchProductQuery === ''"
-          emoji="🍃"
-          :title="''"
-          :description="''"
-          margin="56px 0"
-        />
-        <EmptyState
-          v-else-if="!bundleList?.bundles.length && searchProductQuery !== ''"
-          emoji="😵‍💫"
-          :title="''"
-          :description="''"
-          margin="56px 0"
-        />
         <template v-else>
-          <div class="sales-products-selection">
-            <template :key="bundle.id" v-for="bundle of bundleList.bundles">
-              <SalesProduct
-                small
-                role="button"
-                :aria-label="`Add ${bundle.name}`"
-                :images="bundle.images"
-                :name="bundle.name"
-                :selected="isBundleSelected(bundle) ? true : undefined"
-                @click="handleSelectBundle(bundle)"
-              />
+          <EmptyState
+            v-if="isBundleListError"
+            :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+            :title="GLOBAL.ERROR_EMPTY_TITLE"
+            :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+            margin="56px 0"
+          >
+            <template #action>
+              <Button @click="bundleListRefetch">Try Again</Button>
             </template>
-          </div>
-        </template>
-        <ListFooter sticky height="86px">
-          <template v-if="!isBundleListLoading && !isBundleListError">
-            <Pagination
-              v-if="productList?.products.length"
-              frame
-              :page="pageBundle.current"
-              :total_page="pageBundle.total"
-              :first_page="pageBundle.current <= 1"
-              :last_page="pageBundle.current >= pageBundle.total"
-              @clickFirst="toPrevPage('bundle', true)"
-              @clickPrev="toPrevPage('bundle')"
-              @clickNext="toNextPage('bundle')"
-              @clickLast="toNextPage('bundle', true)"
+          </EmptyState>
+          <template v-else>
+            <EmptyState
+              v-if="!bundleList?.bundles.length && searchProductQuery === ''"
+              :emoji="SALES_FORM.BUNDLE_EMPTY_EMOJI"
+              :title="SALES_FORM.BUNDLE_EMPTY_TITLE"
+              :description="SALES_FORM.BUNDLE_EMPTY_DESCRIPTION"
+              margin="56px 0"
             />
+            <EmptyState
+              v-else-if="!bundleList?.bundles.length && searchProductQuery !== ''"
+              :emoji="SALES_FORM.BUNDLE_EMPTY_SEARCH_EMOJI"
+              :title="SALES_FORM.BUNDLE_EMPTY_SEARCH_TITLE"
+              :description="SALES_FORM.BUNDLE_EMPTY_SEARCH_DESCRIPTION"
+              margin="56px 0"
+            />
+            <div v-else class="sales-products-selection">
+              <template :key="bundle.id" v-for="bundle of bundleList.bundles">
+                <SalesProduct
+                  small
+                  role="button"
+                  :aria-label="`Add ${bundle.name}`"
+                  :images="bundle.images"
+                  :name="bundle.name"
+                  :selected="isBundleSelected(bundle) ? true : undefined"
+                  @click="handleSelectBundle(bundle)"
+                />
+              </template>
+            </div>
+            <ListFooter sticky height="86px">
+              <template v-if="!isBundleListLoading && !isBundleListError">
+                <Pagination
+                  v-if="productList?.products.length"
+                  frame
+                  :page="pageBundle.current"
+                  :total_page="pageBundle.total"
+                  :first_page="pageBundle.current <= 1"
+                  :last_page="pageBundle.current >= pageBundle.total"
+                  @clickFirst="toPrevPage('bundle', true)"
+                  @clickPrev="toPrevPage('bundle')"
+                  @clickNext="toNextPage('bundle')"
+                  @clickLast="toNextPage('bundle', true)"
+                />
+              </template>
+            </ListFooter>
           </template>
-        </ListFooter>
+        </template>
       </TabPanel>
     </TabPanels>
   </Dialog>

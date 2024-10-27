@@ -14,6 +14,9 @@ import { Container, Column, Row } from '@components/Layout';
 import Separator from '@components/Separator';
 import ComposIcon, { ArrowLeftShort, PencilSquare, Trash, CheckLarge } from '@components/Icons';
 
+// View Components
+import ProductImage from '@/views/components/ProductImage.vue';
+
 // Hooks
 import { useSalesDetail } from './hooks/SalesDetail.hook';
 
@@ -34,13 +37,16 @@ const {
   isLoading,
   refetch,
   mutateDelete,
-  mutateDeleteLoading,
+  mutateFinish,
+  isMutateDeleteLoading,
+  isMutateFinishLoading,
 } = useSalesDetail();
 </script>
 
 <template>
+  <!-- Header -->
   <Toolbar sticky>
-    <ToolbarAction icon @click="router.back">
+    <ToolbarAction icon @click="router.push('/sales')">
       <ComposIcon :icon="ArrowLeftShort" size="40" />
     </ToolbarAction>
     <ToolbarTitle>Sales Detail</ToolbarTitle>
@@ -72,7 +78,8 @@ const {
       <ComposIcon :icon="CheckLarge" :size="32" />
     </ToolbarAction>
   </Toolbar>
-  <!--  -->
+
+  <!-- Content -->
   <EmptyState
     v-if="isError"
     :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
@@ -106,23 +113,21 @@ const {
                 </DescriptionListItem>
                 <DescriptionListItem>
                   <dt>Revenue</dt>
-                  <dd>{{ data.revenue || '-' }}</dd>
+                  <dd>{{ data.revenueFormatted || '-' }}</dd>
                 </DescriptionListItem>
                 <DescriptionListItem>
                   <dt>Updated At</dt>
-                  <dd>{{ data.updated_at || '-' }}</dd>
+                  <dd>{{ data.updatedAt || '-' }}</dd>
                 </DescriptionListItem>
               </DescriptionList>
               <Separator />
               <Text heading="5" as="h3" margin="0 0 16px">Products</Text>
               <div class="sales-products">
                 <div class="sales-product" v-for="product in data.products">
-                  <picture class="sales-product__image">
-                    <img
-                      :src="product.image ? product.image : no_image"
-                      :alt="`${product.name} image`"
-                    />
-                  </picture>
+                  <ProductImage class="sales-product__image">
+                    <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
+                    <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
+                  </ProductImage>
                   <div class="sales-product__detail">
                     <Text class="sales-item__name" body="large" as="h4" truncate margin="0 0 8px">{{ product.name }}</Text>
                     <Text class="sales-item__price" truncate margin="0">{{ product.price }}</Text>
@@ -177,20 +182,8 @@ const {
       </Row>
     </template>
   </Container>
-  <!--  -->
-  <Dialog v-model="dialogFinish" :title="`Finish ${data?.name}?`">
-    <Text body="large" textAlign="center" margin="0">
-      Finishing this product will finish this sales dashboard session and set the status as finished.
-    </Text>
-    <template #footer>
-      <div class="dialog-actions">
-        <Button color="green" full @click="mutateDelete">
-          {{ mutateDeleteLoading ? 'Loading' : 'Finish' }}
-        </Button>
-        <Button variant="outline" full @click="dialogFinish = false">Cancel</Button>
-      </div>
-    </template>
-  </Dialog>
+
+  <!-- Dialog Delete -->
   <Dialog v-model="dialogDelete" :title="`Delete ${data?.name}?`">
     <Text body="large" textAlign="center" margin="0">
       Currently there's no order on this sales yet, delete it?
@@ -198,9 +191,24 @@ const {
     <template #footer>
       <div class="dialog-actions">
         <Button color="red" full @click="mutateDelete">
-          {{ mutateDeleteLoading ? 'Loading' : 'Delete' }}
+          {{ isMutateDeleteLoading ? 'Loading' : 'Delete' }}
         </Button>
         <Button variant="outline" full @click="dialogDelete = false">Cancel</Button>
+      </div>
+    </template>
+  </Dialog>
+
+  <!-- Dialog Finish -->
+  <Dialog v-model="dialogFinish" :title="`Finish ${data?.name}?`">
+    <Text body="large" textAlign="center" margin="0">
+      Finishing this product will finish this sales dashboard session and set the status as finished.
+    </Text>
+    <template #footer>
+      <div class="dialog-actions">
+        <Button color="green" full @click="mutateFinish">
+          {{ isMutateFinishLoading ? 'Loading' : 'Finish' }}
+        </Button>
+        <Button variant="outline" full @click="dialogFinish = false">Cancel</Button>
       </div>
     </template>
   </Dialog>

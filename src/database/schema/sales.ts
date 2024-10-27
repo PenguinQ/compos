@@ -39,17 +39,17 @@ export default {
         type: 'object',
         properties: {
           id: {
-            type: 'string',
+            type: 'string', // id can be product id, variant id, bundle id
           },
           name: {
             type: 'string',
           },
           price: {
-            type: 'integer',
+            type: 'integer', // price is the price of product WHEN the sales happened
             minimum: 0,
           },
           quantity: {
-            type: 'integer',
+            type: 'integer', // the total quantity of all orders on this sales for the product
             minimum: 1,
           },
           sku: {
@@ -68,12 +68,6 @@ export default {
       },
       default: [],
     },
-    // OLD
-    // discount: {
-    //   type: 'number',
-    //   minimum: 0,
-    //   default: 0,
-    // },
     discount: {
       type: 'string',
       default: '0',
@@ -83,12 +77,6 @@ export default {
       maxLength: 100,
       default: 'percentage',
     },
-    // OLD
-    // revenue: {
-    //   type: 'integer',
-    //   minimum: 0,
-    //   default: 0,
-    // },
     revenue: {
       type: 'string',
       default: '0',

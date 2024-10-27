@@ -22,24 +22,43 @@ export default {
         type: 'object',
         properties: {
           id: {
-            type: 'string',
+            type: 'string', // id of the product in order, can be product id, variant id, or bundle id
           },
           name: {
             type: 'string',
           },
-          // price: {
-          //   type: 'integer',
-          // },
           price: {
-            type: 'string',
+            type: 'string', // price of the product in question WHEN the sales happened
+          },
+          items: {  // if the product is a bundle store the product detail here
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                },
+                name: {
+                  type: 'string',
+                },
+                price: {
+                  type: 'string',
+                },
+                quantity: {
+                  type: 'string',
+                  minimum: 0,
+                  default: 0,
+                },
+              },
+            },
           },
           quantity: {
-            type: 'integer',
+            type: 'integer', // quantity of the product WHEN the sales happened
             minimum: 0,
             default: 0,
           },
           total: {
-            type: 'integer',
+            type: 'integer', // total price of the product WHEN the sales happened
             minimum: 0,
             default: 0,
           },
@@ -47,12 +66,6 @@ export default {
       },
       default: [],
     },
-    // OLD
-    // discount: {
-    //   type: 'number',
-    //   minimum: 0,
-    //   default: 0,
-    // },
     discount: {
       type: 'string',
       default: '0',
@@ -62,12 +75,14 @@ export default {
       maxLength: 100,
       default: 'percentage',
     },
-    // OLD
-    // total: {
-    //   type: 'number',
-    //   minimum: 0,
-    //   default: 0,
-    // },
+    tendered: {
+      type: 'string',
+      default: '0',
+    },
+    change: {
+      type: 'string',
+      default: '0',
+    },
     total: {
       type: 'string',
       default: '0',
@@ -84,6 +99,8 @@ export default {
     'sales_id',
     'name',
     'products',
+    'tendered',
+    'change',
     'total',
     'created_at',
     'updated_at',

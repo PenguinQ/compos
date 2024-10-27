@@ -1,8 +1,50 @@
 import Big from 'big.js';
+import type { RxDocument } from 'rxdb';
 
 import { db } from '../';
+import type { ProductDoc, VariantDoc } from '../types';
 
 export default {
+  async updateBundlesStatus<T extends ProductDoc | VariantDoc>(document: RxDocument<T>) {
+    const { id, active } = document;
+
+    if (!active) {
+      /**
+       * ---------------------------------------------------------------------
+       * Get list of bundles that contain product with id same as document id.
+       * ---------------------------------------------------------------------
+       */
+      const _queryBundles = await db.bundle.find({
+        selector: {
+          products: {
+            $elemMatch: {
+              id,
+            },
+          },
+        },
+      }).exec();
+
+      /**
+       * -----------------------------------------------------------------------------
+       * Recursively update bundle product active status and the bundle status itself.
+       * -----------------------------------------------------------------------------
+       */
+      for (const bundle of _queryBundles) {
+        const { products } = bundle;
+        const updatedProducts = products.map(product => product.id === id ? { ...product, active } : product);
+        const hasInactive     = updatedProducts.some(product => !product.active);
+
+        await bundle.modify(oldData => {
+          if (hasInactive) oldData.active = false;
+
+          oldData.products   = updatedProducts;
+          oldData.updated_at = new Date().toISOString();
+
+          return oldData;
+        });
+      }
+    }
+  },
   async removeVariants() {
     /**
      * ------------------------------------------
@@ -57,12 +99,13 @@ export default {
         }
       }
 
-      await bundle.incrementalModify(prev => {
-        prev.active   = newActive;
-        prev.price    = newPrice;
-        prev.products = newProducts;
+      await bundle.incrementalModify(oldData => {
+        oldData.active     = newActive;
+        oldData.price      = newPrice;
+        oldData.products   = newProducts;
+        oldData.updated_at = new Date().toISOString();
 
-        return prev;
+        return oldData;
       });
     }
   },
@@ -91,10 +134,10 @@ export default {
       const { products } = sale;
       const filteredProducts = products.filter(product => product.id !== (this as any).id);
 
-      await sale.incrementalModify(prev => {
-        prev.products = filteredProducts;
+      await sale.incrementalModify(oldData => {
+        oldData.products = filteredProducts;
 
-        return prev;
+        return oldData;
       });
     }
   },

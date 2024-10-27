@@ -94,8 +94,6 @@ export const useSalesForm = () => {
       console.error('Error getting sales detail.', error.message);
     },
     onSuccess: response => {
-      console.log('Sales Detail:', response);
-
       const { name, products } = response as DetailNormalizerReturn;
 
       formData.name     = name;
@@ -127,8 +125,6 @@ export const useSalesForm = () => {
     },
     onSuccess: response => {
       if (response) {
-        console.log(response);
-
         const { page: response_page } = response as ProductListNormalizerReturn;
 
         pageProduct.total = response_page.total;
@@ -160,8 +156,6 @@ export const useSalesForm = () => {
       console.error('Error getting product list.', error.message);
     },
     onSuccess: response => {
-      console.log(response);
-
       if (response) {
         const { page: response_page } = response as BundleListNormalizerReturn;
 
@@ -226,9 +220,9 @@ export const useSalesForm = () => {
       toast.add({ message: 'Error updating sales.', type: 'error' });
       console.error('Error updating sales.', error.message);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       // @ts-ignore
-      toast.add({ message: 'Sales updated.', type: 'success', duration: 2000 });
+      toast.add({ message: `[Sales] ${response} updated.`, type: 'success', duration: 2000 });
       router.back();
     },
   });

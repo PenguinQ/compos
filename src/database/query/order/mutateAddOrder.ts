@@ -3,22 +3,33 @@ import Big from 'big.js';
 import type { RxDocument } from 'rxdb';
 
 import { db } from '@/database';
+import { isBundle, isProduct, isVariant } from '@/database/utils';
 import { ORDER_ID_PREFIX } from '@/database/constants';
-
-// Utilities
-import { isVariant } from '@/database/utils';
 import type { ProductDoc, VariantDoc } from '@/database/types';
 
-type MutateAddOrderData ={
+type MutateAddOrderDataBundleItem = {
+  id: string;
+  name: string;
+  quantity: number;
+};
+
+type MutateAddOrderDataProduct ={
   id: string;
   name: string;
   price: string;
   amount: number;
+  items?: MutateAddOrderDataBundleItem[];
+};
+
+type MutateAddOrderData = {
+  tendered: string;
+  change: string;
+  products: MutateAddOrderDataProduct[];
 };
 
 type MutateAddOrder = {
   id: string;
-  data: MutateAddOrderData[];
+  data: MutateAddOrderData;
 };
 
 export default async ({ id, data }: MutateAddOrder) => {
@@ -50,10 +61,15 @@ export default async ({ id, data }: MutateAddOrder) => {
         throw `Cannot update ${name} stock since the stock is 0.`;
       }
 
+      const latest_document = document.getLatest();
+
       if (isVariant) {
         const main_product = await document.populate('product_id');
 
         await (document as any).updateProductStatus(main_product);
+        await (document as any).updateBundlesStatus(latest_document);
+      } else {
+        await (document as any).updateBundlesStatus(latest_document);
       }
     };
 
@@ -79,12 +95,29 @@ export default async ({ id, data }: MutateAddOrder) => {
       order_name = `Order #${order_number}`;
     }
 
+    const { tendered, change, products } = data;
+
+    /**
+     * THERES SHOULD BE A GUARD HERE IF THE PRODUCT IS A BUNDLE THAT PREVENT SUBMISSION
+     * IF THE PRODUCT INSIDE THE BUNDLE CONTAIN SOME OF THE PRODUCT IN SALES THAT THE BUNDLE
+     * MAKE THE STOCK OF THE PRODUCT RELATED TURN TO 0
+     *
+     * 1. AS LONG ANY (PRODUCT * QUANTITY * AMOUNT) INSIDE THE BUNDLE STOCK IS 0 CANCEL THE ORDER
+     */
+    for (const product of products) {
+      const { id } = product;
+
+      if (isBundle(id)) {
+
+      }
+    }
+
     /**
      * ---------------------------
      * 2. Generate Order Products.
      * ---------------------------
      */
-    for (const product of data) {
+    for (const product of products) {
       const { id, name, price, amount } = product;
 
       order_products.push({
@@ -92,11 +125,9 @@ export default async ({ id, data }: MutateAddOrder) => {
         name,
         price,
         quantity: amount,
-        // total: price * amount,
         total: Big(price).times(amount).toString(),
       });
 
-      // order_total += price * amount;
       order_total = Big(order_total).plus(Big(price).times(amount)).toString();
     }
 
@@ -105,24 +136,24 @@ export default async ({ id, data }: MutateAddOrder) => {
      * 3. Add New Order.
      * -----------------
      */
-    const _queryOrder =await db.order.insert({
+    await db.order.insert({
       id: order_id,
       sales_id: id,
       name: order_name,
       products: order_products,
       total: order_total,
+      tendered,
+      change,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     });
-
-    console.log(_queryOrder);
 
     /**
      * ------------------------------
      * 4. Update Each Products Stock.
      * ------------------------------
      */
-    for (const product of data) {
+    for (const product of products) {
       const { id, name, amount } = product;
       let _queryProduct;
 
@@ -130,10 +161,12 @@ export default async ({ id, data }: MutateAddOrder) => {
         _queryProduct = await db.variant.findOne(id).exec() as RxDocument<VariantDoc>;
 
         if (_queryProduct) await updateStock(_queryProduct, name, amount, isVariant(id));
-      } else {
+      } else if (isProduct(id)) {
         _queryProduct = await db.product.findOne(id).exec() as RxDocument<ProductDoc>;
 
         if (_queryProduct) await updateStock(_queryProduct, name, amount);
+      } else if (isBundle(id)) {
+        console.log('ID bosku');
       }
     }
   } catch (error) {

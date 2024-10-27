@@ -19,7 +19,7 @@ type UseQueryParams = {
 };
 
 type UseMutateParams = {
-  mutateFn: () => Promise<void>;
+  mutateFn: () => Promise<unknown>;
   onError?: (response: Error) => void;
   onSuccess?: (response?: unknown) => void;
 };
@@ -251,6 +251,7 @@ export const useObservableQuery = (params: Omit<UseQueryParams, 'cache'>) => {
 export const useMutation = (params: UseMutateParams) => {
   const { mutateFn, onError, onSuccess } = params;
   const states = reactive({
+    data: undefined as undefined | unknown,
     isError: false,
     isLoading: false,
     isSuccess: false,
@@ -260,13 +261,14 @@ export const useMutation = (params: UseMutateParams) => {
     states.isLoading = true;
 
     try {
-      await mutateFn();
+      const result = await mutateFn();
 
       states.isLoading = false;
       states.isError = false;
       states.isSuccess = true;
+      states.data = result;
 
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(states.data);
     } catch (error) {
       states.isLoading = false;
       states.isError = false;

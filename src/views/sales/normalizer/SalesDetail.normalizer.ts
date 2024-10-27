@@ -1,68 +1,50 @@
 import { getUpdateTime, toIDR } from '@/helpers';
-import type { SalesDetailQueryReturn, ProductData, OrderData } from '@/database/query/sales/getSalesDetail';
+import type { SalesDetailQueryReturn } from '@/database/query/sales/getSalesDetail';
 
-/**
- * --------------------------------------
- * I. Yang dibutuhkan untuk daftar produk
- * --------------------------------------
- * 1. gambar produk
- * 2. nama produk
- * 3. kuantitas produk
- * 4. harga produk
- * 5. sku (probably)
- */
-type SalesDetailProduct = {
+type DetailProduct = {
+  images: string[];
   name: string;
   price: string;
-  image: string;
+  priceFormatted: string;
 };
 
-/**
- * ----------------------------------------------------
- * II. Yang dibutuhkan untuk daftar produk yang terjual
- * ----------------------------------------------------
- * 1. gambar produk
- * 2. nama produk
- * 3. jumlah produk yang terjual
- * 4. total harga produk yang terjual
- */
-type SalesDetailProductSold = {
-
+type DetailProductSold = {
+  // TBW
 };
 
-/**
- * ---------------------------------------
- * III. Yang dibutuhkan untuk daftar order
- * ---------------------------------------
- * 1. nama order
- * 2. daftar produk di setiap order (nama, jumlah, harga, total produk)
- * 4. total harga dari semua produk yang ada di order masing-masing
- *
- * Eg:
- * Order #1
- * -------------------------
- * Product 1 x5   @Rp100,000
- * Product 2 x1    @Rp25,000
- * -------------------------
- *          Total: Rp125,000
- */
-type SalesDetailOrder = {
-
+type DetailOrderProduct = {
+  id: string;
+  name: string;
+  price: string
+  priceFormatted: string;
+  quantity: number;
+  total: string;
+  totalFormatted: string;
 };
 
-export type SalesDetailNormalizerReturn = {
+type DetailOrder = {
+  name: string;
+  products: DetailOrderProduct[];
+  total: string;
+  totalFormatted: string;
+  tendered: string;
+  tenderedFormatted: string;
+  change: string;
+  changeFormatted: string;
+};
+
+export type DetailNormalizerReturn = {
   name: string;
   finished: boolean;
-  products: SalesDetailProduct[];
-  products_sold: SalesDetailProductSold[];
-  orders: SalesDetailOrder[];
+  products: DetailProduct[];
+  productsSold: DetailProductSold[];
+  orders: DetailOrder[];
   revenue: string;
-  discount?: number;
-  discount_type?: 'percentage' | 'fixed';
-  updated_at: string;
+  revenueFormatted: string;
+  updatedAt: string;
 };
 
-export const salesDetailNormalizer = (data: unknown): SalesDetailNormalizerReturn => {
+export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
   const {
     finished,
     name,
@@ -70,31 +52,65 @@ export const salesDetailNormalizer = (data: unknown): SalesDetailNormalizerRetur
     products_sold,
     orders,
     revenue,
-    discount,
-    discount_type,
     updated_at,
   } = data as SalesDetailQueryReturn || {};
-  const sales_products: any[] = [];
-  const sales_orders: any[] = [];
-  const sales_sold: any[] = [];
+  const salesProducts     = <DetailProduct[]>[];
+  const salesOrders       = <DetailOrder[]>[];
+  const salesProductsSold = <DetailProductSold[]>[];
 
-  products.forEach(product => {
+  for (const product of products) {
     const { name, price, images } = product;
-    const product_image = images.length ? images[0] : '';
 
-    sales_products.push({ name, price: toIDR(price), image: product_image });
-  });
+    salesProducts.push({
+      priceFormatted: toIDR(price),
+      price,
+      images,
+      name,
+    });
+  }
 
-  // UNFINISHED - Create List of Order
-  // UNFINISHED - Create List of Products Sold
+  for (const order of orders) {
+    const { name, products, tendered, change, total }  = order;
+    const orderProducts = <DetailOrderProduct[]>[];
+
+    for (const product of products) {
+      const { id, name, price, quantity, total } = product;
+
+      orderProducts.push({
+        priceFormatted: toIDR(price),
+        totalFormatted: toIDR(total),
+        id,
+        name,
+        price,
+        quantity,
+        total,
+      });
+    }
+
+    salesOrders.push({
+      products          : orderProducts,
+      tenderedFormatted: toIDR(tendered),
+      changeFormatted  : toIDR(change),
+      totalFormatted   : toIDR(total),
+      name,
+      tendered,
+      change,
+      total,
+    });
+  }
+
+  for (const productSold of products_sold) {
+    // TBW
+  }
 
   return {
     name,
     finished,
-    products: sales_products,
-    products_sold: sales_sold,
-    orders: sales_orders,
-    revenue: toIDR(revenue),
-    updated_at: getUpdateTime(updated_at),
+    products: salesProducts,
+    productsSold: salesProductsSold,
+    orders: salesOrders,
+    revenue,
+    revenueFormatted: toIDR(revenue),
+    updatedAt: getUpdateTime(updated_at),
   };
 };

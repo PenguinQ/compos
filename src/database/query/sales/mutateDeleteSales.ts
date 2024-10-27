@@ -10,7 +10,7 @@ export default async (id: string) => {
      * ---------------------------------------
      */
     if (_querySales) {
-      const { orders } = _querySales;
+      const { name, orders } = _querySales;
 
       if (orders?.length) {
         const _queryOrders = await _querySales.populate('order');
@@ -26,6 +26,8 @@ export default async (id: string) => {
        * ---------------------
        */
       await _querySales.remove();
+
+      return name;
     }
   } catch (error) {
     if (error instanceof Error) {

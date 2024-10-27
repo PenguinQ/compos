@@ -1,4 +1,5 @@
 export { default as addImages } from './addImages';
+export { default as isBundle } from './isBundle';
 export { default as compressImage } from './compressImage';
 export { default as compressProductImage } from './compressProductImage';
 export { default as generateId } from './generateId';
@@ -8,5 +9,6 @@ export { default as removeFromSales } from './removeFromSales';
 export { default as getPaginationSelector } from './getPaginationSelector';
 export { default as getPageStatus } from './getPageStatus';
 export { default as isImagesValid } from './isImagesValid';
+export { default as isProduct } from './isProduct';
 export { default as isSafari } from './isSafari';
 export { default as isVariant } from './isVariant';

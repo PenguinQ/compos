@@ -25,6 +25,7 @@ export type QueryReturn = {
 };
 
 type ProductsDocMethods = {
+  updateBundleStatus: (id: string) => Promise<void>;
   removeVariants: () => Promise<void>;
   removeFromBundles: () => Promise<void>;
   removeFromSales: () => Promise<void>;
@@ -32,6 +33,7 @@ type ProductsDocMethods = {
 
 type VariantsDocMethods = {
   updateProductStatus: (product: ProductDoc) => Promise<void>;
+  updateBundleStatus: (id: string) => Promise<void>;
   removeFromBundles: () => Promise<void>;
   removeFromSales: () => Promise<void>;
 };
@@ -69,9 +71,17 @@ export type SalesDoc = {
 
 export type SalesCollection = RxCollection<SalesDoc>;
 
+export type OrderDocBundleItem = {
+  id: string;
+  name: string;
+  price: string;
+  quantity: number;
+};
+
 export type OrderDocProduct = {
   id: string;
   name: string;
+  items?: OrderDocBundleItem[];
   price: string;
   quantity: number;
   total: string;
@@ -84,6 +94,8 @@ export type OrderDoc = {
   products: OrderDocProduct[];
   discount?: string;
   discount_type?: 'percentage' | 'fixed';
+  tendered: string;
+  change: string;
   total: string;
   created_at: string;
   updated_at: string;
@@ -98,8 +110,6 @@ export type ProductDoc = {
   description?: string;
   by?: string;
   variants: string[];
-  // OLD
-  // price: number;
   price: string;
   stock: number;
   sku?: string;
@@ -114,8 +124,6 @@ export type VariantDoc = {
   product_id: string;
   active: boolean;
   name: string;
-  // OLD
-  // price: number;
   price: string;
   stock: number;
   sku?: string;
@@ -138,8 +146,6 @@ export type BundleDoc = {
   name: string;
   description?: string;
   products: BundleDocProduct[];
-  // OLD
-  // price: number;
   price: string;
   auto_price?: boolean;
   created_at: string;

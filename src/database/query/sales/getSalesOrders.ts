@@ -1,52 +1,79 @@
 import type { RxDocument } from 'rxdb';
 
 import { db } from '@/database';
-import type { QueryParams } from '@/database/types';
-import { OrderDoc } from '@/database/types';
+import type {
+  OrderDoc,
+  OrderDocProduct,
+  QueryParams,
+} from '@/database/types';
+
+type ObserveableDataProduct = OrderDocProduct;
+
+type ObserveableData = {
+  id: string;
+  sales_id: string;
+  name: string;
+  products?: OrderDocProduct[];
+  tendered: string;
+  change: string;
+  total: string;
+};
 
 export type ObservableReturns = {
-  id: string;
-  product_id?: string;
-  active: boolean,
-  images: string[],
-  name: string,
-  stock: number,
-  price: number,
-  sku?: string,
+  data: ObserveableData[];
+  data_count: number;
 };
 
-type GetSalesOrders = Omit<QueryParams, 'limit' | 'observe' | 'page'> & {
+type GetSalesOrdersQuery = Omit<QueryParams, 'limit' | 'observe' | 'page'> & {
   id: string;
 };
 
-export default async ({ id, normalizer }: GetSalesOrders) => {
+export default async ({ id, normalizer }: GetSalesOrdersQuery) => {
   try {
     const _queryOrders = db.order.find({ selector: { sales_id: id } }).$;
 
     const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> => {
-      const orders = [];
+      const orders_data = <ObserveableData[]>[];
 
       for (const order of data) {
-        const { id, name, products, total } = order as RxDocument<OrderDoc>;
-        const order_products = [];
+        const {
+          id,
+          sales_id,
+          name,
+          products,
+          tendered,
+          change,
+          total,
+        } = order as RxDocument<OrderDoc>;
+        const order_products = <ObserveableDataProduct[]>[];
 
         for (const product of products) {
-          const { id, name, total, quantity } = product;
+          const { id, name, price, items, quantity, total } = product;
 
-          order_products.push({ id, name, total, quantity });
+          order_products.push({
+            id,
+            name,
+            items,
+            price,
+            total,
+            quantity,
+          });
         }
 
-        orders.push({
-          id,
-          name,
+        orders_data.push({
           products: order_products,
+          id,
+          sales_id,
+          name,
+          tendered,
+          change,
           total,
         });
       }
 
       return {
-        data      : orders,
-        data_count: orders.length,
+        data      : orders_data,
+        data_count: orders_data.length,
       };
     };
 

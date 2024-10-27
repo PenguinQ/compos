@@ -31,7 +31,9 @@ export default async ({ id, data }: MutateEditSalesQuery) => {
         updated_at: new Date().toISOString(),
         products,
       },
-    })
+    });
+
+    return clean_name;
   } catch (error) {
     if (error instanceof Error) {
       throw error;

@@ -27,10 +27,10 @@ export default {
         const { products } = sale;
         const filteredProducts = products.filter(product => product.id !== (this as any).id);
 
-        await sale.incrementalModify(prev => {
-          prev.products = filteredProducts;
+        await sale.incrementalModify(oldData => {
+          oldData.products = filteredProducts;
 
-          return prev;
+          return oldData;
         });
       }
     }

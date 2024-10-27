@@ -18,6 +18,11 @@ import ComposIcon, {
   CashCoin,
   BoxSeam,
   ClockHistory,
+  Tag,
+  CartPlus,
+  Box,
+  Boxes,
+  Tags,
 } from '@components/Icons';
 
 // View Components
@@ -37,18 +42,20 @@ const {
   controlsView,
   detailsData,
   productsData,
+  ordersData,
   orderedProducts,
   totalProductsCount,
   totalProductsPrice,
-  paymentAmountChange,
-  paymentAmountInt,
-  paymentAmountStr,
+  paymentInput,
+  paymentTendered,
+  paymentChange,
   isDetailsLoading,
   isDetailsError,
   isProductsError,
   isProductsLoading,
   isOrdersError,
   isOrdersLoading,
+  goBacktoSales,
   handleClickDecrement,
   handleClickIncrement,
   handleClickQuantityDecrement,
@@ -56,29 +63,14 @@ const {
   handleClickCancel,
   handleClickClear,
   handlePayment,
+  handleShowOrderHistory,
 } = useSalesDashboard();
-
-type ProductList = {
-  id: string;
-  image: string;
-  name: string;
-  price: number;
-  stock: number;
-};
-
-type OrderItem = {
-  id: string;
-  image: string;
-  name: string;
-  price: number;
-  amount: number;
-};
 </script>
 
 <template>
   <div class="cp-page">
     <Toolbar>
-      <ToolbarAction icon @click="">
+      <ToolbarAction icon @click="goBacktoSales">
         <ComposIcon :icon="ArrowLeftShort" size="40" />
       </ToolbarAction>
       <ToolbarTitle>{{ isDetailsLoading ? '' : detailsData.name }}</ToolbarTitle>
@@ -96,12 +88,37 @@ type OrderItem = {
             <ProductImage class="product-image">
               <img :src="product.image ? product.image : no_image" :alt="`${product.name} image`" />
             </ProductImage>
-            <div class="product-content">
-              <Text class="product__name" heading="5">{{ product.name }}</Text>
-              <div class="product__details">
-                <span>Price: {{ product.price }}</span>&nbsp;|&nbsp;
-                <span>Stock: {{ product.stock }}</span>&nbsp;|&nbsp;
-                <span>Quantity: {{ product.quantity }}</span>
+            <div class="product-contents">
+              <Text heading="5">{{ product.name }}</Text>
+              <div class="product-details">
+                <div class="product-details__item">
+                  <ComposIcon :icon="Tag" />
+                  {{ product.price_formatted }}
+                </div>
+                <div v-if="!product.items" class="product-details__item">
+                  <ComposIcon :icon="Boxes" />
+                  {{ product.stock }}
+                </div>
+                <div v-if="!product.items" class="product-details__item">
+                  <ComposIcon :icon="CartPlus" />
+                  {{ product.quantity }}
+                </div>
+              </div>
+              <div v-if="product.items" class="product-bundle">
+                <div v-for="item of product.items" class="product-bundle-details">
+                  <span class="product-bundle-details__item">
+                    <ComposIcon :icon="Box" />
+                    {{ item.name }}
+                  </span>
+                  <span class="product-bundle-details__item">
+                    <ComposIcon :icon="Boxes" />
+                    {{ item.stock }}
+                  </span>
+                  <span class="product-bundle-details__item">
+                    <ComposIcon :icon="CartPlus" />
+                    {{ item.quantity }}
+                  </span>
+                </div>
               </div>
             </div>
             <div class="product-actions">
@@ -127,20 +144,26 @@ type OrderItem = {
         <div class="dashboard-control">
           <div class="dashboard-control-header">
             <Text heading="5" margin="0">{{ controlsView === 'order-history' ? 'Order History' : 'Order'  }}</Text>
-            <button class="button button--icon" type="button" @click="controlsView = 'order-history'">
+            <button class="button button--icon" type="button" @click="handleShowOrderHistory">
               <ComposIcon :icon="ClockHistory" />
             </button>
           </div>
           <div class="dashboard-control-body">
+            <!-- Control Order Default View -->
             <template v-if="controlsView === 'order-default'">
               <div class="order-product-list">
                 <div v-for="product of orderedProducts" class="order-product">
                   <ProductImage>
                     <img :src="product.image ? product.image : no_image" :alt="`${product.name} image`" />
                   </ProductImage>
-                  <div class="order-product__details">
-                    <div class="order-product__name">{{ product.name }}</div>
-                    <div class="order-product__total">Total: {{ product.price }}</div>
+                  <div class="order-product-contents">
+                    <Text heading="6" margin="0 0 4px">{{ product.name }}</Text>
+                    <div class="order-product-details">
+                      <div class="order-product-details__item order-product-details__item--price">
+                        <ComposIcon :icon="Tags" />
+                        {{ toIDR(product.price * product.amount) }}
+                      </div>
+                    </div>
                   </div>
                   <QuantityEditor
                     class="order-product__quantity"
@@ -160,10 +183,11 @@ type OrderItem = {
                 </div>
                 <div class="order-summary-item">
                   <dt>Total</dt>
-                  <dd>{{ toIDR(totalProductsPrice) }}</dd>
+                  <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
                 </div>
               </dl>
             </template>
+            <!-- Control Order Payment View -->
             <template v-if="controlsView === 'order-payment'">
               <dl class="order-summary">
                 <div class="order-summary-item">
@@ -172,32 +196,32 @@ type OrderItem = {
                 </div>
                 <div class="order-summary-item">
                   <dt>Total</dt>
-                  <dd>{{ toIDR(totalProductsPrice) }}</dd>
+                  <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
                 </div>
                 <div class="order-summary-item">
                   <dt>Payment Amount</dt>
-                  <dd>{{ toIDR(paymentAmountInt) }}</dd>
+                  <dd>{{ toIDR(paymentTendered.toString()) }}</dd>
                 </div>
                 <div class="order-summary-item order-summary-item--change">
                   <dt>
                     <ComposIcon :icon="CashCoin" />
                     Change
                   </dt>
-                  <dd>{{ toIDR(paymentAmountChange) }}</dd>
+                  <dd>{{ toIDR(paymentChange.toString()) }}</dd>
                 </div>
               </dl>
               <div class="order-calculator">
                 <div class="order-calculator__display">
                   <button
-                    v-if="paymentAmountStr !== '0'"
+                    v-if="paymentInput !== '0'"
                     type="button"
                     class="button button--icon"
                     aria-label="Clear calculator"
-                    @click="paymentAmountStr = '0'"
+                    @click="paymentInput = '0'"
                   >
                     <ComposIcon :icon="XCircleFilled" />
                   </button>
-                  <div>{{ toIDR(paymentAmountInt) }}</div>
+                  <div>{{ toIDR(paymentTendered.toString()) }}</div>
                 </div>
                 <div class="order-calculator__buttons">
                   <button type="button" @click="handleClickCalculator('1')">1</button>
@@ -215,8 +239,11 @@ type OrderItem = {
                 </div>
               </div>
             </template>
+            <!-- Control Order History View -->
             <template v-if="controlsView === 'order-history'">
-              History View
+              <pre>
+                {{ ordersData }}
+              </pre>
             </template>
           </div>
           <div class="dashboard-control-footer">
@@ -234,274 +261,9 @@ type OrderItem = {
               </template>
             </div>
           </div>
-
-          <!-- <div class="sales-order-header">
-            <div class="sales-order-header__title">
-              Order #XXX
-            </div>
-            <button class="button-icon" type="button" @click="show_history = !show_history">
-              <IconList />
-            </button>
-          </div> -->
-          <!-- <div class="sales-order-body" :style="{ overflow: show_history ? 'hidden' : undefined }">
-            <div v-if="!show_payment" class="order-container order-container--detail">
-              <EmptyState
-                v-if="!dummy_order_items.length"
-                title="No item yet..."
-                description="Add by clicking the product!"
-              />
-              <div v-else class="order-items">
-                <div
-                  :key="`order-item-${index}`" v-for="(item, index) of dummy_order_items"
-                  class="order-item"
-                >
-                  <picture>
-                    <img :src="item.image ? item.image : no_image" :alt="`Summary ${item.name} image`">
-                  </picture>
-                  <div class="sales-order-item__detail">
-                    <Text body="large" fontWeight="600" truncate margin="0 0 4px">{{ item.name }}</Text>
-                    <Text body="small" margin="0">{{ toIDR(item.amount * item.price) }}</Text>
-                  </div>
-                  <QuantityEditor
-                    class="sales-order-item__quantity"
-                    small
-                    readonly
-                    v-model.number="item.amount"
-                    @onChange="handleChange(item.id, item.amount)"
-                  />
-                </div>
-              </div>
-              <dl class="order-summary">
-                <div class="order-summary__item">
-                  <dt>Total Item</dt>
-                  <dd>{{ order_total_amount }}</dd>
-                </div>
-                <div class="order-summary__item">
-                  <dt>Total</dt>
-                  <dd>{{ toIDR(order_total_price) }}</dd>
-                </div>
-              </dl>
-              <div class="order-actions">
-                <Button color="red" variant="outline">Clear</Button>
-                <Button :disabled="order_total_price ? false : true" @click="show_payment = true">Pay</Button>
-                <Button @click="show_payment = true">Pay</Button>
-              </div>
-            </div>
-
-            <div v-else class="order-container order-container--payment">
-              <dl class="order-summary">
-                <div class="order-summary__item">
-                  <dt>Total Item</dt>
-                  <dd>{{ order_total_amount }}</dd>
-                </div>
-                <div class="order-summary__item">
-                  <dt>Total</dt>
-                  <dd>{{ toIDR(order_total_price) }}</dd>
-                </div>
-                <div class="order-summary__item">
-                  <dt>Payment Amount</dt>
-                  <dd>{{ toIDR(payment_amount_int) }}</dd>
-                </div>
-                <div class="order-summary__item">
-                  <dt>Change</dt>
-                  <dd>{{ toIDR(payment_change) }}</dd>
-                </div>
-              </dl>
-              <div class="order-calculator">
-                <div class="order-calculator__display">
-                  <button
-                    v-if="payment_amount !== '0'"
-                    type="button"
-                    class="button-icon"
-                    aria-label="Clear calculator"
-                    @click="payment_amount = '0'"
-                  >
-                    <IconXCircleFilled />
-                  </button>
-                  <div>{{ toIDR(payment_amount_int) }}</div>
-                </div>
-                <div class="order-calculator__buttons">
-                  <button type="button" @click="handleCalculatorClick('1')">1</button>
-                  <button type="button" @click="handleCalculatorClick('2')">2</button>
-                  <button type="button" @click="handleCalculatorClick('3')">3</button>
-                  <button type="button" @click="handleCalculatorClick('4')">4</button>
-                  <button type="button" @click="handleCalculatorClick('5')">5</button>
-                  <button type="button" @click="handleCalculatorClick('6')">6</button>
-                  <button type="button" @click="handleCalculatorClick('7')">7</button>
-                  <button type="button" @click="handleCalculatorClick('8')">8</button>
-                  <button type="button" @click="handleCalculatorClick('9')">9</button>
-                  <button type="button" @click="handleCalculatorClick('0')">0</button>
-                  <button type="button" @click="handleCalculatorClick('00')">00</button>
-                  <button type="button" @click="handleCalculatorClick('000')">000</button>
-                </div>
-              </div>
-              <div class="order-actions">
-                <Button color="red" variant="outline" @click="handleCancelPayment" small>Cancel</Button>
-                <Button @click="handleSubmitPayment">Pay</Button>
-              </div>
-            </div>
-
-            <div v-if="show_history" class="order-container order-container--history">
-              <div class="order-list">
-                <EmptyState
-                  v-if="!dummy_order_items.length"
-                  title="No order yet..."
-                  description="Add some!"
-                />
-              </div>
-              <div class="order-actions">
-                <Button color="red" variant="outline" @click="show_history = false" small>Close</Button>
-              </div>
-            </div>
-          </div> -->
         </div>
       </div>
     </Content>
-    <!-- <div class="temp-container-view">
-
-      <div class="sales-container">
-        <div class="sales-item-wrapper">
-          <div class="sales-item-grid">
-            <Card
-              :key="`item-${index}`" v-for="(item, index) of dummy_product_list"
-              class="sales-item"
-              role="button"
-              tabindex="0"
-              :aria-label="`Add ${item.name}`"
-              clicky
-              @click="handleProductClick(item)"
-            >
-              <picture>
-                <img :src="item.image ? item.image : no_image" :alt="`${item.name} image`">
-              </picture>
-              <div class="sales-item__name">{{ item.name }}</div>
-            </Card>
-          </div>
-        </div>
-
-        <div class="sales-order">
-          <div class="sales-order-header">
-            <div class="sales-order-header__title">
-              Order #XXX
-            </div>
-            <button class="button-icon" type="button" @click="show_history = !show_history">
-              <IconList />
-            </button>
-          </div>
-          <div class="sales-order-body" :style="{ overflow: show_history ? 'hidden' : undefined }">
-            <div v-if="!show_payment" class="order-container order-container--detail">
-              <EmptyState
-                v-if="!dummy_order_items.length"
-                title="No item yet..."
-                description="Add by clicking the product!"
-              />
-              <div v-else class="order-items">
-                <div
-                  :key="`order-item-${index}`" v-for="(item, index) of dummy_order_items"
-                  class="order-item"
-                >
-                  <picture>
-                    <img :src="item.image ? item.image : no_image" :alt="`Summary ${item.name} image`">
-                  </picture>
-                  <div class="sales-order-item__detail">
-                    <Text body="large" fontWeight="600" truncate margin="0 0 4px">{{ item.name }}</Text>
-                    <Text body="small" margin="0">{{ toIDR(item.amount * item.price) }}</Text>
-                  </div>
-                  <QuantityEditor
-                    class="sales-order-item__quantity"
-                    small
-                    readonly
-                    v-model.number="item.amount"
-                    @onChange="handleChange(item.id, item.amount)"
-                  />
-                </div>
-              </div>
-              <dl class="order-summary">
-                <div class="order-summary__item">
-                  <dt>Total Item</dt>
-                  <dd>{{ order_total_amount }}</dd>
-                </div>
-                <div class="order-summary__item">
-                  <dt>Total</dt>
-                  <dd>{{ toIDR(order_total_price) }}</dd>
-                </div>
-              </dl>
-              <div class="order-actions">
-                <Button color="red" variant="outline">Clear</Button>
-                <Button :disabled="order_total_price ? false : true" @click="show_payment = true">Pay</Button>
-              </div>
-            </div>
-
-            <div v-else class="order-container order-container--payment">
-              <dl class="order-summary">
-                <div class="order-summary__item">
-                  <dt>Total Item</dt>
-                  <dd>{{ order_total_amount }}</dd>
-                </div>
-                <div class="order-summary__item">
-                  <dt>Total</dt>
-                  <dd>{{ toIDR(order_total_price) }}</dd>
-                </div>
-                <div class="order-summary__item">
-                  <dt>Payment Amount</dt>
-                  <dd>{{ toIDR(payment_amount_int) }}</dd>
-                </div>
-                <div class="order-summary__item">
-                  <dt>Change</dt>
-                  <dd>{{ toIDR(payment_change) }}</dd>
-                </div>
-              </dl>
-              <div class="order-calculator">
-                <div class="order-calculator__display">
-                  <button
-                    v-if="payment_amount !== '0'"
-                    type="button"
-                    class="button-icon"
-                    aria-label="Clear calculator"
-                    @click="payment_amount = '0'"
-                  >
-                    <IconXCircleFilled />
-                  </button>
-                  <div>{{ toIDR(payment_amount_int) }}</div>
-                </div>
-                <div class="order-calculator__buttons">
-                  <button type="button" @click="handleCalculatorClick('1')">1</button>
-                  <button type="button" @click="handleCalculatorClick('2')">2</button>
-                  <button type="button" @click="handleCalculatorClick('3')">3</button>
-                  <button type="button" @click="handleCalculatorClick('4')">4</button>
-                  <button type="button" @click="handleCalculatorClick('5')">5</button>
-                  <button type="button" @click="handleCalculatorClick('6')">6</button>
-                  <button type="button" @click="handleCalculatorClick('7')">7</button>
-                  <button type="button" @click="handleCalculatorClick('8')">8</button>
-                  <button type="button" @click="handleCalculatorClick('9')">9</button>
-                  <button type="button" @click="handleCalculatorClick('0')">0</button>
-                  <button type="button" @click="handleCalculatorClick('00')">00</button>
-                  <button type="button" @click="handleCalculatorClick('000')">000</button>
-                </div>
-              </div>
-              <div class="order-actions">
-                <Button color="red" variant="outline" @click="handleCancelPayment" small>Cancel</Button>
-                <Button @click="handleSubmitPayment">Pay</Button>
-              </div>
-            </div>
-
-            <div v-if="show_history" class="order-container order-container--history">
-              <div class="order-list">
-                <EmptyState
-                  v-if="!dummy_order_items.length"
-                  title="No order yet..."
-                  description="Add some!"
-                />
-              </div>
-              <div class="order-actions">
-                <Button color="red" variant="outline" @click="show_history = false" small>Close</Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div> -->
   </div>
 
 </template>
@@ -587,6 +349,7 @@ type OrderItem = {
     width: 50px;
     height: 50px;
     flex-shrink: 0;
+    align-self: flex-start;
 
     img {
       display: block;
@@ -595,8 +358,58 @@ type OrderItem = {
     }
   }
 
-  &-content {
+  &-contents {
     flex: 1 1 auto;
+  }
+
+  &-details {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    &__item {
+      display: flex;
+      align-items: center;
+
+      compos-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+      }
+    }
+  }
+
+  &-bundle {
+    display: inline-flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-border);
+    padding-top: 12px;
+    padding-inline-end: 12px;
+    margin-top: 12px;
+
+    &-details {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+
+      &:first-of-type {
+        margin-top: 0;
+      }
+
+      &__item {
+        font-size: var(--text-body-small-size);
+        line-height: var(--text-body-small-height);
+        display: flex;
+        align-items: center;
+
+        compos-icon {
+          width: 16px;
+          height: 16px;
+          margin-right: 8px;
+        }
+      }
+    }
   }
 
   &-actions {
@@ -631,6 +444,37 @@ type OrderItem = {
       width: 100%;
       height: 100%;
       display: block;
+    }
+  }
+
+  &-contents {
+    flex-grow: 1;
+  }
+
+  &-details {
+    &__item {
+      font-family: var(--text-heading-family);
+      font-size: var(--text-body-large-size);
+      line-height: var(--text-body-large-height);
+      font-weight: 700;
+      margin-bottom: 4px;
+
+      &:last-of-type {
+        margin-bottom: 0;
+      }
+
+      compos-icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+      }
+
+      &--price {
+        font-family: var(--text-body-family);
+        font-size: var(--text-body-small-size);
+        line-height: var(--text-body-small-height);
+        font-weight: 400;
+      }
     }
   }
 

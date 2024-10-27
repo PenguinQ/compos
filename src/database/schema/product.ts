@@ -29,11 +29,6 @@ export default {
       },
       default: [],
     },
-    // price: {
-    //   type: 'integer',
-    //   minimum: 0,
-    //   default: 0,
-    // },
     price: {
       type: 'string',
       default: '0',

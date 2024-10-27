@@ -1,132 +1,112 @@
 import { getUpdateTime, toIDR } from '@/helpers';
-import type { SalesDetailQueryReturn, ProductData, OrderData } from '@/database/query/sales/getSalesDetail';
+import type { SalesDetailQueryReturn } from '@/database/query/sales/getSalesDetail';
 
-import type { ObservableReturns as ProductsQueryReturns } from '@/database/query/sales/getSalesProducts';
-// Data Separation
-// Sales Detail
-/**
- * ---------------
- * Data Separation
- * ---------------
- *
- * 1. Detail (Non Observable Query)
- * - Sales name
- * - Sales status
- * - List of products id available in the sales
- * - List of orders in the sales
- *
- * 2. Product List (Observable Query)
- * -
- *
- * 3. Order List (Observable Query)
- * -
- */
+import type {
+  ObserveableDataBundleItem as ProductsNormalizerBundleItem,
+  ObservableReturns as ProductsQueryReturns,
+} from '@/database/query/sales/getSalesProducts';
 
-/**
- * --------------------------------------
- * I. Yang dibutuhkan untuk daftar produk
- * --------------------------------------
- * 1. gambar produk
- * 2. nama produk
- * 3. kuantitas produk
- * 4. harga produk
- * 5. sku (probably)
- */
-type SalesDashboardDetailProduct = {
+export type DetailsNormalizerProduct = {
   id: string;
   product_id?: string;
-  quantity: number;
+  quantity?: number;
 };
 
-/**
- * ----------------------------------------------------
- * II. Yang dibutuhkan untuk daftar produk yang terjual
- * ----------------------------------------------------
- * 1. gambar produk
- * 2. nama produk
- * 3. jumlah produk yang terjual
- * 4. total harga produk yang terjual
- */
-type SalesDetailProductSold = {
-
+type ProductsNormalizerProduct = {
+  id: string;
+  active: boolean;
+  images: string[];
+  name: string;
+  sku?: string;
+  price: string;
+  price_formatted: string;
+  stock?: number;
+  quantity?: number;
+  items?: ProductsNormalizerBundleItem[];
 };
 
-/**
- * ---------------------------------------
- * III. Yang dibutuhkan untuk daftar order
- * ---------------------------------------
- * 1. nama order
- * 2. daftar produk di setiap order (nama, jumlah, harga, total produk)
- * 4. total harga dari semua produk yang ada di order masing-masing
- *
- * Eg:
- * Order #1
- * -------------------------
- * Product 1 x5   @Rp100,000
- * Product 2 x1    @Rp25,000
- * -------------------------
- *          Total: Rp125,000
- */
-type SalesDetailOrder = {
+type OrdersNormalizerOrder = {
 
 };
 
-export type SalesDashboardDetailNormalizerReturn = {
+export type DetailsNormalizerReturn = {
   name: string;
   finished: boolean;
-  products: SalesDashboardDetailProduct[];
-  updated_at: string;
+  products: DetailsNormalizerProduct[];
+  updatedAt: string;
 };
 
-export const detailsNormalizer = (data: unknown): SalesDashboardDetailNormalizerReturn=> {
-  const {
-    finished,
-    name,
-    products,
-    updated_at,
-  } = data as SalesDetailQueryReturn || {};
-  const sales_products: { id: string, product_id?: string, quantity: number }[] = [];
+export type ProductsNormalizerReturn = {
+  products: ProductsNormalizerProduct[];
+  productsCount: number;
+};
 
-  products.forEach(product => {
+export type OrdersNormalizerReturn = {
+  orders: OrdersNormalizerOrder[];
+  ordersCount: number;
+};
+
+export const detailsNormalizer = (data: unknown): DetailsNormalizerReturn => {
+  const { finished, name, products, updated_at } = data as SalesDetailQueryReturn || {};
+  const salesProducts: { id: string, product_id?: string, quantity?: number }[] = [];
+
+  for (const product of products) {
     const { id, product_id, quantity } = product;
 
-    sales_products.push({ id, product_id, quantity });
-  });
+    salesProducts.push({ id, product_id, quantity });
+  }
 
   return {
+    products : salesProducts,
+    updatedAt: getUpdateTime(updated_at),
     name,
     finished,
-    products: sales_products,
-    updated_at: getUpdateTime(updated_at),
   };
 };
 
-export const productsNormalizer = (data: unknown) => {
+export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
   const { data: productsData, data_count } = data as ProductsQueryReturns;
-  const products = [];
+  const productList = <ProductsNormalizerProduct[]>[];
 
   for (const product of productsData) {
-    const { active, id, images, name, price, quantity, sku, stock } = product;
-    const image = images[0] ? images[0].url : '';
+    const {
+      active,
+      id,
+      images,
+      name,
+      price,
+      quantity,
+      sku,
+      stock,
+      items,
+    } = product;
 
-    products.push({
+    productList.push({
+      price_formatted: toIDR(price),
       id,
       active,
-      image,
+      images,
       name,
       sku,
       price,
       stock,
       quantity,
+      items,
     });
   }
 
   return {
-    products,
-    count: data_count,
+    products     : productList,
+    productsCount: data_count,
   };
 };
 
-export const ordersNormalizer = (data: unknown) => {
+export const ordersNormalizer = (data: unknown): OrdersNormalizerReturn => {
+  const { data: ordersData, data_count } = data
+
   return data;
+  // return {
+  //   orders     : [],
+  //   ordersCount: 0,
+  // };
 };

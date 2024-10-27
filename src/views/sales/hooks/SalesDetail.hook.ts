@@ -1,17 +1,23 @@
 import { inject, ref } from 'vue';
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 
+// Databases
 import { useQuery, useMutation } from '@/database/hooks';
-import { getSalesDetail, mutateDeleteSales } from '@/database/query/sales';
+import {
+  getSalesDetail,
+  mutateDeleteSales,
+  mutateFinishSales,
+} from '@/database/query/sales';
 
-import { salesDetailNormalizer } from '../normalizer/SalesDetail.normalizer';
-import type { SalesDetailNormalizerReturn } from '../normalizer/SalesDetail.normalizer';
+// Normalizers
+import { detailNormalizer } from '../normalizer/SalesDetail.normalizer';
+import type { DetailNormalizerReturn } from '../normalizer/SalesDetail.normalizer';
 
 export const useSalesDetail = () => {
-  const route = useRoute();
+  const toast  = inject('ToastProvider');
+  const route  = useRoute();
   const router = useRouter();
-  const toast = inject('ToastProvider');
   const { params } = route;
   const dialogDelete = ref(false);
   const dialogFinish = ref(false);
@@ -24,45 +30,61 @@ export const useSalesDetail = () => {
   } = useQuery({
     queryKey: ['sales-detail', params.id],
     queryFn: () => getSalesDetail({
-      id: params.id as string,
-      normalizer: salesDetailNormalizer,
+      id        : params.id as string,
+      normalizer: detailNormalizer,
     }),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error getting sales detail, ${error}`, type: 'error' });
-      console.error('[ERROR] Error getting sales detail.', error);
-    },
-    onSuccess: (data) => {
-      // console.log(data);
+      toast.add({ message: 'Error getting sales detail.', type: 'error' });
+      console.error('Error getting sales detail.', error.message);
     },
   });
 
   const {
-    mutate: mutateDelete,
-    isLoading: mutateDeleteLoading,
+    mutate   : mutateDelete,
+    isLoading: isMutateDeleteLoading,
   } = useMutation({
     mutateFn: () => mutateDeleteSales(params.id as string),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to delete the sales', type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to delete the sales', error);
+      toast.add({ message: 'Failed to delete the sales.', type: 'error', duration: 2000 });
+      console.error('Failed to delete the sales', error.message);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       // @ts-ignore
-      toast.add({ message: 'Sales deleted.', type: 'success', duration: 2000 });
+      toast.add({ message: `Sales ${response} deleted.`, type: 'success', duration: 2000 });
       router.back();
-    }
+    },
+  });
+
+  const {
+    mutate   : mutateFinish,
+    isLoading: isMutateFinishLoading,
+  } = useMutation({
+    mutateFn: () => mutateFinishSales(params.id as string),
+    onError: error => {
+      // @ts-ignore
+      toast.add({ message: 'Failed to finish the sales.', type: 'error', duration: 2000 });
+      console.error('Failed to delete the sales.', error.message);
+    },
+    onSuccess: (response) => {
+      // @ts-ignore
+      toast.add({ message: `Sales ${response} finished.`, type: 'success', duration: 2000 });
+      router.back();
+    },
   });
 
   return {
     salesId: params.id,
-    data: data as Ref<SalesDetailNormalizerReturn>,
+    data: data as Ref<DetailNormalizerReturn>,
     dialogDelete,
     dialogFinish,
     isError,
     isLoading,
     refetch,
     mutateDelete,
-    mutateDeleteLoading,
+    mutateFinish,
+    isMutateDeleteLoading,
+    isMutateFinishLoading,
   };
 };

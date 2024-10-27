@@ -19,7 +19,7 @@ const classes = computed(() => ({
 
 const setHeight = async () => {
   await nextTick();
-  measured_height.value = container.value!.offsetHeight;
+  if (container.value) measured_height.value = container.value!.offsetHeight;
 };
 
 onMounted(() => {
