@@ -1,3 +1,5 @@
+// UNUSED
+
 import type { RxDocument } from 'rxdb';
 import { monotonicFactory } from 'ulidx';
 import { db } from '@database';

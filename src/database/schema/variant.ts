@@ -27,7 +27,8 @@ export default {
       default: 0,
     },
     sku: {
-      type: 'string'
+      type: 'string',
+      uniqueItems: true,
     },
     created_at: {
       type: 'date-time',

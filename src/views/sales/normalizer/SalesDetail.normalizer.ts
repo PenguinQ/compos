@@ -6,6 +6,7 @@ type DetailProduct = {
   name: string;
   price: string;
   priceFormatted: string;
+  quantity: number;
 };
 
 type DetailProductSold = {
@@ -58,14 +59,17 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
   const salesOrders       = <DetailOrder[]>[];
   const salesProductsSold = <DetailProductSold[]>[];
 
+  console.log(products);
+
   for (const product of products) {
-    const { name, price, images } = product;
+    const { name, price, images, quantity } = product;
 
     salesProducts.push({
       priceFormatted: toIDR(price),
-      price,
       images,
       name,
+      price,
+      quantity,
     });
   }
 

@@ -1,12 +1,13 @@
 import { computed, inject, ref } from 'vue';
-import type { Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Big from 'big.js';
+import type { Ref } from 'vue';
 
 // Databases
-import { getSalesDetail, getSalesProducts, getSalesOrders } from '@/database/query/sales';
-import { mutateAddOrder, mutateDeleteOrder } from '@/database/query/order';
 import { useQuery, useObservableQuery, useMutation } from '@/database/hooks';
+import { getSalesDetail, getSalesProducts, getSalesOrders, mutateFinishSales } from '@/database/query/sales';
+import { mutateAddOrder, mutateCancelOrder } from '@/database/query/order';
+import { isBundle } from '@/database/utils';
 
 // Normalizers
 import { detailsNormalizer, productsNormalizer, ordersNormalizer } from '../normalizer/SalesDashboard.normalizer';
@@ -16,23 +17,28 @@ import type {
   ProductsNormalizerReturn,
   OrdersNormalizerReturn,
 } from '../normalizer/SalesDashboard.normalizer';
-import { isBundle } from '@/database/utils';
 
-type OrderProductBundleItem = {
+type OrderedProductBundleItem = {
   id: string;
   name: string;
-  quantity: number;
-};
-
-type OrderProducts = {
-  amount: number;
-  id: string;
-  image: string;
-  name: string;
-  price: string;
-  items?: OrderProductBundleItem[];
   quantity: number;
   stock: number;
+  price: string;
+  sku: string;
+};
+
+type OrderedProduct = {
+  id: string;
+  images: string[];
+  name: string;
+  price: string;
+  amount: number;
+  // Optional since the product can be a bundle, and bundle items has it's own quantity.
+  quantity?: number;
+  // Optional since the product can be a bundle, and bundle items has it's own stock.
+  stock?: number;
+  // Optional since items only for bundle.
+  items?: OrderedProductBundleItem[];
 };
 
 export const useSalesDashboard = () => {
@@ -40,11 +46,13 @@ export const useSalesDashboard = () => {
   const route  = useRoute();
   const router = useRouter();
   const { params } = route;
+  const dialogFinish       = ref(false);
+  const dialogCancelOrder  = ref(false);
   const controlsView       = ref('order-default');
   const detailsProducts    = ref<DetailsNormalizerProduct[]>([]);
   const loadProducts       = ref(false);
   const loadOrders         = ref(false);
-  const orderedProducts    = ref<OrderProducts[]>([]);
+  const orderedProducts    = ref<OrderedProduct[]>([]);
   const totalProductsCount = computed(() => orderedProducts.value.reduce((acc, product) => acc += product.amount, 0));
   const totalProductsPrice = computed(() => orderedProducts.value.reduce((acc, product) => acc.plus(Big(product.price).times(product.amount)), Big(0)));
   const paymentInput       = ref('0');
@@ -64,17 +72,21 @@ export const useSalesDashboard = () => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get the sales detail.', type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to get the sales detail.', error.message);
+      console.error('Failed to get the sales detail.', error.message);
 
       router.push('/sales');
     },
-    onSuccess: async (response) => {
-      const { products } = response as DetailsNormalizerReturn;
+    onSuccess: response => {
+      const { finished, products } = response as DetailsNormalizerReturn;
 
-      for (const product of products) detailsProducts.value.push(product);
+      if (finished) {
+        router.push(`/sales/detail/${params.id}`);
+      } else {
+        for (const product of products) detailsProducts.value.push(product);
 
-      loadProducts.value = true;
-      loadOrders.value   = true;
+        loadProducts.value = true;
+        loadOrders.value   = true;
+      }
     },
   });
 
@@ -82,6 +94,7 @@ export const useSalesDashboard = () => {
     data     : productsData,
     isError  : isProductsError,
     isLoading: isProductsLoading,
+    refetch  : productsRefetch,
   } = useObservableQuery({
     queryKey: ['sales-dashboard-products', params.id],
     queryFn: () => getSalesProducts({
@@ -92,7 +105,7 @@ export const useSalesDashboard = () => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get the sales products.', type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to get the sales products.', error.message);
+      console.error('Failed to get the sales products.', error.message);
     },
   });
 
@@ -100,10 +113,12 @@ export const useSalesDashboard = () => {
     data     : ordersData,
     isError  : isOrdersError,
     isLoading: isOrdersLoading,
+    refetch  : ordersRefetch,
   } = useObservableQuery({
     queryKey: ['sales-dashboard-orders', params.id],
     queryFn: () => getSalesOrders({
       id        : params.id as string,
+      sort      : 'desc',
       normalizer: ordersNormalizer,
     }),
     enabled: loadOrders,
@@ -113,7 +128,7 @@ export const useSalesDashboard = () => {
       console.error('Failed to get the sales orders.', error.message);
     },
     onSuccess: response => {
-      console.log(response);
+      // console.log(response);
     },
   });
 
@@ -126,13 +141,22 @@ export const useSalesDashboard = () => {
 
       for (const order of orderedProducts.value) {
         const { amount, id, name, price, items } = order;
+        let itemList = [];
+
+        if (items) {
+          for (const item of items) {
+            const { id, name, price, quantity, sku } = item;
+
+            itemList.push({ id, name, price, quantity, sku });
+          }
+        }
 
         mutateProducts.push({
+          items: itemList.length ? itemList : undefined,
           id,
           name,
           price,
           amount,
-          items,
         });
       }
 
@@ -161,25 +185,42 @@ export const useSalesDashboard = () => {
   });
 
   const {
-    mutate   : mutateDeleteOrderFn,
-    isLoading: isMutateDeleteOrderLoading,
+    mutate   : mutateCancelOrderFn,
+    isLoading: isMutateCancelOrderLoading,
   } = useMutation({
-    mutateFn: () => mutateDeleteOrder(),
+    mutateFn: () => mutateCancelOrder(),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to delete order.', type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to delete order.', error.message);
+      toast.add({ message: 'Failed to cancel the order.', type: 'error', duration: 2000 });
+      console.error('Failed to cancel the order.', error.message);
     },
-    onSuccess: () => {
+    onSuccess: response => {
       // @ts-ignore
-      toast.add({ message: 'Order deleted.', type: 'success', duration: 2000 });
+      toast.add({ message: `Order ${response} canceled.`, type: 'success', duration: 2000 });
     },
   });
 
-  const handleClickIncrement = (product: any) => {
+  const {
+    mutate   : mutateFinish,
+    isLoading: isMutateFinishLoading,
+  } = useMutation({
+    mutateFn: () => mutateFinishSales(params.id as string),
+    onError: error => {
+      // @ts-ignore
+      toast.add({ message: 'Failed to finish the sales.', type: 'error', duration: 2000 });
+      console.error('Failed to finish the sales.', error.message);
+    },
+    onSuccess: response => {
+      // @ts-ignore
+      toast.add({ message: `Sales ${response} finished.`, type: 'success', duration: 2000 });
+      router.push(`/sales/detail/${params.id}`);
+    },
+  });
+
+  const handleClickIncrement = (product: OrderedProduct) => {
     const {
       id,
-      image,
+      images,
       name,
       items,
       stock,
@@ -192,16 +233,16 @@ export const useSalesDashboard = () => {
       if (isBundle(id)) {
         order.amount += 1;
       } else {
-        if (order.amount < stock) order.amount += quantity;
+        if (order.amount < stock!) order.amount += quantity!;
       }
     } else {
       const bundle_items = [];
 
       if (items) {
         for (const item of items) {
-          const { id, name, quantity } = item;
+          const { id, name, price, quantity, stock, sku } = item;
 
-          bundle_items.push({ id, name, quantity });
+          bundle_items.push({ id, name, price, quantity, stock, sku });
         }
       }
 
@@ -209,7 +250,7 @@ export const useSalesDashboard = () => {
         amount: quantity ? quantity : 1,
         items : bundle_items.length ? bundle_items : undefined,
         id,
-        image,
+        images,
         name,
         price,
         stock,
@@ -217,10 +258,10 @@ export const useSalesDashboard = () => {
       });
     }
 
-    console.log('Ordered Products:', orderedProducts.value);
+    // console.log('Ordered Products:', orderedProducts.value);
   };
 
-  const handleClickDecrement = (product: any) => {
+  const handleClickDecrement = (product: OrderedProduct) => {
     const { id, quantity } = product;
     const order = orderedProducts.value.find(product => product.id === id);
 
@@ -267,6 +308,69 @@ export const useSalesDashboard = () => {
   const handlePayment = () => {
     if (totalProductsCount.value) {
       if (paymentTendered.value) {
+        /**
+         * -------------------------------------------------------------------
+         * Create a temporary list of product for amount and stock comparison.
+         * -------------------------------------------------------------------
+         */
+        const tempList = <{ id: string; name: string; amount: number; stock: number; }[]>[];
+
+        for (const product of orderedProducts.value) {
+          const { id, name, items, amount, stock } = product;
+
+          if (isBundle(id)) {
+            for (const item of items!) {
+              const {
+                id      : item_id,
+                name    : item_name,
+                quantity: item_quantity,
+                stock   : item_stock,
+              } = item;
+              const inTempList = tempList.find(product => product.id === item_id);
+
+              if (inTempList) {
+                const index = tempList.indexOf(inTempList);
+
+                tempList[index].amount += item_quantity;
+              } else {
+                tempList.push({
+                  id    : item_id,
+                  name  : item_name,
+                  amount: item_quantity * amount,
+                  stock : item_stock,
+                });
+              }
+            }
+          } else {
+            const inTempList = tempList.find(product => product.id === id);
+
+            if (inTempList) {
+              const index = tempList.indexOf(inTempList);
+
+              tempList[index].amount += amount;
+            } else {
+              tempList.push({ id, name, amount, stock: stock! });
+            }
+          }
+        }
+
+        /**
+         * -----------------------------------------------------------------------------------------
+         * Check if any of the products inside the temporary list has amount greater than the stock.
+         * -----------------------------------------------------------------------------------------
+         * If one of the product amount is greater than the stock, stop the operation and show toaster.
+         */
+        for (const product of tempList) {
+          const { name, amount, stock } = product;
+
+          if (amount > stock) {
+            // @ts-ignore
+            toast.add({ message: `${name} amount is greater than available stock.`, type: 'error', duration: 2000 });
+
+            return false;
+          }
+        }
+
         if (totalProductsPrice.value.gt(paymentTendered.value)) {
           // @ts-ignore
           toast.add({ message: 'Payment amount is less than total price.', type: 'error', duration: 2000 });
@@ -287,15 +391,13 @@ export const useSalesDashboard = () => {
     controlsView.value = controlsView.value !== 'order-history' ? 'order-history' : 'order-default';
   };
 
-  const goBacktoSales = () => {
-    router.push('/sales');
-  };
-
   return {
     salesId     : params.id,
     detailsData : detailsData as Ref<DetailsNormalizerReturn>,
     productsData: productsData as Ref<ProductsNormalizerReturn>,
     ordersData  : ordersData as Ref<OrdersNormalizerReturn>,
+    dialogFinish,
+    dialogCancelOrder,
     controlsView,
     orderedProducts,
     paymentChange,
@@ -309,9 +411,9 @@ export const useSalesDashboard = () => {
     isProductsLoading,
     isOrdersError,
     isOrdersLoading,
+    isMutateFinishLoading,
     isMutateAddOrderLoading,
-    isMutateDeleteOrderLoading,
-    goBacktoSales,
+    isMutateCancelOrderLoading,
     handleClickDecrement,
     handleClickIncrement,
     handleClickQuantityDecrement,
@@ -320,5 +422,8 @@ export const useSalesDashboard = () => {
     handleClickClear,
     handlePayment,
     handleShowOrderHistory,
+    productsRefetch,
+    ordersRefetch,
+    mutateFinish,
   };
 };

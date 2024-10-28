@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router';
 
 // Common Components
+import { Bar } from '@components/Loader';
 import Button from '@components/Button';
 import Card, { CardBody } from '@components/Card';
 import DescriptionList, { DescriptionListItem } from '@components/DescriptionList';
@@ -12,7 +13,7 @@ import Text from '@components/Text';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Column, Row } from '@components/Layout';
 import Separator from '@components/Separator';
-import ComposIcon, { ArrowLeftShort, PencilSquare, Trash, CheckLarge } from '@components/Icons';
+import ComposIcon, { ArrowLeftShort, PencilSquare, Trash, CheckLarge, CashStack, Tag } from '@components/Icons';
 
 // View Components
 import ProductImage from '@/views/components/ProductImage.vue';
@@ -54,6 +55,13 @@ const {
     <ToolbarAction
       v-if="!isError && !isLoading"
       icon
+      @click="router.push(`/sales/dashboard/${salesId}`)"
+    >
+      <ComposIcon :icon="CashStack" />
+    </ToolbarAction>
+    <ToolbarAction
+      v-if="!isError && !isLoading && !data.finished"
+      icon
       backgroundColor="var(--color-blue-4)"
       @click="router.push(`/sales/edit/${salesId}`)"
     >
@@ -70,7 +78,7 @@ const {
     </ToolbarAction>
     <!-- If there are some sales been done, show finish button instead delete button -->
     <ToolbarAction
-      v-if="!isError && !isLoading"
+      v-if="!isError && !isLoading && !data.finished"
       icon
       backgroundColor="var(--color-green-4)"
       @click="dialogFinish = true"
@@ -92,9 +100,7 @@ const {
     </template>
   </EmptyState>
   <Container v-else class="page-container">
-    <template v-if="isLoading">
-      Loading
-    </template>
+    <Bar v-if="isLoading" margin="56px 0" />
     <template v-else>
       <Row>
         <Column col="12">
@@ -129,8 +135,13 @@ const {
                     <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
                   </ProductImage>
                   <div class="sales-product__detail">
-                    <Text class="sales-item__name" body="large" as="h4" truncate margin="0 0 8px">{{ product.name }}</Text>
-                    <Text class="sales-item__price" truncate margin="0">{{ product.price }}</Text>
+                    <Text class="sales-item__name" body="large" as="h4" truncate margin="0 0 8px">
+                      {{ product.name }}
+                    </Text>
+                    <Text class="sales-item__price" truncate margin="0">
+                      <ComposIcon :icon="Tag" />
+                      {{ product.priceFormatted }} {{ product.quantity }}
+                    </Text>
                   </div>
                 </div>
               </div>
@@ -145,7 +156,7 @@ const {
               <div class="sales-orders">
                 <EmptyState
                   v-if="!data.orders.length"
-                  emoji="📉"
+                  :emoji="SALES_DETAIL.EMPTY_ORDER_EMOJI"
                   :title="SALES_DETAIL.EMPTY_ORDER_TITLE"
                   :description="SALES_DETAIL.EMPTY_ORDER_DESCRIPTION"
                   margin="80px 0"
@@ -166,7 +177,7 @@ const {
               <div class="sales-orders">
                 <EmptyState
                   v-if="!data.orders.length"
-                  emoji="🍃"
+                  :emoji="SALES_DETAIL.EMPTY_SOLD_EMOJI"
                   :title="SALES_DETAIL.EMPTY_SOLD_TITLE"
                   :description="SALES_DETAIL.EMPTY_SOLD_DESCRIPTION"
                   margin="80px 0"

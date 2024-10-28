@@ -107,9 +107,9 @@ export const useSalesForm = () => {
     isLoading: isProductListLoading,
     refetch  : productListRefetch,
   } = useQuery({
-    enabled: loadProducts,
+    enabled : loadProducts,
     queryKey: ['sales-form-products', searchProductQuery, current_page_product],
-    queryFn: () => getProductList({
+    queryFn : () => getProductList({
       active      : true,
       search_query: searchProductQuery.value,
       sort        : 'desc',
@@ -140,9 +140,9 @@ export const useSalesForm = () => {
     isLoading: isBundleListLoading,
     refetch  : bundleListRefetch,
   } = useQuery({
-    enabled: loadBundles,
+    enabled : loadBundles,
     queryKey: ['sales-form-bundles', searchBundleQuery, current_page_bundle],
-    queryFn: () => getBundleList({
+    queryFn : () => getBundleList({
       active      : true,
       search_query: searchBundleQuery.value,
       sort        : 'desc',

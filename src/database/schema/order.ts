@@ -11,6 +11,10 @@ export default {
       ref: 'sales',
       type: 'string',
     },
+    canceled: {
+      type: 'boolean',
+      default: false,
+    },
     name: {
       type: 'string',
       maxLength: 1000,
@@ -21,44 +25,64 @@ export default {
       items: {
         type: 'object',
         properties: {
+          // ID of the product/variant/bundle WHEN the sales happened.
           id: {
-            type: 'string', // id of the product in order, can be product id, variant id, or bundle id
+            type: 'string',
           },
+          // Name of the product/variant/bundle WHEN the sales happened.
           name: {
             type: 'string',
           },
+          // Price of the product/variant/bundle WHEN the sales happened.
           price: {
-            type: 'string', // price of the product in question WHEN the sales happened
+            type: 'string',
           },
-          items: {  // if the product is a bundle store the product detail here
+          // Items are used if the order product is a bundle.
+          items: {
             type: 'array',
             items: {
               type: 'object',
               properties: {
+                // Bundle item ID WHEN the sales happened.
                 id: {
                   type: 'string',
                 },
+                // Bundle item name WHEN the sales happened.
                 name: {
                   type: 'string',
                 },
+                // Bundle item price WHEN the sales happened.
                 price: {
                   type: 'string',
                 },
+                // Bundle item quantity WHEN the sales happened.
                 quantity: {
                   type: 'string',
                   minimum: 0,
                   default: 0,
                 },
+                // Bundle item SKU WHEN the sales happened.
+                sku: {
+                  type: 'string',
+                  uniqueItems: true,
+                },
               },
             },
           },
+          // SKU of the product/variant WHEN the sales happened, bundle doesn't have SKU.
+          sku: {
+            type: 'string',
+            uniqueItems: true,
+          },
+          // Quantity of the product/variant/bundle WHEN the sales happened.
           quantity: {
-            type: 'integer', // quantity of the product WHEN the sales happened
+            type: 'integer',
             minimum: 0,
             default: 0,
           },
+          // Total price of the product/variant/bundle WHEN the sales happened.
           total: {
-            type: 'integer', // total price of the product WHEN the sales happened
+            type: 'integer',
             minimum: 0,
             default: 0,
           },
@@ -97,6 +121,7 @@ export default {
   required: [
     'id',
     'sales_id',
+    'canceled',
     'name',
     'products',
     'tendered',

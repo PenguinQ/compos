@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, inject, reactive, ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
 // Common Components
+import { Bar } from '@components/Loader';
 import Content from '@components/Content';
 import Button from '@components/Button';
-import Card from '@components/Card';
+import Dialog from '@components/Dialog';
 import EmptyState from '@components/EmptyState';
 import Text from '@components/Text';
 import QuantityEditor from '@components/QuantityEditor';
@@ -12,17 +13,19 @@ import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components
 import ComposIcon, {
   ArrowLeftShort,
   XCircleFilled,
-  List,
   PlusLarge,
   DashLarge,
   CashCoin,
-  BoxSeam,
   ClockHistory,
   Tag,
   CartPlus,
   Box,
   Boxes,
   Tags,
+  CheckLarge,
+  InfoCircleFilled,
+  Cash,
+  Receipt,
 } from '@components/Icons';
 
 // View Components
@@ -32,13 +35,21 @@ import ButtonBlock from '@/views/components/ButtonBlock.vue';
 // Helpers
 import { toIDR } from '@/helpers';
 
-// Assets
-import no_image from '@assets/illustration/no_image.svg';
-
 // Hooks
 import { useSalesDashboard } from './hooks/SalesDashboard.hook';
 
+// Constants
+import GLOBAL from '@/views/constants';
+import { SALES_DASHBOARD } from './constants';
+
+// Assets
+import no_image from '@assets/illustration/no_image.svg';
+
+const router = useRouter();
 const {
+  salesId,
+  dialogFinish,
+  dialogCancelOrder,
   controlsView,
   detailsData,
   productsData,
@@ -55,7 +66,7 @@ const {
   isProductsLoading,
   isOrdersError,
   isOrdersLoading,
-  goBacktoSales,
+  isMutateFinishLoading,
   handleClickDecrement,
   handleClickIncrement,
   handleClickQuantityDecrement,
@@ -64,80 +75,117 @@ const {
   handleClickClear,
   handlePayment,
   handleShowOrderHistory,
+  productsRefetch,
+  ordersRefetch,
+  mutateFinish,
 } = useSalesDashboard();
 </script>
 
 <template>
   <div class="cp-page">
+    <!-- Header -->
     <Toolbar>
-      <ToolbarAction icon @click="goBacktoSales">
+      <ToolbarAction icon @click="router.push('/sales')">
         <ComposIcon :icon="ArrowLeftShort" size="40" />
       </ToolbarAction>
       <ToolbarTitle>{{ isDetailsLoading ? '' : detailsData.name }}</ToolbarTitle>
+      <ToolbarSpacer />
+      <ToolbarAction
+        v-if="!isDetailsError && !isDetailsLoading"
+        icon
+        @click="router.push(`/sales/detail/${salesId}`)"
+      >
+        <ComposIcon :icon="InfoCircleFilled" />
+      </ToolbarAction>
+      <ToolbarAction
+        v-if="!isDetailsError && !isDetailsLoading"
+        icon
+        backgroundColor="var(--color-green-4)"
+        @click="dialogFinish = true"
+      >
+        <ComposIcon :icon="CheckLarge" :size="32" />
+      </ToolbarAction>
     </Toolbar>
+
+    <!-- Content -->
     <Content>
       <div class="dashboard">
         <!-- Products -->
         <div class="dashboard-content">
-          <div v-if="isProductsLoading">Loading</div>
-          <div
-            v-else
-            v-for="product of productsData?.products"
-            :class="`product${product.active ? '' : ' product--inactive'}`"
+          <EmptyState
+            v-if="isProductsError"
+            :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+            :title="GLOBAL.ERROR_EMPTY_TITLE"
+            :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+            margin="56px 0"
           >
-            <ProductImage class="product-image">
-              <img :src="product.image ? product.image : no_image" :alt="`${product.name} image`" />
-            </ProductImage>
-            <div class="product-contents">
-              <Text heading="5">{{ product.name }}</Text>
-              <div class="product-details">
-                <div class="product-details__item">
-                  <ComposIcon :icon="Tag" />
-                  {{ product.price_formatted }}
-                </div>
-                <div v-if="!product.items" class="product-details__item">
-                  <ComposIcon :icon="Boxes" />
-                  {{ product.stock }}
-                </div>
-                <div v-if="!product.items" class="product-details__item">
-                  <ComposIcon :icon="CartPlus" />
-                  {{ product.quantity }}
-                </div>
-              </div>
-              <div v-if="product.items" class="product-bundle">
-                <div v-for="item of product.items" class="product-bundle-details">
-                  <span class="product-bundle-details__item">
-                    <ComposIcon :icon="Box" />
-                    {{ item.name }}
-                  </span>
-                  <span class="product-bundle-details__item">
+            <template #action>
+              <Button @click="productsRefetch">Try Again</Button>
+            </template>
+          </EmptyState>
+          <template v-else>
+            <Bar v-if="isProductsLoading" />
+            <div
+              v-else
+              v-for="product of productsData?.products"
+              :class="`product${product.active ? '' : ' product--inactive'}`"
+            >
+              <ProductImage class="product-image">
+                <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
+                <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
+              </ProductImage>
+              <div class="product-contents">
+                <!-- <pre>{{ product }}</pre> -->
+                <Text heading="5">{{ product.name }}</Text>
+                <div class="product-details">
+                  <div class="product-details__item">
+                    <ComposIcon :icon="Tag" />
+                    {{ product.priceFormatted }}
+                  </div>
+                  <div v-if="!product.items" class="product-details__item">
                     <ComposIcon :icon="Boxes" />
-                    {{ item.stock }}
-                  </span>
-                  <span class="product-bundle-details__item">
+                    {{ product.stock }}
+                  </div>
+                  <div v-if="!product.items" class="product-details__item">
                     <ComposIcon :icon="CartPlus" />
-                    {{ item.quantity }}
-                  </span>
+                    {{ product.quantity }}
+                  </div>
+                </div>
+                <div v-if="product.items" class="product-bundle">
+                  <div v-for="item of product.items" class="product-bundle-details">
+                    <span class="product-bundle-details__item">
+                      <ComposIcon :icon="Box" />
+                      {{ item.name }}
+                    </span>
+                    <span class="product-bundle-details__item">
+                      <ComposIcon :icon="Boxes" />
+                      {{ item.stock }}
+                    </span>
+                    <span class="product-bundle-details__item">
+                      <ComposIcon :icon="CartPlus" />
+                      {{ item.quantity }}
+                    </span>
+                  </div>
                 </div>
               </div>
+              <div class="product-actions">
+                <ButtonBlock
+                  :disabled="!product.active"
+                  backgroundColor="var(--color-red-4)"
+                  @click="handleClickDecrement(product)"
+                >
+                  <ComposIcon :icon="DashLarge" />
+                </ButtonBlock>
+                <ButtonBlock
+                  :disabled="!product.active"
+                  backgroundColor="var(--color-blue-4)"
+                  @click="handleClickIncrement(product)"
+                >
+                  <ComposIcon :icon="PlusLarge" />
+                </ButtonBlock>
+              </div>
             </div>
-            <div class="product-actions">
-              <ButtonBlock
-                :disabled="!product.active"
-                backgroundColor="var(--color-red-4)"
-                @click="handleClickDecrement(product)"
-              >
-                <ComposIcon :icon="DashLarge" />
-              </ButtonBlock>
-              <ButtonBlock
-                :disabled="!product.active"
-                backgroundColor="var(--color-blue-4)"
-                @click="handleClickIncrement(product)"
-              >
-                <ComposIcon :icon="PlusLarge" />
-              </ButtonBlock>
-            </div>
-          </div>
+          </template>
         </div>
 
         <!-- Controls -->
@@ -151,10 +199,18 @@ const {
           <div class="dashboard-control-body">
             <!-- Control Order Default View -->
             <template v-if="controlsView === 'order-default'">
-              <div class="order-product-list">
+              <EmptyState
+                v-if="!orderedProducts.length"
+                :emoji="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_EMOJI"
+                :title="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_TITLE"
+                :description="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_DESCRIPTION"
+                margin="56px 0"
+              />
+              <div v-else class="order-product-list">
                 <div v-for="product of orderedProducts" class="order-product">
-                  <ProductImage>
-                    <img :src="product.image ? product.image : no_image" :alt="`${product.name} image`" />
+                  <ProductImage class="product-image">
+                    <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
+                    <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
                   </ProductImage>
                   <div class="order-product-contents">
                     <Text heading="6" margin="0 0 4px">{{ product.name }}</Text>
@@ -241,9 +297,54 @@ const {
             </template>
             <!-- Control Order History View -->
             <template v-if="controlsView === 'order-history'">
-              <pre>
-                {{ ordersData }}
-              </pre>
+              <EmptyState
+                v-if="isOrdersError"
+                :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+                :title="GLOBAL.ERROR_EMPTY_TITLE"
+                :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+                margin="56px 0"
+              >
+                <template #action>
+                  <Button @click="ordersRefetch">Try Again</Button>
+                </template>
+              </EmptyState>
+              <template v-else>
+                <Bar v-if="isOrdersLoading" />
+                <template v-else>
+                  <EmptyState
+                    v-if="!ordersData.orders.length"
+                    :emoji="SALES_DASHBOARD.ORDER_LIST_EMPTY_EMOJI"
+                    :title="SALES_DASHBOARD.ORDER_LIST_EMPTY_TITLE"
+                    :description="SALES_DASHBOARD.ORDER_LIST_EMPTY_DESCRIPTION"
+                    margin="56px 0"
+                  />
+                  <div v-else class="order-list">
+                    <div v-for="order of ordersData.orders" class="order">
+                      <Text heading="6" margin="0">{{ order.name }}</Text>
+                      <div class="order-details">
+                        <div class="order-details__item">
+                          <ComposIcon :icon="Receipt" />
+                          {{ order.totalFormatted }}
+                        </div>
+                        <div class="order-details__item">
+                          <ComposIcon :icon="Cash" />
+                          {{ order.tenderedFormatted }}
+                        </div>
+                        <div class="order-details__item">
+                          <ComposIcon :icon="CashCoin" />
+                          {{ order.changeFormatted }}
+                        </div>
+                      </div>
+                      <div class="order-products">
+                        <div v-for="product of order.products" class="order-products__item">
+                          <ComposIcon :icon="Box" />
+                          {{ product.quantity }}&times; {{ product.name }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </template>
             </template>
           </div>
           <div class="dashboard-control-footer">
@@ -266,6 +367,35 @@ const {
     </Content>
   </div>
 
+  <!-- Dialog Finish -->
+  <Dialog v-model="dialogFinish" :title="`Finish ${detailsData?.name}?`">
+    <Text body="large" textAlign="center" margin="0">
+      Finishing this product will finish this sales dashboard session, set the status as finished and redirect to the sales detail page.
+    </Text>
+    <template #footer>
+      <div class="dialog-actions">
+        <Button color="green" full @click="mutateFinish">
+          {{ isMutateFinishLoading ? 'Loading' : 'Finish' }}
+        </Button>
+        <Button variant="outline" full @click="dialogFinish = false">Cancel</Button>
+      </div>
+    </template>
+  </Dialog>
+
+  <!-- Dialog Finish -->
+  <Dialog v-model="dialogCancelOrder" :title="`Cancel Order ${'X'}?`">
+    <Text body="large" textAlign="center" margin="0">
+      Finishing this product will finish this sales dashboard session and set the status as finished.
+    </Text>
+    <template #footer>
+      <div class="dialog-actions">
+        <Button color="green" full @click="mutateFinish">
+          {{ isMutateFinishLoading ? 'Loading' : 'Finish' }}
+        </Button>
+        <Button variant="outline" full @click="dialogFinish = false">Cancel</Button>
+      </div>
+    </template>
+  </Dialog>
 </template>
 
 <style lang="scss" scoped>
@@ -375,6 +505,7 @@ const {
         width: 20px;
         height: 20px;
         margin-right: 8px;
+        flex-shrink: 0;
       }
     }
   }
@@ -407,6 +538,7 @@ const {
           width: 16px;
           height: 16px;
           margin-right: 8px;
+          flex-shrink: 0;
         }
       }
     }
@@ -491,6 +623,64 @@ const {
   }
 }
 
+// Order History List
+.order-list {
+
+}
+
+.order {
+  padding: 16px;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-of-type {
+    border-bottom-color: transparent;
+  }
+
+  &-details {
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    margin-top: 12px;
+
+    &__item {
+      font-size: var(--text-body-small-size);
+      line-height: var(--text-body-small-height);
+      display: flex;
+      align-items: center;
+
+      compos-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  &-products {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    &__item {
+      font-size: var(--text-body-small-size);
+      line-height: var(--text-body-small-height);
+      display: flex;
+      align-self: center;
+
+      compos-icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
 .order-summary {
   border-top: 1px solid var(--color-neutral-2);
   padding: 16px;
@@ -544,6 +734,59 @@ const {
   }
 }
 
+// Order Calculator
+.order-calculator {
+  border-top: 1px solid var(--color-neutral-2);
+
+  &__display {
+    font-size: 24px;
+    line-height: 28px;
+    text-align: right;
+    border-bottom: 1px solid var(--color-neutral-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+
+    button {
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    div {
+      text-align: right;
+      overflow-y: hidden;
+      flex-grow: 1;
+    }
+  }
+
+  &__buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 16px;
+
+    button {
+      color: var(--color-black);
+      font-size: var(--text-body-large-size);
+      background-color: var(--color-white);
+      border: 1px solid var(--color-neutral-4);
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 16px;
+      transition-property: transform;
+      transition-duration: var(--transition-duration-very-fast);
+      transition-timing-function: var(--transition-timing-function);
+      outline: none;
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+}
+
 .control-actions {
   display: flex;
   gap: 12px;
@@ -576,323 +819,7 @@ const {
   }
 }
 
-// --------------
-
-.page-container {
-  height: 100%;
-}
-
-.sales-container {
-  height: 100%;
-  min-height: 0;
-  display: grid;
-  grid-template-rows: 50% 50%;
-  grid-template-columns: 1fr;
-}
-
-.sales-item-wrapper {
-  overflow: auto;
-  padding: 16px;
-}
-
-.sales-item-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.sales-item {
-  picture {
-    display: block;
-    width: 100%;
-    height: 120px;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-  }
-
-  &__name {
-    font-family: var(--text-heading-family);
-    font-weight: 600;
-    font-size: var(--text-heading-6-size);
-    line-height: var(--text-heading-6-height);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    border-top: 1px solid var(--color-neutral-2);
-    padding: 8px 12px;
-  }
-}
-
-.sales-order {
-  background-color: var(--color-white);
-  border-top: 1px solid var(--color-neutral-2);
-  box-shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 1px 3px 1px;
-  display: flex;
-  flex-direction: column;
-
-  &-header {
-    font-family: var(--text-heading-family);
-    font-weight: 600;
-    font-size: var(--text-heading-6-size);
-    line-height: var(--text-heading-6-height);
-    border-bottom: 1px solid var(--color-neutral-2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-
-    &__title {
-      padding-left: 16px;
-    }
-
-    button {
-      height: 48px;
-      width: 48px;
-    }
-  }
-
-  &-body {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    overflow: auto;
-    position: relative;
-  }
-
-  &-items {
-    flex-grow: 1;
-    overflow: auto;
-    padding: 16px;
-  }
-
-  &-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
-
-    &:last-of-type {
-      margin-bottom: 0;
-    }
-
-    picture {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-      flex: 0 0 60px;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-      }
-    }
-
-    &__detail {
-      min-width: 0;
-      flex: 1;
-    }
-
-    &__quantity {
-      flex: 0 1 auto;
-    }
-  }
-}
-
-.order-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-
-  &--payment {
-    height: auto;
-
-    .order-summary {
-      flex-grow: 1;
-      overflow-y: auto;
-      border-top-color: transparent;
-    }
-  }
-
-  &--history {
-    // width: 100%;
-    // height: 100%;
-    inset: 0;
-    background-color: var(--color-white);
-    position: absolute;
-  }
-}
-
-.order {
-  &-items {
-    flex-grow: 1;
-    overflow: auto;
-    padding: 16px;
-  }
-
-  &-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
-
-    &:last-of-type {
-      margin-bottom: 0;
-    }
-
-    picture {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-      flex: 0 0 60px;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-      }
-    }
-
-    &__detail {
-      min-width: 0;
-      flex: 1;
-    }
-
-    &__quantity {
-      flex: 0 1 auto;
-    }
-  }
-
-  &-calculator {
-    border-top: 1px solid var(--color-neutral-2);
-
-    &__display {
-      font-size: 24px;
-      line-height: 28px;
-      text-align: right;
-      border-bottom: 1px solid var(--color-neutral-2);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 16px;
-
-      button {
-        cursor: pointer;
-        flex-shrink: 0;
-      }
-
-      div {
-        text-align: right;
-        overflow-y: hidden;
-        flex-grow: 1;
-      }
-    }
-
-    &__buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      padding: 16px;
-
-      button {
-        color: var(--color-black);
-        font-size: var(--text-body-large-size);
-        background-color: var(--color-white);
-        border: 1px solid var(--color-neutral-4);
-        border-radius: 4px;
-        cursor: pointer;
-        padding: 16px;
-        transition-property: transform;
-        transition-duration: var(--transition-duration-very-fast);
-        transition-timing-function: var(--transition-timing-function);
-        outline: none;
-
-        &:active {
-          transform: scale(0.95);
-        }
-      }
-    }
-  }
-
-  &-list {
-    flex: 1;
-    overflow-y: auto;
-  }
-
-  // &-summary {
-  //   border-top: 1px solid var(--color-neutral-2);
-  //   padding:16px;
-  //   margin: 0;
-
-  //   &__item {
-  //     font-size: var(--text-body-medium-size);
-  //     line-height: var(--text-body-medium-height);
-  //     display: flex;
-  //     align-items: center;
-  //     justify-content: space-between;
-  //     gap: 12px;
-  //     margin-bottom: 12px;
-
-  //     &:last-of-type {
-  //       margin-bottom: 0;
-  //     }
-
-  //     dt {
-  //       white-space: nowrap;
-  //       text-overflow: ellipsis;
-  //       overflow: hidden;
-  //     }
-
-  //     dd {
-  //       font-weight: 600;
-  //       margin: 0;
-  //     }
-  //   }
-  // }
-
-  &-actions {
-    border-top: 1px solid var(--color-neutral-2);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-
-    .cp-button {
-      width: 100%;
-    }
-  }
-}
-
-@include screen-landscape-md {
-  .sales-container {
-    grid-template-rows: 100%;
-    grid-template-columns: 1fr 35%;
-  }
-
-  .sales-item-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .order-container {
-    &--payment {
-      height: 100%;
-    }
-  }
-}
-
 @include screen-landscape-lg {
-  .sales-container {
-    grid-template-rows: 100%;
-    grid-template-columns: 1fr 35%;
-  }
 
-  .sales-item-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
 }
 </style>

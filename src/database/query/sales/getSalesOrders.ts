@@ -12,11 +12,12 @@ type ObserveableDataProduct = OrderDocProduct;
 type ObserveableData = {
   id: string;
   sales_id: string;
+  canceled: boolean;
   name: string;
-  products?: OrderDocProduct[];
+  products: OrderDocProduct[];
+  total: string;
   tendered: string;
   change: string;
-  total: string;
 };
 
 export type ObservableReturns = {
@@ -28,9 +29,12 @@ type GetSalesOrdersQuery = Omit<QueryParams, 'limit' | 'observe' | 'page'> & {
   id: string;
 };
 
-export default async ({ id, normalizer }: GetSalesOrdersQuery) => {
+export default async ({ id, sort, normalizer }: GetSalesOrdersQuery) => {
   try {
-    const _queryOrders = db.order.find({ selector: { sales_id: id } }).$;
+    const _queryOrders = db.order.find({
+      selector: { sales_id: id },
+      sort: [{ id: sort ? sort : 'asc' }],
+    }).$;
 
     const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> => {
       const orders_data = <ObserveableData[]>[];
@@ -38,6 +42,7 @@ export default async ({ id, normalizer }: GetSalesOrdersQuery) => {
       for (const order of data) {
         const {
           id,
+          canceled,
           sales_id,
           name,
           products,
@@ -64,6 +69,7 @@ export default async ({ id, normalizer }: GetSalesOrdersQuery) => {
           products: order_products,
           id,
           sales_id,
+          canceled,
           name,
           tendered,
           change,

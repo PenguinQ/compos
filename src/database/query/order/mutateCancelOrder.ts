@@ -6,7 +6,16 @@ export default async (id: string) => {
 
     if (!_queryOrder) throw `No order found with id: ${id}.`;
 
-    await _queryOrder.remove();
+    const { name } = _queryOrder;
+
+    await _queryOrder.update({
+      $set: {
+        canceled  : true,
+        updated_at: new Date().toISOString(),
+      },
+    });
+
+    return name;
   } catch (error) {
     if (error instanceof Error) throw error;
 

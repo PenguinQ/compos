@@ -5,7 +5,7 @@ import type { RxDocument } from 'rxdb';
 import { db } from '@/database';
 import { isVariant, isBundle } from '@/database/utils';
 import { IMAGE_ID_PREFIX, THUMBNAIL_ID_PREFIX } from '@/database/constants';
-import type { BundleDocProduct, ProductDoc, QueryParams } from '@/database/types';
+import type { BundleDocProduct, QueryParams } from '@/database/types';
 
 type GetSalesProductsProduct = {
   id: string;
@@ -30,24 +30,29 @@ type ProductData = {
   updated_at: string;
 };
 
-export type ObserveableDataBundleItem = {
+export type ObserveableDataItem = {
   id: string;
   name: string;
+  price: string;
   stock: number;
   quantity: number;
+  sku: string;
 };
 
 type ObserveableData = {
-  active: boolean;
   id: string;
+  active: boolean;
   images: string[];
   name: string;
   price: string;
-  product_id?: string;
-  quantity?: number;
-  sku?: string;
+  // Optional since the product can be a bundle, and bundle items has it's own stock.
   stock?: number;
-  items?: ObserveableDataBundleItem[];
+  // Optional since the product can be a bundle, and bundle items has it's own quantity.
+  quantity?: number;
+  // Optional since the product can be a bundle, and bundle items has it's own sku.
+  sku?: string;
+  // Optional since items only for bundle.
+  items?: ObserveableDataItem[];
 };
 
 export type ObservableReturns = {
@@ -55,7 +60,7 @@ export type ObservableReturns = {
   data_count: number;
 };
 
-interface GetSalesProductsQuery extends Omit<QueryParams, 'page' | 'limit'> {
+interface GetSalesProductsQuery extends Omit<QueryParams, 'page' | 'limit' | 'sort'> {
   products: GetSalesProductsProduct[];
 }
 
@@ -93,7 +98,7 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
         if (isBundle(product.id)) {
           const { id, active, name, products, price  } = product;
           const bundle_images = <string[]>[];
-          const bundle_items  = <ObserveableDataBundleItem[]>[];
+          const bundle_items  = <ObserveableDataItem[]>[];
 
           /**
            * ------------------------------------------------
@@ -118,7 +123,7 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
               if (!_queryProduct) throw 'Main product of the variant in the bundle not found';
 
               const { name: product_name } = _queryProduct.toJSON();
-              const { name: variant_name, stock } = _queryVariant.toJSON();
+              const { name: variant_name, price, stock, sku } = _queryVariant.toJSON();
               const variant_attachments    = _queryVariant.allAttachments();
               const variant_images         = variant_attachments.filter(image => image.id.startsWith(THUMBNAIL_ID_PREFIX));
 
@@ -130,7 +135,14 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
                 bundle_images.push(`data:${type};base64,${image_base64}`);
               }
 
-              bundle_items.push({ id, name: `${product_name} - ${variant_name}`, stock, quantity });
+              bundle_items.push({
+                name: `${product_name} - ${variant_name}`,
+                sku : sku || '',
+                id,
+                price,
+                stock,
+                quantity,
+              });
             }
             /**
              * -------------------------------------------------------
@@ -142,7 +154,7 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
 
               if (!_queryProduct) throw 'Product in the bundle not found';
 
-              const { name, stock } = _queryProduct.toJSON();
+              const { name, price, stock, sku } = _queryProduct.toJSON();
               const product_attachments = _queryProduct.allAttachments();
               const product_images      = product_attachments.filter(image => image.id.startsWith(THUMBNAIL_ID_PREFIX));
 
@@ -154,7 +166,14 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
                 bundle_images.push(`data:${type};base64,${image_base64}`);
               }
 
-              bundle_items.push({ id, name, stock, quantity });
+              bundle_items.push({
+                sku: sku || '',
+                id,
+                name,
+                price,
+                stock,
+                quantity,
+              });
             }
           }
 
@@ -163,7 +182,7 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
             items   : bundle_items,
             quantity: undefined,      // Quantity set to undefined because it follows the quantity the bundle item.
             stock   : undefined,      // Stock set to undefined because it follows the stock of the bundle item.
-            sku     : '',             // SKU set to empty because bundle doesn't have an SKU of it's own.
+            sku     : undefined,      // SKU set to undefined because bundle doesn't have an SKU of it's own.
             id,
             active,
             name,
@@ -176,7 +195,7 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
          * ------------------------------------
          */
         else {
-          const { id, product_id, active, name, stock, price, sku } = product;
+          const { id, active, name, stock, price, sku } = product;
           const attachments    = product.allAttachments();
           const images         = attachments.filter(image => image.id.startsWith(IMAGE_ID_PREFIX));
           const quantity       = products.filter(product => product.id === id)[0].quantity!;
@@ -197,7 +216,7 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
            * ----------------------------------------------------------
            */
           if (isVariant(id)) {
-            const _queryProduct = await db.product.findOne({ selector: { id: product_id } }).exec();
+            const _queryProduct = await product.populate('product_id');
 
             if (_queryProduct) product_name = `${_queryProduct.name} - ${name}`;
           }
@@ -206,7 +225,6 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
             images: product_images,
             name  : product_name,
             id,
-            product_id,
             active,
             stock,
             price,

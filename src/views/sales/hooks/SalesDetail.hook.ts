@@ -70,7 +70,8 @@ export const useSalesDetail = () => {
     onSuccess: (response) => {
       // @ts-ignore
       toast.add({ message: `Sales ${response} finished.`, type: 'success', duration: 2000 });
-      router.back();
+      dialogFinish.value = false;
+      refetch();
     },
   });
 

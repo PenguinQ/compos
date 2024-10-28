@@ -62,7 +62,7 @@ export type SalesDoc = {
   products: SalesDocProduct[];
   products_sold: SalesDocProductSold[];
   orders: string[];
-  revenue: number;
+  revenue: string;
   discount?: string;
   discount_type?: 'percentage' | 'fixed';
   created_at: string;
@@ -76,20 +76,25 @@ export type OrderDocBundleItem = {
   name: string;
   price: string;
   quantity: number;
+  sku: string;
 };
 
 export type OrderDocProduct = {
   id: string;
   name: string;
-  items?: OrderDocBundleItem[];
   price: string;
   quantity: number;
   total: string;
+  // Optional since the product can be a bundle, and bundle items has it's own sku.
+  sku?: string;
+  // Optional since items only for bundle.
+  items?: OrderDocBundleItem[];
 };
 
 export type OrderDoc = {
   id: string;
   sales_id: string;
+  canceled: boolean;
   name: string;
   products: OrderDocProduct[];
   discount?: string;

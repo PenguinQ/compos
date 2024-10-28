@@ -10,7 +10,9 @@ import type { ProductDoc, VariantDoc } from '@/database/types';
 type MutateAddOrderDataBundleItem = {
   id: string;
   name: string;
+  price: string;
   quantity: number;
+  sku: string;
 };
 
 type MutateAddOrderDataProduct ={
@@ -98,32 +100,93 @@ export default async ({ id, data }: MutateAddOrder) => {
     const { tendered, change, products } = data;
 
     /**
-     * THERES SHOULD BE A GUARD HERE IF THE PRODUCT IS A BUNDLE THAT PREVENT SUBMISSION
-     * IF THE PRODUCT INSIDE THE BUNDLE CONTAIN SOME OF THE PRODUCT IN SALES THAT THE BUNDLE
-     * MAKE THE STOCK OF THE PRODUCT RELATED TURN TO 0
-     *
-     * 1. AS LONG ANY (PRODUCT * QUANTITY * AMOUNT) INSIDE THE BUNDLE STOCK IS 0 CANCEL THE ORDER
+     * ----------------------------------------------------------------------------------------------------
+     * 2. Create a temporary list of all products, including every item inside a bundle for stock checking.
+     * ----------------------------------------------------------------------------------------------------
      */
+    const temp_list = <{ id: string; name: string; amount: number; stock: number; }[]>[];
+
     for (const product of products) {
-      const { id } = product;
+      const { id, name, items, amount } = product;
 
       if (isBundle(id)) {
+        for (const item of items!) {
+          const {
+            id      : item_id,
+            name    : item_name,
+            quantity: item_quantity,
+          } = item;
+          const in_temp_list = temp_list.find(product => product.id === item_id);
 
+          if (in_temp_list) {
+            const in_temp_index = temp_list.indexOf(in_temp_list);
+
+            temp_list[in_temp_index].amount += item_quantity;
+          } else {
+            const _queryItem = await db[`${isVariant(item_id) ? 'variant' : 'product'}`].findOne({ selector: { id: item_id } }).exec() as RxDocument<ProductDoc | VariantDoc>;
+
+            if (!_queryItem) `Cannot find product or variant with id of ${id}`;
+
+            const { stock } = _queryItem;
+
+            temp_list.push({
+              id      : item_id,
+              name    : item_name,
+              amount: item_quantity * amount,
+              stock,
+            });
+          }
+        }
+      } else {
+        const in_temp_list = temp_list.find(product => product.id === id);
+
+        if (in_temp_list) {
+          const in_temp_index = temp_list.indexOf(in_temp_list);
+
+          temp_list[in_temp_index].amount += amount;
+        } else {
+          const _queryProduct = await db[`${isVariant(id) ? 'variant' : 'product'}`].findOne(id).exec() as RxDocument<ProductDoc | VariantDoc>;
+
+          if (!_queryProduct) `Cannot find product or variant with id of ${id}`;
+
+          const { stock } = _queryProduct;
+
+          temp_list.push({ id, name, amount, stock });
+        }
       }
     }
 
+    const order_valid = temp_list.every(product => product.amount <= product.stock);
+
+    if (!order_valid) throw `Some of the products amount in the order are greater than the stock, please updated it.`
+
     /**
      * ---------------------------
-     * 2. Generate Order Products.
+     * 3. Generate order products.
      * ---------------------------
      */
     for (const product of products) {
-      const { id, name, price, amount } = product;
+      const { id, name, price, amount, items } = product;
+      let item_list = undefined;
+
+      if (items) {
+        const temp_list = [];
+
+        for (const item of items) {
+          const { id, name, price, quantity, sku } = item;
+
+          temp_list.push({ id, name, price, quantity, sku });
+        }
+
+        item_list = temp_list;
+      }
+
 
       order_products.push({
         id,
         name,
         price,
+        items: item_list,
         quantity: amount,
         total: Big(price).times(amount).toString(),
       });
@@ -132,29 +195,12 @@ export default async ({ id, data }: MutateAddOrder) => {
     }
 
     /**
-     * -----------------
-     * 3. Add New Order.
-     * -----------------
-     */
-    await db.order.insert({
-      id: order_id,
-      sales_id: id,
-      name: order_name,
-      products: order_products,
-      total: order_total,
-      tendered,
-      change,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
-
-    /**
      * ------------------------------
-     * 4. Update Each Products Stock.
+     * 4. Update each products stock.
      * ------------------------------
      */
     for (const product of products) {
-      const { id, name, amount } = product;
+      const { id, name, amount, items } = product;
       let _queryProduct;
 
       if (isVariant(id)) {
@@ -166,9 +212,34 @@ export default async ({ id, data }: MutateAddOrder) => {
 
         if (_queryProduct) await updateStock(_queryProduct, name, amount);
       } else if (isBundle(id)) {
-        console.log('ID bosku');
+        if (!items) throw `Bundle ${id} has no product on it.`;
+
+        for (const item of items) {
+          const { id, quantity } = item;
+          const _queryItem = await db[`${isVariant(id) ? 'variant' : 'product'}`].findOne(id).exec() as RxDocument<ProductDoc | VariantDoc>;
+
+          if (_queryItem) await updateStock(_queryItem, name, amount * quantity);
+        }
       }
     }
+
+    /**
+     * -----------------
+     * 5. Add new order.
+     * -----------------
+     */
+    await db.order.insert({
+      id      : order_id,
+      sales_id: id,
+      canceled: false,
+      name    : order_name,
+      products: order_products,
+      total   : order_total,
+      tendered,
+      change,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
   } catch (error) {
     if (error instanceof Error) {
       throw error;
