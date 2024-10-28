@@ -178,7 +178,8 @@ const {
           </Card>
         </form>
       </template>
-      <!--  -->
+
+      <!-- Dialogs -->
       <Dialog
         class="product-selection"
         v-model="showProductsDialog"

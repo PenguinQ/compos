@@ -18,6 +18,7 @@ type SalesDetailBundleProduct = {
 
 export type SalesDetailProduct = {
   id: string;
+  product_id?: string;
   images: string[];
   name: string;
   price: string;
@@ -98,12 +99,12 @@ export default async ({ id, normalizer }: GetSalesDetailQuery) => {
         const product_images       = product_attachments.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
         const product_data: SalesDetailProduct = {
           id        : product.id,
+          product_id: '',
           images    : [],
           quantity  : product.quantity,
           sku       : sku ? sku : '',
           name,
           price,
-          // product_id: '',
         };
 
         for (const image of product_images) {
@@ -124,19 +125,18 @@ export default async ({ id, normalizer }: GetSalesDetailQuery) => {
 
         if (!_queryProduct) throw 'Variant main product not found.';
 
-        // const { id: variant_product_id, name: variant_product_name } = _queryProduct.toJSON();
-        const { name: variant_product_name } = _queryProduct.toJSON();
+        const { id: variant_product_id, name: variant_product_name } = _queryProduct.toJSON();
         const { name, price, sku } = _queryVariant.toJSON();
         const variant_attachments  = _queryVariant.allAttachments();
         const variant_images       = variant_attachments.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
         const product_data: SalesDetailProduct = {
           id        : product.id,
+          product_id: variant_product_id,
           images    : [],
           name      : is_variant ? `${variant_product_name} - ${name}` : name,
           quantity  : product.quantity,
           sku       : sku ? sku : '',
           price,
-          // product_id: variant_product_id,
         };
 
         for (const image of variant_images) {
@@ -193,9 +193,9 @@ export default async ({ id, normalizer }: GetSalesDetailQuery) => {
         }
 
         products_data.push({
-          id      : product.id,
-          images  : bundle_images,
-          quantity: product.quantity,
+          id        : product.id,
+          images    : bundle_images,
+          quantity  : product.quantity,
           name,
           price,
         });

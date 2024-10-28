@@ -1,4 +1,5 @@
 export { default as getSalesDetail } from './getSalesDetail';
+export { default as getSalesFormDetail } from './getSalesFormDetail';
 export { default as getSalesList } from './getSalesList';
 export { default as getSalesOrders } from './getSalesOrders';
 export { default as getSalesProducts } from './getSalesProducts';

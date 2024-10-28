@@ -2,21 +2,18 @@
 // Common Components
 import { Bar } from '@components/Loader';
 import Button from '@components/Button';
-import Text from '@components/Text';
 import Card, { CardHeader, CardTitle, CardBody, CardSubtitle } from '@components/Card';
 import Dialog from '@components/Dialog';
 import EmptyState from '@components/EmptyState';
 import Textfield from '@components/Textfield';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
-import { Container, Row, Column } from '@components/Layout';
-import ComposIcon, { ArrowLeftShort, X } from '@components/Icons';
+import { Container } from '@components/Layout';
+import ComposIcon, { ArrowLeftShort, X, Save } from '@components/Icons';
 import { TabControls, TabControl, TabPanels, TabPanel } from '@components/TabsV2';
 
 // View Components
-import ButtonBlock from '@/views/components/ButtonBlock.vue';
 import ListFooter from '@/views/components/ListFooter.vue';
 import Pagination from '@/views/components/Pagination.vue';
-import ProductImage from '@/views/components/ProductImage.vue';
 import SalesProduct from './components/SalesProduct.vue';
 
 // Hooks
@@ -30,13 +27,11 @@ const {
   salesId,
   productListTab,
   showDialog,
-  loadProducts,
   loadBundles,
   searchProductQuery,
   searchBundleQuery,
   formData,
   formError,
-  selectedProducts,
   productList,
   bundleList,
   isDetailError,
@@ -66,20 +61,28 @@ const {
   handleSubmit,
   bundleListRefetch,
   productListRefetch,
-  mutateAdd,
 } = useSalesForm();
 </script>
 
 <template>
+  <!-- Header -->
   <Toolbar sticky>
     <ToolbarAction icon @click="$router.back">
       <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
     <ToolbarTitle>{{ salesId ? 'Edit Sales' : 'Add Sales' }}</ToolbarTitle>
     <ToolbarSpacer />
-    <ToolbarAction @click="handleSubmit">Save</ToolbarAction>
+    <template v-if="!isDetailError && !isDetailLoading">
+      <ToolbarAction v-if="isMutateAddLoading || isMutateEditLoading" backgroundColor="var(--color-blue-4)" icon>
+        <Bar size="24px" color="var(--color-white)" />
+      </ToolbarAction>
+      <ToolbarAction v-else backgroundColor="var(--color-blue-4)" icon @click="handleSubmit">
+        <ComposIcon :icon="Save" color="var(--color-white)" />
+      </ToolbarAction>
+    </template>
   </Toolbar>
-  <!--  -->
+
+  <!-- Body -->
   <Container class="pf-container">
     <EmptyState
       v-if="isDetailError"
@@ -153,7 +156,8 @@ const {
       </template>
     </template>
   </Container>
-  <!--  -->
+
+  <!-- Dialogs -->
   <Dialog
     class="temp-dialog"
     v-model="showDialog"

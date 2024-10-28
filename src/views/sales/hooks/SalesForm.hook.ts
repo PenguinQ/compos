@@ -1,10 +1,10 @@
 import { computed, inject, reactive, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import type { Ref } from 'vue';
-import { useRoute, useRouter } from "vue-router";
 
 // Databases
 import { useQuery, useMutation } from '@/database/hooks';
-import { getSalesDetail, mutateAddSales, mutateEditSales } from '@/database/query/sales';
+import { getSalesFormDetail, mutateAddSales, mutateEditSales } from '@/database/query/sales';
 import { getProductList } from '@/database/query/product';
 import { getBundleList } from '@/database/query/bundle';
 
@@ -18,9 +18,9 @@ import type {
   DetailNormalizerReturn,
   ProductListNormalizerReturn,
   BundleListNormalizerReturn,
-  ListProduct,
-  ListProductVariant,
-  ListBundle,
+  ProductList,
+  ProductListVariant,
+  BundleList,
 } from '../normalizer/SalesForm.normalizer';
 
 // Helpers
@@ -84,7 +84,7 @@ export const useSalesForm = () => {
   } = useQuery({
     enabled: params.id ? true : false,
     queryKey: ['sales-form-details', params.id],
-    queryFn: () => getSalesDetail({
+    queryFn: () => getSalesFormDetail({
       id        : params.id as string,
       normalizer: detailNormalizer,
     }),
@@ -208,9 +208,9 @@ export const useSalesForm = () => {
       }
 
       return mutateEditSales({
-        id: params.id as string,
+        id  : params.id as string,
         data: {
-          name: formData.name,
+          name    : formData.name,
           products: products_data,
         },
       });
@@ -269,14 +269,14 @@ export const useSalesForm = () => {
     }
   };
 
-  const isBundleSelected = (data: ListBundle) => {
+  const isBundleSelected = (data: BundleList) => {
     const { id } = data;
     const products = selectedProducts.value;
 
     return products.find(product => product.id === id);
   };
 
-  const isProductSelected = (data: ListProduct) => {
+  const isProductSelected = (data: ProductList) => {
     const { id, variants: variants } = data;
     const products = selectedProducts.value;
 
@@ -295,7 +295,7 @@ export const useSalesForm = () => {
     return selectedProducts.value.find(product => product.id === id);;
   };
 
-  const handleSelectBundle = (data: ListBundle) => {
+  const handleSelectBundle = (data: BundleList) => {
     const { id, images, name } = data;
     const products = selectedProducts.value;
     const selected = products.find(product => product.id === id);
@@ -309,7 +309,7 @@ export const useSalesForm = () => {
     }
   };
 
-  const handleSelectProduct = (data: ListProduct) => {
+  const handleSelectProduct = (data: ProductList) => {
     const { id, images, name, variants: variants } = data;
     const products = selectedProducts.value;
 
@@ -351,7 +351,7 @@ export const useSalesForm = () => {
     }
   };
 
-  const handleSelectVariant = (product_name: string, data: ListProductVariant) => {
+  const handleSelectVariant = (product_name: string, data: ProductListVariant) => {
     const { id, images, name } = data;
     const products = selectedProducts.value;
     const selected = products.find(product => product.id === id);

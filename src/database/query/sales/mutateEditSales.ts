@@ -15,15 +15,15 @@ type MutateEditSalesQuery = {
 
 export default async ({ id, data }: MutateEditSalesQuery) => {
   try {
+    const _querySales = await db.sales.findOne(id).exec();
+
+    if (!_querySales) throw `Cannot find sales with id ${id}.`;
+
     const { name, products } = data;
     const clean_name = sanitize(name);
 
     if (clean_name.trim() === '') throw 'Name cannot be empty.';
     if (!products.length)         throw 'Product cannot be empty.';
-
-    const _querySales = await db.sales.findOne(id).exec();
-
-    if (!_querySales) throw `Cannot find sales with id ${id}.`;
 
     await _querySales.update({
       $set: {

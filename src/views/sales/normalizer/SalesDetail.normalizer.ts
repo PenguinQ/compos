@@ -59,8 +59,6 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
   const salesOrders       = <DetailOrder[]>[];
   const salesProductsSold = <DetailProductSold[]>[];
 
-  console.log(products);
-
   for (const product of products) {
     const { name, price, images, quantity } = product;
 
