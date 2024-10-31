@@ -19,11 +19,13 @@ type MutateAddProductQuery = {
   name: string;
   description?: string;
   by?: string;
-  price: string;
-  stock: number;
+  price?: string;
+  stock?: number;
   sku?: string;
   variants: MutateAddProductVariant[];
   new_image?: File[];
+  // price: string;
+  // stock: number;
 };
 
 export default async (data: MutateAddProductQuery) => {
@@ -35,23 +37,27 @@ export default async (data: MutateAddProductQuery) => {
       description,
       by,
       sku,
-      price      = '0',
-      stock      = 0,
+      price,
+      stock,
       variants   = [],
       new_image  = [],
+      // price      = '0',
+      // stock      = 0,
     } = data;
     const clean_name        = sanitize(name);
-    const clean_description = description && sanitize(description);
-    const clean_by          = by && sanitize(by);
-    const clean_sku         = sku && sanitize(sku);
+    // const clean_description = description && sanitize(description);
+    // const clean_by          = by && sanitize(by);
+    // const clean_sku         = sku && sanitize(sku);
 
-    if (clean_name.trim() === '') throw 'Product name cannot be empty.';
-    if (!isNumeric(price))        throw 'Product price must be a number.';
-    if (!isNumeric(stock))        throw 'Product stock must be a number.';
+    if (clean_name.trim() === '')   throw 'Product name cannot be empty.';
+    if (price && !isNumeric(price)) throw 'Product price must be a number.';
+    if (stock && !isNumeric(stock)) throw 'Product stock must be a number.';
+    // if (!isNumeric(price))        throw 'Product price must be a number.';
+    // if (!isNumeric(stock))        throw 'Product stock must be a number.';
 
-    const clean_price = sanitizeNumeric(price) as string;
-    const clean_stock = sanitizeNumeric(stock) as number;
-    const is_active   = clean_stock >= 1 ? true : false;
+    // const clean_price = sanitizeNumeric(price) as string;
+    // const clean_stock = sanitizeNumeric(stock) as number;
+    // const is_active   = clean_stock >= 1 ? true : false;
 
     /**
      * ----------------------
@@ -111,14 +117,17 @@ export default async (data: MutateAddProductQuery) => {
         active     : product_active,
         id         : product_id,
         name       : clean_name,
-        description: clean_description,
-        by         : clean_by,
-        sku        : clean_sku,
-        price      : '0',
-        stock      : 0,
         variants   : variant_ids,
         created_at : new Date().toISOString(),
         updated_at : new Date().toISOString(),
+        ...(description ? { description: sanitize(description) } : {}),
+        ...(by ? { by: sanitize(by) } : {}),
+        ...(sku ? { sku: sanitize(sku) } : {}),
+        // description: clean_description,
+        // by         : clean_by,
+        // sku        : clean_sku,
+        // price      : '0',
+        // stock      : 0,
       });
 
       /**
@@ -167,6 +176,10 @@ export default async (data: MutateAddProductQuery) => {
      * -------------------------
      */
     else {
+      const clean_price = sanitizeNumeric(price!) as string;
+      const clean_stock = sanitizeNumeric(stock!) as number;
+      const is_active   = clean_stock >= 1 ? true : false;
+
       /**
        * --------------------
        * 2.1. Insert product.
@@ -176,14 +189,17 @@ export default async (data: MutateAddProductQuery) => {
         active     : is_active,
         id         : product_id,
         name       : clean_name,
-        description: clean_description,
-        by         : clean_by,
-        sku        : clean_sku,
         price      : clean_price,
         stock      : clean_stock,
         variants   : [],
         created_at : new Date().toISOString(),
         updated_at : new Date().toISOString(),
+        ...(description ? { description: sanitize(description) } : {}),
+        ...(by ? { by: sanitize(by) } : {}),
+        ...(sku ? { sku: sanitize(sku) } : {}),
+        // description: clean_description,
+        // by         : clean_by,
+        // sku        : clean_sku,
       });
 
       /**

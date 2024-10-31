@@ -15,6 +15,7 @@ export type SalesFormDetailProduct = {
 export type SalesFormDetailReturn = {
   id: string;
   name: string;
+  initial_balance?: string;
   products: SalesFormDetailProduct[];
 };
 
@@ -28,8 +29,8 @@ export default async ({ id, normalizer }: SalesFormDetailQuery) => {
 
     if (!_querySales) throw `Cannot find sales with id ${id}.`;
 
-    const { name, products } = _querySales;
-    const product_list       = [];
+    const { name, initial_balance, products } = _querySales;
+    const product_list = [];
 
     for (const product of products) {
       const { id, quantity } = product;
@@ -147,10 +148,12 @@ export default async ({ id, normalizer }: SalesFormDetailQuery) => {
       result: normalizer ? normalizer({
         id,
         name,
+        initial_balance,
         products: product_list,
       }) : {
         id,
         name,
+        initial_balance,
         products: product_list,
       },
     }

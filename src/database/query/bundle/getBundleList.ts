@@ -43,9 +43,9 @@ export default async ({
       id: { $gte: '' },
       ...(active !== undefined && { active: { $eq: active } }),
     };
-    const query_skip     = page > 1 ? (page - 1) * limit : 0;
-    const query_limit    = limit;
-    const query_sort     = [{ id: sort }];
+    const query_skip  = page > 1 ? (page - 1) * limit : 0;
+    const query_limit = limit;
+    const query_sort  = [{ id: sort }];
 
     const getBundlesCount = async () => {
       let _query;
@@ -99,9 +99,9 @@ export default async ({
 
     const _queryConstruct = db.bundle.find({
       selector: query_selector,
-      skip: query_skip,
-      limit: query_limit,
-      sort: query_sort,
+      skip    : query_skip,
+      limit   : query_limit,
+      sort    : query_sort,
     });
     const _queryBundle = observe ? _queryConstruct.$ : await _queryConstruct.exec();
 
@@ -111,18 +111,18 @@ export default async ({
      * ----------------------
      */
     if (observe) {
-      const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> =>{
+      const observeableProcessor = async (data: unknown): Promise<object> =>{
         const bundles_count = await getBundlesCount();
         const total_page    = Math.ceil(bundles_count / query_limit);
         const { first_page, last_page } = await getPageStatus({
           collection: 'bundle',
-          data,
-          sort,
-          sortBy: [{ id: sort }],
-          query: {
+          data      : data as RxDocument<BundleDoc>[],
+          sortBy    : [{ id: sort }],
+          query     : {
             name: { $regex: `.*${search_query}.*`, $options: 'i' },
             ...(active !== undefined && { active: { $eq: active } }),
           },
+          sort,
         });
         const bundles_data = await getBundlesData(data as RxDocument<BundleDoc>[]);
 
@@ -131,16 +131,16 @@ export default async ({
           data_count: bundles_count,
           page      : {
             current: page,
-            first: first_page,
-            last: last_page,
-            total: total_page,
+            first  : first_page,
+            last   : last_page,
+            total  : total_page,
           },
         };
       };
 
       return {
         observeable: true,
-        result : _queryBundle,
+        result     : _queryBundle,
         observeableProcessor,
         normalizer,
       };
@@ -155,13 +155,13 @@ export default async ({
     const total_page    = Math.ceil(bundles_count / query_limit);
     const { first_page, last_page } = await getPageStatus({
       collection: 'bundle',
-      data: _queryBundle as RxDocument<BundleDoc>[],
-      sort,
-      sortBy: [{ id: sort }],
-      query: {
+      data      : _queryBundle as RxDocument<BundleDoc>[],
+      sortBy    : [{ id: sort }],
+      query     : {
         name: { $regex: `.*${search_query}.*`, $options: 'i' },
         ...(active !== undefined && { active: { $eq: active } }),
       },
+      sort,
     });
     const bundles_data = await getBundlesData(_queryBundle as RxDocument<BundleDoc>[]);
 
@@ -170,9 +170,9 @@ export default async ({
       data_count: bundles_count,
       page      : {
         current: page,
-        first: first_page,
-        last: last_page,
-        total: total_page,
+        first  : first_page,
+        last   : last_page,
+        total  : total_page,
       },
     };
 

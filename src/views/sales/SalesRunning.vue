@@ -49,8 +49,8 @@ const router = useRouter();
 const {
   salesId,
   dialogFinish,
-  dialogCancelOrder,
   controlsView,
+  balance,
   detailsData,
   productsData,
   ordersData,
@@ -135,7 +135,6 @@ const {
                 <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
               </ProductImage>
               <div class="product-contents">
-                <!-- <pre>{{ product }}</pre> -->
                 <Text heading="5">{{ product.name }}</Text>
                 <div class="product-details">
                   <div class="product-details__item">
@@ -146,7 +145,7 @@ const {
                     <ComposIcon :icon="Boxes" />
                     {{ product.stock }}
                   </div>
-                  <div v-if="!product.items" class="product-details__item">
+                  <div class="product-details__item">
                     <ComposIcon :icon="CartPlus" />
                     {{ product.quantity }}
                   </div>
@@ -217,7 +216,7 @@ const {
                     <div class="order-product-details">
                       <div class="order-product-details__item order-product-details__item--price">
                         <ComposIcon :icon="Tags" />
-                        {{ toIDR(product.price * product.amount) }}
+                        {{ toIDR(product.price.times(product.amount).toString()) }}
                       </div>
                     </div>
                   </div>
@@ -226,8 +225,8 @@ const {
                     small
                     readonly
                     v-model.number="product.amount"
-                    :max="product.stock"
                     :step="product.quantity"
+                    :max="product.stock"
                     @clickDecrement="handleClickQuantityDecrement($event, product.id)"
                   />
                 </div>
@@ -240,6 +239,10 @@ const {
                 <div class="order-summary-item">
                   <dt>Total</dt>
                   <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
+                </div>
+                <div v-if="balance.current" class="order-summary-item">
+                  <dt>Balance</dt>
+                  <dd>{{ toIDR(balance.current) }}</dd>
                 </div>
               </dl>
             </template>
@@ -257,6 +260,10 @@ const {
                 <div class="order-summary-item">
                   <dt>Payment Amount</dt>
                   <dd>{{ toIDR(paymentTendered.toString()) }}</dd>
+                </div>
+                <div v-if="balance.current" class="order-summary-item">
+                  <dt>Balance</dt>
+                  <dd>{{ toIDR(balance.current) }}</dd>
                 </div>
                 <div class="order-summary-item order-summary-item--change">
                   <dt>
@@ -371,21 +378,6 @@ const {
   <Dialog v-model="dialogFinish" :title="`Finish ${detailsData?.name}?`">
     <Text body="large" textAlign="center" margin="0">
       Finishing this product will finish this sales dashboard session, set the status as finished and redirect to the sales detail page.
-    </Text>
-    <template #footer>
-      <div class="dialog-actions">
-        <Button color="green" full @click="mutateFinish">
-          {{ isMutateFinishLoading ? 'Loading' : 'Finish' }}
-        </Button>
-        <Button variant="outline" full @click="dialogFinish = false">Cancel</Button>
-      </div>
-    </template>
-  </Dialog>
-
-  <!-- Dialog Finish -->
-  <Dialog v-model="dialogCancelOrder" :title="`Cancel Order ${'X'}?`">
-    <Text body="large" textAlign="center" margin="0">
-      Finishing this product will finish this sales dashboard session and set the status as finished.
     </Text>
     <template #footer>
       <div class="dialog-actions">

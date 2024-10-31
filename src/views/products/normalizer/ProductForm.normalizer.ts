@@ -19,14 +19,14 @@ type ProductVariants = {
 export type ProductFormNormalizerReturn = {
   id: string;
   active: boolean;
-  name: string;
-  description: string;
   image: Image[];
-  by: string;
-  price: string;
-  stock: number;
-  sku: string;
-  variants: ProductVariants[];
+  name: string;
+  description?: string;
+  by?: string;
+  price?: string;
+  stock?: number;
+  sku?: string;
+  variants?: ProductVariants[];
 };
 
 export const formDetailNormalizer = (data: unknown): ProductFormNormalizerReturn => {
@@ -69,6 +69,8 @@ export const formDetailNormalizer = (data: unknown): ProductFormNormalizerReturn
     });
   }
 
+  console.log(data);
+
   return {
     id         : id || '',
     active     : active || false,
@@ -79,6 +81,7 @@ export const formDetailNormalizer = (data: unknown): ProductFormNormalizerReturn
     price      : price ?? '0',
     stock      : stock ?? 0,
     sku        : sku || '',
-    variants   : product_variants,
+    ...(variants ? { variants: product_variants }: {}),
+    // variants   : product_variants,
   };
 };

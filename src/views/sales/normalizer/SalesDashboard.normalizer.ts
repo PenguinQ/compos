@@ -1,11 +1,6 @@
 import type { SalesDetailQueryReturn } from '@/database/query/sales/getSalesDetail';
-import type {
-  ObservableReturns as ProductsQueryReturns,
-  ObserveableDataItem,
-} from '@/database/query/sales/getSalesProducts';
-import type {
-  ObservableReturns as OrdersQueryReturns,
-} from '@/database/query/sales/getSalesOrders';
+import type { ObservableReturns as ProductsQueryReturns, ObserveableDataItem } from '@/database/query/sales/getSalesProducts';
+import type { ObservableReturns as OrdersQueryReturns } from '@/database/query/sales/getSalesOrders';
 
 import { getUpdateTime, toIDR } from '@/helpers';
 
@@ -15,50 +10,16 @@ export type DetailsNormalizerProduct = {
   quantity?: number;
 };
 
-type ProductsNormalizerItem = ObserveableDataItem & {
-  priceFormatted: string;
-};
-
-type ProductsNormalizerProduct = {
-  id: string;
-  active: boolean;
-  images: string[];
-  name: string;
-  price: string;
-  priceFormatted: string;
-  // Optional since the product can be a bundle, and bundle items has it's own stock.
-  stock?: number;
-  // Optional since the product can be a bundle, and bundle items has it's own quantity.
-  quantity?: number;
-  // Optional since the product can be a bundle, and bundle items has it's own sku.
-  sku?: string;
-  // Optional since items only for bundle.
-  items?: ProductsNormalizerItem[];
-};
-
-type OrdersNormalizerOrder = {
-
-};
-
 export type DetailsNormalizerReturn = {
   name: string;
   finished: boolean;
   products: DetailsNormalizerProduct[];
+  balance?: string;
   updatedAt: string;
 };
 
-export type ProductsNormalizerReturn = {
-  products: ProductsNormalizerProduct[];
-  productsCount: number;
-};
-
-export type OrdersNormalizerReturn = {
-  orders: OrdersNormalizerOrder[];
-  ordersCount: number;
-};
-
 export const detailsNormalizer = (data: unknown): DetailsNormalizerReturn => {
-  const { finished, name, products, updated_at } = data as SalesDetailQueryReturn || {};
+  const { finished, name, products, initial_balance, updated_at } = data as SalesDetailQueryReturn || {};
   const salesProducts: { id: string, product_id?: string, quantity?: number }[] = [];
 
   for (const product of products) {
@@ -72,12 +33,42 @@ export const detailsNormalizer = (data: unknown): DetailsNormalizerReturn => {
     updatedAt: getUpdateTime(updated_at),
     name,
     finished,
+    ...(initial_balance ? { balance: initial_balance } : {}),
   };
+};
+
+type ProductsNormalizerItem = ObserveableDataItem & {
+  priceFormatted: string;
+};
+
+/**
+ * --------------------------------------------------------------------------------------------------
+ * 1. stock is optional since the product can be a bundle, and bundle items has it's own stock.
+ * 2. sku is optional since the product can be a bundle, and bundle items has it's own sku.
+ * 3. items is optional since items only used for bundle.
+ * --------------------------------------------------------------------------------------------------
+ */
+export type ProductsNormalizerProduct = {
+  id: string;
+  active: boolean;
+  images: string[];
+  name: string;
+  price: string;
+  priceFormatted: string;
+  stock?: number;
+  quantity: number;
+  sku?: string;
+  items?: ProductsNormalizerItem[];
+};
+
+export type ProductsNormalizerReturn = {
+  products: ProductsNormalizerProduct[];
+  productsCount: number;
 };
 
 export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
   const { data: productsData, data_count } = data as ProductsQueryReturns;
-  const productList = <ProductsNormalizerProduct[]>[];
+  const productList = [];
 
   for (const product of productsData) {
     const {
@@ -112,7 +103,7 @@ export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
 
     productList.push({
       items          : itemList.length ? itemList : undefined,
-      priceFormatted: toIDR(price),
+      priceFormatted : toIDR(price),
       id,
       active,
       images,
@@ -130,11 +121,43 @@ export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
   };
 };
 
+type OrdersNormalizerOrderProductItem = {
+  name: string;
+  quantity: number;
+};
+
+type OrdersNormalizerOrderProduct = {
+  name: string;
+  quantity: number;
+  items?: OrdersNormalizerOrderProductItem[];
+};
+
+type OrdersNormalizerOrder = {
+  products: OrdersNormalizerOrderProduct[],
+  id: string;
+  canceled: boolean;
+  name: string;
+  total: string;
+  totalFormatted: string;
+  tendered: string;
+  tenderedFormatted: string;
+  change: string;
+  changeFormatted: string;
+};
+
+export type OrdersNormalizerReturn = {
+  orders: OrdersNormalizerOrder[];
+  ordersTotalChange: string;
+  ordersTotalChangeFormatted: string;
+  ordersCount: number;
+};
+
 export const ordersNormalizer = (data: unknown): OrdersNormalizerReturn => {
   const { data: ordersData, data_count } = data as OrdersQueryReturns;
+  const { orders, orders_total_change }  = ordersData;
   const ordersList = [];
 
-  for (const order of ordersData) {
+  for (const order of orders) {
     const { id, canceled, name, products, total, tendered, change } = order;
     const orderProductList = [];
 
@@ -161,21 +184,23 @@ export const ordersNormalizer = (data: unknown): OrdersNormalizerReturn => {
     }
 
     ordersList.push({
-      products: orderProductList,
+      products         : orderProductList,
+      totalFormatted   : toIDR(total),
+      tenderedFormatted: toIDR(tendered),
+      changeFormatted  : toIDR(change),
       id,
       canceled,
       name,
       total,
-      totalFormatted: toIDR(total),
       tendered,
-      tenderedFormatted: toIDR(tendered),
       change,
-      changeFormatted: toIDR(change),
     });
   }
 
   return {
-    orders     : ordersList,
-    ordersCount: data_count,
+    orders                    : ordersList,
+    ordersTotalChange         : orders_total_change,
+    ordersTotalChangeFormatted: toIDR(orders_total_change),
+    ordersCount               : data_count,
   };
 };

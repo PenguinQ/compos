@@ -1,3 +1,4 @@
+import Big from 'big.js';
 import type { RxDocument } from 'rxdb';
 
 import { db } from '@/database';
@@ -9,7 +10,7 @@ import type {
 
 type ObserveableDataProduct = OrderDocProduct;
 
-type ObserveableData = {
+type ObserveableDataOrder = {
   id: string;
   sales_id: string;
   canceled: boolean;
@@ -20,8 +21,13 @@ type ObserveableData = {
   change: string;
 };
 
+type ObserveableData = {
+  orders: ObserveableDataOrder[];
+  orders_total_change: string;
+};
+
 export type ObservableReturns = {
-  data: ObserveableData[];
+  data: ObserveableData;
   data_count: number;
 };
 
@@ -36,10 +42,11 @@ export default async ({ id, sort, normalizer }: GetSalesOrdersQuery) => {
       sort: [{ id: sort ? sort : 'asc' }],
     }).$;
 
-    const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> => {
-      const orders_data = <ObserveableData[]>[];
+    const observeableProcessor = async (data: unknown): Promise<object> => {
+      const orders_data = [];
+      let total_change  = Big(0);
 
-      for (const order of data) {
+      for (const order of data as RxDocument<OrderDoc>[]) {
         const {
           id,
           canceled,
@@ -49,7 +56,7 @@ export default async ({ id, sort, normalizer }: GetSalesOrdersQuery) => {
           tendered,
           change,
           total,
-        } = order as RxDocument<OrderDoc>;
+        } = order;
         const order_products = <ObserveableDataProduct[]>[];
 
         for (const product of products) {
@@ -65,20 +72,25 @@ export default async ({ id, sort, normalizer }: GetSalesOrdersQuery) => {
           });
         }
 
+        total_change = total_change.plus(Big(change));
+
         orders_data.push({
           products: order_products,
           id,
           sales_id,
           canceled,
           name,
+          total,
           tendered,
           change,
-          total,
         });
       }
 
       return {
-        data      : orders_data,
+        data: {
+          orders             : orders_data,
+          orders_total_change: total_change.toString(),
+        },
         data_count: orders_data.length,
       };
     };

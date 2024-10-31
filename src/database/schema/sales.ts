@@ -68,15 +68,24 @@ export default {
       },
       default: [],
     },
-    discount: {
+    // discount: {
+    //   type: 'string',
+    //   default: '0',
+    // },
+    // discount_type: {
+    //   type: 'string',
+    //   maxLength: 100,
+    //   default: 'percentage',
+    // },
+    initial_balance: {
       type: 'string',
-      default: '0',
     },
-    discount_type: {
+    final_balance: {
       type: 'string',
-      maxLength: 100,
-      default: 'percentage',
     },
+    // balance: {
+    //   type: 'string',
+    // },
     revenue: {
       type: 'string',
       default: '0',

@@ -36,22 +36,25 @@ export type ObserveableDataItem = {
   price: string;
   stock: number;
   quantity: number;
-  sku: string;
+  sku?: string;
 };
 
+/**
+ * --------------------------------------------------------------------------------------------------
+ * 1. stock is optional since the product can be a bundle, and bundle items has it's own stock.
+ * 2. sku is optional since the product can be a bundle, and bundle items has it's own sku.
+ * 3. items is optional since items only used for bundle.
+ * --------------------------------------------------------------------------------------------------
+ */
 type ObserveableData = {
   id: string;
   active: boolean;
   images: string[];
   name: string;
   price: string;
-  // Optional since the product can be a bundle, and bundle items has it's own stock.
   stock?: number;
-  // Optional since the product can be a bundle, and bundle items has it's own quantity.
-  quantity?: number;
-  // Optional since the product can be a bundle, and bundle items has it's own sku.
+  quantity: number;
   sku?: string;
-  // Optional since items only for bundle.
   items?: ObserveableDataItem[];
 };
 
@@ -80,8 +83,8 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
       ..._queryBundle,
     ];
 
-    const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<ObservableReturns> => {
-      const filtered_products = data.filter(Boolean) as RxDocument<ProductData>[];
+    const observeableProcessor = async (data: unknown): Promise<ObservableReturns> => {
+      const filtered_products = (data as RxDocument<ProductData>[]).filter(Boolean);
       const products_data     = <ObserveableData[]>[];
 
       /**
@@ -96,16 +99,17 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
          * --------------------------------
          */
         if (isBundle(product.id)) {
-          const { id, active, name, products, price  } = product;
+          const { id, active, name, products: bundle_products, price  } = product;
           const bundle_images = <string[]>[];
           const bundle_items  = <ObserveableDataItem[]>[];
+          const bundle_quantity = products!.filter(product => product.id === id)[0].quantity!;
 
           /**
            * ------------------------------------------------
            * 1.1.1. Loop through every product on the bundle.
            * ------------------------------------------------
            */
-          for (const product of products!) {
+          for (const product of bundle_products!) {
             const { id, quantity } = product;
 
             /**
@@ -124,11 +128,11 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
 
               const { name: product_name } = _queryProduct.toJSON();
               const { name: variant_name, price, stock, sku } = _queryVariant.toJSON();
-              const variant_attachments    = _queryVariant.allAttachments();
-              const variant_images         = variant_attachments.filter(image => image.id.startsWith(THUMBNAIL_ID_PREFIX));
+              const variant_attachments = _queryVariant.allAttachments();
+              const variant_images      = variant_attachments.filter(image => image.id.startsWith(THUMBNAIL_ID_PREFIX));
 
               for (const image of variant_images) {
-                const { type } = image;
+                const { type }     = image;
                 const image_data   = await image.getData();
                 const image_base64 = await blobToBase64String(image_data);
 
@@ -137,11 +141,11 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
 
               bundle_items.push({
                 name: `${product_name} - ${variant_name}`,
-                sku : sku || '',
                 id,
                 price,
                 stock,
                 quantity,
+                ...(sku ? { sku } : {}),
               });
             }
             /**
@@ -159,7 +163,7 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
               const product_images      = product_attachments.filter(image => image.id.startsWith(THUMBNAIL_ID_PREFIX));
 
               for (const image of product_images) {
-                const { type } = image;
+                const { type }     = image;
                 const image_data   = await image.getData();
                 const image_base64 = await blobToBase64String(image_data);
 
@@ -167,12 +171,12 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
               }
 
               bundle_items.push({
-                sku: sku || '',
+                price: price!, // If the product is not a variant, it should be have a price.
+                stock: stock!, // If the product is not a variant, it should be have a stock.
                 id,
                 name,
-                price,
-                stock,
                 quantity,
+                ...(sku ? { sku } : {}),
               });
             }
           }
@@ -180,9 +184,7 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
           products_data.push({
             images  : bundle_images,
             items   : bundle_items,
-            quantity: undefined,      // Quantity set to undefined because it follows the quantity the bundle item.
-            stock   : undefined,      // Stock set to undefined because it follows the stock of the bundle item.
-            sku     : undefined,      // SKU set to undefined because bundle doesn't have an SKU of it's own.
+            quantity: bundle_quantity,
             id,
             active,
             name,
@@ -228,8 +230,8 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
             active,
             stock,
             price,
-            sku,
             quantity,
+            ...(sku ? { sku } : {}),
           });
         }
       }
@@ -242,7 +244,7 @@ export default async ({ products, normalizer }: GetSalesProductsQuery) => {
 
     return {
       observeable: true,
-      result: combineLatest(_queries),
+      result     : combineLatest(_queries),
       observeableProcessor,
       normalizer,
     };

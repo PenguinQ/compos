@@ -27,16 +27,16 @@ export default {
       items: {
         type: 'string',
       },
-      default: [],
+      // default: [],
     },
     price: {
       type: 'string',
-      default: '0',
+      // default: '0',
     },
     stock: {
       type: 'integer',
       minimum: 0,
-      default: 0,
+      // default: 0,
     },
     sku: {
       type: 'string',
@@ -54,9 +54,10 @@ export default {
   },
   required: [
     'id',
+    'active',
     'name',
-    'price',
-    'stock',
+    // 'price',
+    // 'stock',
     'created_at',
     'updated_at',
   ],

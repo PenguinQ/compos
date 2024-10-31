@@ -38,11 +38,16 @@ type FormDataVariant = {
 type FormData = {
   id: string;
   name: string;
-  description: string;
-  by: string;
-  price: string;
-  stock: number;
-  sku: string;
+  description?: string;
+  by?: string;
+  price?: string;
+  stock?: number;
+  sku?: string;
+  // description: string;
+  // by: string;
+  // price: string;
+  // stock: number;
+  // sku: string;
   variants: FormDataVariant[];
   deleted_variants: string[];
   image: Image[];
@@ -72,11 +77,16 @@ export const useProductForm = () => {
   const formData = reactive<FormData>({
     id              : '',
     name            : '',
-    description     : '',
-    by              : '',
-    price           : '0',
-    stock           : 0,
-    sku             : '',
+    description     : undefined,
+    by              : undefined,
+    price           : undefined,
+    stock           : undefined,
+    sku             : undefined,
+    // description     : '',
+    // by              : '',
+    // price           : '0',
+    // stock           : 0,
+    // sku             : '',
     variants        : [],
     deleted_variants: [],
     image           : [],
