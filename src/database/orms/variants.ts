@@ -14,7 +14,7 @@ export default {
      * Recursively get active status for each variant.
      * -----------------------------------------------
      */
-    for (const id of variants) {
+    for (const id of variants!) {
       const _queryVariant = await db.variant.findOne(id).exec();
 
       if (_queryVariant) {

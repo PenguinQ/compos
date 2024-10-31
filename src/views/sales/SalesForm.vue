@@ -105,14 +105,25 @@ const {
               <CardSubtitle>General information about the sales.</CardSubtitle>
             </CardHeader>
             <CardBody>
-              <div>
+              <div class="sales-form-fields">
                 <Textfield
                   id="sales-name"
                   label="Name"
+                  placeholder="Sales name"
                   :labelProps="{ for: 'sales-name' }"
                   :error="formError.name ? true : false"
                   :message="formError.name"
                   v-model="formData.name"
+                />
+                <Textfield
+                  id="sales-balance"
+                  label="Balance"
+                  placeholder="Sales balance"
+                  prepend="Rp"
+                  v-model="formData.balance"
+                  :labelProps="{ for: 'sales-balance' }"
+                  :error="formError.balance ? true : false"
+                  :message="formError.balance"
                 />
               </div>
             </CardBody>

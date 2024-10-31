@@ -31,7 +31,7 @@ export default async ({ id, normalizer }: ProductDetailQuery) => {
   try {
     const _queryProduct = await db.product.findOne({ selector: { id } }).exec();
 
-    if (!_queryProduct) throw '[getProductDetail] Product not found.';
+    if (!_queryProduct) throw 'Product not found.';
 
     const _queryVariants: RxDocument<VariantDoc>[] = await _queryProduct.populate('variants');
 
@@ -40,7 +40,9 @@ export default async ({ id, normalizer }: ProductDetailQuery) => {
      * 1. Set product detail data.
      * ---------------------------
      */
-    const { variants, ...product_rest } = _queryProduct.toJSON();
+    console.log(_queryProduct)
+
+    const { variants, ...product_rest } = _queryProduct.toJSON();;
     const product_attachments = _queryProduct.allAttachments();
     const images              = product_attachments.filter((att: RxAttachment<ProductDoc>) => att.id.startsWith(IMAGE_ID_PREFIX));
     const product_data        = { images: [], ...product_rest } as ProductData;

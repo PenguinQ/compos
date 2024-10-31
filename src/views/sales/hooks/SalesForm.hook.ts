@@ -24,7 +24,7 @@ import type {
 } from '../normalizer/SalesForm.normalizer';
 
 // Helpers
-import { debounce } from '@/helpers';
+import { debounce, isNumeric } from '@/helpers';
 
 type FormDataProduct = {
   id: string;
@@ -36,6 +36,7 @@ type FormDataProduct = {
 type FormData = {
   id: string;
   name: string;
+  balance?: string;
   products: FormDataProduct[];
 };
 
@@ -54,11 +55,13 @@ export const useSalesForm = () => {
   const formData = reactive<FormData>({
     id      : '',
     name    : '',
+    balance : '',
     products: [],
   });
   const formError = reactive({
     name   : '',
     product: '',
+    balance: '',
   });
   const pageBundle = reactive({
     current: 1,
@@ -94,10 +97,13 @@ export const useSalesForm = () => {
       console.error('Error getting sales detail.', error.message);
     },
     onSuccess: response => {
-      const { name, products } = response as DetailNormalizerReturn;
+      const { name, balance, products } = response as DetailNormalizerReturn;
+
+      console.log(response);
 
       formData.name     = name;
       formData.products = products;
+      if (balance) formData.balance  = balance;
     },
   });
 
@@ -180,6 +186,7 @@ export const useSalesForm = () => {
       return mutateAddSales({
         data: {
           name    : formData.name,
+          balance : formData.balance,
           products: products_data,
         },
       });
@@ -211,6 +218,7 @@ export const useSalesForm = () => {
         id  : params.id as string,
         data: {
           name    : formData.name,
+          balance : formData.balance,
           products: products_data,
         },
       });
@@ -406,6 +414,13 @@ export const useSalesForm = () => {
       errors.push('');
     } else {
       formError.name = '';
+    }
+
+    if (formData.balance && !isNumeric(formData.balance)) {
+      formError.balance = 'Sales balance must be a number.';
+      errors.push('');
+    } else {
+      formError.balance = '';
     }
 
     if (!formData.products.length) {

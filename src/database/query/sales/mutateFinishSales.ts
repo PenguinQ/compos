@@ -8,7 +8,8 @@ export default async (id: string): Promise<string> => {
 
     if (!_querySales) throw `Cannot find sales with id ${id}.`;
 
-    const { name, revenue } = _querySales;
+    const { name, balance, revenue } = _querySales;
+    let sales_balance = balance;
     let sales_revenue = Big(revenue);
 
     /**
@@ -36,11 +37,20 @@ export default async (id: string): Promise<string> => {
       sales_revenue = Big(sales_revenue).plus(order.total);
     }
 
+    if (balance) {
+      const current_balance = Big(balance);
+
+      if (sales_revenue.gt(current_balance)) throw `Cannot finish sales since the total orders are greater than the remaining balance`;
+
+      sales_balance = current_balance.minus(sales_revenue).toString();
+    }
+
     await _querySales.update({
       $set: {
         finished  : true,
         revenue   : sales_revenue.toString(),
         updated_at: new Date().toISOString(),
+        ...(balance ? { balance: sales_balance } : {}),
       },
     });
 

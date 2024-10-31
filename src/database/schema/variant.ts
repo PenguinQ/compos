@@ -43,6 +43,7 @@ export default {
   required: [
     'id',
     'product_id',
+    'active',
     'name',
     'price',
     'stock',

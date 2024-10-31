@@ -7,7 +7,7 @@ export default async (id: string) => {
   try {
     const _queryProduct = await db.product.findOne({ selector: { id } }).exec();
 
-    if (!_queryProduct) throw '[getSampleVariants]: Product not found.';
+    if (!_queryProduct) throw 'Product not found.';
 
     const _queryVariants: RxDocument<VariantDoc>[] = await _queryProduct.populate('variants');
 

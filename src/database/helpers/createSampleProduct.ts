@@ -4,27 +4,26 @@ import Big from 'big.js';
 import { db } from '../';
 
 export default async () => {
-  const ulid = monotonicFactory();
-  const productObj = [];
-  let bundle_data = [];
-  let bundle_price = Big(0);
+  const ulid           = monotonicFactory();
+  const productObj     = [];
+  let bundle_data      = [];
+  let bundle_price     = Big(0);
   let bundle_available = true;
 
-  for (let i = 1; i < 12; i++) {
+  for (let i = 1; i < 7; i++) {
     const productId = 'PRD_' + ulid();
     const product: any = {
-      id: productId,
-      active: i < 3 ? true : false,
-      name: `Product ${i}`,
+      id         : productId,
+      active     : i < 3 ? true : false,
+      name       : `Product ${i}`,
       description: `This is description for Product ${i}`,
-      by: '',
-      // price: i === 1 ? '0' : 10000 * i,
-      price: i === 1 ? '0' : (10000 * i).toString(),
-      stock: i < 3 ? i : 0,
-      sku: '',
-      variants: [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      price      : i === 1 ? '0' : (10000 * i).toString(),
+      stock      : i < 3 ? 100 : 0,
+      variants   : [],
+      created_at : new Date().toISOString(),
+      updated_at : new Date().toISOString(),
+      // by: '',
+      // sku: '',
     };
 
     /**
@@ -41,31 +40,31 @@ export default async () => {
 
       const productArray = [
         {
-          id: testIDOne,
+          id        : testIDOne,
           product_id: productId,
-          active: true,
-          name: 'Variant 1',
-          price: '100000',
-          stock: 1,
-          sku: '',
+          active    : true,
+          name      : 'Variant 1',
+          price     : '150000',
+          stock     : 100,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          // sku: '',
         },
         {
-          id: testIDTwo,
+          id        : testIDTwo,
           product_id: productId,
-          active: true,
-          name: 'Variant 2',
-          price: '200000',
-          stock: 2,
-          sku: '',
+          active    : true,
+          name      : 'Variant 2',
+          price     : '125000',
+          stock     : 100,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          // sku       : '',
         },
       ];
 
       bundle_data.push({ id: testIDOne, product_id: productId, active: productArray[0].active });
-      bundle_price = bundle_price.plus(productArray[0].price);
+      bundle_price     = bundle_price.plus(productArray[0].price);
       bundle_available = productArray[0].active ? true : false;
 
       await db.variant.bulkInsert(productArray);
@@ -84,8 +83,8 @@ export default async () => {
 
   return {
     bundle: {
-      product: bundle_data,
-      price: bundle_price.toString(),
+      product  : bundle_data,
+      price    : bundle_price.toString(),
       available: bundle_available,
     },
     result: await db.product.bulkInsert(productObj),

@@ -90,15 +90,15 @@ export default {
       },
       default: [],
     },
-    discount: {
-      type: 'string',
-      default: '0',
-    },
-    discount_type: {
-      type: 'string',
-      maxLength: 100,
-      default: 'percentage',
-    },
+    // discount: {
+    //   type: 'string',
+    //   default: '0',
+    // },
+    // discount_type: {
+    //   type: 'string',
+    //   maxLength: 100,
+    //   default: 'percentage',
+    // },
     tendered: {
       type: 'string',
       default: '0',

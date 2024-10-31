@@ -146,6 +146,15 @@
   }
 }
 
+.sales-form {
+  &-fields {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+}
+
 @include screen-md {
   .product-form {
     &-image {

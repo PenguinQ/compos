@@ -52,39 +52,20 @@ const {
     </ToolbarAction>
     <ToolbarTitle>Sales Detail</ToolbarTitle>
     <ToolbarSpacer />
-    <ToolbarAction
-      v-if="!isError && !isLoading"
-      icon
-      @click="router.push(`/sales/dashboard/${salesId}`)"
-    >
-      <ComposIcon :icon="CashStack" />
-    </ToolbarAction>
-    <ToolbarAction
-      v-if="!isError && !isLoading && !data.finished"
-      icon
-      backgroundColor="var(--color-blue-4)"
-      @click="router.push(`/sales/edit/${salesId}`)"
-    >
-      <ComposIcon :icon="PencilSquare" />
-    </ToolbarAction>
-    <!-- If there are no sales yet, show delete button instead finish button -->
-    <ToolbarAction
-      v-if="!isError && !isLoading"
-      icon
-      backgroundColor="var(--color-red-4)"
-      @click="dialogDelete = true"
-    >
-      <ComposIcon :icon="Trash" />
-    </ToolbarAction>
-    <!-- If there are some sales been done, show finish button instead delete button -->
-    <ToolbarAction
-      v-if="!isError && !isLoading && !data.finished"
-      icon
-      backgroundColor="var(--color-green-4)"
-      @click="dialogFinish = true"
-    >
-      <ComposIcon :icon="CheckLarge" :size="32" />
-    </ToolbarAction>
+    <template v-if="!isError && !isLoading">
+      <ToolbarAction v-if="!data.finished" icon @click="router.push(`/sales/dashboard/${salesId}`)">
+        <ComposIcon :icon="CashStack" />
+      </ToolbarAction>
+      <ToolbarAction v-if="!data.finished" icon backgroundColor="var(--color-blue-4)" @click="router.push(`/sales/edit/${salesId}`)">
+        <ComposIcon :icon="PencilSquare" />
+      </ToolbarAction>
+      <ToolbarAction icon backgroundColor="var(--color-red-4)" @click="dialogDelete = true">
+        <ComposIcon :icon="Trash" />
+      </ToolbarAction>
+      <ToolbarAction v-if="!data.finished" icon backgroundColor="var(--color-green-4)" @click="dialogFinish = true">
+        <ComposIcon :icon="CheckLarge" :size="32" />
+      </ToolbarAction>
+    </template>
   </Toolbar>
 
   <!-- Content -->
@@ -116,6 +97,14 @@ const {
                       {{ data.finished ? 'Finished' : 'Running' }}
                     </Label>
                   </dd>
+                </DescriptionListItem>
+                <DescriptionListItem>
+                  <dt>Initial Balance</dt>
+                  <dd>{{ data.initialBalanceFormatted || '-' }}</dd>
+                </DescriptionListItem>
+                <DescriptionListItem>
+                  <dt>Final Balance</dt>
+                  <dd>{{ data.finalBalanceFormatted || '-' }}</dd>
                 </DescriptionListItem>
                 <DescriptionListItem>
                   <dt>Revenue</dt>

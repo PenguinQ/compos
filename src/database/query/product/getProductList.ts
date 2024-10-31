@@ -137,7 +137,7 @@ export default async ({
      * ----------------------
      */
     if (observe) {
-      const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> => {
+      const observeableProcessor = async (data: unknown): Promise<object> => {
         const products_count = await getProductsCount();
         const total_page     = Math.ceil(products_count / query_limit);
         const { first_page, last_page } = await getPageStatus({
@@ -147,7 +147,7 @@ export default async ({
             name: { $regex: `.*${search_query}.*`, $options: 'i' },
             ...(active !== undefined && { active: { $eq: active } }),
           },
-          data,
+          data: data as RxDocument<ProductDoc>[],
           sort,
         });
         const products_data = await getProductsData(data as RxDocument<ProductDoc>[]);

@@ -1,3 +1,4 @@
+export { default as getSalesBalance } from './getSalesBalance';
 export { default as getSalesDetail } from './getSalesDetail';
 export { default as getSalesFormDetail } from './getSalesFormDetail';
 export { default as getSalesList } from './getSalesList';

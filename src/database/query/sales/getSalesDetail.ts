@@ -51,6 +51,8 @@ export type SalesDetailQueryReturn = {
   products: SalesDetailProduct[];
   products_sold: SalesDetailProductSold[];
   orders: SalesDetailOrder[];
+  initial_balance?: string;
+  final_balance?: string;
   revenue: string;
   updated_at: string;
 };
@@ -68,6 +70,8 @@ export default async ({ id, normalizer }: GetSalesDetailQuery) => {
     const {
       name,
       finished,
+      initial_balance,
+      final_balance,
       revenue,
       products,
       products_sold,
@@ -258,23 +262,27 @@ export default async ({ id, normalizer }: GetSalesDetailQuery) => {
      */
     return {
       result: normalizer ? normalizer({
+        products     : products_data,
+        products_sold: [], // UNFINISHED
+        orders       : orders_data,
         id,
         name,
         finished,
+        initial_balance,
+        final_balance,
         revenue,
-        products: products_data,
-        products_sold, // UNFINISHED
-        orders: orders_data,
         created_at,
         updated_at,
       }) : {
+        products     : products_data,
+        products_sold: [], // UNFINISHED
+        orders       : orders_data,
         id,
         name,
         finished,
+        initial_balance,
+        final_balance,
         revenue,
-        products: products_data,
-        products_sold, // UNFINISHED
-        orders: orders_data,
         created_at,
         updated_at,
       },

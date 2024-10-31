@@ -11,11 +11,12 @@ type Pagination = {
 
 export type DetailNormalizerReturn = {
   name: string;
+  balance?: string;
   products: SalesFormDetailProduct[];
 };
 
 export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
-  const { name, products } = data as SalesFormDetailReturn;
+  const { name, initial_balance, products } = data as SalesFormDetailReturn;
   const productList = [];
 
   for (const product of products) {
@@ -32,6 +33,7 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
   return {
     products: productList,
     name,
+    ...(initial_balance ? { balance: initial_balance } : {}),
   };
 };
 

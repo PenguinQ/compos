@@ -40,6 +40,10 @@ export type DetailNormalizerReturn = {
   products: DetailProduct[];
   productsSold: DetailProductSold[];
   orders: DetailOrder[];
+  initialBalance?: string;
+  initialBalanceFormatted?: string;
+  finalBalance?: string;
+  finalBalanceFormatted?: string;
   revenue: string;
   revenueFormatted: string;
   updatedAt: string;
@@ -52,12 +56,17 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
     products,
     products_sold,
     orders,
+    initial_balance,
+    final_balance,
     revenue,
     updated_at,
   } = data as SalesDetailQueryReturn || {};
-  const salesProducts     = <DetailProduct[]>[];
-  const salesOrders       = <DetailOrder[]>[];
-  const salesProductsSold = <DetailProductSold[]>[];
+  // const salesProducts     = <DetailProduct[]>[];
+  // const salesOrders       = <DetailOrder[]>[];
+  // const salesProductsSold = <DetailProductSold[]>[];
+  const salesProducts     = [];
+  const salesOrders       = [];
+  const salesProductsSold = [];
 
   for (const product of products) {
     const { name, price, images, quantity } = product;
@@ -90,7 +99,7 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
     }
 
     salesOrders.push({
-      products          : orderProducts,
+      products         : orderProducts,
       tenderedFormatted: toIDR(tendered),
       changeFormatted  : toIDR(change),
       totalFormatted   : toIDR(total),
@@ -106,13 +115,17 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
   }
 
   return {
+    products        : salesProducts,
+    productsSold    : salesProductsSold,
+    orders          : salesOrders,
+    revenueFormatted: toIDR(revenue),
+    updatedAt       : getUpdateTime(updated_at),
     name,
     finished,
-    products: salesProducts,
-    productsSold: salesProductsSold,
-    orders: salesOrders,
     revenue,
-    revenueFormatted: toIDR(revenue),
-    updatedAt: getUpdateTime(updated_at),
+    ...(initial_balance ? { initialBalance: initial_balance } : {}),
+    ...(initial_balance ? { initialBalanceFormatted: toIDR(initial_balance) } : {}),
+    ...(final_balance ? { finalBalance: final_balance } : {}),
+    ...(final_balance ? { finalBalanceFormatted: toIDR(final_balance) } : {}),
   };
 };

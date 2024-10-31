@@ -46,6 +46,10 @@ export default {
       type: 'string',
       default: '0',
     },
+    // sku: {
+    //   type: 'string',
+    //   uniqueItems: true,
+    // },
     created_at: {
       type: 'date-time',
     },
@@ -55,9 +59,11 @@ export default {
   },
   required: [
     'id',
+    'active',
     'name',
     'price',
     'products',
+    'auto_price',
     'created_at',
     'updated_at',
   ],

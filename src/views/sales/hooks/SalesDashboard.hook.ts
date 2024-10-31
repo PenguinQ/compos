@@ -1,20 +1,30 @@
-import { computed, inject, ref } from 'vue';
+import { computed, reactive, inject, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Big from 'big.js';
 import type { Ref } from 'vue';
 
 // Databases
 import { useQuery, useObservableQuery, useMutation } from '@/database/hooks';
-import { getSalesDetail, getSalesProducts, getSalesOrders, mutateFinishSales } from '@/database/query/sales';
-import { mutateAddOrder, mutateCancelOrder } from '@/database/query/order';
+import {
+  getSalesDetail,
+  getSalesProducts,
+  getSalesOrders,
+  mutateFinishSales,
+} from '@/database/query/sales';
+import { mutateAddOrder } from '@/database/query/order';
 import { isBundle } from '@/database/utils';
 
 // Normalizers
-import { detailsNormalizer, productsNormalizer, ordersNormalizer } from '../normalizer/SalesDashboard.normalizer';
+import {
+  detailsNormalizer,
+  productsNormalizer,
+  ordersNormalizer,
+} from '../normalizer/SalesDashboard.normalizer';
 import type {
   DetailsNormalizerReturn,
   DetailsNormalizerProduct,
   ProductsNormalizerReturn,
+  ProductsNormalizerProduct,
   OrdersNormalizerReturn,
 } from '../normalizer/SalesDashboard.normalizer';
 
@@ -23,21 +33,26 @@ type OrderedProductBundleItem = {
   name: string;
   quantity: number;
   stock: number;
-  price: string;
+  // price: string;
+  price: Big;
   sku: string;
 };
 
+/**
+ * ---------------------------------------------------------------------------------------------
+ * 1. stock is optional, since the product can be a bundle, and bundle items has it's own stock.
+ * 2. items is optional, since items only for bundle.
+ * ---------------------------------------------------------------------------------------------
+ */
 type OrderedProduct = {
   id: string;
   images: string[];
   name: string;
-  price: string;
+  // price: string;
+  price: Big;
   amount: number;
-  // Optional since the product can be a bundle, and bundle items has it's own quantity.
-  quantity?: number;
-  // Optional since the product can be a bundle, and bundle items has it's own stock.
+  quantity: number;
   stock?: number;
-  // Optional since items only for bundle.
   items?: OrderedProductBundleItem[];
 };
 
@@ -47,7 +62,6 @@ export const useSalesDashboard = () => {
   const router = useRouter();
   const { params } = route;
   const dialogFinish       = ref(false);
-  const dialogCancelOrder  = ref(false);
   const controlsView       = ref('order-default');
   const detailsProducts    = ref<DetailsNormalizerProduct[]>([]);
   const loadProducts       = ref(false);
@@ -58,6 +72,10 @@ export const useSalesDashboard = () => {
   const paymentInput       = ref('0');
   const paymentTendered    = computed(() => Big(paymentInput.value));
   const paymentChange      = computed(() => totalProductsPrice.value.gt(paymentTendered.value) ? 0 : paymentTendered.value.minus(totalProductsPrice.value));
+  const balance            = reactive<{ initial: string | undefined; current: string | undefined; }>({
+    initial: undefined,
+    current: undefined,
+  });
 
   const {
     data     : detailsData,
@@ -77,7 +95,7 @@ export const useSalesDashboard = () => {
       router.push('/sales');
     },
     onSuccess: response => {
-      const { finished, products } = response as DetailsNormalizerReturn;
+      const { finished, balance: detailsBalance, products } = response as DetailsNormalizerReturn;
 
       if (finished) {
         router.push(`/sales/detail/${params.id}`);
@@ -86,6 +104,11 @@ export const useSalesDashboard = () => {
 
         loadProducts.value = true;
         loadOrders.value   = true;
+
+        if (detailsBalance) {
+          balance.initial = detailsBalance;
+          balance.current = detailsBalance;
+        }
       }
     },
   });
@@ -96,7 +119,6 @@ export const useSalesDashboard = () => {
     isLoading: isProductsLoading,
     refetch  : productsRefetch,
   } = useObservableQuery({
-    queryKey: ['sales-dashboard-products', params.id],
     queryFn: () => getSalesProducts({
       products  : detailsProducts.value,
       normalizer: productsNormalizer,
@@ -115,7 +137,6 @@ export const useSalesDashboard = () => {
     isLoading: isOrdersLoading,
     refetch  : ordersRefetch,
   } = useObservableQuery({
-    queryKey: ['sales-dashboard-orders', params.id],
     queryFn: () => getSalesOrders({
       id        : params.id as string,
       sort      : 'desc',
@@ -128,7 +149,17 @@ export const useSalesDashboard = () => {
       console.error('Failed to get the sales orders.', error.message);
     },
     onSuccess: response => {
-      // console.log(response);
+      const { ordersTotalChange } = response as OrdersNormalizerReturn;
+
+      if (balance.initial) {
+        const bigBalance = Big(balance.initial);
+        const bigChange  = Big(ordersTotalChange);
+        const subtractedBalance = bigBalance.minus(bigChange);
+
+        if (subtractedBalance.gte(0)) {
+          balance.current = bigBalance.minus(bigChange).toString();
+        }
+      }
     },
   });
 
@@ -147,15 +178,21 @@ export const useSalesDashboard = () => {
           for (const item of items) {
             const { id, name, price, quantity, sku } = item;
 
-            itemList.push({ id, name, price, quantity, sku });
+            itemList.push({
+              price: price.toString(),
+              id,
+              name,
+              quantity,
+              sku,
+            });
           }
         }
 
         mutateProducts.push({
           items: itemList.length ? itemList : undefined,
+          price: price.toString(),
           id,
           name,
-          price,
           amount,
         });
       }
@@ -185,22 +222,6 @@ export const useSalesDashboard = () => {
   });
 
   const {
-    mutate   : mutateCancelOrderFn,
-    isLoading: isMutateCancelOrderLoading,
-  } = useMutation({
-    mutateFn: () => mutateCancelOrder(),
-    onError: error => {
-      // @ts-ignore
-      toast.add({ message: 'Failed to cancel the order.', type: 'error', duration: 2000 });
-      console.error('Failed to cancel the order.', error.message);
-    },
-    onSuccess: response => {
-      // @ts-ignore
-      toast.add({ message: `Order ${response} canceled.`, type: 'success', duration: 2000 });
-    },
-  });
-
-  const {
     mutate   : mutateFinish,
     isLoading: isMutateFinishLoading,
   } = useMutation({
@@ -217,7 +238,7 @@ export const useSalesDashboard = () => {
     },
   });
 
-  const handleClickIncrement = (product: OrderedProduct) => {
+  const handleClickIncrement = (product: ProductsNormalizerProduct) => {
     const {
       id,
       images,
@@ -230,10 +251,13 @@ export const useSalesDashboard = () => {
     const order = orderedProducts.value.find(product => product.id === id);
 
     if (order) {
-      if (isBundle(id)) {
-        order.amount += 1;
+      const orderAmount = order.amount + quantity!;
+
+      if (orderAmount > stock!) {
+        // @ts-ignore
+        toast.add({ message: `Insufficient stock for ${name}, only ${stock} remaining. You ordered ${orderAmount}.`, type: 'error', duration: 2000 });
       } else {
-        if (order.amount < stock!) order.amount += quantity!;
+        order.amount += quantity!;
       }
     } else {
       const bundle_items = [];
@@ -242,36 +266,49 @@ export const useSalesDashboard = () => {
         for (const item of items) {
           const { id, name, price, quantity, stock, sku } = item;
 
-          bundle_items.push({ id, name, price, quantity, stock, sku });
+          bundle_items.push({
+            price: Big(price),
+            id,
+            name,
+            quantity,
+            stock,
+            sku,
+          });
         }
       }
 
       orderedProducts.value.push({
         amount: quantity ? quantity : 1,
         items : bundle_items.length ? bundle_items : undefined,
+        price : Big(price),
         id,
         images,
         name,
-        price,
         stock,
         quantity,
       });
-    }
 
-    // console.log('Ordered Products:', orderedProducts.value);
+      console.log(orderedProducts.value);
+    }
   };
 
-  const handleClickDecrement = (product: OrderedProduct) => {
+  const handleClickDecrement = (product: ProductsNormalizerProduct) => {
     const { id, quantity } = product;
     const order = orderedProducts.value.find(product => product.id === id);
+
+    const removeOrder = () => {
+      const filtered = orderedProducts.value.filter(product => product.id !== id);
+
+      orderedProducts.value = filtered;
+    };
 
     if (order) {
       if (order.amount > 1) {
         order.amount -= quantity ? quantity : 1;
-      } else {
-        const filtered = orderedProducts.value.filter(product => product.id !== id);
 
-        orderedProducts.value = filtered;
+        if (!order.amount || order.amount < 0) removeOrder();
+      } else {
+        removeOrder();
       }
     }
   };
@@ -365,7 +402,24 @@ export const useSalesDashboard = () => {
 
           if (amount > stock) {
             // @ts-ignore
-            toast.add({ message: `${name} amount is greater than available stock.`, type: 'error', duration: 2000 });
+            toast.add({ message: `Insufficient stock for ${name}, only ${stock} remaining. You ordered ${amount}.`, type: 'error', duration: 5000 });
+
+            return false;
+          }
+        }
+
+        /**
+         * --------------------------------------------------------------------------------------
+         * If sales have any balance, do comparison of current order change with current balance.
+         * --------------------------------------------------------------------------------------
+         */
+        if (balance.current) {
+          const bigBalance = Big(balance.current);
+          const bigChange  = Big(paymentChange.value);
+
+          if (bigChange.gt(bigBalance)) {
+            // @ts-ignore
+            toast.add({ message: 'Low amount of balance.', type: 'error', duration: 2000 });
 
             return false;
           }
@@ -397,9 +451,9 @@ export const useSalesDashboard = () => {
     productsData: productsData as Ref<ProductsNormalizerReturn>,
     ordersData  : ordersData as Ref<OrdersNormalizerReturn>,
     dialogFinish,
-    dialogCancelOrder,
     controlsView,
     orderedProducts,
+    balance,
     paymentChange,
     paymentTendered,
     paymentInput,
@@ -413,7 +467,6 @@ export const useSalesDashboard = () => {
     isOrdersLoading,
     isMutateFinishLoading,
     isMutateAddOrderLoading,
-    isMutateCancelOrderLoading,
     handleClickDecrement,
     handleClickIncrement,
     handleClickQuantityDecrement,
