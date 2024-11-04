@@ -1,5 +1,6 @@
 import { reactive, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import type { Ref } from 'vue';
 
 // Databases
 import { useQuery, useMutation } from '@/database/hooks';
@@ -91,6 +92,7 @@ export const useProductForm = () => {
   });
 
   const {
+    data     : productDetail,
     refetch  : productDetailRefetch,
     isError  : productDetailError,
     isLoading: productDetailLoading,
@@ -407,7 +409,8 @@ export const useProductForm = () => {
   };
 
   return {
-    productId: params.id,
+    productId    : params.id,
+    productDetail: productDetail as Ref<ProductFormNormalizerReturn>,
     formData,
     formError,
     productDetailError,

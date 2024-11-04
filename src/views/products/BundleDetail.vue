@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Common Components
@@ -40,14 +41,24 @@ const {
   deleteBundleLoading,
   refetch,
 } = useBundleDetail();
+
+watch(
+  data,
+  (newData) => {
+    const { name } = newData;
+
+    document.title = `${name} - ComPOS`;
+  },
+);
 </script>
 
 <template>
+  <!-- Header -->
   <Toolbar sticky>
     <ToolbarAction icon @click="router.back">
       <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
-    <ToolbarTitle>Bundle Detail</ToolbarTitle>
+    <ToolbarTitle>{{ data ? data.name : 'Bundle Detail' }}</ToolbarTitle>
     <ToolbarSpacer />
     <ToolbarAction
       v-if="!isError && !isLoading"
@@ -66,7 +77,8 @@ const {
       <ComposIcon :icon="Trash" />
     </ToolbarAction>
   </Toolbar>
-  <!--  -->
+
+  <!-- Content -->
   <EmptyState
     v-if="isError"
     :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
@@ -78,7 +90,6 @@ const {
       <Button @click="refetch">Try Again</Button>
     </template>
   </EmptyState>
-  <!--  -->
   <template v-else>
     <Container class="page-container">
       <Bar v-if="isLoading" margin="56px 0" />

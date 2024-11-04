@@ -27,6 +27,18 @@ const optimizeSVG = (pattern: string, callback: (glyphs: ContentType[]) => void)
     return [contentStart, xmlns, contentEnd].join(' ');
   };
 
+  const cleanClipPaths = (svgContent: string) => {
+    let cleaned = svgContent;
+
+    cleaned = cleaned.replace(/<clipPath[^>]*>.*?<\/clipPath>/gs, '');
+    cleaned = cleaned.replace(/<defs>.*?<\/defs>/gs, '');
+    cleaned = cleaned.replace(/<g\s+clip-path="[^"]*">(.*?)<\/g>/gs, '$1');
+    cleaned = cleaned.replace(/<g>\s*<\/g>/g, '');
+    cleaned = cleaned.replace(/^\s*[\r\n]/gm, '');
+
+    return cleaned;
+  };
+
   const updatePaths = (svgString: string): string => {
     const pathRegex = /<path\s[^>]*?(?:\/?>|>.*?<\/path>)/gs;
     const paths = svgString.match(pathRegex) || [];
@@ -102,6 +114,7 @@ const optimizeSVG = (pattern: string, callback: (glyphs: ContentType[]) => void)
           'removeXMLNS',
           'removeComments',
           'removeXMLProcInst',
+          'removeUselessDefs',
           // 'cleanupAttrs',
           // 'removeDoctype',
           // 'removeXMLProcInst',
@@ -114,7 +127,6 @@ const optimizeSVG = (pattern: string, callback: (glyphs: ContentType[]) => void)
           // 'cleanupNumericValues',
           // 'convertColors',
           // 'mergePaths',
-          // 'removeUselessDefs',
           // 'removeHiddenElems',
           // 'removeUselessStrokeAndFill',
           // 'removeUnknownsAndDefaults',
@@ -153,7 +165,7 @@ const optimizeSVG = (pattern: string, callback: (glyphs: ContentType[]) => void)
         ],
       });
 
-      svgList.push({ name: name, source: updatePaths(addXMLNS(result.data)) });
+      svgList.push({ name: name, source: cleanClipPaths(updatePaths(addXMLNS(result.data))) });
 
       if (svgList.length === filePath.length) {
         oraSpinner.stopAndPersist({ symbol: '✅', text: `${log(`(${svgList.length}/${total})`)} ${bold(`SVGs optimized`)}` });

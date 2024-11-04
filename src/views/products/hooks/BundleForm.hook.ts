@@ -86,6 +86,7 @@ export const useBundleForm = () => {
   const current_page = computed(() => page.current);
 
   const {
+    data     : bundleDetail,
     refetch  : bundleDetailRefetch,
     isError  : bundleDetailError,
     isLoading: bundleDetailLoading,
@@ -471,6 +472,7 @@ export const useBundleForm = () => {
 
   return {
     bundleId: params.id,
+    bundleDetail: bundleDetail as Ref<FormDetailNormalizerReturn>,
     formData,
     formError,
     page,

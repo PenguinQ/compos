@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Common Components
@@ -30,6 +31,7 @@ import no_image from '@assets/illustration/no_image.svg';
 const router = useRouter();
 const {
   productId,
+  productDetail,
   formData,
   formError,
   productDetailError,
@@ -45,6 +47,15 @@ const {
   mutateAddLoading,
   mutateEditLoading,
 } = useProductForm();
+
+watch(
+  productDetail,
+  (newData) => {
+    const { name } = newData;
+
+    document.title = `Edit ${name} - ComPOS`;
+  },
+);
 </script>
 
 <template>
@@ -53,7 +64,7 @@ const {
     <ToolbarAction icon @click="router.back">
       <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
-    <ToolbarTitle>{{ productId ? 'Edit Product' : 'Add Product' }}</ToolbarTitle>
+    <ToolbarTitle>{{ productId ? `Edit ${productDetail?.name}` : 'Add Product' }}</ToolbarTitle>
     <ToolbarSpacer />
     <ToolbarAction v-if="mutateAddLoading || mutateEditLoading" backgroundColor="var(--color-blue-4)" icon>
       <Bar size="24px" color="var(--color-white)" />
@@ -63,7 +74,7 @@ const {
     </ToolbarAction>
   </Toolbar>
 
-  <!-- Body -->
+  <!-- Content -->
   <Container class="page-container">
     <EmptyState
       v-if="productDetailError"

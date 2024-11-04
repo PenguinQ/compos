@@ -89,7 +89,7 @@ const {
       <ToolbarAction icon @click="router.push('/sales')">
         <ComposIcon :icon="ArrowLeftShort" size="40" />
       </ToolbarAction>
-      <ToolbarTitle>{{ isDetailsLoading ? '' : detailsData.name }}</ToolbarTitle>
+      <ToolbarTitle>{{ isDetailsLoading ? 'Sales Dashboard' : `${detailsData.name} Dashboard` }}</ToolbarTitle>
       <ToolbarSpacer />
       <ToolbarAction
         v-if="!isDetailsError && !isDetailsLoading"
