@@ -9,7 +9,7 @@ export type ToolbarProps = {
 };
 
 const props = defineProps<ToolbarProps>();
-const emit = defineEmits(['back']);
+defineEmits(['back']);
 
 const ToolbarTitle = defineAsyncComponent(() => import('./ToolbarTitle.vue'));
 const outer_container = ref<HTMLDivElement>();

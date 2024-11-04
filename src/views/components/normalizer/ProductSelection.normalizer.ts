@@ -19,7 +19,7 @@ type VariantList = {
   id: string;
   product_id: string;
   name: string;
-  image: string;
+  images: string[];
   price: string;
   sku: string;
   stock: number;
@@ -35,13 +35,13 @@ type ProductList = {
   stock: number;
   sku: string;
   variant: VariantList[];
-  image: string;
+  images: string[];
 };
 
 type BundleList = {
   count: number;
   id: string,
-  image: string[];
+  images: string[];
   name: string;
 }
 
@@ -73,20 +73,20 @@ export const productListNormalizer = (data: any) => {
       sku,
       stock,
       by,
-      image,
+      images,
       active,
-      variant: variants,
+      variants,
     } = product;
     const variant_list = [];
 
     for (const variant of variants as VariantsData[]) {
-      const { id, product_id, name, image, price, sku, stock } = variant;
+      const { id, product_id, name, images, price, sku, stock } = variant;
 
       variant_list.push({
         id: id || '',
         product_id: product_id || '',
         name: name || '',
-        image: image || '',
+        images: images || [],
         price: price ? toIDR(price): toIDR(0),
         sku: sku || '',
         stock: stock || 0,
@@ -103,7 +103,7 @@ export const productListNormalizer = (data: any) => {
       stock: stock || 0,
       sku: sku || '',
       variant: variant_list,
-      image: image || '',
+      images: images || [],
     });
   }
 
@@ -121,13 +121,13 @@ export const bundleListNormalizer = (data: unknown) => {
   const bundle_list: BundleList[] = [];
 
   for (const bundle of bundles as BundlesData[]) {
-    const { id, name, image, product } = bundle;
+    const { id, name, images, products } = bundle;
 
     bundle_list.push({
       id,
       name,
-      image: image || [],
-      count: product.length,
+      images: images || [],
+      count: products.length,
     });
   }
 

@@ -1,11 +1,12 @@
-// @ts-nocheck
-import fs from 'fs-extra';
 import path from 'node:path';
+import fs from 'fs-extra';
 import * as glob from 'glob';
 import { optimize } from 'svgo';
 import chalk from 'chalk';
 import ora from 'ora';
-import type { ContentType } from './types.ts';
+
+// Types
+import type { ContentType } from './types';
 
 const getName = (filePath: string) => path.basename(filePath, path.extname(filePath));
 
@@ -72,8 +73,8 @@ const optimizeSVG = (pattern: string, callback: (glyphs: ContentType[]) => void)
 
       // 2.2. If all of the paths have fill attribute and has the same value, set the value to currentColor
       if (fillValues.size === 1 && pathsWithFill === paths.length) {
-        return paths.reduce((acc, path) => {
-          const newPath = path.replace(/fill="[^"]*"/, 'fill="currentColor"');
+        return (paths as []).reduce((acc, path) => {
+          const newPath = (path as string).replace(/fill="[^"]*"/, 'fill="currentColor"');
           return acc.replace(path, newPath);
         }, svgString);
       }

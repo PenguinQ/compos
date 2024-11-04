@@ -24,23 +24,23 @@ export type QueryReturn = {
   observeableProcessor?: (data: unknown) => Promise<object>;
 };
 
-type ProductsDocMethods = {
-  updateBundleStatus: (id: string) => Promise<void>;
-  removeVariants: () => Promise<void>;
-  removeFromBundles: () => Promise<void>;
-  removeFromSales: () => Promise<void>;
-};
+// type ProductsDocMethods = {
+//   updateBundleStatus: (id: string) => Promise<void>;
+//   removeVariants: () => Promise<void>;
+//   removeFromBundles: () => Promise<void>;
+//   removeFromSales: () => Promise<void>;
+// };
 
-type VariantsDocMethods = {
-  updateProductStatus: (product: ProductDoc) => Promise<void>;
-  updateBundleStatus: (id: string) => Promise<void>;
-  removeFromBundles: () => Promise<void>;
-  removeFromSales: () => Promise<void>;
-};
+// type VariantsDocMethods = {
+//   updateProductStatus: (product: ProductDoc) => Promise<void>;
+//   updateBundleStatus: (id: string) => Promise<void>;
+//   removeFromBundles: () => Promise<void>;
+//   removeFromSales: () => Promise<void>;
+// };
 
-type BundlesDocMethods = {
-  removeFromSales: () => Promise<void>;
-};
+// type BundlesDocMethods = {
+//   removeFromSales: () => Promise<void>;
+// };
 
 /**
  * ---------------------------------------------------------------------------------------

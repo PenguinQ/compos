@@ -32,7 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
 });
 
-const emit = defineEmits(['clickFirst', 'clickPrev', 'clickNext', 'clickLast']);
+defineEmits(['clickFirst', 'clickPrev', 'clickNext', 'clickLast']);
 
 const is_loading = computed(() => props.loading);
 const prev_disabled = computed(() => props.loading || props.disabled || props.first_page ? true : false);

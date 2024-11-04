@@ -27,7 +27,7 @@ type FormDataProduct = {
   id: string;
   product_id: string;
   active: boolean;
-  image: string;
+  images: string[];
   name: string;
   price: string;
   total_price: string;
@@ -115,7 +115,7 @@ export const useBundleForm = () => {
             id         : product.id,
             product_id : product.product_id,
             active     : product.active,
-            image      : product.image,
+            images     : product.images,
             name       : product.name,
             price      : product.price,
             total_price: product.total_price,
@@ -308,7 +308,7 @@ export const useBundleForm = () => {
   };
 
   const handleSelectProduct = (data: FormProductListProduct) => {
-    const { id, active, image, name, price, variants, sku, stock } = data;
+    const { id, active, images, name, price, variants, sku, stock } = data;
     const products = formData.selected_products;
 
     if (variants.length) {
@@ -319,7 +319,7 @@ export const useBundleForm = () => {
         formData.selected_products = products.filter(product => !variant_ids.some(id => id === product.id));
       } else {
         for (const variant of variants) {
-          const { id, product_id, active, image, name: variant_name, price, sku, stock } = variant;
+          const { id, product_id, active, images, name: variant_name, price, sku, stock } = variant;
           const is_variant_selected = products.find(product => product.id === id);
 
           if (!is_variant_selected) {
@@ -331,7 +331,7 @@ export const useBundleForm = () => {
               id,
               product_id,
               active,
-              image,
+              images,
               price,
               stock,
             });
@@ -355,7 +355,7 @@ export const useBundleForm = () => {
           sku        : sku || '',
           id,
           active,
-          image,
+          images,
           name,
           price,
           stock,
@@ -366,7 +366,7 @@ export const useBundleForm = () => {
   };
 
   const handleSelectVariant = (data: FormProductListVariant, product_name: string) => {
-    const { id, product_id, active, image, name, price, sku, stock } = data;
+    const { id, product_id, active, images, name, price, sku, stock } = data;
     const products = formData.selected_products;
     const selected = products.find(product => product.id === id);
 
@@ -384,7 +384,7 @@ export const useBundleForm = () => {
         id,
         product_id,
         active,
-        image,
+        images,
         price,
         stock,
       });

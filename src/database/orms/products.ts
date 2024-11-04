@@ -94,7 +94,7 @@ export default {
         if (_queryCollection) {
           const { active, price } = _queryCollection;
 
-          if (auto_price) newPrice = Big(newPrice).plus(price).times(quantity).toString();
+          if (auto_price) newPrice = Big(newPrice).plus(price!).times(quantity).toString();
           newActive = active ? true : false;
         }
       }

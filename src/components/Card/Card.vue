@@ -60,6 +60,7 @@ const cardClass = computed(() => ({
         <CardBody v-if="content">{{ content }}</CardBody>
       </template>
     </a>
+    <!-- @vue-ignore -->
     <RouterLink v-else v-bind="$props" v-slot="{ href, navigate }" custom>
       <a
         v-bind="$attrs"

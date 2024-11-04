@@ -87,19 +87,19 @@ const handleTab = (index: number) => {
   !props.grow && scrollToView(index);
 };
 
-const handleSticky = (sticky: boolean) => {
-  if (sticky) {
-    const { height, top } = controls.value.getBoundingClientRect();
+// const handleSticky = (sticky: boolean) => {
+//   if (sticky) {
+//     const { height, top } = controls.value.getBoundingClientRect();
 
-    controls.value.style.top = `${top}px`;
-    panels.value.style.marginTop = `${height}px`;
-    // panels.value.style.paddingTop = `${height}px`;
-  } else {
-    controls.value.style.top = '';
-    panels.value.style.marginTop = '';
-    // panels.value.style.paddingTop = '';
-  }
-}
+//     controls.value.style.top = `${top}px`;
+//     panels.value.style.marginTop = `${height}px`;
+//     // panels.value.style.paddingTop = `${height}px`;
+//   } else {
+//     controls.value.style.top = '';
+//     panels.value.style.marginTop = '';
+//     // panels.value.style.paddingTop = '';
+//   }
+// }
 
 onMounted(() => {
   // props.sticky && handleSticky(true);

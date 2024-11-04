@@ -22,17 +22,27 @@ export type SalesDetailProduct = {
   images: string[];
   name: string;
   price: string;
-  quantity?: number;
+  quantity: number;
   sku?: string;
   products?: SalesDetailBundleProduct[];
+};
+
+type SalesDetailProductSoldItem = {
+  id: string;
+  name: string;
+  price: string;
+  quantity: number;
+  sku?: string;
 };
 
 export type SalesDetailProductSold = {
   id: string;
   name: string;
-  images: string[];
+  price: string;
   quantity: number;
-  subtotal: number;
+  total: string;
+  sku?: string;
+  items?: SalesDetailProductSoldItem[];
 };
 
 export type SalesDetailOrder = {
@@ -107,8 +117,8 @@ export default async ({ id, normalizer }: GetSalesDetailQuery) => {
           images    : [],
           quantity  : product.quantity,
           sku       : sku ? sku : '',
+          price     : price!,           // Since it's a product without a variant, it's expected to have a price.
           name,
-          price,
         };
 
         for (const image of product_images) {
@@ -256,14 +266,104 @@ export default async ({ id, normalizer }: GetSalesDetailQuery) => {
     }
 
     /**
-     * -------------------------------------------------------------------
-     * 3. Calculate the number of products sold based on completed orders.
-     * -------------------------------------------------------------------
+     * -------------------------------------
+     * 3. Get details of each sold products.
+     * -------------------------------------
      */
+    const products_sold_data = <SalesDetailProductSold[]>[];
+
+    for (const product of products_sold) {
+      const {
+        name,
+        id,
+        price,
+        sku,
+        quantity,
+        items,
+        total,
+      } = product;
+      let   current_name  = name;
+      const current_items = [] as SalesDetailProductSoldItem[];
+
+      if (isProduct(id)) {
+        const _queryProduct = await db.product.findOne(id).exec();
+
+        if (_queryProduct) {
+          const { name } = _queryProduct;
+
+          if (name !== current_name) current_name = name;
+        }
+      } else if (isVariant(id)) {
+        const _queryVariant = await db.variant.findOne(id).exec();
+
+        if (_queryVariant) {
+          const _queryProduct: RxDocument<ProductDoc> = await _queryVariant.populate('product_id');
+
+          const { name: product_name } = _queryProduct.toJSON();
+          const { name: variant_name } = _queryVariant.toJSON();
+          const combined_name          = `${product_name} - ${variant_name}`;
+
+          if (combined_name !== current_name) current_name = combined_name;
+        }
+      } else if (isBundle(id)) {
+        const _queryBundle = await db.bundle.findOne(id).exec();
+
+        if (_queryBundle) {
+          const { name }  = _queryBundle.toJSON();
+
+          if (name !== current_name) current_name = name;
+
+          for (const item of items!) {
+            const { id, name, sku, ...itemRest } = item;
+            let current_item_name = name;
+
+            if (isProduct(id)) {
+              const _queryItemProduct = await db.product.findOne(id).exec();
+
+              if (_queryItemProduct) {
+                const { name } = _queryItemProduct;
+
+                if (name !== current_item_name) current_item_name = name;
+              }
+            } else if (isVariant(id)) {
+              const _queryItemVariant = await db.variant.findOne(id).exec();
+
+              if (_queryItemVariant) {
+                const _queryItemProduct: RxDocument<ProductDoc> = await _queryItemVariant.populate('product_id');
+
+                const { name: item_product_name } = _queryItemProduct.toJSON();
+                const { name: item_variant_name } = _queryItemVariant.toJSON();
+                const combined_item_name          = `${item_product_name} - ${item_variant_name}`;
+
+                if (combined_item_name !== current_item_name) current_item_name = combined_item_name;
+              }
+            }
+
+            current_items.push({
+              id,
+              name: current_item_name,
+              ...(sku ? { sku } : {}),
+              ...itemRest,
+            });
+          }
+        }
+      }
+
+      products_sold_data.push({
+        name: current_name,
+        id,
+        price,
+        quantity,
+        total,
+        ...(sku ? { sku } : {}),
+        ...(items ? { items: current_items } : {}),
+      });
+    }
+
     return {
       result: normalizer ? normalizer({
         products     : products_data,
-        products_sold: [], // UNFINISHED
+        products_sold: products_sold_data,
         orders       : orders_data,
         id,
         name,
@@ -275,7 +375,7 @@ export default async ({ id, normalizer }: GetSalesDetailQuery) => {
         updated_at,
       }) : {
         products     : products_data,
-        products_sold: [], // UNFINISHED
+        products_sold: products_sold_data,
         orders       : orders_data,
         id,
         name,

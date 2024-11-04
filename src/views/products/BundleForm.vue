@@ -157,7 +157,7 @@ const {
                   <ProductSelection
                     :key="product.id"
                     v-for="(product, index) in formData.products"
-                    :image="product.image"
+                    :images="product.images"
                     :name="product.name"
                     :price="product.total_price"
                     :stock="product.stock"
@@ -231,7 +231,7 @@ const {
                   <ProductSelection
                     small
                     :aria-label="`Add ${product.name}`"
-                    :image="product.image"
+                    :images="product.images"
                     :name="product.name"
                     :selected="isProductSelected(product) ? true : undefined"
                     @click="handleSelectProduct(product)"
@@ -242,7 +242,7 @@ const {
                     small
                     variant
                     :aria-label="`Add ${product.name} - ${variant.name}`"
-                    :image="variant.image"
+                    :images="variant.images"
                     :name="variant.name"
                     :selected="isVariantSelected(variant.id) ? true : undefined"
                     @click="handleSelectVariant(variant, product.name)"
