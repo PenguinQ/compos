@@ -3,7 +3,7 @@ import Big from 'big.js';
 
 import { db } from '../';
 import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX, BUNDLE_ID_PREFIX, SALES_ID_PREFIX } from '../constants'
-import { BundleDoc, ProductDoc, SalesDoc, VariantDoc } from '../types';
+import type { BundleDoc, ProductDoc, SalesDoc, VariantDoc } from '../types';
 
 type SampleProductVariant = {
   name: string;
@@ -17,59 +17,93 @@ type SampleProduct = Omit<ProductDoc, 'variants'> & {
 
 const sampleProducts = [
   {
-    name: 'Jasmine Wishes',
-    price: '135000',
-    by: 'CESSA',
+    name: 'Product One',
+    price: '100000',
+    description: 'An example of a product',
+    by: 'Someone',
     stock: 100,
-    sku: 'JWCESSA',
+    sku: 'PRODUCTSOMEONE',
   },
   {
-    name: 'Your Dirty Secrets',
-    price: '150000',
-    by: 'sa9x9',
-    stock: 100,
-  },
-  {
-    name: 'Hyperion Secret Log',
-    price: '145000',
-    by: 'CETEEE',
-    stock: 100,
-    sku: 'HSLCETEEE',
-  },
-  {
-    name: 'The Fleeting Things',
-    price: '165000',
-    by: 'Ameyaki',
+    name: 'Product Two',
+    price: '50000',
     stock: 100,
   },
   {
-    name: 'Guru Binal Penyelamat Sekolah',
-    price: '155000',
-    by: 'NEIGE888',
-    stock: 100,
-    sku: 'GBPSNEIGE888',
-  },
-  {
-    name: 'HSR Stickers',
+    name: 'Product With Variants',
     variants: [
       {
-        name: 'Set 1',
-        price: '25000',
+        name: 'Variant 1',
+        price: '50000',
         stock: 50,
+        sku: 'PWV1',
       },
       {
-        name: 'Set 2',
-        price: '25000',
-        stock: 50,
-        sku: 'HSRSET2',
+        name: 'Variant 2',
+        price: '75000',
+        stock: 75,
       },
       {
-        name: 'Set 3',
+        name: 'Variant 3',
         price: '25000',
-        stock: 50,
+        stock: 0,
       },
     ],
   },
+  // {
+  //   name: 'Jasmine Wishes',
+  //   price: '135000',
+  //   by: 'CESSA',
+  //   stock: 100,
+  //   sku: 'JWCESSA',
+  // },
+  // {
+  //   name: 'Your Dirty Secrets',
+  //   price: '150000',
+  //   by: 'sa9x9',
+  //   stock: 100,
+  // },
+  // {
+  //   name: 'Hyperion Secret Log',
+  //   price: '145000',
+  //   by: 'CETEEE',
+  //   stock: 100,
+  //   sku: 'HSLCETEEE',
+  // },
+  // {
+  //   name: 'The Fleeting Things',
+  //   price: '165000',
+  //   by: 'Ameyaki',
+  //   stock: 100,
+  // },
+  // {
+  //   name: 'Guru Binal Penyelamat Sekolah',
+  //   price: '155000',
+  //   by: 'NEIGE888',
+  //   stock: 100,
+  //   sku: 'GBPSNEIGE888',
+  // },
+  // {
+  //   name: 'HSR Stickers',
+  //   variants: [
+  //     {
+  //       name: 'Set 1',
+  //       price: '25000',
+  //       stock: 50,
+  //     },
+  //     {
+  //       name: 'Set 2',
+  //       price: '25000',
+  //       stock: 50,
+  //       sku: 'HSRSET2',
+  //     },
+  //     {
+  //       name: 'Set 3',
+  //       price: '25000',
+  //       stock: 50,
+  //     },
+  //   ],
+  // },
 ];
 
 const sampleBundles = [
@@ -85,11 +119,11 @@ const sampleBundles = [
 
 const sampleSales = [
   {
-    name: 'Comifuro (Day 1)',
-    initial_balance: '1000000',
+    name: 'Sales (Day 1)',
+    initial_balance: '10000000',
   },
   {
-    name: 'Comifuro (Day 2)',
+    name: 'Sales (Day 2)',
   },
 ];
 
@@ -170,9 +204,7 @@ export default async () => {
     });
   }
 
-  const insertProducts = await db.product.bulkInsert(productsData);
-
-  console.info('Sample products:', insertProducts.success);
+  await db.product.bulkInsert(productsData);
 
   /**
    * -------------------------
@@ -238,9 +270,7 @@ export default async () => {
     });
   };
 
-  const insertBundles = await db.bundle.bulkInsert(bundlesData);
-
-  console.info('Sample bundles:', insertBundles.success);
+  await db.bundle.bulkInsert(bundlesData);
 
   /**
    * -----------------------
@@ -300,7 +330,5 @@ export default async () => {
     });
   };
 
-  const insertSales = await db.sales.bulkInsert(salesData);
-
-  console.info('Sample sales:', insertSales.success);
+  await db.sales.bulkInsert(salesData);
 };

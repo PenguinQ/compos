@@ -81,6 +81,7 @@ export const useSalesForm = () => {
   const current_page_bundle  = computed(() => pageBundle.current);
 
   const {
+    data     : salesDetail,
     refetch  : detailRefetch,
     isError  : isDetailError,
     isLoading: isDetailLoading,
@@ -439,6 +440,7 @@ export const useSalesForm = () => {
 
   return {
     salesId: params.id,
+    salesDetail: salesDetail as Ref<DetailNormalizerReturn>,
     productListTab,
     showDialog,
     loadProducts,

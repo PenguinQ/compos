@@ -1,4 +1,6 @@
 <script setup lang=ts>
+import { watch } from 'vue';
+
 // Common Components
 import { Bar } from '@components/Loader';
 import Button from '@components/Button';
@@ -25,6 +27,7 @@ import { SALES_FORM } from './constants';
 
 const {
   salesId,
+  salesDetail,
   productListTab,
   showDialog,
   loadBundles,
@@ -62,6 +65,15 @@ const {
   bundleListRefetch,
   productListRefetch,
 } = useSalesForm();
+
+watch(
+  salesDetail,
+  (newData) => {
+    const { name } = newData;
+
+    document.title = `Edit ${name} - ComPOS`;
+  },
+);
 </script>
 
 <template>
@@ -70,7 +82,7 @@ const {
     <ToolbarAction icon @click="$router.back">
       <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
-    <ToolbarTitle>{{ salesId ? 'Edit Sales' : 'Add Sales' }}</ToolbarTitle>
+    <ToolbarTitle>{{ salesId ? `Edit ${salesDetail?.name}` : 'Add Sales' }}</ToolbarTitle>
     <ToolbarSpacer />
     <template v-if="!isDetailError && !isDetailLoading">
       <ToolbarAction v-if="isMutateAddLoading || isMutateEditLoading" backgroundColor="var(--color-blue-4)" icon>
@@ -82,7 +94,7 @@ const {
     </template>
   </Toolbar>
 
-  <!-- Body -->
+  <!-- Content -->
   <Container class="pf-container">
     <EmptyState
       v-if="isDetailError"

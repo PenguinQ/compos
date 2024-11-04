@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Common Components
@@ -42,6 +43,15 @@ const {
   isMutateDeleteLoading,
   isMutateFinishLoading,
 } = useSalesDetail();
+
+watch(
+  data,
+  (newData) => {
+    const { name } = newData;
+
+    document.title = `${name} - ComPOS`;
+  },
+);
 </script>
 
 <template>
@@ -50,7 +60,7 @@ const {
     <ToolbarAction icon @click="router.push('/sales')">
       <ComposIcon :icon="ArrowLeftShort" size="40px" />
     </ToolbarAction>
-    <ToolbarTitle>Sales Detail</ToolbarTitle>
+    <ToolbarTitle>{{ data ? data.name : 'Sales Detail' }}</ToolbarTitle>
     <ToolbarSpacer />
     <template v-if="!isError && !isLoading">
       <ToolbarAction v-if="!data.finished" icon @click="router.push(`/sales/dashboard/${salesId}`)">

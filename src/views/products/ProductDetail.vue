@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Common Components
@@ -6,7 +7,7 @@ import Button from '@components/Button';
 import Dialog from '@components/Dialog';
 import EmptyState from '@components/EmptyState';
 import Label from '@components/Label';
-import Separator from '@components/Separator'
+import Separator from '@components/Separator';
 import Text from '@components/Text';
 import Ticker from '@components/Ticker';
 import Card, { CardHeader, CardTitle, CardSubtitle, CardBody } from '@components/Card';
@@ -40,6 +41,15 @@ const {
   deleteProductLoading,
   refetch,
 } = useProductDetail();
+
+watch(
+  data,
+  (newData) => {
+    const { name } = newData;
+
+    document.title = `${name} - ComPOS`;
+  },
+);
 </script>
 
 <template>
@@ -48,7 +58,7 @@ const {
     <ToolbarAction icon @click="router.back">
       <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
-    <ToolbarTitle>Product Detail</ToolbarTitle>
+    <ToolbarTitle>{{ data ? data.name : 'Product Detail' }}</ToolbarTitle>
     <ToolbarSpacer />
     <ToolbarAction
       v-if="!isError && !isLoading"

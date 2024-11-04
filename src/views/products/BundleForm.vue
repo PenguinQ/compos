@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Common Components
 import Button from '@components/Button';
 import Checkbox from '@components/Checkbox';
-
 import Dialog from '@components/Dialog';
 import EmptyState from '@components/EmptyState';
 import Textfield from '@components/Textfield';
@@ -30,6 +30,7 @@ import { BUNDLE_FORM } from './constants';
 const router = useRouter();
 const {
   bundleId,
+  bundleDetail,
   formData,
   formError,
   product_list,
@@ -59,6 +60,15 @@ const {
   handleSelectVariant,
   handleRemoveProduct,
 } = useBundleForm();
+
+watch(
+  bundleDetail,
+  (newData) => {
+    const { name } = newData;
+
+    document.title = `Edit ${name} - ComPOS`;
+  },
+);
 </script>
 
 <template>
@@ -67,7 +77,7 @@ const {
     <ToolbarAction icon @click="router.back">
       <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
-    <ToolbarTitle>{{ bundleId ? 'Edit Bundle' : 'Add Bundle' }}</ToolbarTitle>
+    <ToolbarTitle>{{ bundleId ? `Edit ${bundleDetail?.name}` : 'Add Bundle' }}</ToolbarTitle>
     <ToolbarSpacer />
     <template v-if="!bundleDetailError && !bundleDetailLoading">
       <ToolbarAction v-if="mutateAddLoading || mutateEditLoading" backgroundColor="var(--color-blue-4)" icon>
@@ -79,7 +89,7 @@ const {
     </template>
   </Toolbar>
 
-  <!-- Body -->
+  <!-- Content -->
   <Container class="page-container">
     <EmptyState
       v-if="bundleDetailError"

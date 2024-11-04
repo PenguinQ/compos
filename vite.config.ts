@@ -9,9 +9,6 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      workbox: {
-        cleanupOutdatedCaches: false
-      },
       manifest: {
         name: 'ComPOS',
         short_name: 'ComPOS',
@@ -34,6 +31,34 @@ export default defineConfig({
             type: 'image/png',
           },
         ]
+      },
+      workbox: {
+        cleanupOutdatedCaches: false,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /\.(?:png|gif|jpg|jpeg|svg|ico)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images',
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 30 * 24 * 60 * 60 // 30 days
+              }
+            }
+          },
+          {
+            urlPattern: /\.(?:js|css|woff2?)$/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'assets',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 24 * 60 * 60, // 24 hours
+              },
+            },
+          },
+        ],
       },
     }),
   ],
