@@ -10,7 +10,7 @@ type ProductVariants = {
   active: boolean;
   product_id: string;
   name: string;
-  image: Image[];
+  images: Image[];
   price: string;
   stock: number;
   sku: string,
@@ -19,14 +19,14 @@ type ProductVariants = {
 export type ProductFormNormalizerReturn = {
   id: string;
   active: boolean;
-  image: Image[];
+  images: Image[];
   name: string;
-  description?: string;
-  by?: string;
-  price?: string;
-  stock?: number;
-  sku?: string;
-  variants?: ProductVariants[];
+  description: string;
+  by: string;
+  price: string;
+  stock: number;
+  sku: string;
+  variants: ProductVariants[];
 };
 
 export const formDetailNormalizer = (data: unknown): ProductFormNormalizerReturn => {
@@ -42,46 +42,53 @@ export const formDetailNormalizer = (data: unknown): ProductFormNormalizerReturn
     sku,
     variants,
   } = data as ProductDetailQueryReturn || {};
-  const product_image    = images[0] ? [{ id: images[0].id, url: images[0].url }] : [];
-  const product_variants = <ProductVariants[]>[];
+  const productImages   = [];
+  const productVariants = [];
 
-  for (const variant of variants) {
-    const {
-      id,
-      product_id,
-      name,
-      images,
-      price,
-      stock,
-      sku,
-    } = variant;
-    const variant_image = images[0] ? [{ id: images[0].id, url: images[0].url }] : [];
-
-    product_variants.push({
-      id        : id || '',
-      active    : active || false,
-      product_id: product_id || '',
-      image     : variant_image,
-      name      : name || '',
-      price     : price ?? '0',
-      stock     : stock ?? 0,
-      sku       : sku || '',
-    });
+  for (const image of images) {
+    productImages.push({ id: image.id, url: image.url });
   }
 
-  console.log(data);
+  if (variants) {
+    for (const variant of variants) {
+      const variantImages = [];
+      const {
+        id,
+        product_id,
+        name,
+        images,
+        price,
+        stock,
+        sku,
+      } = variant;
+
+      for (const image of images) {
+        variantImages.push({ id: image.id, url: image.url });
+      }
+
+      productVariants.push({
+        id        : id || '',
+        active    : active || false,
+        product_id: product_id || '',
+        images    : variantImages,
+        name      : name || '',
+        price     : price ?? '0',
+        stock     : stock ?? 0,
+        sku       : sku || '',
+      });
+    }
+  }
 
   return {
     id         : id || '',
     active     : active || false,
-    image      : product_image,
+    images     : productImages,
     name       : name || '',
     description: description || '',
     by         : by || '',
     price      : price ?? '0',
     stock      : stock ?? 0,
     sku        : sku || '',
-    ...(variants ? { variants: product_variants }: {}),
-    // variants   : product_variants,
+    variants   : productVariants,
   };
 };

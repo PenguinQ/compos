@@ -78,12 +78,12 @@ export default async ({
      * ----------------------
      */
     if (observe) {
-      const observeableProcessor = async (data: RxDocument<unknown>[]): Promise<object> => {
+      const observeableProcessor = async (data: unknown): Promise<object> => {
         const sales_count = await getSalesCount();
         const total_page  = Math.ceil(sales_count / query_limit);
         const { first_page, last_page } = await getPageStatus({
           collection: 'sales',
-          data,
+          data: data as RxDocument<SalesDoc>[],
           sort,
           sortBy: [{ id: sort }],
           query: {

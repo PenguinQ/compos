@@ -4,13 +4,12 @@ import { db } from '@/database';
 
 export default async (id: string): Promise<string> => {
   try {
-    const _querySales = await db.sales.findOne(id).exec();
+    const _querySalesConstruct = db.sales.findOne(id);
+    const _querySales          = await _querySalesConstruct.exec();
 
     if (!_querySales) throw `Cannot find sales with id ${id}.`;
 
-    const { name, balance, revenue } = _querySales;
-    let sales_balance = balance;
-    let sales_revenue = Big(revenue);
+    const { name, initial_balance } = _querySales;
 
     /**
      * --------------------------------------------------------
@@ -33,24 +32,71 @@ export default async (id: string): Promise<string> => {
      * 2. Sum the orders total as the sales revenue.
      * ---------------------------------------------
      */
+    const products_sold       = [];
+    let   orders_total        = Big(0);
+    let   orders_total_change = Big(0);
+
     for (const order of _queryOrders) {
-      sales_revenue = Big(sales_revenue).plus(order.total);
+      const { total, products, change } = order;
+
+      for (const product of products) {
+        const {
+          quantity: product_quantity,
+          id,
+          name,
+          price,
+          total,
+          sku,
+          items,
+        } = product;
+        const inArray    = products_sold.find(product => product.id === id);
+        const temp_items = [];
+
+        if (inArray) {
+          inArray.total     = Big(inArray.total).plus(total).toString();
+          inArray.quantity += product_quantity;
+        } else {
+          if (items) {
+            for (const item of items) {
+              const { id, name, price, quantity: item_quantity, sku } = item;
+
+              temp_items.push({
+                quantity: item_quantity * product_quantity,
+                id,
+                name,
+                price,
+                ...(sku ? { sku }: {}),
+              });
+            }
+          }
+
+          products_sold.push({
+            quantity: product_quantity,
+            id,
+            name,
+            price,
+            total,
+            ...(items ? { items: temp_items } : {}),
+            ...(sku ? { sku }: {}),
+          });
+        }
+      };
+
+      orders_total        = orders_total.plus(total);
+      orders_total_change = orders_total_change.plus(change);
     }
 
-    if (balance) {
-      const current_balance = Big(balance);
-
-      if (sales_revenue.gt(current_balance)) throw `Cannot finish sales since the total orders are greater than the remaining balance`;
-
-      sales_balance = current_balance.minus(sales_revenue).toString();
+    if (initial_balance) {
+      if (orders_total_change.gt(Big(initial_balance))) throw `Cannot finish sales since the total change are greater than the remaining balance.`;
     }
 
-    await _querySales.update({
+    await _querySalesConstruct.update({
       $set: {
-        finished  : true,
-        revenue   : sales_revenue.toString(),
-        updated_at: new Date().toISOString(),
-        ...(balance ? { balance: sales_balance } : {}),
+        finished     : true,
+        revenue      : orders_total.toString(),
+        products_sold: products_sold,
+        updated_at   : new Date().toISOString(),
+        ...(initial_balance ? { final_balance: Big(initial_balance).minus(orders_total_change).toString() } : {}),
       },
     });
 

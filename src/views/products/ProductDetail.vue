@@ -43,6 +43,7 @@ const {
 </script>
 
 <template>
+  <!-- Header -->
   <Toolbar sticky>
     <ToolbarAction icon @click="router.back">
       <ComposIcon :icon="ArrowLeftShort" :size="40" />
@@ -66,7 +67,8 @@ const {
       <ComposIcon :icon="Trash" />
     </ToolbarAction>
   </Toolbar>
-  <!--  -->
+
+  <!-- Content -->
   <EmptyState
     v-if="isError"
     :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
@@ -78,7 +80,6 @@ const {
       <Button @click="refetch">Try Again</Button>
     </template>
   </EmptyState>
-  <!--  -->
   <template v-else>
     <Container class="page-container">
       <Bar v-if="isLoading" margin="56px 0" />
@@ -96,7 +97,8 @@ const {
         <Row>
           <Column :col="{ default: 12, md: 'auto' }">
             <ProductImage class="product-detail-image">
-              <img :src="data.image ? data.image : no_image" :alt="`${data.name} image`" />
+              <img v-if="!data.images.length" :src="no_image" :alt="`${data.name} image`">
+              <img v-else v-for="image of data.images" :src="image ? image : no_image" :alt="`${data.name} image`">
             </ProductImage>
           </Column>
           <Column>
@@ -107,7 +109,7 @@ const {
                 <Text v-if="data.description">{{ data.description }}</Text>
                 <Separator />
                 <Ticker
-                  v-if="data.variants.length"
+                  v-if="data.variants?.length"
                   :items="[
                     {
                       title: 'Price, Stock, and SKU',
@@ -118,7 +120,7 @@ const {
                   margin="0 0 20px"
                 />
                 <DescriptionList class="product-detail-list" alignment="horizontal">
-                  <template v-if="data.variants.length">
+                  <template v-if="data.variants?.length">
                     <DescriptionListItem alignItems="center">
                       <dt>Status</dt>
                       <dd>
@@ -139,7 +141,7 @@ const {
                     </DescriptionListItem>
                     <DescriptionListItem>
                       <dt>Price</dt>
-                      <dd>{{ data.price_formatted }}</dd>
+                      <dd>{{ data.priceFormatted }}</dd>
                     </DescriptionListItem>
                     <DescriptionListItem>
                       <dt>Stock</dt>
@@ -152,7 +154,7 @@ const {
                   </template>
                   <DescriptionListItem>
                     <dt>Updated At</dt>
-                    <dd>{{ data.updated_at }}</dd>
+                    <dd>{{ data.updatedAt }}</dd>
                   </DescriptionListItem>
                 </DescriptionList>
               </CardBody>
@@ -164,7 +166,7 @@ const {
               </CardHeader>
               <CardBody>
                 <EmptyState
-                  v-if="!data.variants.length"
+                  v-if="!data.variants?.length"
                   emoji="🍃"
                   :title="PRODUCT_DETAIL.EMPTY_VARIANT_TITLE"
                   :description="PRODUCT_DETAIL.EMPTY_VARIANT_DESCRIPTION"
@@ -177,7 +179,8 @@ const {
                     :data-inactive="!variant.active ? true : undefined"
                   >
                     <ProductImage width="80px" height="80px">
-                      <img :src="variant.image ? variant.image : no_image" :alt="`${variant.name} image`" />
+                      <img v-if="!variant.images.length" :src="no_image" :alt="`${variant.name} image`">
+                      <img v-else v-for="image of variant.images" :src="image ? image : no_image" :alt="`${variant.name} image`">
                     </ProductImage>
                     <div class="product-detail-item__body">
                       <Text class="product-detail-item__name" body="large" as="h4">

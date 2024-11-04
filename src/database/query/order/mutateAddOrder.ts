@@ -12,7 +12,7 @@ type MutateAddOrderDataBundleItem = {
   name: string;
   price: string;
   quantity: number;
-  sku: string;
+  sku?: string;
 };
 
 type MutateAddOrderDataProduct ={
@@ -21,6 +21,7 @@ type MutateAddOrderDataProduct ={
   price: string;
   amount: number;
   items?: MutateAddOrderDataBundleItem[];
+  sku?: string;
 };
 
 type MutateAddOrderData = {
@@ -50,9 +51,9 @@ export default async ({ id, data }: MutateAddOrder) => {
     ) => {
       const { stock } = document;
 
-      if (stock - amount >= 0) {
+      if (stock! - amount >= 0) {
         await document.modify(oldData => {
-          oldData.stock      = oldData.stock - amount;
+          oldData.stock      = oldData.stock! - amount;
           oldData.updated_at = new Date().toISOString();
 
           if (oldData.stock === 0) oldData.active = false;
@@ -132,8 +133,8 @@ export default async ({ id, data }: MutateAddOrder) => {
             temp_list.push({
               id      : item_id,
               name    : item_name,
-              amount: item_quantity * amount,
-              stock,
+              amount  : item_quantity * amount,
+              stock   : stock!,
             });
           }
         }
@@ -151,14 +152,14 @@ export default async ({ id, data }: MutateAddOrder) => {
 
           const { stock } = _queryProduct;
 
-          temp_list.push({ id, name, amount, stock });
+          temp_list.push({ id, name, amount, stock: stock! });
         }
       }
     }
 
     const order_valid = temp_list.every(product => product.amount <= product.stock);
 
-    if (!order_valid) throw `Some of the products amount in the order are greater than the stock, please updated it.`
+    if (!order_valid) throw `Some of the products amount in the order are greater than the stock, please update it.`
 
     /**
      * ---------------------------
@@ -166,7 +167,7 @@ export default async ({ id, data }: MutateAddOrder) => {
      * ---------------------------
      */
     for (const product of products) {
-      const { id, name, price, amount, items } = product;
+      const { id, name, price, amount, items, sku } = product;
       let item_list = undefined;
 
       if (items) {
@@ -175,7 +176,13 @@ export default async ({ id, data }: MutateAddOrder) => {
         for (const item of items) {
           const { id, name, price, quantity, sku } = item;
 
-          temp_list.push({ id, name, price, quantity, sku });
+          temp_list.push({
+            id,
+            name,
+            price,
+            quantity,
+            ...(sku ? { sku } : {}),
+          });
         }
 
         item_list = temp_list;
@@ -186,9 +193,11 @@ export default async ({ id, data }: MutateAddOrder) => {
         id,
         name,
         price,
-        items: item_list,
         quantity: amount,
         total: Big(price).times(amount).toString(),
+        ...(sku ? { sku } : {}),
+        ...(items ? { items: item_list } : {}),
+        // items: item_list,
       });
 
       order_total = Big(order_total).plus(Big(price).times(amount)).toString();

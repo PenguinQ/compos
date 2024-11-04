@@ -53,7 +53,7 @@ export const useSalesList = (status: 'running' | 'finished' = 'running') => {
       search_query: currentSearch.value,
       sort: 'desc',
       status,
-      limit: 1,
+      limit: 10,
       page: currentPage.value,
       normalizer: salesListNormalizer,
     }),

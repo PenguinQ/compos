@@ -57,7 +57,7 @@ export default {
                 },
                 // Bundle item quantity WHEN the sales happened.
                 quantity: {
-                  type: 'string',
+                  type: 'number',
                   minimum: 0,
                   default: 0,
                 },

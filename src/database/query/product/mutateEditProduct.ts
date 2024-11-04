@@ -25,8 +25,8 @@ type MutateEditProductQueryData = {
   name: string;
   description?: string;
   by?: string;
-  price: string;
-  stock: number;
+  price?: string;
+  stock?: number;
   sku?: string;
   new_images?: File[];
   deleted_images?: string[];
@@ -87,11 +87,11 @@ const updateBundlePrice = async ({ id, old_price, new_price }: { id: string; old
   }).exec();
 
   for (const bundle of _queryBundles) {
-    const product          = bundle.products.filter(product => product.id === id);
+    const product          = bundle.products.filter(product => product.id === id)[0];
     let   product_quantity = 0;
 
-    if (product.length) {
-      const { quantity } = product[0];
+    if (product) {
+      const { quantity } = product;
 
       product_quantity = quantity;
     }
@@ -143,32 +143,26 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       by,
       description,
       sku,
-      price            = '0',
-      stock            = 0,
+      price,
+      stock,
+      variants,
       new_images       = [],
-      variants         = [],
       deleted_images   = [],
       deleted_variants = [],
     } = data;
-    const clean_name        = sanitize(name);
-    const clean_by          = by && sanitize(by);
-    const clean_description = description && sanitize(description);
-    const clean_sku         = sku && sanitize(sku);
+    const clean_name = sanitize(name);
 
-    if (clean_name.trim() === '') throw 'Name cannot be empty.';
-    if (!isNumeric(price))        throw 'Price must be a number.';
-    if (!isNumeric(stock))        throw 'Stock must be a number.';
+    if (!clean_name.trim()) throw 'Product name cannot be empty.';
 
-    const clean_price = sanitizeNumeric(price) as string;
-    const clean_stock = sanitizeNumeric(stock) as number;
-
-    const _queryProduct = await db.product.findOne({
+    const _queryProductConstruct = db.product.findOne({
       selector: {
         id: {
           $eq: id,
         },
       },
-    }).exec();
+    });
+
+    const _queryProduct = await _queryProductConstruct.exec();
 
     if (!_queryProduct) throw `Cannot find product with id ${id}.`;
 
@@ -177,7 +171,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
      * 1. Update flow if product has variants.
      * ---------------------------------------
      */
-    if (variants.length) {
+    if (variants && variants.length) {
       /**
        * ----------------------------------------------------
        * 1.1. Check if the product already exist in a bundle.
@@ -204,16 +198,26 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        */
       const is_stocked = variants.filter(variant => variant.stock !== 0).length;
 
-      await _queryProduct.update({
+      await _queryProductConstruct.update({
         $set: {
-          name       : clean_name,
-          description: clean_description,
-          by         : clean_by,
-          sku        : clean_sku,
-          active     : is_stocked ? true : false,
-          price      : '0',
-          stock      : 0,
-          updated_at : new Date().toISOString(),
+          active: is_stocked ? true : false,
+          name  : clean_name,
+          ...(description ? { description: sanitize(description) } : {}),
+          ...(by ? { by: sanitize(by) } : {}),
+        },
+      });
+
+      await _queryProductConstruct.update({
+        $unset: {
+          sku  : true,
+          price: true,
+          stock: true,
+        },
+      });
+
+      await _queryProductConstruct.update({
+        $set: {
+          updated_at: new Date().toISOString(),
         },
       });
 
@@ -253,18 +257,17 @@ export default async ({ id, data }: MutateEditProductQuery) => {
         const {
           id            : v_id,
           name          : v_name,
+          price         : v_price,
+          stock         : v_stock,
           sku           : v_sku,
-          price         : v_price          = '0',
-          stock         : v_stock          = 0,
           new_images    : v_new_images     = [],
           deleted_images: v_deleted_images = [],
         } = variant;
         const clean_v_name = sanitize(v_name);
-        const clean_v_sku  = v_sku && sanitize(v_sku);
 
-        if (clean_v_name.trim() === '') throw 'Variant name cannot be empty.';
-        if (!isNumeric(v_price))        throw 'Variant price must be a number.';
-        if (!isNumeric(v_stock))        throw 'Variant stock must be a number.';
+        if (!clean_v_name.trim()) throw 'Variant name cannot be empty.';
+        if (!isNumeric(v_price))  throw `${v_name} price cannot be empty and must be a number.`;
+        if (!isNumeric(v_stock))  throw `${v_name} stock cannot be empty and must be a number.`;
 
         const clean_v_price = sanitizeNumeric(v_price) as string;
         const clean_v_stock = sanitizeNumeric(v_stock) as number;
@@ -277,13 +280,15 @@ export default async ({ id, data }: MutateEditProductQuery) => {
          * If current variant iteration has existing ID (or variant currently exist), update the detail.
          */
         if (v_id) {
-          const _queryVariant = await db.variant.findOne({
+          const _queryConstructVariant = db.variant.findOne({
             selector: {
               id: {
                 $eq: v_id,
               },
             }
-          }).exec();
+          });
+
+          const _queryVariant = await _queryConstructVariant.exec();
 
           if (!_queryVariant) throw `Cannot find product variant with id ${id}.`;
 
@@ -292,18 +297,31 @@ export default async ({ id, data }: MutateEditProductQuery) => {
            * 1.5.1.1. Update current iteration variation detail.
            * ---------------------------------------------------
            */
-          await _queryVariant.update({
+          await _queryConstructVariant.update({
             $set: {
-              active    : v_is_active,
-              name      : clean_v_name,
-              sku       : clean_v_sku,
-              price     : clean_v_price,
-              stock     : clean_v_stock,
+              active: v_is_active,
+              name  : clean_v_name,
+              price : clean_v_price,
+              stock : clean_v_stock,
+              ...(v_sku ? { sku: sanitize(v_sku as string) } : {}),
+            },
+          });
+
+          if (!v_sku) {
+            await _queryConstructVariant.update({
+              $unset: {
+                sku: true,
+              },
+            });
+          }
+
+          await _queryConstructVariant.update({
+            $set: {
               updated_at: new Date().toISOString(),
             },
           });
 
-          const updated_variant = _queryVariant.getLatest();
+          const _queryUpdatedVariant = _queryVariant.getLatest();
 
           /**
            * ---------------------------------------------------
@@ -328,11 +346,11 @@ export default async ({ id, data }: MutateEditProductQuery) => {
            * 1.5.1.3. Update any bundle price that contains current variant iteration as one of it's product.
            * ------------------------------------------------------------------------------------------------
            */
-          if (_queryVariant.price !== updated_variant.price) {
+          if (_queryVariant.price !== _queryUpdatedVariant.price) {
             await updateBundlePrice({
               id: v_id,
               old_price: _queryVariant.price,
-              new_price: updated_variant.price
+              new_price: _queryUpdatedVariant.price,
             });
           }
 
@@ -347,8 +365,8 @@ export default async ({ id, data }: MutateEditProductQuery) => {
            * This to update active status of each variant on the bundle.
            */
           if (
-            _queryVariant.stock === 0 && updated_variant.stock > 0 ||
-            _queryVariant.stock > 0 && updated_variant.stock === 0
+            _queryVariant.stock === 0 && _queryUpdatedVariant.stock > 0 ||
+            _queryVariant.stock > 0 && _queryUpdatedVariant.stock === 0
           ) {
             await updateBundlesStatus({ id: v_id, active: v_is_active });
           }
@@ -373,11 +391,11 @@ export default async ({ id, data }: MutateEditProductQuery) => {
             id        : variant_id,
             product_id: id,
             name      : clean_v_name,
-            sku       : clean_v_sku,
             price     : clean_v_price,
             stock     : clean_v_stock,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
+            ...(sku ? { sku: sanitize(v_sku as string) } : {}),
           });
 
           /**
@@ -411,7 +429,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
      * ------------------------------------------
      * 2. Update flow if product has no variants.
      * ------------------------------------------
-     * This also run when product has actual variants, BUT if those variants are removed in the editing process.
+     * This also run when product has actual variants, and those variants are removed in the editing process.
      */
     else {
       /**
@@ -419,22 +437,48 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        * 2.1. Update the product detail.
        * -------------------------------
        */
+      if (!price || !isNumeric(price)) throw 'Product without variants price cannot be empty and must be a number.';
+      if (!stock || !isNumeric(stock)) throw 'Product without variants stock cannot be empty and must be a number.';
+
+      const clean_price = sanitizeNumeric(price) as string;
+      const clean_stock = sanitizeNumeric(stock) as number;
       const is_active = clean_stock >= 1 ? true : false;
 
-      await _queryProduct.update({
+      await _queryProductConstruct.update({
         $set: {
           active     : is_active,
           name       : clean_name,
-          description: clean_description,
-          by         : clean_by,
-          sku        : clean_sku,
           price      : clean_price,
           stock      : clean_stock,
+          ...(description ? { description: sanitize(description) } : {}),
+          ...(by ? { by: sanitize(by) } : {}),
+          ...(sku ? { sku: sanitize(sku) } : {}),
+        },
+      });
+
+      if (
+        (!variants || !variants.length) ||
+        !description ||
+        !by ||
+        !sku
+      ) {
+        await _queryProductConstruct.update({
+          $unset: {
+            ...((!variants || !variants.length) && { variants: true }),
+            ...((!description) && { description: true }),
+            ...((!by) && { by: true }),
+            ...((!sku) && { sku: true }),
+          },
+        });
+      }
+
+      await _queryProductConstruct.update({
+        $set: {
           updated_at : new Date().toISOString(),
         },
       });
 
-      const updated_product = _queryProduct.getLatest();
+      const _queryUpdatedProduct = _queryProduct.getLatest();
 
       /**
        * -------------------------------
@@ -464,15 +508,15 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       if (deleted_variants.length) await removeVariant(deleted_variants, _queryProduct);
 
       /**
-       * ---------------------------------------------------------------------------------------
-       * 2.4. Update any bundle price price that contains current productas one of it's product.
-       * ---------------------------------------------------------------------------------------
+       * --------------------------------------------------------------------------------------
+       * 2.4. Update any bundle price price that contains current products one of it's product.
+       * --------------------------------------------------------------------------------------
        */
-      if (_queryProduct.price !== updated_product.price) {
+      if (_queryProduct.price !== _queryUpdatedProduct.price) {
         await updateBundlePrice({
           id,
-          old_price: _queryProduct.price,
-          new_price: updated_product.price,
+          old_price: _queryProduct.price!,
+          new_price: _queryUpdatedProduct.price!,
         });
       }
 
@@ -487,8 +531,8 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        * This to update active status of each product on the bundle.
        */
       if (
-        _queryProduct.stock === 0 && updated_product.stock > 0 ||
-        _queryProduct.stock > 0 && updated_product.stock === 0
+        _queryProduct.stock === 0 && _queryUpdatedProduct.stock! > 0 ||
+        _queryProduct.stock! > 0 && _queryUpdatedProduct.stock === 0
       ) {
         await updateBundlesStatus({ id, active: is_active });
       }

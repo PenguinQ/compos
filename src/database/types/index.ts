@@ -110,7 +110,7 @@ export type OrderDocBundleItem = {
   name: string;
   price: string;
   quantity: number;
-  sku: string;
+  sku?: string;
 };
 
 /**
@@ -151,12 +151,22 @@ export type SalesDocProduct = {
   quantity: number;
 };
 
+export type SalesDocBundleItem = {
+  id: string;
+  name: string;
+  price: string;
+  quantity: number;
+  sku?: string;
+};
+
 export type SalesDocProductSold = {
   id: string;
   name: string;
-  price: number;
+  price: string;
   quantity: number;
-  sku: string;
+  sku?: string;
+  items?: SalesDocBundleItem[];
+  total: string;
 };
 
 export type SalesDoc = {
@@ -178,11 +188,11 @@ export type SalesDoc = {
 export type SalesCollection = RxCollection<SalesDoc>;
 
 export type DatabaseCollection = {
-  sales: SalesCollection;
-  order: OrderCollection;
   product: ProductCollection;
   variant: VariantCollection;
   bundle: BundleCollection;
+  order: OrderCollection;
+  sales: SalesCollection;
 };
 
 export type Database = RxDatabase<DatabaseCollection>;

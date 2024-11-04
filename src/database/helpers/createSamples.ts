@@ -21,6 +21,7 @@ const sampleProducts = [
     price: '135000',
     by: 'CESSA',
     stock: 100,
+    sku: 'JWCESSA',
   },
   {
     name: 'Your Dirty Secrets',
@@ -33,6 +34,7 @@ const sampleProducts = [
     price: '145000',
     by: 'CETEEE',
     stock: 100,
+    sku: 'HSLCETEEE',
   },
   {
     name: 'The Fleeting Things',
@@ -45,6 +47,7 @@ const sampleProducts = [
     price: '155000',
     by: 'NEIGE888',
     stock: 100,
+    sku: 'GBPSNEIGE888',
   },
   {
     name: 'HSR Stickers',
@@ -58,6 +61,7 @@ const sampleProducts = [
         name: 'Set 2',
         price: '25000',
         stock: 50,
+        sku: 'HSRSET2',
       },
       {
         name: 'Set 3',
@@ -77,26 +81,15 @@ const sampleBundles = [
     name: 'Bundle 2',
     auto_price: true,
   },
-  {
-    name: 'Bundle 3',
-    auto_price: true,
-  },
-  {
-    name: 'Bundle 4',
-    auto_price: true,
-  },
 ];
 
 const sampleSales = [
   {
-    name: 'Sales 1',
+    name: 'Comifuro (Day 1)',
+    initial_balance: '1000000',
   },
   {
-    name: 'Sales 2',
-  },
-  {
-    name: 'Sales 3',
-    initial_balance: '100000000',
+    name: 'Comifuro (Day 2)',
   },
 ];
 
@@ -179,7 +172,7 @@ export default async () => {
 
   const insertProducts = await db.product.bulkInsert(productsData);
 
-  console.log('Sample products:', insertProducts.success);
+  console.info('Sample products:', insertProducts.success);
 
   /**
    * -------------------------
@@ -214,16 +207,18 @@ export default async () => {
 
     for (const product of randomProducts) {
       const { id, product_id, active, price, stock } = product;
-      const randomQuantity = Math.floor(Math.random() * (stock - 1 + 1)) + 1;
+      // const randomQuantity = Math.floor(Math.random() * (stock - 1 + 1)) + 1;
 
       if (!active) isBundleActive = false;
 
       if (bundleAutoPrice) {
-        bundlePrice = bundlePrice.plus(Big(price));
+        // bundlePrice = bundlePrice.plus(Big(price).times(randomQuantity));
+        bundlePrice = bundlePrice.plus(Big(price).times(1));
       }
 
       bundleProducts.push({
-        quantity: randomQuantity,
+        // quantity: randomQuantity,
+        quantity: 1,
         id,
         active,
         ...(product_id ? { product_id } : {}),
@@ -244,7 +239,7 @@ export default async () => {
 
   const insertBundles = await db.bundle.bulkInsert(bundlesData);
 
-  console.log('Sample bundles:', insertBundles.success);
+  console.info('Sample bundles:', insertBundles.success);
 
   /**
    * -----------------------
@@ -282,7 +277,11 @@ export default async () => {
       const { id, stock } = product;
       const randomQuantity = Math.floor(Math.random() * ((stock ? stock : 1) - 1 + 1)) + 1;
 
-      saleProducts.push({ id, quantity: randomQuantity });
+      saleProducts.push({
+        // quantity: randomQuantity,
+        quantity: 1,
+        id,
+      });
     };
 
     salesData.push({
@@ -301,5 +300,5 @@ export default async () => {
 
   const insertSales = await db.sales.bulkInsert(salesData);
 
-  console.log('Sample sales:', insertSales.success);
+  console.info('Sample sales:', insertSales.success);
 };
