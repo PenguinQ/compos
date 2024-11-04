@@ -10,7 +10,7 @@ import { isNumeric, sanitizeNumeric } from '@/helpers';
 
 type MutateAddBundleQuery = {
   name: string;
-  description: string;
+  description?: string;
   price: string;
   auto_price: boolean;
   products: BundleDocProduct[];
@@ -19,16 +19,15 @@ type MutateAddBundleQuery = {
 export default async (data: MutateAddBundleQuery) => {
   try {
     const ulid       = monotonicFactory();
-    const bundle_id = BUNDLE_ID_PREFIX + ulid();
+    const bundle_id  = BUNDLE_ID_PREFIX + ulid();
     const {
       name        = '',
-      description = '',
       price       = '0',
       auto_price  = true,
       products    = [],
+      description,
     } = data;
-    const clean_name        = sanitize(name);
-    const clean_description = sanitize(description);
+    const clean_name = sanitize(name);
 
     if (clean_name.trim() === '') throw 'Bundle name cannot be empty.';
     if (!isNumeric(price))        throw 'Bundle price must be a number.';
@@ -61,12 +60,12 @@ export default async (data: MutateAddBundleQuery) => {
       id         : bundle_id,
       active     : bundle_active,
       name       : clean_name,
-      description: clean_description,
       auto_price : auto_price,
       price      : clean_price,
       products   : bundle_products,
       created_at : new Date().toISOString(),
       updated_at : new Date().toISOString(),
+      ...(description ? { description: sanitize(description) } : {}),
     });
   } catch (error) {
     if (error instanceof Error) {

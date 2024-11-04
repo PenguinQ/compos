@@ -41,7 +41,7 @@ const updateTabData = (type: keyof TabDataSales, data: TabDataObject) => {
  * 0 = running
  * 1 = finished
  */
- onBeforeMount(() => {
+onBeforeMount(() => {
   const page = Number(route.query.page) ? Number(route.query.page) : 1;
   const search = route.query.search ? String(route.query.search) : undefined;
 
@@ -64,7 +64,7 @@ const updateTabData = (type: keyof TabDataSales, data: TabDataObject) => {
  * Update provider tab page whenever route parameter changes
  * ---------------------------------------------------------
  */
- watch(
+watch(
   () => route.query,
   (newQuery) => {
     const { tab: newTab, page: newPage, search: newSearch } = newQuery
@@ -78,21 +78,10 @@ const updateTabData = (type: keyof TabDataSales, data: TabDataObject) => {
       tabData.running.page = Number(newPage);
       tabData.running.search = newSearch ? String(newSearch) : undefined;
     }
-
-    // console.log('[Provider] running:', { ...tabData.running });
-    // console.log('[Provider] finished:', { ...tabData.finished });
   },
 );
 
 const handleClickTab = (index: number) => {
-  // const tabMap: { [key: number]: string } = {
-  //   0: 'running',
-  //   1: 'finished',
-  // };
-  // const tab = tabMap[index];
-  // const page = tabData[tabMap[index]].page;
-  // const search =  tabData[tabMap[index]].search ? tabData[tabMap[index]].search : undefined;
-
   let tab, page, search;
 
   switch (index) {

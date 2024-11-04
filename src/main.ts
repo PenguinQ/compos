@@ -1,5 +1,5 @@
 import { createApp } from 'vue';
-import { initDB } from '@database';
+import { initDB } from '@/database';
 
 import './assets/main.scss';
 import './assets/global.scss';

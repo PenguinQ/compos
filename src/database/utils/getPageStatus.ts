@@ -1,9 +1,9 @@
 import type { RxDocument } from 'rxdb';
 
-import { db } from '@database';
+import { db } from '@/database';
 
 type GetPageStatusParams = {
-  collection: string;
+  collection: keyof typeof db;
   data: RxDocument<any>[];
   sort: 'asc' | 'desc';
   sortBy: object[];

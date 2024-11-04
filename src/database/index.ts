@@ -1,27 +1,26 @@
 import { addRxPlugin, createRxDatabase } from 'rxdb';
-// import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
-import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+// import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
 import { wrappedAttachmentsCompressionStorage } from 'rxdb/plugins/attachments-compression';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 
 import { sales, order, product, variant, bundle } from './schema';
-import { productsORMs, variantsORMs, bundlesORMs } from './orms';
-import { createSamples } from './helpers';
+import { productsORMs, variantsORMs, bundlesORMs, salesORMs } from './orms';
+// import { createSamples } from './helpers';
 import type { Database, DatabaseCollection } from './types';
 
 export let db: Database;
 
 const createDB = async () => {
   const compressedStorage = wrappedAttachmentsCompressionStorage({
-    // storage: getRxStorageDexie(),
-    storage: getRxStorageMemory(), // Use storage memory during development mode, change to Dexie later
+    storage: getRxStorageDexie(),
+    // storage: getRxStorageMemory(), // Use storage memory during development mode, change to Dexie later
   });
 
   db = await createRxDatabase<DatabaseCollection>({
     name: 'compos',
-    // storage: getRxStorageDexie(),
     storage: compressedStorage, // Use storage memory during development mode, change to Dexie later
     eventReduce: true,
   });
@@ -35,12 +34,6 @@ export const initDB = async () => {
   if (!db) await createDB();
 
   const collections = await db.addCollections({
-    sales: {
-      schema: sales,
-    },
-    order: {
-      schema: order,
-    },
     product: {
       schema: product,
       methods: productsORMs,
@@ -52,6 +45,13 @@ export const initDB = async () => {
     bundle: {
       schema: bundle,
       methods: bundlesORMs,
+    },
+    sales: {
+      schema: sales,
+      methods: salesORMs,
+    },
+    order: {
+      schema: order,
     },
   });
 
@@ -92,10 +92,19 @@ export const initDB = async () => {
     }
   }, false);
 
+  // Sales Hooks
+  collections.sales.preRemove(async (data) => {
+    const sales = await collections.sales.findOne(data.id).exec();
+
+    if (sales) {
+      await sales.removeOrders();
+    }
+  }, false);
+
   /**
    * -------------------------------
    * Create sample development data.
    * -------------------------------
    */
-  await createSamples();
+  // await createSamples();
 };

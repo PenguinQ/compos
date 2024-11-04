@@ -58,7 +58,6 @@ const {
   <template v-else>
     <ListSearch
       sticky
-      v-model="searchQuery"
       :placeholder="status === 'running' ? 'Search running sales' : 'Search finished sales'"
       @input="handleSearch"
       @clear="handleSearchClear"

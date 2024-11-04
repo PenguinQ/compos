@@ -36,8 +36,8 @@ export default async ({ data }: MutateAddSalesQuery) => {
       products_sold: [],
       orders       : [],
       revenue      : '0',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at   : new Date().toISOString(),
+      updated_at   : new Date().toISOString(),
       ...(balance ? { initial_balance: balance } : {}),
     });
   } catch (error) {

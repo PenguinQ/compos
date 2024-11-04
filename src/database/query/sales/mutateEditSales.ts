@@ -62,8 +62,7 @@ export default async ({ id, data }: MutateEditSalesQuery) => {
 
     await _queryConstruct.update({
       $set: {
-        name      : clean_name,
-        updated_at: new Date().toISOString(),
+        name: clean_name,
         products,
         ...(initial_balance ? { initial_balance } : {}),
       },
@@ -80,13 +79,13 @@ export default async ({ id, data }: MutateEditSalesQuery) => {
           initial_balance: true,
         },
       });
-
-      await _queryConstruct.update({
-        $set: {
-          updated_at: new Date().toISOString(),
-        },
-      });
     }
+
+    await _queryConstruct.update({
+      $set: {
+        updated_at: new Date().toISOString(),
+      },
+    });
 
     return clean_name;
   } catch (error) {

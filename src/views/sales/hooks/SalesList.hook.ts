@@ -24,7 +24,7 @@ export const useSalesList = (status: 'running' | 'finished' = 'running') => {
   const route = useRoute();
   const router = useRouter();
   const isSalesEmpty = ref(true);
-  const searchQuery = ref(tabData[status].search);
+  const searchQuery = ref(tabData[status].search ? tabData[status].search : '');
   const { page, toNext, toPrev } = usePagination({ current: tabData[status].page });
   const currentPage = computed(() => tabData[status].page);
   const currentSearch = computed(() => tabData[status].search);

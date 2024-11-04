@@ -172,6 +172,7 @@ watch(
   }
 
   &__close {
+    color: var(--color-white);
     background-color: transparent;
     border: none;
     flex-shrink: 0;

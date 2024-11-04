@@ -1,20 +1,20 @@
-import { db } from '@database';
+import { db } from '@/database';
 
 type HandlePaginationReturn = {
   first_page: boolean;
   last_page: boolean;
-}
+};
 
 type HandlePaginationSelector = {
   first: object | undefined;
   last: object | undefined;
-}
+};
 
 type HandlePagination = {
-  collection: string;
+  collection: keyof typeof db;
   selector: HandlePaginationSelector;
   sort: object[];
-}
+};
 
 export default async ({ collection, sort, selector }: HandlePagination): Promise<HandlePaginationReturn> => {
   let first_page = false;

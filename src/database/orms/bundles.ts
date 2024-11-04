@@ -1,4 +1,4 @@
-import { db } from "../";
+import { db } from '../';
 
 export default {
   async removeFromSales() {

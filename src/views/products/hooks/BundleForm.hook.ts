@@ -79,7 +79,7 @@ export const useBundleForm = () => {
   const page = reactive({
     current: 1,
     total  : 1,
-    limit  : 12,
+    limit  : 10,
     first  : true,
     last   : true,
   });

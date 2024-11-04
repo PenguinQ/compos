@@ -78,9 +78,6 @@ watch(
       tabData.product.page = Number(newPage);
       tabData.product.search = newSearch ? String(newSearch) : undefined;
     }
-
-    // console.log('[Provider] product:', { ...tabData.product });
-    // console.log('[Provider] bundle:', { ...tabData.bundle });
   },
 );
 
