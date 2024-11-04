@@ -10,7 +10,7 @@
     "icons:vue:clean": "rimraf src/components/icons-vue",
     "dev": "vite",
     "dev:host": "vite --host",
-    "build": "vue-tsc && vite build",
+    "build": "pnpm run icons:build && vue-tsc && vite build",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
