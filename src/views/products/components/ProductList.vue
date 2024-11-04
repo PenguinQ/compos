@@ -61,7 +61,6 @@ const {
     <ListSearch
       sticky
       :placeholder="type === 'product' ? 'Search Product' : 'Search Bundle'"
-      v-model="searchQuery"
       @input="handleSearch"
       @clear="handleSearchClear"
     />

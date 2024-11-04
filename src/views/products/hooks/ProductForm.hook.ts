@@ -174,11 +174,6 @@ export const useProductForm = () => {
         };
       });
 
-      /**
-       * 1. Option 1, empty array variant, send empty array and unset in backend
-       * 2, Option 2, undefined variants, send undefined value and usnet in backend
-       */
-
       return mutateEditProduct({
         id  : params.id as string,
         data: {
@@ -218,10 +213,12 @@ export const useProductForm = () => {
         const newVariantImages = newImages.length ? newImages.map(img => img.data) : [];
 
         return {
-          new_image: newVariantImages,
+          new_images: newVariantImages,
           ...rest,
         };
       });
+
+      console.log(variantsData);
 
       return mutateAddProduct({
         name       : formData.name,

@@ -12,7 +12,7 @@ import type { VariantDoc } from '@/database/types';
 import { isNumeric, sanitizeNumeric } from '@/helpers';
 
 type MutateAddProductVariant = Partial<VariantDoc> & {
-  new_image: File[];
+  new_images?: File[];
 };
 
 type MutateAddProductQuery = {
@@ -31,14 +31,14 @@ export default async (data: MutateAddProductQuery) => {
     const ulid       = monotonicFactory();
     const product_id = PRODUCT_ID_PREFIX + ulid();
     const {
-      name,
+      name  = '',
+      price = '0',
+      stock = 0,
       description,
       by,
-      sku,
-      price,
-      stock,
       variants,
       new_images,
+      sku,
     } = data;
     const clean_name = sanitize(name);
 
@@ -52,19 +52,19 @@ export default async (data: MutateAddProductQuery) => {
      * ----------------------
      */
     if (variants && variants.length) {
-      let product_active                  = true;
-      const variant_ids: string[]         = [];
-      const variant_array: VariantDoc[]   = [];
-      const variant_attachments: File[][] = [];
+      let product_active        = true;
+      const variant_ids         = [];
+      const variant_array       = [];
+      const variant_attachments = [];
 
       for (const variant of variants) {
         const v_id = VARIANT_ID_PREFIX + ulid();
         const {
-          name     : v_name      = '',
-          price    : v_price     = 0,
-          stock    : v_stock     = 0,
-          new_image: v_new_image = [],
-          sku      : v_sku,
+          name      : v_name       = '',
+          price     : v_price      = '0',
+          stock     : v_stock      = 0,
+          new_images: v_new_images = [],
+          sku       : v_sku,
         } = variant;
         const clean_v_name = sanitize(v_name);
 
@@ -87,7 +87,7 @@ export default async (data: MutateAddProductQuery) => {
           ...(sku ? { sku: sanitize(v_sku as string) } : {}),
         });
         variant_ids.push(v_id);
-        variant_attachments.push(v_new_image);
+        variant_attachments.push(v_new_images);
       }
 
       const inactive_variant = variant_array.filter(v => v.active === false);
@@ -143,14 +143,14 @@ export default async (data: MutateAddProductQuery) => {
        * -----------------------------
        */
       if (variantQuerySuccess.length) {
-        for (const [index, variant] of variants.entries()) {
+        for (const [index, variant] of variantQuerySuccess.entries()) {
           if (variant_attachments[index].length) {
             if (!isImagesValid(variant_attachments[index])) throw 'Invalid file types.';
 
             const { thumbnails, images } = await compressProductImage(variant_attachments[index]);
 
-            if (thumbnails.length) await addImages(thumbnails, variant as unknown as RxDocument<unknown>);
-            if (images.length)     await addImages(images, variant as unknown as  RxDocument<unknown>);
+            if (thumbnails.length) await addImages(thumbnails, variant as RxDocument<unknown>);
+            if (images.length)     await addImages(images, variant as RxDocument<unknown>);
           }
         }
       }

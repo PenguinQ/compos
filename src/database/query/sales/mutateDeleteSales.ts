@@ -4,31 +4,13 @@ export default async (id: string) => {
   try {
     const _querySales = await db.sales.findOne(id).exec();
 
-    /**
-     * ---------------------------------------
-     * 1. Remove any order related to this sales.
-     * ---------------------------------------
-     */
-    if (_querySales) {
-      const { name, orders } = _querySales;
+    if (!_querySales) throw `No sales found with id: ${id}.`;
 
-      if (orders?.length) {
-        const _queryOrders = await _querySales.populate('order');
+    const { name } = _querySales.toJSON();
 
-        for (const order of _queryOrders) {
-          await order.remove();
-        }
-      }
+    await _querySales.remove();
 
-      /**
-       * ---------------------
-       * 2. Remove this sales.
-       * ---------------------
-       */
-      await _querySales.remove();
-
-      return name;
-    }
+    return name;
   } catch (error) {
     if (error instanceof Error) {
       throw error;

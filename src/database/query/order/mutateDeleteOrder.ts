@@ -6,7 +6,11 @@ export default async (id: string) => {
 
     if (!_queryOrder) throw `No order found with id: ${id}.`;
 
+    const { name } = _queryOrder.toJSON();
+
     await _queryOrder.remove();
+
+    return name;
   } catch (error) {
     if (error instanceof Error) throw error;
 

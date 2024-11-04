@@ -197,6 +197,7 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 
   &__box {
+    color: var(--color-white);
     display: flex;
     align-items: center;
     justify-content: center;

@@ -21,18 +21,17 @@ const router = createRouter({
               name: 'sales-list',
               meta: { title: 'Sales - ComPOS' },
               component: () => import('../views/sales/SalesList.vue'),
-              // --- WIP ---
-              // beforeEnter: (to, _, next) => {;
-              //   if (to.query.tab && to.query.page) {
-              //     next();
-              //   }
-              //   else {
-              //     const query = { tab: 'running', page: 1 };
-              //     const updatedQuery = { ...to.query, ...query };
+              beforeEnter: (to, _, next) => {;
+                if (to.query.tab && to.query.page) {
+                  next();
+                }
+                else {
+                  const query = { tab: 'running', page: 1 };
+                  const updatedQuery = { ...to.query, ...query };
 
-              //     next({ ...to, query: updatedQuery });
-              //   }
-              // },
+                  next({ ...to, query: updatedQuery });
+                }
+              },
             },
             {
               path: '/sales/detail/:id',
@@ -71,20 +70,19 @@ const router = createRouter({
               name: 'product-list',
               meta: { title: 'Product List - ComPOS' },
               component: () => import('../views/products/ProductList.vue'),
-              // --- WIP ---
-              // beforeEnter: (to, _, next) => {
-              //   // If have tab & page query, go through
-              //   if (to.query.tab && to.query.page) {
-              //     next();
-              //   }
-              //   // If doesn't have tab & page query, set the query with default tab to product and page to 1
-              //   else {
-              //     const query = { tab: 'product', page: 1 };
-              //     const updatedQuery = { ...to.query, ...query };
+              beforeEnter: (to, _, next) => {
+                // If have tab & page query, go through
+                if (to.query.tab && to.query.page) {
+                  next();
+                }
+                // If doesn't have tab & page query, set the query with default tab to product and page to 1
+                else {
+                  const query = { tab: 'product', page: 1 };
+                  const updatedQuery = { ...to.query, ...query };
 
-              //     next({ ...to, query: updatedQuery });
-              //   }
-              // },
+                  next({ ...to, query: updatedQuery });
+                }
+              },
             },
             {
               path: '/product/:id',

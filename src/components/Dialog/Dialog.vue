@@ -160,6 +160,7 @@ $headerFullHeight: 56px;
   transition: all 300ms ease;
 
   &__close {
+    line-height: 1px;
     background-color: var(--color-black);
     border: 1px solid var(--color-black);
     border-radius: 8px;

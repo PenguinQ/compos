@@ -27,7 +27,7 @@ export const useProductList = (type: 'product' | 'bundle') => {
   const route  = useRoute();
   const router = useRouter();
   const isListEmpty = ref(true);
-  const searchQuery = ref(tabData[type].search);
+  const searchQuery = ref(tabData[type].search ? tabData[type].search : '');
   const { page, toNext, toPrev } = usePagination({ current: tabData[type].page });
   const currentPage   = computed(() => tabData[type].page);
   const currentSearch = computed(() => tabData[type].search);
@@ -50,7 +50,7 @@ export const useProductList = (type: 'product' | 'bundle') => {
     isLoading: listLoading,
     isError  : listError,
   } = useQuery({
-    delay: 300,
+    delay: 200,
     queryKey: [
       type === 'product' ? 'product-list' : 'bundle-list',
       currentSearch,
