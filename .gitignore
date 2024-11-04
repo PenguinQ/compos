@@ -13,8 +13,8 @@ dist-ssr
 *.local
 
 # Directories
-src/components/Icons
-src/components/IconsVue
+# src/components/Icons
+# src/components/IconsVue
 
 # Editor directories and files
 .zed/*
