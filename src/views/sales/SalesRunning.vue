@@ -24,13 +24,14 @@ import ComposIcon, {
   Tags,
   CheckLarge,
   InfoCircleFilled,
-  Cash,
-  Receipt,
 } from '@components/Icons';
 
 // View Components
-import ProductImage from '@/views/components/ProductImage.vue';
-import ButtonBlock from '@/views/components/ButtonBlock.vue';
+import {
+  ButtonBlock,
+  OrderCard,
+  ProductImage,
+} from '@/views/components';
 
 // Helpers
 import { toIDR } from '@/helpers';
@@ -326,29 +327,14 @@ const {
                     margin="56px 0"
                   />
                   <div v-else class="order-list">
-                    <div v-for="order of ordersData.orders" class="order">
-                      <Text heading="6" margin="0">{{ order.name }}</Text>
-                      <div class="order-details">
-                        <div class="order-details__item">
-                          <ComposIcon :icon="Receipt" />
-                          {{ order.totalFormatted }}
-                        </div>
-                        <div class="order-details__item">
-                          <ComposIcon :icon="Cash" />
-                          {{ order.tenderedFormatted }}
-                        </div>
-                        <div class="order-details__item">
-                          <ComposIcon :icon="CashCoin" />
-                          {{ order.changeFormatted }}
-                        </div>
-                      </div>
-                      <div class="order-products">
-                        <div v-for="product of order.products" class="order-products__item">
-                          <ComposIcon :icon="Box" />
-                          {{ product.quantity }}&times; {{ product.name }}
-                        </div>
-                      </div>
-                    </div>
+                    <OrderCard
+                      v-for="order of ordersData.orders"
+                      :title="order.name"
+                      :total="order.totalFormatted"
+                      :tendered="order.tenderedFormatted"
+                      :change="order.changeFormatted"
+                      :products="order.products"
+                    />
                   </div>
                 </template>
               </template>
@@ -617,60 +603,7 @@ const {
 
 // Order History List
 .order-list {
-
-}
-
-.order {
   padding: 16px;
-  border-top: 1px solid transparent;
-  border-bottom: 1px solid var(--color-border);
-
-  &:last-of-type {
-    border-bottom-color: transparent;
-  }
-
-  &-details {
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding-top: 12px;
-    padding-bottom: 12px;
-    margin-bottom: 12px;
-    margin-top: 12px;
-
-    &__item {
-      font-size: var(--text-body-small-size);
-      line-height: var(--text-body-small-height);
-      display: flex;
-      align-items: center;
-
-      compos-icon {
-        margin-right: 8px;
-      }
-    }
-  }
-
-  &-products {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-
-    &__item {
-      font-size: var(--text-body-small-size);
-      line-height: var(--text-body-small-height);
-      display: flex;
-      align-self: center;
-
-      compos-icon {
-        width: 16px;
-        height: 16px;
-        margin-right: 8px;
-      }
-    }
-  }
 }
 
 .order-summary {

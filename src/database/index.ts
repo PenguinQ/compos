@@ -6,17 +6,10 @@ import { wrappedAttachmentsCompressionStorage } from 'rxdb/plugins/attachments-c
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 
-// Types
-import type { Database, DatabaseCollection, SalesDocProduct } from './types';
-
-// Development
-import { createSamples } from './helpers';
-
-// Database Schema
 import { sales, order, product, variant, bundle } from './schema';
-
-// Database ORMs
 import { productsORMs, variantsORMs, bundlesORMs } from './orms';
+import { createSamples } from './helpers';
+import type { Database, DatabaseCollection } from './types';
 
 export let db: Database;
 

@@ -55,6 +55,35 @@ export default {
           sku: {
             type: 'string',
           },
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: {
+                  type: 'string',
+                },
+                name: {
+                  type: 'string',
+                },
+                price: {
+                  type: 'string',
+                },
+                quantity: {
+                  type: 'number',
+                  minimum: 0,
+                  default: 0,
+                },
+                sku: {
+                  type: 'string',
+                  uniqueItems: true,
+                },
+              },
+            },
+          },
+          total: {
+            type: 'string',
+          },
         },
       },
       default: [],

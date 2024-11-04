@@ -33,9 +33,8 @@ type OrderedProductBundleItem = {
   name: string;
   quantity: number;
   stock: number;
-  // price: string;
   price: Big;
-  sku: string;
+  sku?: string;
 };
 
 /**
@@ -48,12 +47,12 @@ type OrderedProduct = {
   id: string;
   images: string[];
   name: string;
-  // price: string;
   price: Big;
   amount: number;
   quantity: number;
   stock?: number;
   items?: OrderedProductBundleItem[];
+  sku?: string;
 };
 
 export const useSalesDashboard = () => {
@@ -72,7 +71,7 @@ export const useSalesDashboard = () => {
   const paymentInput       = ref('0');
   const paymentTendered    = computed(() => Big(paymentInput.value));
   const paymentChange      = computed(() => totalProductsPrice.value.gt(paymentTendered.value) ? 0 : paymentTendered.value.minus(totalProductsPrice.value));
-  const balance            = reactive<{ initial: string | undefined; current: string | undefined; }>({
+  const balance            = reactive<{ initial?: string; current?: string; }>({
     initial: undefined,
     current: undefined,
   });
@@ -171,7 +170,7 @@ export const useSalesDashboard = () => {
       const mutateProducts = [];
 
       for (const order of orderedProducts.value) {
-        const { amount, id, name, price, items } = order;
+        const { amount, id, name, price, items, sku } = order;
         let itemList = [];
 
         if (items) {
@@ -194,6 +193,7 @@ export const useSalesDashboard = () => {
           id,
           name,
           amount,
+          sku,
         });
       }
 
@@ -208,7 +208,7 @@ export const useSalesDashboard = () => {
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to add order.', type: 'error', duration: 2000 });
+      toast.add({ message: `Failed to add order. ${error.message}`, type: 'error', duration: 2000 });
       console.error('[ERROR] Failed to add order.', error.message);
     },
     onSuccess: () => {
@@ -228,7 +228,7 @@ export const useSalesDashboard = () => {
     mutateFn: () => mutateFinishSales(params.id as string),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to finish the sales.', type: 'error', duration: 2000 });
+      toast.add({ message: `Failed to finish the sales. ${error.message}`, type: 'error', duration: 2000 });
       console.error('Failed to finish the sales.', error.message);
     },
     onSuccess: response => {
@@ -247,6 +247,7 @@ export const useSalesDashboard = () => {
       stock,
       price,
       quantity,
+      sku,
     } = product;
     const order = orderedProducts.value.find(product => product.id === id);
 
@@ -286,9 +287,8 @@ export const useSalesDashboard = () => {
         name,
         stock,
         quantity,
+        sku,
       });
-
-      console.log(orderedProducts.value);
     }
   };
 

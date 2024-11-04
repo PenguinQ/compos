@@ -29,30 +29,25 @@ type FormDataVariant = {
   name: string;
   price: string;
   stock: number;
-  sku?: string;
-  image: Image[];
-  new_image: NewImage[];
-  deleted_images: string[];
+  sku: string;
+  images: Image[];
+  newImages: NewImage[];
+  deletedImages: string[];
 };
 
 type FormData = {
   id: string;
   name: string;
-  description?: string;
-  by?: string;
-  price?: string;
-  stock?: number;
-  sku?: string;
-  // description: string;
-  // by: string;
-  // price: string;
-  // stock: number;
-  // sku: string;
+  description: string;
+  by: string;
+  price: string;
+  stock: number;
+  sku: string;
   variants: FormDataVariant[];
-  deleted_variants: string[];
-  image: Image[];
-  new_image: NewImage[];
-  deleted_images: string[];
+  deletedVariants: string[];
+  images: Image[];
+  newImages: NewImage[];
+  deletedImages: string[]
 };
 
 type FormErrorVariant = {
@@ -77,21 +72,16 @@ export const useProductForm = () => {
   const formData = reactive<FormData>({
     id              : '',
     name            : '',
-    description     : undefined,
-    by              : undefined,
-    price           : undefined,
-    stock           : undefined,
-    sku             : undefined,
-    // description     : '',
-    // by              : '',
-    // price           : '0',
-    // stock           : 0,
-    // sku             : '',
+    description     : '',
+    by              : '',
+    price           : '0',
+    stock           : 0,
+    sku             : '',
     variants        : [],
-    deleted_variants: [],
-    image           : [],
-    new_image       : [],
-    deleted_images  : [],
+    deletedVariants : [],
+    images          : [],
+    newImages       : [],
+    deletedImages   : [],
   });
   const formError = reactive<FormError>({
     name    : '',
@@ -124,7 +114,7 @@ export const useProductForm = () => {
         formData.name        = resp.name;
         formData.description = resp.description;
         formData.by          = resp.by;
-        formData.image       = resp.image;
+        formData.images      = resp.images;
         formData.price       = resp.price;
         formData.stock       = resp.stock;
         formData.sku         = resp.sku;
@@ -136,9 +126,10 @@ export const useProductForm = () => {
             name          : variant.name,
             price         : variant.price,
             stock         : variant.stock,
-            image         : variant.image,
-            new_image     : [],
-            deleted_images: [],
+            images        : variant.images,
+            newImages     : [],
+            deletedImages : [],
+            sku           : variant.sku,
           });
 
           formError.variants.push({
@@ -157,22 +148,22 @@ export const useProductForm = () => {
     isLoading: mutateEditLoading,
   } = useMutation({
     mutateFn: () => {
-      const new_product_image = formData.new_image.length ? formData.new_image.map(img => img.data) : [];
-      const variants_data = formData.variants.map(variant => {
+      const newProductImages = formData.newImages.length ? formData.newImages.map(img => img.data) : [];
+      const variantsData     = formData.variants.map(variant => {
         const {
           id,
           name,
           price,
           stock,
           sku,
-          new_image,
-          deleted_images,
+          newImages,
+          deletedImages,
         } = variant;
-        const new_variant_image = new_image.length ? new_image.map(img => img.data) : [];
+        const newVariantImages = newImages.length ? newImages.map(img => img.data) : [];
 
         return {
-          new_images : new_variant_image,
-          deleted_images,
+          new_images    : newVariantImages,
+          deleted_images: deletedImages,
           id,
           name,
           sku,
@@ -180,6 +171,11 @@ export const useProductForm = () => {
           stock,
         };
       });
+
+      /**
+       * 1. Option 1, empty array variant, send empty array and unset in backend
+       * 2, Option 2, undefined variants, send undefined value and usnet in backend
+       */
 
       return mutateEditProduct({
         id  : params.id as string,
@@ -190,16 +186,16 @@ export const useProductForm = () => {
           price           : formData.price,
           stock           : formData.stock,
           sku             : formData.sku,
-          new_images      : new_product_image,
-          deleted_images  : formData.deleted_images,
-          variants        : variants_data,
-          deleted_variants: formData.deleted_variants,
+          new_images      : newProductImages,
+          deleted_images  : formData.deletedImages,
+          variants        : variantsData,
+          deleted_variants: formData.deletedVariants,
         },
       });
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error updating product detail, ${error}`, type: 'error' });
+      toast.add({ message: `Error updating product detail. ${error.message}`, type: 'error' });
       console.error('Error updating product detail.', error.message);
     },
     onSuccess: () => {
@@ -214,13 +210,13 @@ export const useProductForm = () => {
     isLoading: mutateAddLoading,
   } = useMutation({
     mutateFn: () => {
-      const new_product_image = formData.new_image.length ? formData.new_image.map(img => img.data) : [];
-      const variants_data = formData.variants.map(variant => {
-        const { new_image, ...rest } = variant;
-        const new_variant_image = new_image.length ? new_image.map(image => image.data) : [];
+      const newProductImages = formData.newImages.length ? formData.newImages.map(img => img.data) : [];
+      const variantsData = formData.variants.map(variant => {
+        const { newImages, ...rest } = variant;
+        const newVariantImages = newImages.length ? newImages.map(img => img.data) : [];
 
         return {
-          new_image: new_variant_image,
+          new_image: newVariantImages,
           ...rest,
         };
       });
@@ -232,8 +228,8 @@ export const useProductForm = () => {
         price      : formData.price,
         stock      : formData.stock,
         sku        : formData.sku,
-        variants   : variants_data,
-        new_image  : new_product_image,
+        variants   : variantsData,
+        new_images : newProductImages,
       });
     },
     onError: error => {
@@ -253,19 +249,18 @@ export const useProductForm = () => {
     const files  = target.files as FileList;
 
     if (isImagesValid([...files])) {
-      const file   = files[0];
-      const reader = new FileReader();
 
-      reader.onload = () => {
-        if (formData.new_image.length) {
-          formData.new_image[0].data = file;
-          formData.new_image[0].url  = reader.result;
-        } else {
-          formData.new_image.push({ data: file, url: reader.result });
-        }
-      };
+      formData.newImages = [];
 
-      reader.readAsDataURL(file);
+      for (const file of files) {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          formData.newImages.push({ data: file, url: reader.result });
+        };
+
+        reader.readAsDataURL(file);
+      }
     } else {
       // @ts-ignore
       toast.add({ message: 'Invalid file type, please use image file only.', type: 'error' });
@@ -276,20 +271,23 @@ export const useProductForm = () => {
     const target = e.target as HTMLInputElement;
     const files  = target.files as FileList;
 
-    [...files].forEach(async (file: File) => {
-      const reader = new FileReader();
+    if (isImagesValid([...files])) {
 
-      reader.onload = () => {
-        if (formData.variants[index].new_image.length) {
-          formData.variants[index].new_image[0].data = file;
-          formData.variants[index].new_image[0].url  = reader.result;
-        } else {
-          formData.variants[index].new_image.push({ data: file, url: reader.result });
-        }
-      };
+      formData.variants[index].newImages = [];
 
-      reader.readAsDataURL(file);
-    });
+      for (const file of files) {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          formData.variants[index].newImages.push({ data: file, url: reader.result });
+        };
+
+        reader.readAsDataURL(file);
+      }
+    } else {
+      // @ts-ignore
+      toast.add({ message: 'Invalid file type, please use image file only.', type: 'error' });
+    }
   };
 
   const handleAddVariant = () => {
@@ -297,9 +295,10 @@ export const useProductForm = () => {
       name          : '',
       price         : '0',
       stock         : 0,
-      image         : [],
-      new_image     : [],
-      deleted_images: [],
+      images        : [],
+      newImages     : [],
+      deletedImages : [],
+      sku           : '',
     });
     formError.variants.push({
       name : '',
@@ -310,35 +309,41 @@ export const useProductForm = () => {
   };
 
   const handleRemoveVariant = (index: number, id?: string) => {
-    id && formData.deleted_variants.push(id);
+    id && formData.deletedVariants.push(id);
     formData.variants.splice(index, 1);
   };
 
   const handleRemoveImage = () => {
-    if (formData.image.length) {
-      if (formData.new_image.length) {
-        formData.new_image.splice(0, 1);
+    if (formData.images.length) {
+      if (formData.newImages.length) {
+        formData.newImages = [];
       } else {
-        formData.deleted_images.push(formData.image[0].id as string);
-        formData.image.splice(0, 1);
+        for (const image of formData.images) {
+          formData.deletedImages.push(image.id!)
+        }
+
+        formData.images = [];
       }
     } else {
-      formData.new_image.splice(0, 1);
+      formData.newImages = [];
     }
   };
 
   const handleRemoveVariantImage = (_e: Event, index: number) => {
     const variant = formData.variants[index];
 
-    if (variant.image.length) {
-      if (variant.new_image.length) {
-        variant.new_image.splice(0, 1);
+    if (variant.images.length) {
+      if (variant.newImages.length) {
+        variant.newImages = [];
       } else {
-        variant.deleted_images.push(variant.image[0].id as string);
-        variant.image.splice(0, 1);
+        for (const image of variant.images) {
+          variant.deletedImages.push(image.id!)
+        }
+
+        variant.images = [];
       }
     } else {
-      variant.new_image.splice(0, 1);
+      variant.newImages = [];
     }
   };
 
@@ -362,7 +367,7 @@ export const useProductForm = () => {
     }
 
     if (!isNumeric(formData.stock)) {
-      formError.stock = 'Product stock must be a number and cannot be empty..';
+      formError.stock = 'Product stock must be a number and cannot be empty.';
       errors.push('');
     } else {
       formError.stock = '';
@@ -385,7 +390,7 @@ export const useProductForm = () => {
         }
 
         if (!isNumeric(variant.stock)) {
-          formError.variants[index].stock = 'Variant stock must be a number and cannot be empty..';
+          formError.variants[index].stock = 'Variant stock must be a number and cannot be empty.';
           errors.push('');
         } else {
           formError.variants[index].stock = '';
@@ -397,7 +402,7 @@ export const useProductForm = () => {
       params.id ? mutateEdit() : mutateAdd();
     } else {
       // @ts-ignore
-      toast.add({ message: 'There is an error in some form input; please check again.', type: 'error' });
+      toast.add({ message: `There's error in some of the fields, please check again.`, type: 'error' });
     }
   };
 

@@ -84,25 +84,25 @@ const {
             <div class="product-form-image" :data-error="true">
               <label>
                 <ProductImage borderless>
-                  <template v-if="formData.image.length || formData.new_image.length">
+                  <template v-if="formData.images.length || formData.newImages.length">
                     <img
-                      v-if="formData.new_image.length"
-                      :src="(formData.new_image[0].url as string)"
+                      v-if="formData.newImages.length"
+                      v-for="image of formData.newImages"
+                      :src="(image.url as string)"
                       :alt="`${formData.name} Image`"
                     />
                     <img
                       v-else
-                      :src="(formData.image[0].url as string)"
+                      v-for="image of formData.images"
+                      :src="(image.url as string)"
                       :alt="`${formData.name} Image`"
                     />
                   </template>
-                  <template v-else>
-                    <img :src="no_image" alt="" />
-                  </template>
+                  <img v-else :src="no_image" :alt="`${formData.name} image`">
                 </ProductImage>
                 <input type="file" accept=".jpg, .jpeg, .png, .webp" @change="handleAddImage" />
               </label>
-              <div v-if="formData.image.length || formData.new_image.length" class="product-form-image__actions">
+              <div v-if="formData.images.length || formData.newImages.length" class="product-form-image__actions">
                 <Button @click="handleRemoveImage" variant="outline" color="red" full>Remove</Button>
               </div>
             </div>
@@ -215,21 +215,21 @@ const {
                                 <div class="product-form-image product-form-image--variant">
                                   <label>
                                     <ProductImage borderless>
-                                      <template v-if="variant.image.length || variant.new_image.length">
+                                      <template v-if="variant.images.length || variant.newImages.length">
                                         <img
-                                          v-if="variant.new_image.length"
-                                          :src="(variant.new_image[0].url as string)"
-                                          :alt="`${variant.name} image`"
+                                          v-if="variant.newImages.length"
+                                          v-for="image of variant.newImages"
+                                          :src="(image.url as string)"
+                                          :alt="`${variant.name} Image`"
                                         />
                                         <img
                                           v-else
-                                          :src="(variant.image[0].url as string)"
-                                          :alt="`${variant.name} image`"
+                                          v-for="image of variant.images"
+                                          :src="(image.url as string)"
+                                          :alt="`${variant.name} Image`"
                                         />
                                       </template>
-                                      <template v-else>
-                                        <img :src="no_image" alt="" />
-                                      </template>
+                                      <img v-else :src="no_image" :alt="`${variant.name} image`">
                                     </ProductImage>
                                     <input
                                       type="file"
@@ -238,7 +238,7 @@ const {
                                     />
                                   </label>
                                   <div
-                                    v-if="variant.image.length || variant.new_image.length"
+                                    v-if="variant.images.length || variant.newImages.length"
                                     class="product-form-image__actions"
                                     >
                                     <Button

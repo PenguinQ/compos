@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 // Common Components
 import { Bar } from '@components/Loader';
 import Button from '@components/Button';
-import Card, { CardBody } from '@components/Card';
+import Card, { CardHeader, CardBody, CardTitle } from '@components/Card';
 import DescriptionList, { DescriptionListItem } from '@components/DescriptionList';
 import Dialog from '@components/Dialog';
 import EmptyState from '@components/EmptyState';
@@ -13,10 +13,10 @@ import Text from '@components/Text';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Column, Row } from '@components/Layout';
 import Separator from '@components/Separator';
-import ComposIcon, { ArrowLeftShort, PencilSquare, Trash, CheckLarge, CashStack, Tag } from '@components/Icons';
+import ComposIcon, { ArrowLeftShort, PencilSquare, Trash, CheckLarge, CashStack, Tag, LayoutSidebarReverse } from '@components/Icons';
 
 // View Components
-import ProductImage from '@/views/components/ProductImage.vue';
+import { OrderCard, ProductImage } from '@/views/components';
 
 // Hooks
 import { useSalesDetail } from './hooks/SalesDetail.hook';
@@ -54,7 +54,7 @@ const {
     <ToolbarSpacer />
     <template v-if="!isError && !isLoading">
       <ToolbarAction v-if="!data.finished" icon @click="router.push(`/sales/dashboard/${salesId}`)">
-        <ComposIcon :icon="CashStack" />
+        <ComposIcon :icon="LayoutSidebarReverse" />
       </ToolbarAction>
       <ToolbarAction v-if="!data.finished" icon backgroundColor="var(--color-blue-4)" @click="router.push(`/sales/edit/${salesId}`)">
         <ComposIcon :icon="PencilSquare" />
@@ -139,9 +139,97 @@ const {
         </Column>
         <Column :col="{ default: 12, md: 6 }">
           <Card class="section-card" variant="outline">
-            <CardBody>
-              <Text heading="4" as="h2" margin="0">Order</Text>
-              <Separator />
+            <CardHeader>
+              <CardTitle>Products Sold</CardTitle>
+            </CardHeader>
+            <CardBody padding="0">
+              <!-- <Text heading="4" as="h2" margin="0">Products Sold</Text> -->
+              <!-- <Separator /> -->
+              <div class="sales-products-sold">
+                <!-- <EmptyState
+                  v-if="!data.orders.length"
+                  :emoji="SALES_DETAIL.EMPTY_SOLD_EMOJI"
+                  :title="SALES_DETAIL.EMPTY_SOLD_TITLE"
+                  :description="SALES_DETAIL.EMPTY_SOLD_DESCRIPTION"
+                  margin="80px 0"
+                >
+                </EmptyState> -->
+                <table class="sales-products-sold-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Amount</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Guru Binal Penyelamat Sekolah</td>
+                      <td>100</td>
+                      <td>Rp200.000.000</td>
+                    </tr>
+                    <tr>
+                      <td>Guru Binal Penyelamat Sekolah</td>
+                      <td>100</td>
+                      <td>Rp200.000.000</td>
+                    </tr>
+                    <tr>
+                      <td>Guru Binal Penyelamat Sekolah</td>
+                      <td>100</td>
+                      <td>Rp200.000.000</td>
+                    </tr>
+                    <tr>
+                      <td>Guru Binal Penyelamat Sekolah</td>
+                      <td>100</td>
+                      <td>Rp200.000.000</td>
+                    </tr>
+                    <tr>
+                      <td>Guru Binal Penyelamat Sekolah</td>
+                      <td>100</td>
+                      <td>Rp200.000.000</td>
+                    </tr>
+                    <tr>
+                      <td>Guru Binal Penyelamat Sekolah</td>
+                      <td>100</td>
+                      <td>Rp200.000.000</td>
+                    </tr>
+                    <tr>
+                      <td>Guru Binal Penyelamat Sekolah</td>
+                      <td>100</td>
+                      <td>Rp200.000.000</td>
+                    </tr>
+                    <tr>
+                      <td>Guru Binal Penyelamat Sekolah</td>
+                      <td>100</td>
+                      <td>Rp200.000.000</td>
+                    </tr>
+                    <tr>
+                      <td>Guru Binal Penyelamat Sekolah</td>
+                      <td>100</td>
+                      <td>Rp200.000.000</td>
+                    </tr>
+                    <tr>
+                      <td>Guru Binal Penyelamat Sekolah</td>
+                      <td>100</td>
+                      <td>Rp200.000.000</td>
+                    </tr>
+                    <tr>
+                      <td>Guru Binal Penyelamat Sekolah</td>
+                      <td>100</td>
+                      <td>Rp200.000.000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </CardBody>
+          </Card>
+        </Column>
+        <Column :col="{ default: 12, md: 6 }">
+          <Card class="section-card" variant="outline">
+            <CardHeader>
+              <CardTitle>Order</CardTitle>
+            </CardHeader>
+            <CardBody padding="0">
               <div class="sales-orders">
                 <EmptyState
                   v-if="!data.orders.length"
@@ -151,30 +239,15 @@ const {
                   margin="80px 0"
                 >
                 </EmptyState>
-                <div v-else class="sales-order" v-for="order in data.orders">
-                  <div>{{ order.name }}</div>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
-        </Column>
-        <Column :col="{ default: 12, md: 6 }">
-          <Card class="section-card" variant="outline">
-            <CardBody>
-              <Text heading="4" as="h2" margin="0">Products Sold</Text>
-              <Separator />
-              <div class="sales-orders">
-                <EmptyState
-                  v-if="!data.orders.length"
-                  :emoji="SALES_DETAIL.EMPTY_SOLD_EMOJI"
-                  :title="SALES_DETAIL.EMPTY_SOLD_TITLE"
-                  :description="SALES_DETAIL.EMPTY_SOLD_DESCRIPTION"
-                  margin="80px 0"
-                >
-                </EmptyState>
-                <div v-else class="sales-order" v-for="order in data.orders">
-                  <div>{{ order.name }}</div>
-                </div>
+                <OrderCard
+                  v-else
+                  v-for="order in data.orders"
+                  :title="order.name"
+                  :total="order.totalFormatted"
+                  :tendered="order.tenderedFormatted"
+                  :change="order.changeFormatted"
+                  :products="order.products"
+                />
               </div>
             </CardBody>
           </Card>
@@ -251,9 +324,72 @@ const {
     }
   }
 
-  &-orders {
+  &-products-sold {
     max-height: 400px;
     overflow-y: auto;
+    padding: 8px 16px;
+
+    &-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: separate;
+      border-spacing: 0;
+
+      th,
+      td {
+        background-color: var(--color-white);
+        text-align: center;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        padding: 8px;
+
+        &:first-of-type {
+          width: 50%;
+          padding-left: 0;
+          text-align: left;
+        }
+
+        &:last-of-type {
+          width: 30%;
+          text-align: right;
+          padding-right: 0;
+        }
+      }
+
+      thead {
+        th {
+          border-bottom: 1px solid var(--color-border);
+          position: sticky;
+          top: 0;
+        }
+      }
+
+      tbody {
+        tr {
+          &:first-of-type {
+            td {
+              padding-top: 16px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &-orders {
+    max-height: 400px;
+    background-color: var(--color-neutral-1);
+    overflow-y: auto;
+    padding: 16px;
+
+    .vc-order-card {
+      margin-bottom: 16px;
+
+      &:last-of-type {
+        margin-bottom: 0;
+      }
+    }
   }
 }
 
