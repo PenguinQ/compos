@@ -9,7 +9,7 @@ export type FormDetailProduct = {
   id: string;
   product_id: string;
   active: boolean;
-  image: string;
+  images: string[];
   name: string;
   price: string;
   total_price: string;
@@ -31,7 +31,7 @@ export type FormProductListVariant = {
   id: string;
   product_id: string;
   active: boolean;
-  image: string;
+  images: string[];
   name: string;
   price: string;
   total_price: string;
@@ -42,7 +42,7 @@ export type FormProductListVariant = {
 export type FormProductListProduct = {
   id: string;
   active: boolean;
-  image: string;
+  images: string[];
   name: string;
   price: string;
   total_price: string;
@@ -65,18 +65,23 @@ export const formDetailNormalizer = (data: unknown): FormDetailNormalizerReturn 
     const product_price       = price ?? '0';
     const product_quantity    = quantity ?? 0;
     const product_total_price = Big(product_price).times(quantity).toString();
+    const product_images      = []
+
+    for (const image of images) {
+      product_images.push(image.url);
+    }
 
     products_list.push({
       id         : id || '',
       product_id : product_id || '',
       active     : active,
-      image      : images[0] ? images[0].url : '',
+      images     : product_images,
       name       : product_name ? `${product_name} - ${name}` : name,
       price      : product_price,
       total_price: product_total_price,
       quantity   : product_quantity,
       sku        : sku || '',
-      stock,
+      stock      : stock || 0,
     });
   }
 
@@ -100,35 +105,45 @@ export const formProductListNormalizer = (data: unknown): FormProductListNormali
     const product_price       = price ?? '0';
     const product_total_price = Big(product_price).times(1).toString();
     const variant_list        = <FormProductListVariant[]>[];
+    const product_images      = [];
+
+    for (const image of images) {
+      product_images.push(image);
+    }
 
     for (const variant of variants as VariantsData[]) {
       const { id: variant_id, active, images, name, price, sku } = variant;
       const variant_price       = price || '0';
       const variant_total_price = Big(variant_price).times(1).toString();
+      const variant_images      = [];
+
+      for (const image of images) {
+        variant_images.push(image)
+      }
 
       variant_list.push({
         id         : variant_id || '',
         product_id : product_id || '',
         active     : active || false,
-        image      : images[0] || '',
+        images     : variant_images,
         name       : name || '',
         price      : variant_price,
         total_price: variant_total_price,
         sku        : sku || '',
-        stock,
+        stock      : stock || 0,
       });
     }
 
     product_list.push({
       id         : product_id || '',
       active     : active || false,
-      image      : images[0] || '',
+      images     : product_images,
       name       : name || '',
       price      : product_price,
       total_price: product_total_price,
       variants   : variant_list,
       sku        : sku || '',
-      stock
+      stock      : stock || 0,
     });
   }
 

@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import Navbar from '@components/Navbar';
 import { Tab, Tabs } from '@components/Tabs';
-
-import SalesList from './components/SalesList.vue';
 </script>
 
 <template>

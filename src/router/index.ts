@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-const ls = localStorage.getItem('compos-init');
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -154,12 +152,6 @@ const router = createRouter({
               component: () => import('../views/products/BundleForm.vue'),
             },
           ],
-        },
-        {
-          path: '/history',
-          name: 'history',
-          meta: { title: 'ComPOS - Sales History' },
-          component: () => import('../views/history/HistoryView.vue'),
         },
       ],
     },

@@ -6,6 +6,8 @@ import ora from 'ora';
 
 import { __foldername } from './icons-build.ts';
 import { setIconName, setFileName, sortIcon } from './icons-helper.ts';
+
+// Types
 import type { ContentType } from './types.ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,7 +29,7 @@ export default async (svgs: ContentType[]) => {
       const fileName = setFileName(name);
       const icon_name = setIconName(name);
 
-      mapString += `export const ${icon_name} = '${source}';\n`
+      mapString += `export const ${icon_name} = 'data:image/svg+xml;utf8,${source}';\n`
       await fs.outputFile(path.join(__dirname, `../../components/${__foldername}/svg/${fileName}.svg`), source);
       svgCount += 1;
     }

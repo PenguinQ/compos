@@ -13,7 +13,7 @@ import Text from '@components/Text';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Column, Row } from '@components/Layout';
 import Separator from '@components/Separator';
-import ComposIcon, { ArrowLeftShort, PencilSquare, Trash, CheckLarge, CashStack, Tag, LayoutSidebarReverse } from '@components/Icons';
+import ComposIcon, { ArrowLeftShort, PencilSquare, Trash, CheckLarge, Tag, LayoutSidebarReverse } from '@components/Icons';
 
 // View Components
 import { OrderCard, ProductImage } from '@/views/components';
@@ -48,7 +48,7 @@ const {
   <!-- Header -->
   <Toolbar sticky>
     <ToolbarAction icon @click="router.push('/sales')">
-      <ComposIcon :icon="ArrowLeftShort" size="40" />
+      <ComposIcon :icon="ArrowLeftShort" size="40px" />
     </ToolbarAction>
     <ToolbarTitle>Sales Detail</ToolbarTitle>
     <ToolbarSpacer />
@@ -143,18 +143,15 @@ const {
               <CardTitle>Products Sold</CardTitle>
             </CardHeader>
             <CardBody padding="0">
-              <!-- <Text heading="4" as="h2" margin="0">Products Sold</Text> -->
-              <!-- <Separator /> -->
               <div class="sales-products-sold">
-                <!-- <EmptyState
-                  v-if="!data.orders.length"
+                <EmptyState
+                  v-if="!data.productsSold.length"
                   :emoji="SALES_DETAIL.EMPTY_SOLD_EMOJI"
                   :title="SALES_DETAIL.EMPTY_SOLD_TITLE"
                   :description="SALES_DETAIL.EMPTY_SOLD_DESCRIPTION"
                   margin="80px 0"
-                >
-                </EmptyState> -->
-                <table class="sales-products-sold-table">
+                />
+                <table v-else class="sales-products-sold-table">
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -163,61 +160,21 @@ const {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>Guru Binal Penyelamat Sekolah</td>
-                      <td>100</td>
-                      <td>Rp200.000.000</td>
-                    </tr>
-                    <tr>
-                      <td>Guru Binal Penyelamat Sekolah</td>
-                      <td>100</td>
-                      <td>Rp200.000.000</td>
-                    </tr>
-                    <tr>
-                      <td>Guru Binal Penyelamat Sekolah</td>
-                      <td>100</td>
-                      <td>Rp200.000.000</td>
-                    </tr>
-                    <tr>
-                      <td>Guru Binal Penyelamat Sekolah</td>
-                      <td>100</td>
-                      <td>Rp200.000.000</td>
-                    </tr>
-                    <tr>
-                      <td>Guru Binal Penyelamat Sekolah</td>
-                      <td>100</td>
-                      <td>Rp200.000.000</td>
-                    </tr>
-                    <tr>
-                      <td>Guru Binal Penyelamat Sekolah</td>
-                      <td>100</td>
-                      <td>Rp200.000.000</td>
-                    </tr>
-                    <tr>
-                      <td>Guru Binal Penyelamat Sekolah</td>
-                      <td>100</td>
-                      <td>Rp200.000.000</td>
-                    </tr>
-                    <tr>
-                      <td>Guru Binal Penyelamat Sekolah</td>
-                      <td>100</td>
-                      <td>Rp200.000.000</td>
-                    </tr>
-                    <tr>
-                      <td>Guru Binal Penyelamat Sekolah</td>
-                      <td>100</td>
-                      <td>Rp200.000.000</td>
-                    </tr>
-                    <tr>
-                      <td>Guru Binal Penyelamat Sekolah</td>
-                      <td>100</td>
-                      <td>Rp200.000.000</td>
-                    </tr>
-                    <tr>
-                      <td>Guru Binal Penyelamat Sekolah</td>
-                      <td>100</td>
-                      <td>Rp200.000.000</td>
-                    </tr>
+                    <template v-for="product of data.productsSold">
+                      <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.quantity }}</td>
+                        <td>{{ product.totalFormatted }}</td>
+                      </tr>
+                      <template v-if="product.items">
+                        <tr v-for="item of product.items" data-product-item>
+                          <td colspan="3">
+                            &gt; {{ item.name }}
+                            (&times;{{ item.quantity }})
+                          </td>
+                        </tr>
+                      </template>
+                    </template>
                   </tbody>
                 </table>
               </div>
@@ -327,7 +284,7 @@ const {
   &-products-sold {
     max-height: 400px;
     overflow-y: auto;
-    padding: 8px 16px;
+    padding: 16px;
 
     &-table {
       width: 100%;
@@ -370,6 +327,18 @@ const {
           &:first-of-type {
             td {
               padding-top: 16px;
+            }
+          }
+
+          &[data-product-item] {
+            td {
+              font-size: var(--text-body-small-size);
+              line-height: var(--text-body-small-height);
+              text-align: left;
+            }
+
+            td:first-of-type {
+              padding-left: 8px;
             }
           }
         }

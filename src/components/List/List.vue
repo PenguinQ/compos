@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
+import { computed } from 'vue';
 import ListItem from './ListItem.vue';
 import type { ListItemProps } from './ListItem.vue';
 
-type ItemProps = {
-  props: object;
-};
+// type ItemProps = {
+//   props: object;
+// };
 
 type ListProps = {
   inset?: boolean;

@@ -32,7 +32,7 @@ export default async (id: string): Promise<string> => {
      * 2. Sum the orders total as the sales revenue.
      * ---------------------------------------------
      */
-    const products_sold       = [];
+    const products_sold       = <any[]>[];
     let   orders_total        = Big(0);
     let   orders_total_change = Big(0);
 

@@ -9,8 +9,17 @@ type DetailProduct = {
   quantity: number;
 };
 
+type DetailProductSoldItem = {
+  name: string;
+  quantity: number;
+};
+
 type DetailProductSold = {
-  // TBW
+  name: string;
+  quantity: number;
+  total: string;
+  totalFormatted: string;
+  items?: DetailProductSoldItem[];
 };
 
 type DetailOrderProduct = {
@@ -61,9 +70,6 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
     revenue,
     updated_at,
   } = data as SalesDetailQueryReturn || {};
-  // const salesProducts     = <DetailProduct[]>[];
-  // const salesOrders       = <DetailOrder[]>[];
-  // const salesProductsSold = <DetailProductSold[]>[];
   const salesProducts     = [];
   const salesOrders       = [];
   const salesProductsSold = [];
@@ -110,8 +116,25 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
     });
   }
 
-  for (const productSold of products_sold) {
-    // TBW
+  for (const product of products_sold) {
+    const { name, quantity, total, items } = product;
+    const product_items = [];
+
+    if (items) {
+      for (const item of items) {
+        const { name, quantity } = item;
+
+        product_items.push({ name, quantity });
+      }
+    }
+
+    salesProductsSold.push({
+      totalFormatted: toIDR(total),
+      name,
+      total,
+      quantity,
+      ...(items ? { items: product_items } : {}),
+    });
   }
 
   return {

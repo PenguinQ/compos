@@ -32,7 +32,7 @@ const props = withDefaults(defineProps<SalesProductProps>(), {
   variant: false,
 });
 
-const emits = defineEmits(['clickDecrement', 'clickIncrement']);
+defineEmits(['clickDecrement', 'clickIncrement']);
 
 const classes = computed(() => ({
   'sales-product': true,

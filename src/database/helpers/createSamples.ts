@@ -206,7 +206,8 @@ export default async () => {
     if (randomVariant) randomProducts.push(randomVariant);
 
     for (const product of randomProducts) {
-      const { id, product_id, active, price, stock } = product;
+      const { id, product_id, active, price } = product;
+      // const { id, product_id, active, price, stock } = product;
       // const randomQuantity = Math.floor(Math.random() * (stock - 1 + 1)) + 1;
 
       if (!active) isBundleActive = false;
@@ -274,8 +275,9 @@ export default async () => {
     if (randomBundle)  randomProducts.push(randomBundle);
 
     for (const product of randomProducts) {
-      const { id, stock } = product;
-      const randomQuantity = Math.floor(Math.random() * ((stock ? stock : 1) - 1 + 1)) + 1;
+      const { id } = product;
+      // const { id, stock } = product;
+      // const randomQuantity = Math.floor(Math.random() * ((stock ? stock : 1) - 1 + 1)) + 1;
 
       saleProducts.push({
         // quantity: randomQuantity,

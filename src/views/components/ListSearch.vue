@@ -2,7 +2,7 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 
 // Common Components
-import Textfield, { TextfieldExpose } from '@components/Textfield';
+import Textfield from '@components/Textfield';
 import ComposIcon, { XCircleFilled } from '@components/Icons';
 
 type ListSearchProps = {

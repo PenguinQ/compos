@@ -8,7 +8,7 @@ export type NavbarProps = {
 };
 
 const props = defineProps<NavbarProps>();
-const emit = defineEmits(['back']);
+defineEmits(['back']);
 
 const NavbarBack = defineAsyncComponent(() => import('./NavbarBack.vue'));
 const has_back = computed(() => !!props.onBack);

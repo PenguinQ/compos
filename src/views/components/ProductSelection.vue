@@ -17,7 +17,7 @@ import no_image from '@assets/illustration/no_image.svg';
 
 type ProductSelection = {
   display?: boolean;
-  image?: string;
+  images?: string[];
   name: string;
   price?: string;
   sku?: string;
@@ -32,10 +32,11 @@ type ProductSelection = {
 
 const props = withDefaults(defineProps<ProductSelection>(), {
   display: false,
+  images: () => [],
   selected: false,
   small: false,
 });
-const emit = defineEmits([
+defineEmits([
   'inputQuantity',
   'changeQuantity',
   'clickQuantityDecrement',
@@ -59,7 +60,8 @@ const classes = computed(() => ({
     tabindex="0"
   >
     <ProductImage>
-      <img :src="image ? image : no_image" :alt="`${name} image`">
+      <img v-if="images.length" v-for="image of images" :src="image" :alt="`${name} Image`" />
+      <img v-else :src="no_image" :alt="`${name} image`">
     </ProductImage>
     <div class="vc-product-selection__body">
       <Text body="large" truncate margin="0">{{ name }}</Text>
