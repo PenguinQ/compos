@@ -1,6 +1,6 @@
 import { addRxPlugin, createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
-// import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
+import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
 import { wrappedAttachmentsCompressionStorage } from 'rxdb/plugins/attachments-compression';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
@@ -8,26 +8,28 @@ import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 
 import { sales, order, product, variant, bundle } from './schema';
 import { productsORMs, variantsORMs, bundlesORMs, salesORMs } from './orms';
-// import { createSamples } from './helpers';
+import { createSamples } from './helpers';
 import type { Database, DatabaseCollection } from './types';
 
 export let db: Database;
 
 const createDB = async () => {
+  const dbName    = import.meta.env.VITE_DB_NAME;
+  const dbStorage = import.meta.env.MODE === 'production' ? getRxStorageDexie : getRxStorageMemory;
+
   const compressedStorage = wrappedAttachmentsCompressionStorage({
-    storage: getRxStorageDexie(),
-    // storage: getRxStorageMemory(), // Use storage memory during development mode, change to Dexie later
+    storage: dbStorage() as any,
   });
 
   db = await createRxDatabase<DatabaseCollection>({
-    name: 'compos',
-    storage: compressedStorage, // Use storage memory during development mode, change to Dexie later
+    name: dbName,
+    storage: compressedStorage,
     eventReduce: true,
   });
 };
 
 export const initDB = async () => {
-  addRxPlugin(RxDBDevModePlugin);
+  if (import.meta.env.MODE === 'development') addRxPlugin(RxDBDevModePlugin);
   addRxPlugin(RxDBUpdatePlugin);
   addRxPlugin(RxDBAttachmentsPlugin);
 
@@ -101,10 +103,6 @@ export const initDB = async () => {
     }
   }, false);
 
-  /**
-   * -------------------------------
-   * Create sample development data.
-   * -------------------------------
-   */
-  // await createSamples();
+  // Create sample data on development mode.
+  if (import.meta.env.MODE === 'development') await createSamples();
 };

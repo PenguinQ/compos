@@ -7,14 +7,21 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
 *.local
 
+# Environment files
+.env.production
+.env.development
+
+# PWA files
+dev-dist
+
 # Directories
-# src/components/Icons
-# src/components/IconsVue
+src/components/Icons
 
 # Editor directories and files
 .zed/*
