@@ -1,12 +1,18 @@
 import { getUpdateTime, toIDR } from '@/helpers';
 import type { SalesDetailQueryReturn } from '@/database/query/sales/getSalesDetail';
 
+type DetailProductBundleItem = {
+  name: string;
+  quantity: number;
+};
+
 type DetailProduct = {
   images: string[];
   name: string;
   price: string;
   priceFormatted: string;
   quantity: number;
+  items?: DetailProductBundleItem[];
 };
 
 type DetailProductSoldItem = {
@@ -75,7 +81,16 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
   const salesProductsSold = [];
 
   for (const product of products) {
-    const { name, price, images, quantity } = product;
+    const { name, price, images, quantity, items } = product;
+    const salesProductsItems = [];
+
+    if (items) {
+      for (const item of items) {
+        const { name, quantity } = item;
+
+        salesProductsItems.push({ name, quantity });
+      }
+    }
 
     salesProducts.push({
       priceFormatted: toIDR(price),
@@ -83,6 +98,7 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
       name,
       price,
       quantity,
+      ...(items ? { items: salesProductsItems } : {}),
     });
   }
 

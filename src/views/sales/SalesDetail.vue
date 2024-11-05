@@ -13,8 +13,16 @@ import Label from '@components/Label';
 import Text from '@components/Text';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import { Container, Column, Row } from '@components/Layout';
-import Separator from '@components/Separator';
-import ComposIcon, { ArrowLeftShort, PencilSquare, Trash, CheckLarge, Tag, LayoutSidebarReverse } from '@components/Icons';
+import ComposIcon, {
+  Box,
+  ArrowLeftShort,
+  PencilSquare,
+  Trash,
+  CheckLarge,
+  Tag,
+  LayoutSidebarReverse,
+  CartPlus,
+} from '@components/Icons';
 
 // View Components
 import { OrderCard, ProductImage } from '@/views/components';
@@ -96,9 +104,10 @@ watch(
       <Row>
         <Column col="12">
           <Card class="section-card" variant="outline">
+            <CardHeader>
+              <CardTitle>{{ data.name }}</CardTitle>
+            </CardHeader>
             <CardBody>
-              <Text heading="3" as="h2" margin="0">{{ data.name }}</Text>
-              <Separator />
               <DescriptionList class="pd-description-list" alignment="horizontal">
                 <DescriptionListItem alignItems="center">
                   <dt>Status</dt>
@@ -125,22 +134,52 @@ watch(
                   <dd>{{ data.updatedAt || '-' }}</dd>
                 </DescriptionListItem>
               </DescriptionList>
-              <Separator />
-              <Text heading="5" as="h3" margin="0 0 16px">Products</Text>
-              <div class="sales-products">
+            </CardBody>
+          </Card>
+        </Column>
+        <Column col="12">
+          <Card class="section-card" variant="outline">
+            <CardHeader>
+              <CardTitle>Products</CardTitle>
+            </CardHeader>
+            <CardBody padding="0">
+              <div class="sales-products-list">
                 <div class="sales-product" v-for="product in data.products">
-                  <ProductImage class="sales-product__image">
+                  <ProductImage class="sales-product-image">
                     <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
                     <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
                   </ProductImage>
-                  <div class="sales-product__detail">
-                    <Text class="sales-item__name" body="large" as="h4" truncate margin="0 0 8px">
-                      {{ product.name }}
-                    </Text>
-                    <Text class="sales-item__price" truncate margin="0">
-                      <ComposIcon :icon="Tag" />
-                      {{ product.priceFormatted }} {{ product.quantity }}
-                    </Text>
+                  <div class="sales-product-content">
+                    <Text heading="6" margin="0">{{ product.name }}</Text>
+                    <div class="sales-product-details">
+                      <div class="sales-product-details__item">
+                        <ComposIcon :icon="Tag" />
+                        {{ product.priceFormatted }}
+                      </div>
+                      <div class="sales-product-details__item">
+                        <ComposIcon :icon="CartPlus" />
+                        {{ product.quantity }}
+                      </div>
+                    </div>
+                    <!--
+                      .sales-product-items
+                        .sales-product-items-detail
+                          .sales-product-items-detail__item
+
+
+                    -->
+                    <div v-if="product.items" class="sales-product-items">
+                      <div v-for="item of product.items" class="sales-product-items-details">
+                        <div class="sales-product-items-details__item">
+                          <ComposIcon :icon="Box" />
+                          {{ item.name }}
+                        </div>
+                        <div class="sales-product-items-details__item">
+                          <ComposIcon :icon="CartPlus" />
+                          {{ item.quantity }}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -161,7 +200,7 @@ watch(
                   :description="SALES_DETAIL.EMPTY_SOLD_DESCRIPTION"
                   margin="80px 0"
                 />
-                <table v-else class="sales-products-sold-table">
+                <table v-else>
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -197,17 +236,15 @@ watch(
               <CardTitle>Order</CardTitle>
             </CardHeader>
             <CardBody padding="0">
-              <div class="sales-orders">
-                <EmptyState
-                  v-if="!data.orders.length"
-                  :emoji="SALES_DETAIL.EMPTY_ORDER_EMOJI"
-                  :title="SALES_DETAIL.EMPTY_ORDER_TITLE"
-                  :description="SALES_DETAIL.EMPTY_ORDER_DESCRIPTION"
-                  margin="80px 0"
-                >
-                </EmptyState>
+              <EmptyState
+                v-if="!data.orders.length"
+                :emoji="SALES_DETAIL.EMPTY_ORDER_EMOJI"
+                :title="SALES_DETAIL.EMPTY_ORDER_TITLE"
+                :description="SALES_DETAIL.EMPTY_ORDER_DESCRIPTION"
+                margin="80px 0"
+              />
+              <div v-else class="sales-orders-list">
                 <OrderCard
-                  v-else
                   v-for="order in data.orders"
                   :title="order.name"
                   :total="order.totalFormatted"
@@ -257,20 +294,31 @@ watch(
 <style lang="scss" src="@assets/_page-detail.scss" />
 <style lang="scss" scoped>
 .sales {
-  &-products {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+  &-products-list {
+    max-height: 400px;
+    overflow-y: auto;
   }
 
   &-product {
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
     display: flex;
-    align-items: center;
     gap: 16px;
+    padding: 16px;
+    margin-top: -1px;
 
-    &__image {
-      width: 80px;
-      height: 80px;
+    &:first-of-type {
+      margin-top: 0;
+      border-top-color: transparent;
+    }
+
+    &:last-of-type {
+      border-bottom-color: transparent;
+    }
+
+    &-image {
+      width: 60px;
+      height: 60px;
       background-color: var(--color-white);
       border: 1px solid rgba(46, 64, 87, 0.4);
       border-radius: 4px;
@@ -285,18 +333,70 @@ watch(
       }
     }
 
-    &__detail {
+    &-content {
       min-width: 0;
       flex-grow: 1;
+    }
+
+    &-details {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+
+      &__item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        compos-icon {
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
+        }
+      }
+    }
+
+    &-items {
+      display: inline-flex;
+      flex-direction: column;
+      border-top: 1px solid var(--color-border);
+      padding-top: 12px;
+      padding-inline-end: 12px;
+      margin-top: 12px;
+
+      &-details {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 8px;
+
+        &:first-of-type {
+          margin-top: 0;
+        }
+
+        &__item {
+          font-size: var(--text-body-small-size);
+          line-height: var(--text-body-small-height);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          compos-icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+          }
+        }
+      }
     }
   }
 
   &-products-sold {
     max-height: 400px;
     overflow-y: auto;
-    padding: 16px;
 
-    &-table {
+    table {
       width: 100%;
       table-layout: fixed;
       border-collapse: separate;
@@ -313,14 +413,14 @@ watch(
 
         &:first-of-type {
           width: 50%;
-          padding-left: 0;
+          padding-left: 16px;
           text-align: left;
         }
 
         &:last-of-type {
           width: 30%;
           text-align: right;
-          padding-right: 0;
+          padding-right: 16px;
         }
       }
 
@@ -334,12 +434,6 @@ watch(
 
       tbody {
         tr {
-          &:first-of-type {
-            td {
-              padding-top: 16px;
-            }
-          }
-
           &[data-product-item] {
             td {
               font-size: var(--text-body-small-size);
@@ -348,7 +442,19 @@ watch(
             }
 
             td:first-of-type {
-              padding-left: 8px;
+              padding-left: 24px;
+            }
+          }
+
+          &:first-of-type {
+            td {
+              padding-top: 16px;
+            }
+          }
+
+          &:last-of-type {
+            td {
+              padding-bottom: 16px;
             }
           }
         }
@@ -356,7 +462,7 @@ watch(
     }
   }
 
-  &-orders {
+  &-orders-list {
     max-height: 400px;
     background-color: var(--color-neutral-1);
     overflow-y: auto;
@@ -368,14 +474,6 @@ watch(
       &:last-of-type {
         margin-bottom: 0;
       }
-    }
-  }
-}
-
-@include screen-md {
-  .sales {
-    &-products {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 }

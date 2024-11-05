@@ -40,7 +40,7 @@
   }
 
   @for $i from 1 through $column {
-    $offset: (($i * 100) / 12) * 1%;
+    $offset: calc(($i * 100) / 12) * 1%;
     $additionalWidth: $gutterColumn / calc($column / $i);
 
     .cp-column[#{$dataSelector}="#{$i}"] {

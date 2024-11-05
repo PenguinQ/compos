@@ -21,7 +21,7 @@ defineProps<OrderCard>()
 
 <template>
 <Card class="vc-order-card" variant="outline">
-  <CardBody>
+  <CardBody padding="12px 16px">
     <Text heading="6" margin="0">{{ title }}</Text>
     <div class="vc-order-card-details">
       <div class="vc-order-card-details__item">
@@ -49,13 +49,14 @@ defineProps<OrderCard>()
 
 <style lang="scss">
 .vc-order-card {
+
   &-details {
     border-top: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 12px;
+    flex-wrap: wrap;
     padding-top: 12px;
     padding-bottom: 12px;
     margin-bottom: 12px;
@@ -66,7 +67,8 @@ defineProps<OrderCard>()
       line-height: var(--text-body-small-height);
       display: flex;
       align-items: center;
-      flex: 1;
+      flex: 1 1 auto;
+      gap: 8px;
 
       &,
       & > * {
@@ -76,7 +78,6 @@ defineProps<OrderCard>()
       }
 
       compos-icon {
-        margin-right: 8px;
         flex-shrink: 0;
       }
     }
@@ -84,15 +85,14 @@ defineProps<OrderCard>()
 
   &-products {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 8px;
 
     &__item {
       font-size: var(--text-body-small-size);
       line-height: var(--text-body-small-height);
       display: flex;
-      align-self: center;
 
       compos-icon {
         width: 16px;
