@@ -6,12 +6,18 @@ import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
 import { isBundle, isProduct, isVariant } from '@/database/utils';
 import type { QueryParams, OrderDocProduct, ProductDoc } from '@/database/types';
 
-type SalesDetailBundleProduct = {
+// type SalesDetailBundleProduct = {
+//   id: string;
+//   product_id?: string;
+//   images: string[];
+//   name: string;
+//   price: string;
+//   quantity: number;
+// };
+
+type SalesdetailBundleItem = {
   id: string;
-  product_id?: string;
-  images: string[]
   name: string;
-  price: string;
   quantity: number;
   sku?: string;
 };
@@ -24,7 +30,8 @@ export type SalesDetailProduct = {
   price: string;
   quantity: number;
   sku?: string;
-  products?: SalesDetailBundleProduct[];
+  items?: SalesdetailBundleItem[];
+  // products?: SalesDetailBundleProduct[];
 };
 
 type SalesDetailProductSoldItem = {
@@ -169,15 +176,17 @@ export default async ({ id, normalizer }: GetSalesDetailQuery) => {
 
         const { name, price, products } = _queryBundle.toJSON();
         const bundle_images = [];
+        const bundle_items  = [];
 
         for (const product of products) {
-          const { id } = product;
+          const { id, quantity } = product;
 
           if (isProduct(id)) {
             const _queryProduct = await db.product.findOne(id).exec();
 
             if (!_queryProduct) throw 'Bundle product not found.'
 
+            const { name, sku } = _queryProduct.toJSON();
             const product_attachments = _queryProduct.allAttachments();
             const product_images      = product_attachments.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
 
@@ -188,11 +197,22 @@ export default async ({ id, normalizer }: GetSalesDetailQuery) => {
 
               bundle_images.push(`data:${type};base64,${image_base64}`);
             }
+
+            bundle_items.push({
+              id,
+              name,
+              quantity,
+              ...(sku ? { sku} : {}),
+            });
           } else if (isVariant(id)) {
             const _queryVariant = await db.variant.findOne(id).exec();
 
             if (!_queryVariant) throw 'Bundle variant not found.'
 
+            const _queryProduct: RxDocument<ProductDoc> = await _queryVariant.populate('product_id');
+
+            const { name: product_name } = _queryProduct.toJSON();
+            const { name: variant_name, sku } = _queryVariant.toJSON();
             const variant_attachments = _queryVariant.allAttachments();
             const variant_images      = variant_attachments.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
 
@@ -203,13 +223,21 @@ export default async ({ id, normalizer }: GetSalesDetailQuery) => {
 
               bundle_images.push(`data:${type};base64,${image_base64}`);
             }
+
+            bundle_items.push({
+              name: `${product_name} - ${variant_name}`,
+              id,
+              quantity,
+              ...(sku ? { sku} : {}),
+            });
           }
         }
 
         products_data.push({
-          id        : product.id,
-          images    : bundle_images,
-          quantity  : product.quantity,
+          id      : product.id,
+          images  : bundle_images,
+          quantity: product.quantity,
+          items   : bundle_items,
           name,
           price,
         });
