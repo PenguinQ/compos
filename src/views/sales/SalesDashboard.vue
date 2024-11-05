@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router';
 
 // Common Components
 import { Bar } from '@components/Loader';
+import Card, { CardBody } from '@components/Card';
 import Content from '@components/Content';
 import Button from '@components/Button';
 import Dialog from '@components/Dialog';
@@ -89,7 +90,7 @@ const {
       <ToolbarAction icon @click="router.push('/sales')">
         <ComposIcon :icon="ArrowLeftShort" size="40" />
       </ToolbarAction>
-      <ToolbarTitle>{{ isDetailsLoading ? 'Sales Dashboard' : `${detailsData.name} Dashboard` }}</ToolbarTitle>
+      <ToolbarTitle>{{ isDetailsLoading ? 'Sales Dashboard' : `${detailsData?.name} Dashboard` }}</ToolbarTitle>
       <ToolbarSpacer />
       <ToolbarAction
         v-if="!isDetailsError && !isDetailsLoading"
@@ -126,65 +127,74 @@ const {
           </EmptyState>
           <template v-else>
             <Bar v-if="isProductsLoading" />
-            <div
-              v-else
-              v-for="product of productsData?.products"
-              :class="`product${product.active ? '' : ' product--inactive'}`"
-            >
-              <ProductImage class="product-image">
-                <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
-                <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
-              </ProductImage>
-              <div class="product-contents">
-                <Text heading="5">{{ product.name }}</Text>
-                <div class="product-details">
-                  <div class="product-details__item">
-                    <ComposIcon :icon="Tag" />
-                    {{ product.priceFormatted }}
-                  </div>
-                  <div v-if="!product.items" class="product-details__item">
-                    <ComposIcon :icon="Boxes" />
-                    {{ product.stock }}
-                  </div>
-                  <div class="product-details__item">
-                    <ComposIcon :icon="CartPlus" />
-                    {{ product.quantity }}
+            <Card v-else class="products-card" variant="outline">
+              <CardBody padding="0">
+                <div
+                  v-for="product of productsData?.products"
+                  :class="`product${product.active ? '' : ' product--inactive'}`"
+                >
+                  <ProductImage class="product-image">
+                    <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
+                    <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
+                  </ProductImage>
+                  <div class="product-content">
+                    <div class="product-content__main">
+                      <div class="product-details">
+                        <Text class="text-truncate" heading="5">{{ product.name }}</Text>
+                        <div class="product-info">
+                          <div class="product-info__item">
+                            <ComposIcon :icon="Tag" />
+                            <span class="text-truncate">{{ product.priceFormatted }}</span>
+                          </div>
+                          <div v-if="!product.items" class="product-info__item">
+                            <ComposIcon :icon="Boxes" />
+                            <span>{{ product.stock }}</span>
+                          </div>
+                          <div class="product-info__item">
+                            <ComposIcon :icon="CartPlus" />
+                            <span>{{ product.quantity }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="product-actions">
+                        <ButtonBlock
+                          :disabled="!product.active"
+                          backgroundColor="var(--color-red-4)"
+                          @click="handleClickDecrement(product)"
+                        >
+                          <ComposIcon :icon="DashLarge" />
+                        </ButtonBlock>
+                        <ButtonBlock
+                          :disabled="!product.active"
+                          backgroundColor="var(--color-blue-4)"
+                          @click="handleClickIncrement(product)"
+                        >
+                          <ComposIcon :icon="PlusLarge" />
+                        </ButtonBlock>
+                      </div>
+                    </div>
+                    <div v-if="product.items" class="product-content__additional">
+                      <div class="product-bundle-details">
+                        <div v-for="item of product.items" class="product-bundle-info">
+                          <span class="product-bundle-info__item" style="flex-shrink: 1;">
+                            <ComposIcon :icon="Box" />
+                            <span class="text-truncate">{{ item.name }}</span>
+                          </span>
+                          <span class="product-bundle-info__item">
+                            <ComposIcon :icon="Boxes" />
+                            <span>{{ item.stock }}</span>
+                          </span>
+                          <span class="product-bundle-info__item">
+                            <ComposIcon :icon="CartPlus" />
+                            <span>{{ item.quantity }}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div v-if="product.items" class="product-bundle">
-                  <div v-for="item of product.items" class="product-bundle-details">
-                    <span class="product-bundle-details__item">
-                      <ComposIcon :icon="Box" />
-                      {{ item.name }}
-                    </span>
-                    <span class="product-bundle-details__item">
-                      <ComposIcon :icon="Boxes" />
-                      {{ item.stock }}
-                    </span>
-                    <span class="product-bundle-details__item">
-                      <ComposIcon :icon="CartPlus" />
-                      {{ item.quantity }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div class="product-actions">
-                <ButtonBlock
-                  :disabled="!product.active"
-                  backgroundColor="var(--color-red-4)"
-                  @click="handleClickDecrement(product)"
-                >
-                  <ComposIcon :icon="DashLarge" />
-                </ButtonBlock>
-                <ButtonBlock
-                  :disabled="!product.active"
-                  backgroundColor="var(--color-blue-4)"
-                  @click="handleClickIncrement(product)"
-                >
-                  <ComposIcon :icon="PlusLarge" />
-                </ButtonBlock>
-              </div>
-            </div>
+              </CardBody>
+            </Card>
           </template>
         </div>
 
@@ -395,6 +405,9 @@ const {
   display: grid;
   grid-template-rows: 50% 50%;
   grid-template-columns: 1fr;
+  gap: 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
 
   &-content {
     overflow: auto;
@@ -430,6 +443,14 @@ const {
   }
 }
 
+.products-card {
+  max-height: 100%;
+  border-right: none;
+  border-left: none;
+  border-radius: 0;
+  overflow-y: auto;
+}
+
 .product {
   display: flex;
   gap: 16px;
@@ -437,16 +458,21 @@ const {
   background-color: var(--color-white);
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
-  padding-top: 12px;
-  padding-bottom: 12px;
-  -webkit-padding-inline-start: 12px;
-  padding-inline-start: 12px;
-  -webkit-padding-inline-end: 12px;
-  padding-inline-end: 12px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  -webkit-padding-inline-start: 16px;
+  padding-inline-start: 16px;
+  -webkit-padding-inline-end: 16px;
+  padding-inline-end: 16px;
   margin-top: -1px;
 
   &:first-of-type {
+    border-top-color: transparent;
     margin-top: 0;
+  }
+
+  &:last-of-type {
+    border-bottom-color: transparent;
   }
 
   &--inactive {
@@ -454,70 +480,87 @@ const {
   }
 
   &-image {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     flex-shrink: 0;
     align-self: flex-start;
 
     img {
-      display: block;
       width: 100%;
       height: 100%;
+      display: block;
     }
   }
 
-  &-contents {
+  &-content {
+    min-width: 0%;
     flex: 1 1 auto;
+
+    &__main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    &__additional {
+      border-top: 1px solid var(--color-border);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
   }
 
   &-details {
+    min-width: 0%;
+    flex: 1;
+  }
+
+  &-info {
     display: flex;
-    align-items: center;
-    gap: 16px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
 
     &__item {
+      min-width: 0%;
+      font-size: var(--text-body-small-size);
+      line-height: var(--text-body-small-height);
       display: flex;
       align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
 
       compos-icon {
-        width: 20px;
-        height: 20px;
-        margin-right: 8px;
+        width: 16px;
+        height: 16px;
         flex-shrink: 0;
       }
     }
   }
 
-  &-bundle {
-    display: inline-flex;
-    flex-direction: column;
-    border-top: 1px solid var(--color-border);
-    padding-top: 12px;
-    padding-inline-end: 12px;
-    margin-top: 12px;
+  &-bundle-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
 
-    &-details {
+    &:first-of-type {
+      margin-top: 0;
+    }
+
+    &__item {
+      min-width: 0%;
+      font-size: var(--text-body-small-size);
+      line-height: var(--text-body-small-height);
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-top: 8px;
+      gap: 8px;
+      flex-shrink: 0;
 
-      &:first-of-type {
-        margin-top: 0;
-      }
-
-      &__item {
-        font-size: var(--text-body-small-size);
-        line-height: var(--text-body-small-height);
-        display: flex;
-        align-items: center;
-
-        compos-icon {
-          width: 16px;
-          height: 16px;
-          margin-right: 8px;
-          flex-shrink: 0;
-        }
+      compos-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
       }
     }
   }
@@ -528,8 +571,8 @@ const {
     flex: 0 0 auto;
 
     .vc-button-block {
-      width: 50px;
-      height: 50px;
+      width: 40px;
+      height: 40px;
     }
   }
 }
@@ -717,20 +760,47 @@ const {
   gap: 12px;
 }
 
+@include screen-sm {
+  .product {
+    &-info {
+      align-items: center;
+      flex-direction: row;
+      gap: 12px;
+    }
+
+    &-actions {
+      .vc-button-block {
+        width: 50px;
+        height: 50px;
+      }
+    }
+  }
+};
+
 @include screen-landscape-md {
   .dashboard {
     grid-template-rows: 100%;
     grid-template-columns: 1fr 35%;
+    -webkit-padding-inline-start: 16px;
+    padding-inline-start: 16px;
+    -webkit-padding-inline-end: 16px;
+    padding-inline-end: 16px;
 
     &-control {
       border-left: 1px solid var(--color-border);
     }
   }
 
+  .products-card {
+    border-right: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+    border-radius: 8px;
+  }
+
   .product {
     &-image {
-      width: 100px;
-      height: 100px;
+      width: 80px;
+      height: 80px;
     }
 
     &-actions {
