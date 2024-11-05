@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { inject, ref, onMounted, onUnmounted } from 'vue';
 
+const toast     = inject('ToastProvider');
 const isOffline = ref(!navigator.onLine);
 
-function updateOnlineStatus() {
+const updateOnlineStatus = () => {
   isOffline.value = !navigator.onLine;
-}
+
+  if (isOffline.value) {
+    // @ts-ignore
+    toast.add({ message: 'Offline mode.', type: 'error', duration: 5000 });
+  } else {
+    // @ts-ignore
+    toast.add({ message: `You're back online!`, type: 'success', duration: 5000 });
+  }
+};
 
 onMounted(() => {
   window.addEventListener('online', updateOnlineStatus);
@@ -18,22 +27,4 @@ onUnmounted(() => {
 });
 </script>
 
-<template>
-  <div v-if="isOffline" class="offline-banner">
-    You are currently offline
-  </div>
-</template>
-
-<style lang="scss">
-.offline-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 8px;
-  text-align: center;
-  z-index: 1000;
-}
-</style>
+<template></template>
