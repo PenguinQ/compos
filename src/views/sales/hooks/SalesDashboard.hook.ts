@@ -61,6 +61,8 @@ export const useSalesDashboard = () => {
   const router = useRouter();
   const { params } = route;
   const dialogFinish       = ref(false);
+  const dialogPayment      = ref(false);
+  const dialogHistory      = ref(false);
   const controlsView       = ref('order-default');
   const detailsProducts    = ref<DetailsNormalizerProduct[]>([]);
   const loadProducts       = ref(false);
@@ -323,7 +325,11 @@ export const useSalesDashboard = () => {
     }
   };
 
-  const handleClickCalculator = (digit: string) =>{
+  const handleClickBackspace = () => {
+    paymentInput.value = paymentInput.value.length === 1 ? '0' : paymentInput.value.slice(0, -1);
+  };
+
+  const handleClickCalculator = (digit: string) => {
     if (paymentInput.value === '0') {
       if (parseInt(digit) !== 0) {
         paymentInput.value = digit;
@@ -451,6 +457,8 @@ export const useSalesDashboard = () => {
     productsData: productsData as Ref<ProductsNormalizerReturn>,
     ordersData  : ordersData as Ref<OrdersNormalizerReturn>,
     dialogFinish,
+    dialogPayment,
+    dialogHistory,
     controlsView,
     orderedProducts,
     balance,
@@ -470,6 +478,7 @@ export const useSalesDashboard = () => {
     handleClickDecrement,
     handleClickIncrement,
     handleClickQuantityDecrement,
+    handleClickBackspace,
     handleClickCalculator,
     handleClickCancel,
     handleClickClear,

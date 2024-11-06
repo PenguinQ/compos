@@ -61,7 +61,7 @@ watch(
 <template>
   <!-- Header -->
   <Toolbar sticky>
-    <ToolbarAction icon @click="router.back">
+    <ToolbarAction icon @click="router.push('/product')">
       <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
     <ToolbarTitle>{{ productId ? `Edit ${productDetail?.name}` : 'Add Product' }}</ToolbarTitle>
@@ -89,7 +89,7 @@ watch(
     </EmptyState>
     <template v-else>
       <Bar v-if="productDetailLoading" margin="56px 0" />
-      <form v-else id="product-form">
+      <form v-else id="product-form" @submit.prevent>
         <Row>
           <Column :col="{ default: 12, md: 'auto' }">
             <div class="product-form-image" :data-error="true">

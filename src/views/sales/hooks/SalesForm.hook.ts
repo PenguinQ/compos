@@ -100,8 +100,6 @@ export const useSalesForm = () => {
     onSuccess: response => {
       const { name, balance, products } = response as DetailNormalizerReturn;
 
-      console.log(response);
-
       formData.name     = name;
       formData.products = products;
       if (balance) formData.balance  = balance;

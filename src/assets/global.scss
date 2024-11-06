@@ -16,6 +16,7 @@
     }
 
     .cp-card__header {
+      background-color: var(--color-neutral-1);
       border-bottom: 1px solid var(--color-border);
 
       + .cp-card__body {

@@ -119,8 +119,6 @@ const updateBundlesStatus = async ({ id, active }: { id: string; active: boolean
   }).exec();
 
   for (const bundle of _queryBundles) {
-    console.log(bundle);
-
     await bundle.incrementalModify(prev => {
       const index = prev.products.findIndex(data => data.id === id);
 
