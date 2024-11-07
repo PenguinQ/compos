@@ -7,11 +7,7 @@ export default {
       type: 'string',
       maxLength: 1000,
     },
-    sale_id: {
-      ref: 'sale',
-      type: 'string',
-    },
-    canceled: {
+    finished: {
       type: 'boolean',
       default: false,
     },
@@ -20,6 +16,23 @@ export default {
       maxLength: 1000,
     },
     products: {
+      type: 'array',
+      uniqueItems: true,
+      items : {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+          },
+          quantity: {
+            type: 'integer',
+            minimum: 1,
+          },
+        },
+      },
+      default: [],
+    },
+    products_sold: {
       type: 'array',
       uniqueItems: true,
       items: {
@@ -32,6 +45,14 @@ export default {
             type: 'string',
           },
           price: {
+            type: 'integer',
+            minimum: 0,
+          },
+          quantity: {
+            type: 'integer',
+            minimum: 1,
+          },
+          sku: {
             type: 'string',
           },
           items: {
@@ -60,33 +81,29 @@ export default {
               },
             },
           },
-          sku: {
-            type: 'string',
-            uniqueItems: true,
-          },
-          quantity: {
-            type: 'integer',
-            minimum: 0,
-            default: 0,
-          },
           total: {
-            type: 'integer',
-            minimum: 0,
-            default: 0,
+            type: 'string',
           },
         },
       },
       default: [],
     },
-    tendered: {
-      type: 'string',
-      default: '0',
+    orders: {
+      type: 'array',
+      ref: 'order',
+      uniqueItems: true,
+      items: {
+        type: 'string',
+      },
+      default: [],
     },
-    change: {
+    initial_balance: {
       type: 'string',
-      default: '0',
     },
-    total: {
+    final_balance: {
+      type: 'string',
+    },
+    revenue: {
       type: 'string',
       default: '0',
     },
@@ -99,13 +116,12 @@ export default {
   },
   required: [
     'id',
-    'sale_id',
-    'canceled',
+    'finished',
     'name',
     'products',
-    'tendered',
-    'change',
-    'total',
+    'products_sold',
+    'orders',
+    'revenue',
     'created_at',
     'updated_at',
   ],

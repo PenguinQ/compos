@@ -6,8 +6,8 @@ import { wrappedAttachmentsCompressionStorage } from 'rxdb/plugins/attachments-c
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 
-import { sales, order, product, variant, bundle } from './schema';
-import { productsORMs, variantsORMs, bundlesORMs, salesORMs } from './orms';
+import { sale, order, product, variant, bundle } from './schema';
+import { productORMs, variantORMs, bundleORMs, saleORMs } from './orms';
 import { createSamples } from './helpers';
 import type { Database, DatabaseCollection } from './types';
 
@@ -38,19 +38,19 @@ export const initDB = async () => {
   const collections = await db.addCollections({
     product: {
       schema: product,
-      methods: productsORMs,
+      methods: productORMs,
     },
     variant: {
       schema: variant,
-      methods: variantsORMs,
+      methods: variantORMs,
     },
     bundle: {
       schema: bundle,
-      methods: bundlesORMs,
+      methods: bundleORMs,
     },
-    sales: {
-      schema: sales,
-      methods: salesORMs,
+    sale: {
+      schema: sale,
+      methods: saleORMs,
     },
     order: {
       schema: order,
@@ -94,12 +94,12 @@ export const initDB = async () => {
     }
   }, false);
 
-  // Sales Hooks
-  collections.sales.preRemove(async (data) => {
-    const sales = await collections.sales.findOne(data.id).exec();
+  // Sale Hooks
+  collections.sale.preRemove(async (data) => {
+    const sale = await collections.sale.findOne(data.id).exec();
 
-    if (sales) {
-      await sales.removeOrders();
+    if (sale) {
+      await sale.removeOrders();
     }
   }, false);
 
