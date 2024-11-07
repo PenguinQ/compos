@@ -74,7 +74,7 @@ watch(
 <template>
   <!-- Header -->
   <Toolbar sticky>
-    <ToolbarAction icon @click="router.back">
+    <ToolbarAction icon @click="router.push('/product')">
       <ComposIcon :icon="ArrowLeftShort" :size="40" />
     </ToolbarAction>
     <ToolbarTitle>{{ bundleId ? `Edit ${bundleDetail?.name}` : 'Add Bundle' }}</ToolbarTitle>

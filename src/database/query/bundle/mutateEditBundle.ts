@@ -59,7 +59,6 @@ export default async (data: MutateEditBundleQuery) => {
     const bundle_products = <BundleDocProduct[]>[];
 
     for (const product of products) {
-      console.log(product);
       const { id, product_id, active, quantity } = product;
 
       if (!isNumeric(quantity)) throw 'Product quantity must be a number.';

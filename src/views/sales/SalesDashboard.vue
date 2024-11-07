@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Common Components
 import { Bar } from '@components/Loader';
-import Card, { CardBody } from '@components/Card';
+import Card, { CardBody, CardHeader, CardTitle } from '@components/Card';
 import Content from '@components/Content';
 import Button from '@components/Button';
 import Dialog from '@components/Dialog';
@@ -13,9 +14,11 @@ import QuantityEditor from '@components/QuantityEditor';
 import Toolbar, { ToolbarAction, ToolbarTitle, ToolbarSpacer } from '@components/Toolbar';
 import ComposIcon, {
   ArrowLeftShort,
+  BackspaceFill,
   XCircleFilled,
   PlusLarge,
   DashLarge,
+  Cash,
   CashCoin,
   ClockHistory,
   Tag,
@@ -35,7 +38,7 @@ import {
 } from '@/views/components';
 
 // Helpers
-import { toIDR } from '@/helpers';
+import { debounce, toIDR } from '@/helpers';
 
 // Hooks
 import { useSalesDashboard } from './hooks/SalesDashboard.hook';
@@ -51,6 +54,8 @@ const router = useRouter();
 const {
   salesId,
   dialogFinish,
+  dialogPayment,
+  dialogHistory,
   controlsView,
   balance,
   detailsData,
@@ -72,6 +77,7 @@ const {
   handleClickDecrement,
   handleClickIncrement,
   handleClickQuantityDecrement,
+  handleClickBackspace,
   handleClickCalculator,
   handleClickCancel,
   handleClickClear,
@@ -81,6 +87,32 @@ const {
   ordersRefetch,
   mutateFinish,
 } = useSalesDashboard();
+
+const handleResize = debounce(() => {
+  if (window.innerWidth >= 992) {
+    dialogPayment.value = false;
+    dialogHistory.value = false;
+  } else {
+    if (
+        controlsView.value === 'order-default' && orderedProducts.value.length ||
+        controlsView.value === 'order-payment' && !dialogPayment.value
+      ) {
+      dialogPayment.value = true;
+      dialogHistory.value = false;
+    } else if (controlsView.value === 'order-history' && !dialogHistory.value) {
+      dialogPayment.value = false;
+      dialogHistory.value = true;
+    }
+  }
+}, 200);
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+});
 </script>
 
 <template>
@@ -127,7 +159,7 @@ const {
           </EmptyState>
           <template v-else>
             <Bar v-if="isProductsLoading" />
-            <Card v-else class="products-card" variant="outline">
+            <Card v-else class="products-card">
               <CardBody padding="0">
                 <div
                   v-for="product of productsData?.products"
@@ -200,170 +232,197 @@ const {
 
         <!-- Controls -->
         <div class="dashboard-control">
-          <div class="dashboard-control-header">
-            <Text heading="5" margin="0">{{ controlsView === 'order-history' ? 'Order History' : 'Order'  }}</Text>
-            <button class="button button--icon" type="button" @click="handleShowOrderHistory">
-              <ComposIcon :icon="ClockHistory" />
-            </button>
-          </div>
-          <div class="dashboard-control-body">
-            <!-- Control Order Default View -->
-            <template v-if="controlsView === 'order-default'">
-              <EmptyState
-                v-if="!orderedProducts.length"
-                :emoji="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_EMOJI"
-                :title="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_TITLE"
-                :description="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_DESCRIPTION"
-                margin="56px 0"
-              />
-              <div v-else class="order-product-list">
-                <div v-for="product of orderedProducts" class="order-product">
-                  <ProductImage class="product-image">
-                    <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
-                    <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
-                  </ProductImage>
-                  <div class="order-product-contents">
-                    <Text heading="6" margin="0 0 4px">{{ product.name }}</Text>
-                    <div class="order-product-details">
-                      <div class="order-product-details__item order-product-details__item--price">
-                        <ComposIcon :icon="Tags" />
-                        {{ toIDR(product.price.times(product.amount).toString()) }}
+          <Card v-if="controlsView !== 'order-payment'" class="order-card">
+            <CardHeader>
+              <CardTitle>
+                Order
+                <button class="button button--icon" type="button" @click="handleShowOrderHistory">
+                  <ComposIcon :icon="ClockHistory" />
+                </button>
+              </CardTitle>
+            </CardHeader>
+            <CardBody>
+              <template v-if="controlsView === 'order-history'">
+                <EmptyState
+                  v-if="isOrdersError"
+                  :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+                  :title="GLOBAL.ERROR_EMPTY_TITLE"
+                  :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+                  height="100%"
+                >
+                  <template #action>
+                    <Button @click="ordersRefetch">Try Again</Button>
+                  </template>
+                </EmptyState>
+                <template v-else>
+                  <Bar v-if="isOrdersLoading" />
+                  <template v-else>
+                    <EmptyState
+                      v-if="!ordersData.orders.length"
+                      :emoji="SALES_DASHBOARD.ORDER_LIST_EMPTY_EMOJI"
+                      :title="SALES_DASHBOARD.ORDER_LIST_EMPTY_TITLE"
+                      :description="SALES_DASHBOARD.ORDER_LIST_EMPTY_DESCRIPTION"
+                      height="100%"
+                    />
+                    <div v-else class="order-list">
+                      <OrderCard
+                        v-for="order of ordersData.orders"
+                        :title="order.name"
+                        :total="order.totalFormatted"
+                        :tendered="order.tenderedFormatted"
+                        :change="order.changeFormatted"
+                        :products="order.products"
+                      />
+                    </div>
+                  </template>
+                </template>
+              </template>
+              <template v-else>
+                <EmptyState
+                  v-if="!orderedProducts.length"
+                  :emoji="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_EMOJI"
+                  :title="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_TITLE"
+                  :description="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_DESCRIPTION"
+                  height="100%"
+                />
+                <div v-else class="order-products-list">
+                  <div v-for="product of orderedProducts" class="order-product">
+                    <ProductImage class="product-image">
+                      <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
+                      <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
+                    </ProductImage>
+                    <div class="order-product-content">
+                      <Text class="text-truncate" heading="6" margin="0 0 4px">{{ product.name }}</Text>
+                      <div class="order-product-details">
+                        <div class="order-product-details__item">
+                          <ComposIcon :icon="Tags" />
+                          <span class="text-truncate">
+                            {{ toIDR(product.price.times(product.amount).toString()) }}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <QuantityEditor
-                    class="order-product__quantity"
-                    small
-                    readonly
-                    v-model.number="product.amount"
-                    :step="product.quantity"
-                    :max="product.stock"
-                    @clickDecrement="handleClickQuantityDecrement($event, product.id)"
-                  />
-                </div>
-              </div>
-              <dl class="order-summary">
-                <div class="order-summary-item">
-                  <dt>Total Item</dt>
-                  <dd>{{ totalProductsCount }}</dd>
-                </div>
-                <div class="order-summary-item">
-                  <dt>Total</dt>
-                  <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
-                </div>
-                <div v-if="balance.current" class="order-summary-item">
-                  <dt>Balance</dt>
-                  <dd>{{ toIDR(balance.current) }}</dd>
-                </div>
-              </dl>
-            </template>
-            <!-- Control Order Payment View -->
-            <template v-if="controlsView === 'order-payment'">
-              <dl class="order-summary">
-                <div class="order-summary-item">
-                  <dt>Total Item</dt>
-                  <dd>{{ totalProductsCount }}</dd>
-                </div>
-                <div class="order-summary-item">
-                  <dt>Total</dt>
-                  <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
-                </div>
-                <div class="order-summary-item">
-                  <dt>Payment Amount</dt>
-                  <dd>{{ toIDR(paymentTendered.toString()) }}</dd>
-                </div>
-                <div v-if="balance.current" class="order-summary-item">
-                  <dt>Balance</dt>
-                  <dd>{{ toIDR(balance.current) }}</dd>
-                </div>
-                <div class="order-summary-item order-summary-item--change">
-                  <dt>
-                    <ComposIcon :icon="CashCoin" />
-                    Change
-                  </dt>
-                  <dd>{{ toIDR(paymentChange.toString()) }}</dd>
-                </div>
-              </dl>
-              <div class="order-calculator">
-                <div class="order-calculator__display">
-                  <button
-                    v-if="paymentInput !== '0'"
-                    type="button"
-                    class="button button--icon"
-                    aria-label="Clear calculator"
-                    @click="paymentInput = '0'"
-                  >
-                    <ComposIcon :icon="XCircleFilled" />
-                  </button>
-                  <div>{{ toIDR(paymentTendered.toString()) }}</div>
-                </div>
-                <div class="order-calculator__buttons">
-                  <button type="button" @click="handleClickCalculator('1')">1</button>
-                  <button type="button" @click="handleClickCalculator('2')">2</button>
-                  <button type="button" @click="handleClickCalculator('3')">3</button>
-                  <button type="button" @click="handleClickCalculator('4')">4</button>
-                  <button type="button" @click="handleClickCalculator('5')">5</button>
-                  <button type="button" @click="handleClickCalculator('6')">6</button>
-                  <button type="button" @click="handleClickCalculator('7')">7</button>
-                  <button type="button" @click="handleClickCalculator('8')">8</button>
-                  <button type="button" @click="handleClickCalculator('9')">9</button>
-                  <button type="button" @click="handleClickCalculator('0')">0</button>
-                  <button type="button" @click="handleClickCalculator('00')">00</button>
-                  <button type="button" @click="handleClickCalculator('000')">000</button>
-                </div>
-              </div>
-            </template>
-            <!-- Control Order History View -->
-            <template v-if="controlsView === 'order-history'">
-              <EmptyState
-                v-if="isOrdersError"
-                :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-                :title="GLOBAL.ERROR_EMPTY_TITLE"
-                :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-                margin="56px 0"
-              >
-                <template #action>
-                  <Button @click="ordersRefetch">Try Again</Button>
-                </template>
-              </EmptyState>
-              <template v-else>
-                <Bar v-if="isOrdersLoading" />
-                <template v-else>
-                  <EmptyState
-                    v-if="!ordersData.orders.length"
-                    :emoji="SALES_DASHBOARD.ORDER_LIST_EMPTY_EMOJI"
-                    :title="SALES_DASHBOARD.ORDER_LIST_EMPTY_TITLE"
-                    :description="SALES_DASHBOARD.ORDER_LIST_EMPTY_DESCRIPTION"
-                    margin="56px 0"
-                  />
-                  <div v-else class="order-list">
-                    <OrderCard
-                      v-for="order of ordersData.orders"
-                      :title="order.name"
-                      :total="order.totalFormatted"
-                      :tendered="order.tenderedFormatted"
-                      :change="order.changeFormatted"
-                      :products="order.products"
+                    <QuantityEditor
+                      class="order-product__quantity"
+                      small
+                      readonly
+                      v-model.number="product.amount"
+                      :step="product.quantity"
+                      :max="product.stock"
+                      @clickDecrement="handleClickQuantityDecrement($event, product.id)"
                     />
                   </div>
+                </div>
+              </template>
+            </CardBody>
+          </Card>
+          <Card class="order-details-card">
+            <CardBody>
+              <div class="order-details-container">
+                <template v-if="controlsView === 'order-default'">
+                  <dl class="order-details-summary">
+                    <div class="order-details-summary__item">
+                      <dt>Total Item</dt>
+                      <dd>{{ totalProductsCount }}</dd>
+                    </div>
+                    <div class="order-details-summary__item">
+                      <dt>Total</dt>
+                      <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
+                    </div>
+                    <div v-if="balance.current" class="order-details-summary__item">
+                      <dt>Balance</dt>
+                      <dd>{{ toIDR(balance.current) }}</dd>
+                    </div>
+                  </dl>
                 </template>
-              </template>
-            </template>
-          </div>
-          <div class="dashboard-control-footer">
-            <div class="control-actions">
-              <template v-if="controlsView === 'order-default'">
-                <Button full color="red" variant="outline" @click="handleClickClear">Clear</Button>
-                <Button full @click="controlsView = 'order-payment'">Pay</Button>
-              </template>
-              <template v-if="controlsView === 'order-payment'">
-                <Button full color="red" variant="outline" @click="handleClickCancel" small>Cancel</Button>
-                <Button full @click="handlePayment">Pay</Button>
-              </template>
-              <template v-if="controlsView === 'order-history'">
-                <Button full color="red" variant="outline" @click="controlsView = 'order-default'" small>Back</Button>
-              </template>
-            </div>
+                <template v-if="controlsView === 'order-payment'">
+                  <dl class="order-details-summary">
+                    <div class="order-details-summary__item">
+                      <dt>Total Item</dt>
+                      <dd>{{ totalProductsCount }}</dd>
+                    </div>
+                    <div class="order-details-summary__item">
+                      <dt>Total</dt>
+                      <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
+                    </div>
+                    <div class="order-details-summary__item">
+                      <dt>Payment Amount</dt>
+                      <dd>{{ toIDR(paymentTendered.toString()) }}</dd>
+                    </div>
+                    <div v-if="balance.current" class="order-details-summary__item">
+                      <dt>Balance</dt>
+                      <dd>{{ toIDR(balance.current) }}</dd>
+                    </div>
+                    <div class="order-details-summary__item order-details-summary__item--change">
+                      <dt>
+                        <ComposIcon :icon="CashCoin" />
+                        Change
+                      </dt>
+                      <dd>{{ toIDR(paymentChange.toString()) }}</dd>
+                    </div>
+                  </dl>
+                  <div class="order-details-calculator">
+                    <div class="order-details-calculator__display">
+                      <button
+                        v-if="paymentInput !== '0'"
+                        type="button"
+                        class="button button--icon"
+                        aria-label="Clear calculator"
+                        @click="paymentInput = '0'"
+                      >
+                        <ComposIcon :icon="XCircleFilled" />
+                      </button>
+                      <div>{{ toIDR(paymentTendered.toString()) }}</div>
+                      <button
+                        v-if="paymentInput !== '0'"
+                        type="button"
+                        class="button button--icon"
+                        aria-label="Backspace"
+                        @click="handleClickBackspace"
+                      >
+                        <ComposIcon :icon="BackspaceFill" />
+                      </button>
+                    </div>
+                    <div class="order-details-calculator__buttons">
+                      <button type="button" @click="handleClickCalculator('1')">1</button>
+                      <button type="button" @click="handleClickCalculator('2')">2</button>
+                      <button type="button" @click="handleClickCalculator('3')">3</button>
+                      <button type="button" @click="handleClickCalculator('4')">4</button>
+                      <button type="button" @click="handleClickCalculator('5')">5</button>
+                      <button type="button" @click="handleClickCalculator('6')">6</button>
+                      <button type="button" @click="handleClickCalculator('7')">7</button>
+                      <button type="button" @click="handleClickCalculator('8')">8</button>
+                      <button type="button" @click="handleClickCalculator('9')">9</button>
+                      <button type="button" @click="handleClickCalculator('0')">0</button>
+                      <button type="button" @click="handleClickCalculator('00')">00</button>
+                      <button type="button" @click="handleClickCalculator('000')">000</button>
+                    </div>
+                  </div>
+                </template>
+                <div class="dashboard-actions">
+                  <template v-if="controlsView === 'order-default'">
+                    <Button full color="red" variant="outline" @click="handleClickClear">Clear</Button>
+                    <Button full :disabled="!orderedProducts.length" @click="controlsView = 'order-payment'">Pay</Button>
+                  </template>
+                  <template v-if="controlsView === 'order-payment'">
+                    <Button full color="red" variant="outline" @click="handleClickCancel" small>Cancel</Button>
+                    <Button color="green" full @click="handlePayment">Confirm</Button>
+                  </template>
+                  <template v-if="controlsView === 'order-history'">
+                    <Button full color="red" variant="outline" @click="controlsView = 'order-default'" small>Back</Button>
+                  </template>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+          <div class="dashboard-actions-mobile">
+            <Button full :disabled="!totalProductsCount" @click="dialogPayment = true">
+              <ComposIcon :icon="Cash" style="margin-right: 8px;" />
+              Pay ({{ totalProductsCount }})
+            </Button>
+            <Button icon @click="dialogHistory = true">
+              <ComposIcon :icon="ClockHistory" />
+            </Button>
           </div>
         </div>
       </div>
@@ -382,6 +441,189 @@ const {
         </Button>
         <Button variant="outline" full @click="dialogFinish = false">Cancel</Button>
       </div>
+    </template>
+  </Dialog>
+
+  <!-- Dialog Payment on Mobile View -->
+  <Dialog
+    class="dialog-payment"
+    v-model="dialogPayment"
+    title="Pay"
+    fullscreen
+  >
+    <div class="dialog-payment-container">
+      <template v-if="controlsView === 'order-default'">
+        <EmptyState
+          v-if="!orderedProducts.length"
+          :emoji="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_EMOJI"
+          :title="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_TITLE"
+          :description="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_DESCRIPTION"
+          height="100%"
+        />
+        <div v-else class="order-products-list">
+          <div v-for="product of orderedProducts" class="order-product">
+            <ProductImage class="product-image">
+              <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
+              <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
+            </ProductImage>
+            <div class="order-product-content">
+              <Text heading="6" margin="0 0 4px">{{ product.name }}</Text>
+              <div class="order-product-details">
+                <div class="order-product-details__item">
+                  <ComposIcon :icon="Tags" />
+                  <span class="text-truncate">
+                    {{ toIDR(product.price.times(product.amount).toString()) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <QuantityEditor
+              class="order-product__quantity"
+              small
+              readonly
+              v-model.number="product.amount"
+              :step="product.quantity"
+              :max="product.stock"
+              @clickDecrement="handleClickQuantityDecrement($event, product.id)"
+            />
+          </div>
+        </div>
+      </template>
+      <template v-if="controlsView === 'order-default'">
+        <dl class="order-details-summary">
+          <div class="order-details-summary__item">
+            <dt>Total Item</dt>
+            <dd>{{ totalProductsCount }}</dd>
+          </div>
+          <div class="order-details-summary__item">
+            <dt>Total</dt>
+            <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
+          </div>
+          <div v-if="balance.current" class="order-details-summary__item">
+            <dt>Balance</dt>
+            <dd>{{ toIDR(balance.current) }}</dd>
+          </div>
+        </dl>
+      </template>
+      <template v-if="controlsView === 'order-payment'">
+        <dl class="order-details-summary">
+          <div class="order-details-summary__item">
+            <dt>Total Item</dt>
+            <dd>{{ totalProductsCount }}</dd>
+          </div>
+          <div class="order-details-summary__item">
+            <dt>Total</dt>
+            <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
+          </div>
+          <div class="order-details-summary__item">
+            <dt>Payment Amount</dt>
+            <dd>{{ toIDR(paymentTendered.toString()) }}</dd>
+          </div>
+          <div v-if="balance.current" class="order-details-summary__item">
+            <dt>Balance</dt>
+            <dd>{{ toIDR(balance.current) }}</dd>
+          </div>
+          <div class="order-details-summary__item order-details-summary__item--change">
+            <dt>
+              <ComposIcon :icon="CashCoin" />
+              Change
+            </dt>
+            <dd>{{ toIDR(paymentChange.toString()) }}</dd>
+          </div>
+        </dl>
+        <div class="order-details-calculator">
+          <div class="order-details-calculator__display">
+            <button
+              v-if="paymentInput !== '0'"
+              type="button"
+              class="button button--icon"
+              aria-label="Clear calculator"
+              @click="paymentInput = '0'"
+            >
+              <ComposIcon :icon="XCircleFilled" />
+            </button>
+            <div>{{ toIDR(paymentTendered.toString()) }}</div>
+            <button
+              v-if="paymentInput !== '0'"
+              type="button"
+              class="button button--icon"
+              aria-label="Backspace"
+              @click="handleClickBackspace"
+            >
+              <ComposIcon :icon="BackspaceFill" />
+            </button>
+          </div>
+          <div class="order-details-calculator__buttons">
+            <button type="button" @click="handleClickCalculator('1')">1</button>
+            <button type="button" @click="handleClickCalculator('2')">2</button>
+            <button type="button" @click="handleClickCalculator('3')">3</button>
+            <button type="button" @click="handleClickCalculator('4')">4</button>
+            <button type="button" @click="handleClickCalculator('5')">5</button>
+            <button type="button" @click="handleClickCalculator('6')">6</button>
+            <button type="button" @click="handleClickCalculator('7')">7</button>
+            <button type="button" @click="handleClickCalculator('8')">8</button>
+            <button type="button" @click="handleClickCalculator('9')">9</button>
+            <button type="button" @click="handleClickCalculator('0')">0</button>
+            <button type="button" @click="handleClickCalculator('00')">00</button>
+            <button type="button" @click="handleClickCalculator('000')">000</button>
+          </div>
+        </div>
+      </template>
+      <div class="dashboard-actions">
+        <template v-if="controlsView === 'order-default'">
+          <Button full color="red" variant="outline" @click="handleClickClear">Clear</Button>
+          <Button full :disabled="!orderedProducts.length" @click="controlsView = 'order-payment'">Pay</Button>
+        </template>
+        <template v-if="controlsView === 'order-payment'">
+          <Button full color="red" variant="outline" @click="handleClickCancel" small>Cancel</Button>
+          <Button color="green" full @click="handlePayment">Confirm</Button>
+        </template>
+        <template v-if="controlsView === 'order-history'">
+          <Button full color="red" variant="outline" @click="controlsView = 'order-default'" small>Back</Button>
+        </template>
+      </div>
+    </div>
+  </Dialog>
+
+  <!-- Dialog Order History on Mobile View -->
+  <Dialog
+    class="dialog-history"
+    v-model="dialogHistory"
+    title="Order History"
+    fullscreen
+  >
+    <EmptyState
+      v-if="isOrdersError"
+      :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+      :title="GLOBAL.ERROR_EMPTY_TITLE"
+      :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+      margin="56px 0"
+    >
+      <template #action>
+        <Button @click="ordersRefetch">Try Again</Button>
+      </template>
+    </EmptyState>
+    <template v-else>
+      <Bar v-if="isOrdersLoading" />
+      <template v-else>
+        <EmptyState
+          v-if="!ordersData.orders.length"
+          :emoji="SALES_DASHBOARD.ORDER_LIST_EMPTY_EMOJI"
+          :title="SALES_DASHBOARD.ORDER_LIST_EMPTY_TITLE"
+          :description="SALES_DASHBOARD.ORDER_LIST_EMPTY_DESCRIPTION"
+          margin="56px 0"
+        />
+        <div v-else class="order-list">
+          <OrderCard
+            v-for="order of ordersData.orders"
+            :title="order.name"
+            :total="order.totalFormatted"
+            :tendered="order.tenderedFormatted"
+            :change="order.changeFormatted"
+            :products="order.products"
+          />
+        </div>
+      </template>
     </template>
   </Dialog>
 </template>
@@ -403,7 +645,7 @@ const {
 .dashboard {
   height: 100%;
   display: grid;
-  grid-template-rows: 50% 50%;
+  grid-template-rows: 1fr auto;
   grid-template-columns: 1fr;
   gap: 16px;
   padding-top: 16px;
@@ -414,31 +656,272 @@ const {
   }
 
   &-control {
-    background-color: var(--color-white);
-    border-top: 1px solid var(--color-border);
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: 1fr;
+    gap: 16px;
+  }
 
-    &-header {
-      background-color: var(--color-white);
-      border-bottom: 1px solid var(--color-border);
-      padding: 12px 16px;
+  &-actions {
+    display: flex;
+    align-items: start;
+    gap: 16px;
+    padding: 16px;
+
+    &-mobile {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 16px;
+      -webkit-padding-inline-start: 16px;
+      padding-inline-start: 16px;
+      -webkit-padding-inline-end: 16px;
+      padding-inline-end: 16px;
     }
+  }
+}
 
-    &-body {
+.order-card {
+  display: none;
+  flex-direction: column;
+
+  .cp-card__header {
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .cp-card__title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .cp-card__body {
+    flex-grow: 1;
+    overflow: auto;
+    padding: 0;
+  }
+}
+
+.order-product {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+
+  .vc-product-image {
+    width: 60px;
+    height: 60px;
+    flex: 0 0 auto;
+
+    img {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  }
+
+  &-content {
+    min-width: 0%;
+    flex-grow: 1;
+  }
+
+  &-details {
+    &__item {
+      font-size: var(--text-body-small-size);
+      line-height: var(--text-body-small-height);
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      flex: 1 1 auto;
-      overflow: auto;
+      align-items: center;
+      gap: 4px;
+
+      compos-icon {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  &__details {
+    flex-grow: 1;
+  }
+
+  &__name {
+    font-family: var(--text-heading-family);
+    font-size: var(--text-body-large-size);
+    line-height: var(--text-body-large-height);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+}
+
+.order-list {
+  min-height: 100%;
+  background-color: var(--color-neutral-1);
+  padding: 16px;
+
+  .vc-order-card {
+    margin-top: 16px;
+
+    &:first-of-type {
+      margin-top: 0;
+    }
+  }
+}
+
+.order-details-card {
+  flex: 1 0 auto;
+  display: none;
+
+  .cp-card__body {
+    height: 100%;
+    padding: 0;
+  }
+}
+
+.order-details-container {
+  height: inherit;
+  display: flex;
+  flex-direction: column;
+
+  > *:first-child {
+    flex-grow: 1;
+  }
+}
+
+.order-details-summary {
+  border-bottom: 1px solid var(--color-border);
+  overflow: auto;
+  padding: 16px;
+  margin: 0;
+
+  &__item {
+    font-size: var(--text-body-large-size);
+    line-height: var(--text-body-large-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    &:last-of-type {
+      margin-bottom: 0;
     }
 
-    &-footer {
+    &--change {
+      color: var(--color-white);
+      background-color: var(--color-green-5);
+      margin-left: -16px;
+      margin-right: -16px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      padding-inline-start: 16px;
+      padding-inline-end: 16px;
+    }
+
+    dt {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+      flex: 0 0 auto;
+
+      compos-icon {
+        flex-shrink: 0;
+      }
+    }
+
+    dd {
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+}
+
+.order-details-calculator {
+  border-bottom: 1px solid var(--color-border);
+
+  &__display {
+    font-size: 24px;
+    line-height: 28px;
+    text-align: right;
+    border-bottom: 1px solid var(--color-neutral-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+
+    button {
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    div {
+      text-align: right;
+      overflow-y: hidden;
+      flex-grow: 1;
+    }
+  }
+
+  &__buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    padding: 16px;
+
+    button {
+      color: var(--color-black);
+      font-size: var(--text-body-large-size);
+      background-color: var(--color-white);
+      border: 1px solid var(--color-neutral-4);
+      border-radius: 4px;
+      cursor: pointer;
       padding: 16px;
-      border-top: 1px solid var(--color-border);
+      transition-property: transform;
+      transition-duration: var(--transition-duration-very-fast);
+      transition-timing-function: var(--transition-timing-function);
+      outline: none;
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+}
+
+.dialog-payment {
+  .cp-dialog-body {
+    flex-grow: 1;
+    padding: 0;
+  }
+}
+
+.dialog-history {
+  .cp-dialog-body {
+    flex-grow: 1;
+    padding: 0;
+  }
+}
+
+.dialog-payment-container {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr;
+
+  .order-products-list {
+    overflow: auto;
+  }
+
+  .order-details-summary {
+    border-top: 1px solid var(--color-border);
+
+    &:first-child {
+      border-top: none;
     }
   }
 }
@@ -577,189 +1060,6 @@ const {
   }
 }
 
-.order-product-list {
-  overflow: auto;
-}
-
-.order-product {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-
-  .vc-product-image {
-    width: 60px;
-    height: 60px;
-    flex: 0 0 auto;
-
-    img {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-  }
-
-  &-contents {
-    flex-grow: 1;
-  }
-
-  &-details {
-    &__item {
-      font-family: var(--text-heading-family);
-      font-size: var(--text-body-large-size);
-      line-height: var(--text-body-large-height);
-      font-weight: 700;
-      margin-bottom: 4px;
-
-      &:last-of-type {
-        margin-bottom: 0;
-      }
-
-      compos-icon {
-        width: 16px;
-        height: 16px;
-        margin-right: 4px;
-      }
-
-      &--price {
-        font-family: var(--text-body-family);
-        font-size: var(--text-body-small-size);
-        line-height: var(--text-body-small-height);
-        font-weight: 400;
-      }
-    }
-  }
-
-  &__details {
-    flex-grow: 1;
-  }
-
-  &__name {
-    font-family: var(--text-heading-family);
-    font-size: var(--text-body-large-size);
-    line-height: var(--text-body-large-height);
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
-}
-
-// Order History List
-.order-list {
-  padding: 16px;
-}
-
-.order-summary {
-  border-top: 1px solid var(--color-neutral-2);
-  padding: 16px;
-  margin: 0;
-  overflow: auto;
-
-  &-item {
-    font-size: var(--text-body-large-size);
-    line-height: var(--text-body-large-height);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 12px;
-    overflow-x: auto;
-    overflow-y: hidden;
-
-    &:last-of-type {
-      margin-bottom: 0;
-    }
-
-    &--change {
-      color: var(--color-white);
-      background-color: var(--color-green-5);
-      margin-left: -16px;
-      margin-right: -16px;
-      padding-top: 8px;
-      padding-bottom: 8px;
-      padding-inline-start: 16px;
-      padding-inline-end: 16px;
-    }
-
-    dt {
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      overflow: hidden;
-      flex: 0 0 auto;
-
-      compos-icon {
-        flex-shrink: 0;
-      }
-    }
-
-    dd {
-      font-weight: 600;
-      margin: 0;
-    }
-  }
-}
-
-// Order Calculator
-.order-calculator {
-  border-top: 1px solid var(--color-neutral-2);
-
-  &__display {
-    font-size: 24px;
-    line-height: 28px;
-    text-align: right;
-    border-bottom: 1px solid var(--color-neutral-2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 16px;
-
-    button {
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    div {
-      text-align: right;
-      overflow-y: hidden;
-      flex-grow: 1;
-    }
-  }
-
-  &__buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    padding: 16px;
-
-    button {
-      color: var(--color-black);
-      font-size: var(--text-body-large-size);
-      background-color: var(--color-white);
-      border: 1px solid var(--color-neutral-4);
-      border-radius: 4px;
-      cursor: pointer;
-      padding: 16px;
-      transition-property: transform;
-      transition-duration: var(--transition-duration-very-fast);
-      transition-timing-function: var(--transition-timing-function);
-      outline: none;
-
-      &:active {
-        transform: scale(0.95);
-      }
-    }
-  }
-}
-
-.control-actions {
-  display: flex;
-  gap: 12px;
-}
-
 @include screen-sm {
   .product {
     &-info {
@@ -777,7 +1077,7 @@ const {
   }
 };
 
-@include screen-landscape-md {
+@include screen-lg {
   .dashboard {
     grid-template-rows: 100%;
     grid-template-columns: 1fr 35%;
@@ -786,8 +1086,10 @@ const {
     -webkit-padding-inline-end: 16px;
     padding-inline-end: 16px;
 
-    &-control {
-      border-left: 1px solid var(--color-border);
+    &-actions {
+      &-mobile {
+        display: none;
+      }
     }
   }
 
@@ -812,9 +1114,17 @@ const {
       }
     }
   }
-}
 
-@include screen-landscape-lg {
+  .order-card {
+    display: flex;
+  }
 
+  .order-details-card {
+    display: block;
+
+    &--mobile {
+      display: none;
+    }
+  }
 }
 </style>

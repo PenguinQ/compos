@@ -95,7 +95,7 @@ watch(
   </Toolbar>
 
   <!-- Content -->
-  <Container class="pf-container">
+  <Container class="page-container">
     <EmptyState
       v-if="isDetailError"
       :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
@@ -111,7 +111,7 @@ watch(
       <Bar v-if="isDetailLoading" margin="56px 0" />
       <template v-else>
         <form id="sales-add-form" @submit.prevent>
-          <Card class="pf-card" variant="outline" margin="0 0 16px">
+          <Card class="section-card" variant="outline" margin="0 0 16px">
             <CardHeader>
               <CardTitle>General</CardTitle>
               <CardSubtitle>General information about the sales.</CardSubtitle>
@@ -140,12 +140,12 @@ watch(
               </div>
             </CardBody>
           </Card>
-          <Card class="pf-card" variant="outline">
+          <Card class="section-card" variant="outline">
             <CardHeader>
               <CardTitle>Products</CardTitle>
               <CardSubtitle>List of products that available for the sales.</CardSubtitle>
             </CardHeader>
-            <CardBody>
+            <CardBody padding="0">
               <EmptyState
                 v-if="!formData.products.length"
                 :emoji="SALES_FORM.LIST_EMPTY_EMOJI"
@@ -158,7 +158,7 @@ watch(
                 </template>
               </EmptyState>
               <template v-else>
-                <div class="sales-products-list">
+                <div class="products-list">
                   <template :key="product.id" v-for="(product, index) in formData.products">
                     <SalesProduct
                       type="form"
@@ -171,7 +171,9 @@ watch(
                     />
                   </template>
                 </div>
-                <Button full @click="showDialog = true">Add Product</Button>
+                <div class="products-list-actions">
+                  <Button full @click="showDialog = true">Add Product</Button>
+                </div>
               </template>
             </CardBody>
           </Card>
@@ -182,7 +184,7 @@ watch(
 
   <!-- Dialogs -->
   <Dialog
-    class="temp-dialog"
+    class="products-dialog"
     v-model="showDialog"
     fullscreen
     hideHeader
@@ -195,14 +197,14 @@ watch(
       </ToolbarAction>
       <input
         v-if="productListTab === 0"
-        class="temp-search"
+        class="products-dialog__search"
         placeholder="Search Product"
         :value="searchProductQuery"
         @input="handleSearch($event, 'product')"
       />
       <input
         v-else
-        class="temp-search"
+        class="products-dialog__search"
         placeholder="Search Bundle"
         :value="searchBundleQuery"
         @input="handleSearch($event, 'bundle')"
@@ -247,7 +249,7 @@ watch(
               :description="SALES_FORM.PRODUCT_EMPTY_SEARCH_DESCRIPTION"
               margin="56px 0"
             />
-            <div v-else class="sales-products-selection">
+            <div v-else class="products-dialog-list">
               <template :key="product.id" v-for="product of productList?.products">
                 <SalesProduct
                   small
@@ -320,7 +322,7 @@ watch(
               :description="SALES_FORM.BUNDLE_EMPTY_SEARCH_DESCRIPTION"
               margin="56px 0"
             />
-            <div v-else class="sales-products-selection">
+            <div v-else class="products-dialog-list">
               <template :key="bundle.id" v-for="bundle of bundleList.bundles">
                 <SalesProduct
                   small
@@ -358,68 +360,49 @@ watch(
 
 <style lang="scss" src="@assets/_page-form.scss" />
 <style lang="scss" scoped>
-.sales-products-list {
-  margin-bottom: 16px;
-
-  .sales-product {
+.products-list {
+  .vc-sales-form-product {
     &:first-of-type {
-      border-top-right-radius: 8px;
-      border-top-left-radius: 8px;
+      border-top-color: transparent;
     }
 
-    &:last-of-type {
-      border-bottom-right-radius: 8px;
-      border-bottom-left-radius: 8px;
+    &:last-of-type  {
+      border-bottom-color: transparent;
     }
+  }
+
+  &-actions {
+    border-top: 1px solid var(--color-border);
+    padding: 16px;
   }
 }
 
-.sales-products-selection {
-  .sales-product {
-    border-right-color: transparent;
-    border-left-color: transparent;
-  }
-}
-
-.temp-dialog {
+.products-dialog {
   .cp-dialog-body {
     padding: 0;
   }
-}
 
-.temp-search {
-  min-width: 100px;
-  font-size: var(--text-body-medium-size);
-  line-height: var(--text-body-medium-height);
-  flex-grow: 1;
-  height: 40px;
-  border: none;
-  padding: 0;
-  margin: 0;
-  border-radius: 4px;
-  outline: none;
-  padding: 0 16px;
-  margin: 0 16px;
-}
-
-.temp-navigation {
-  background-color: var(--color-white);
-  box-shadow: rgba(0, 0, 0, 0.16) 0 3px 6px, rgba(0, 0, 0, 0.23) 0 3px 6px;
-  display: flex;
-
-  &__page {
-    white-space: nowrap;
-    text-align: center;
-    border: 1px solid var(--color-black);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  &__search {
+    min-width: 100px;
+    font-size: var(--text-body-medium-size);
+    line-height: var(--text-body-medium-height);
     flex-grow: 1;
-    padding: 0 8px;
+    height: 40px;
+    border: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 4px;
+    outline: none;
+    padding: 0 16px;
+    margin: 0 16px;
   }
-}
 
-@include screen-md {
-
+  &-list {
+    .vc-sales-form-product {
+      &:first-of-type {
+        border-top-color: transparent;
+      }
+    }
+  }
 }
 </style>
