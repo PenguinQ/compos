@@ -30,10 +30,10 @@ const router = useRouter();
 <template>
   <BottomNavbar id="view-navigation" v-if="!$route.meta.hideBottomNavbar">
     <BottomNavbarButton
-      title="Sales"
-      :icon="($route.name as string).startsWith('sales') ? BasketFilled : Basket"
-      :active="($route.name as string).startsWith('sales')"
-      @click="router.push('/sales/list')"
+      title="Sale Management"
+      :icon="($route.name as string).startsWith('sale') ? BasketFilled : Basket"
+      :active="($route.name as string).startsWith('sale')"
+      @click="router.push('/sale/list')"
     />
     <BottomNavbarButton
       title="Product Management"

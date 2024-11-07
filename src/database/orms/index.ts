@@ -1,4 +1,4 @@
-export { default as productsORMs } from './products';
-export { default as variantsORMs } from './variants';
-export { default as bundlesORMs } from './bundles';
-export { default as salesORMs } from './sales';
+export { default as productORMs } from './product';
+export { default as variantORMs } from './variant';
+export { default as bundleORMs } from './bundle';
+export { default as saleORMs } from './sale';

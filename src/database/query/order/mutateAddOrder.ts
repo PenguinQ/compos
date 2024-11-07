@@ -83,7 +83,7 @@ export default async ({ id, data }: MutateAddOrder) => {
      */
     const last_order = await db.order.find({
       selector: {
-        sales_id: {
+        sale_id: {
           $eq: id,
         },
       },
@@ -239,7 +239,7 @@ export default async ({ id, data }: MutateAddOrder) => {
      */
     await db.order.insert({
       id      : order_id,
-      sales_id: id,
+      sale_id : id,
       canceled: false,
       name    : order_name,
       products: order_products,
