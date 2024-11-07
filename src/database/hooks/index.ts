@@ -150,8 +150,7 @@ export const useQuery = (params: UseQueryParams) => {
 
 export const useObservableQuery = (params: Omit<UseQueryParams, 'cache'>) => {
   const {
-    enabled  = true,
-    // queryKey = [],
+    enabled = true,
     delay,
     queryFn,
     onError,
@@ -180,7 +179,7 @@ export const useObservableQuery = (params: Omit<UseQueryParams, 'cache'>) => {
       subscribed_result.value?.unsubscribe();
       subscribed_result.value = (result as Observable<unknown>).subscribe({
         next: async (data) => {
-          const processed_data = await observeableProcessor(data as unknown);
+          const processed_data  = await observeableProcessor(data as unknown);
           const normalized_data = normalizer ? normalizer(processed_data) : processed_data;
 
           if (delay) {
@@ -219,15 +218,6 @@ export const useObservableQuery = (params: Omit<UseQueryParams, 'cache'>) => {
   onBeforeUnmount(() => {
     if (subscribed_result.value) subscribed_result.value.unsubscribe();
   });
-
-  // Watch changes in queryKey value and run the query if the queryKey value changes.
-  // watch(
-  //   () => queryKey,
-  //   () => {
-  //     if (query_enabled.value) query();
-  //   },
-  //   { deep: true }
-  // );
 
   // Watch changes if the query enabled status are changed, and run the query if it's true.
   watch(

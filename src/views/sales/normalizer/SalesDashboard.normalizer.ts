@@ -1,5 +1,5 @@
 import type { SalesDetailQueryReturn } from '@/database/query/sales/getSalesDetail';
-import type { ObservableReturns as ProductsQueryReturns, ObserveableDataItem } from '@/database/query/sales/getSalesProducts';
+import type { GetSalesProductsQueryReturn, GetSalesProductsBundleItem } from '@/database/query/sales/getSalesProducts';
 import type { ObservableReturns as OrdersQueryReturns } from '@/database/query/sales/getSalesOrders';
 
 import { getUpdateTime, toIDR } from '@/helpers';
@@ -37,7 +37,7 @@ export const detailsNormalizer = (data: unknown): DetailsNormalizerReturn => {
   };
 };
 
-type ProductsNormalizerItem = ObserveableDataItem & {
+type ProductsNormalizerItem = GetSalesProductsBundleItem & {
   priceFormatted: string;
 };
 
@@ -67,7 +67,7 @@ export type ProductsNormalizerReturn = {
 };
 
 export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
-  const { data: productsData, data_count } = data as ProductsQueryReturns;
+  const { data: productsData, data_count } = data as GetSalesProductsQueryReturn;
   const productList = [];
 
   for (const product of productsData) {

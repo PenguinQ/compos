@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Common Components
@@ -37,7 +38,7 @@ import {
 } from '@/views/components';
 
 // Helpers
-import { toIDR } from '@/helpers';
+import { debounce, toIDR } from '@/helpers';
 
 // Hooks
 import { useSalesDashboard } from './hooks/SalesDashboard.hook';
@@ -86,6 +87,32 @@ const {
   ordersRefetch,
   mutateFinish,
 } = useSalesDashboard();
+
+const handleResize = debounce(() => {
+  if (window.innerWidth >= 992) {
+    dialogPayment.value = false;
+    dialogHistory.value = false;
+  } else {
+    if (
+        controlsView.value === 'order-default' && orderedProducts.value.length ||
+        controlsView.value === 'order-payment' && !dialogPayment.value
+      ) {
+      dialogPayment.value = true;
+      dialogHistory.value = false;
+    } else if (controlsView.value === 'order-history' && !dialogHistory.value) {
+      dialogPayment.value = false;
+      dialogHistory.value = true;
+    }
+  }
+}, 200);
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+});
 </script>
 
 <template>
@@ -264,12 +291,14 @@ const {
                       <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
                       <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
                     </ProductImage>
-                    <div class="order-product-contents">
-                      <Text heading="6" margin="0 0 4px">{{ product.name }}</Text>
+                    <div class="order-product-content">
+                      <Text class="text-truncate" heading="6" margin="0 0 4px">{{ product.name }}</Text>
                       <div class="order-product-details">
-                        <div class="order-product-details__item order-product-details__item--price">
+                        <div class="order-product-details__item">
                           <ComposIcon :icon="Tags" />
-                          {{ toIDR(product.price.times(product.amount).toString()) }}
+                          <span class="text-truncate">
+                            {{ toIDR(product.price.times(product.amount).toString()) }}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -386,7 +415,6 @@ const {
               </div>
             </CardBody>
           </Card>
-
           <div class="dashboard-actions-mobile">
             <Button full :disabled="!totalProductsCount" @click="dialogPayment = true">
               <ComposIcon :icon="Cash" style="margin-right: 8px;" />
@@ -396,178 +424,6 @@ const {
               <ComposIcon :icon="ClockHistory" />
             </Button>
           </div>
-
-          <!-- <div class="dashboard-control-header">
-            <Text heading="5" margin="0">{{ controlsView === 'order-history' ? 'Order History' : 'Order'  }}</Text>
-            <button class="button button--icon" type="button" @click="handleShowOrderHistory">
-              <ComposIcon :icon="ClockHistory" />
-            </button>
-          </div> -->
-          <!-- <div class="dashboard-control-body">
-            <template v-if="controlsView === 'order-default'">
-              <EmptyState
-                v-if="!orderedProducts.length"
-                :emoji="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_EMOJI"
-                :title="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_TITLE"
-                :description="SALES_DASHBOARD.ORDER_ITEMS_EMPTY_DESCRIPTION"
-                margin="56px 0"
-              />
-              <div v-else class="order-product-list">
-                <div v-for="product of orderedProducts" class="order-product">
-                  <ProductImage class="product-image">
-                    <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
-                    <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
-                  </ProductImage>
-                  <div class="order-product-contents">
-                    <Text heading="6" margin="0 0 4px">{{ product.name }}</Text>
-                    <div class="order-product-details">
-                      <div class="order-product-details__item order-product-details__item--price">
-                        <ComposIcon :icon="Tags" />
-                        {{ toIDR(product.price.times(product.amount).toString()) }}
-                      </div>
-                    </div>
-                  </div>
-                  <QuantityEditor
-                    class="order-product__quantity"
-                    small
-                    readonly
-                    v-model.number="product.amount"
-                    :step="product.quantity"
-                    :max="product.stock"
-                    @clickDecrement="handleClickQuantityDecrement($event, product.id)"
-                  />
-                </div>
-              </div>
-              <dl class="order-summary">
-                <div class="order-summary-item">
-                  <dt>Total Item</dt>
-                  <dd>{{ totalProductsCount }}</dd>
-                </div>
-                <div class="order-summary-item">
-                  <dt>Total</dt>
-                  <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
-                </div>
-                <div v-if="balance.current" class="order-summary-item">
-                  <dt>Balance</dt>
-                  <dd>{{ toIDR(balance.current) }}</dd>
-                </div>
-              </dl>
-            </template>
-            <template v-if="controlsView === 'order-payment'">
-              <dl class="order-summary">
-                <div class="order-summary-item">
-                  <dt>Total Item</dt>
-                  <dd>{{ totalProductsCount }}</dd>
-                </div>
-                <div class="order-summary-item">
-                  <dt>Total</dt>
-                  <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
-                </div>
-                <div class="order-summary-item">
-                  <dt>Payment Amount</dt>
-                  <dd>{{ toIDR(paymentTendered.toString()) }}</dd>
-                </div>
-                <div v-if="balance.current" class="order-summary-item">
-                  <dt>Balance</dt>
-                  <dd>{{ toIDR(balance.current) }}</dd>
-                </div>
-                <div class="order-summary-item order-summary-item--change">
-                  <dt>
-                    <ComposIcon :icon="CashCoin" />
-                    Change
-                  </dt>
-                  <dd>{{ toIDR(paymentChange.toString()) }}</dd>
-                </div>
-              </dl>
-              <div class="order-calculator">
-                <div class="order-calculator__display">
-                  <button
-                    v-if="paymentInput !== '0'"
-                    type="button"
-                    class="button button--icon"
-                    aria-label="Clear calculator"
-                    @click="paymentInput = '0'"
-                  >
-                    <ComposIcon :icon="XCircleFilled" />
-                  </button>
-                  <div>{{ toIDR(paymentTendered.toString()) }}</div>
-                  <button
-                    v-if="paymentInput !== '0'"
-                    type="button"
-                    class="button button--icon"
-                    aria-label="Backspace"
-                    @click="handleClickBackspace"
-                  >
-                    <ComposIcon :icon="BackspaceFill" />
-                  </button>
-                </div>
-                <div class="order-calculator__buttons">
-                  <button type="button" @click="handleClickCalculator('1')">1</button>
-                  <button type="button" @click="handleClickCalculator('2')">2</button>
-                  <button type="button" @click="handleClickCalculator('3')">3</button>
-                  <button type="button" @click="handleClickCalculator('4')">4</button>
-                  <button type="button" @click="handleClickCalculator('5')">5</button>
-                  <button type="button" @click="handleClickCalculator('6')">6</button>
-                  <button type="button" @click="handleClickCalculator('7')">7</button>
-                  <button type="button" @click="handleClickCalculator('8')">8</button>
-                  <button type="button" @click="handleClickCalculator('9')">9</button>
-                  <button type="button" @click="handleClickCalculator('0')">0</button>
-                  <button type="button" @click="handleClickCalculator('00')">00</button>
-                  <button type="button" @click="handleClickCalculator('000')">000</button>
-                </div>
-              </div>
-            </template>
-            <template v-if="controlsView === 'order-history'">
-              <EmptyState
-                v-if="isOrdersError"
-                :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-                :title="GLOBAL.ERROR_EMPTY_TITLE"
-                :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-                margin="56px 0"
-              >
-                <template #action>
-                  <Button @click="ordersRefetch">Try Again</Button>
-                </template>
-              </EmptyState>
-              <template v-else>
-                <Bar v-if="isOrdersLoading" />
-                <template v-else>
-                  <EmptyState
-                    v-if="!ordersData.orders.length"
-                    :emoji="SALES_DASHBOARD.ORDER_LIST_EMPTY_EMOJI"
-                    :title="SALES_DASHBOARD.ORDER_LIST_EMPTY_TITLE"
-                    :description="SALES_DASHBOARD.ORDER_LIST_EMPTY_DESCRIPTION"
-                    margin="56px 0"
-                  />
-                  <div v-else class="order-list">
-                    <OrderCard
-                      v-for="order of ordersData.orders"
-                      :title="order.name"
-                      :total="order.totalFormatted"
-                      :tendered="order.tenderedFormatted"
-                      :change="order.changeFormatted"
-                      :products="order.products"
-                    />
-                  </div>
-                </template>
-              </template>
-            </template>
-          </div> -->
-          <!-- <div class="dashboard-control-footer">
-            <div class="control-actions">
-              <template v-if="controlsView === 'order-default'">
-                <Button full color="red" variant="outline" @click="handleClickClear">Clear</Button>
-                <Button full :disabled="!orderedProducts.length" @click="controlsView = 'order-payment'">Pay</Button>
-              </template>
-              <template v-if="controlsView === 'order-payment'">
-                <Button full color="red" variant="outline" @click="handleClickCancel" small>Cancel</Button>
-                <Button color="green" full @click="handlePayment">Confirm</Button>
-              </template>
-              <template v-if="controlsView === 'order-history'">
-                <Button full color="red" variant="outline" @click="controlsView = 'order-default'" small>Back</Button>
-              </template>
-            </div>
-          </div> -->
         </div>
       </div>
     </Content>
@@ -610,12 +466,14 @@ const {
               <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
               <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
             </ProductImage>
-            <div class="order-product-contents">
+            <div class="order-product-content">
               <Text heading="6" margin="0 0 4px">{{ product.name }}</Text>
               <div class="order-product-details">
-                <div class="order-product-details__item order-product-details__item--price">
+                <div class="order-product-details__item">
                   <ComposIcon :icon="Tags" />
-                  {{ toIDR(product.price.times(product.amount).toString()) }}
+                  <span class="text-truncate">
+                    {{ toIDR(product.price.times(product.amount).toString()) }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -863,33 +721,22 @@ const {
     }
   }
 
-  &-contents {
+  &-content {
+    min-width: 0%;
     flex-grow: 1;
   }
 
   &-details {
     &__item {
-      font-family: var(--text-heading-family);
-      font-size: var(--text-body-large-size);
-      line-height: var(--text-body-large-height);
-      font-weight: 700;
-      margin-bottom: 4px;
-
-      &:last-of-type {
-        margin-bottom: 0;
-      }
+      font-size: var(--text-body-small-size);
+      line-height: var(--text-body-small-height);
+      display: flex;
+      align-items: center;
+      gap: 4px;
 
       compos-icon {
         width: 16px;
         height: 16px;
-        margin-right: 4px;
-      }
-
-      &--price {
-        font-family: var(--text-body-family);
-        font-size: var(--text-body-small-size);
-        line-height: var(--text-body-small-height);
-        font-weight: 400;
       }
     }
   }
@@ -1079,20 +926,6 @@ const {
   }
 }
 
-@include screen-md {
-  .order-card {
-    display: flex;
-  }
-
-  .order-details-card {
-    display: block;
-
-    &--mobile {
-      display: none;
-    }
-  }
-}
-
 .products-card {
   max-height: 100%;
   border-right: none;
@@ -1244,7 +1077,7 @@ const {
   }
 };
 
-@include screen-landscape-md {
+@include screen-lg {
   .dashboard {
     grid-template-rows: 100%;
     grid-template-columns: 1fr 35%;
@@ -1252,10 +1085,6 @@ const {
     padding-inline-start: 16px;
     -webkit-padding-inline-end: 16px;
     padding-inline-end: 16px;
-
-    // &-control {
-    //   border-left: 1px solid var(--color-border);
-    // }
 
     &-actions {
       &-mobile {
@@ -1285,9 +1114,17 @@ const {
       }
     }
   }
-}
 
-@include screen-landscape-lg {
+  .order-card {
+    display: flex;
+  }
 
+  .order-details-card {
+    display: block;
+
+    &--mobile {
+      display: none;
+    }
+  }
 }
 </style>

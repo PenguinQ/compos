@@ -119,7 +119,8 @@ export const useSalesDashboard = () => {
     isError  : isProductsError,
     isLoading: isProductsLoading,
     refetch  : productsRefetch,
-  } = useObservableQuery({
+  } = useQuery({
+    queryKey: ['sales-dashboard-products', params.id],
     queryFn: () => getSalesProducts({
       products  : detailsProducts.value,
       normalizer: productsNormalizer,
@@ -217,6 +218,11 @@ export const useSalesDashboard = () => {
       orderedProducts.value = [];
       paymentInput.value    = '0';
       controlsView.value    = 'order-default';
+      dialogPayment.value   = false;
+      dialogHistory.value   = false;
+
+      // Get new products data.
+      productsRefetch();
 
       // @ts-ignore
       toast.add({ message: 'Order added.', type: 'success', duration: 2000 });
