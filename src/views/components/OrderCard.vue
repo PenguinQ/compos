@@ -20,7 +20,7 @@ defineProps<OrderCard>()
 </script>
 
 <template>
-<Card class="vc-order-card" variant="outline">
+<Card class="vc-order-card">
   <CardBody padding="12px 16px">
     <Text heading="6" margin="0">{{ title }}</Text>
     <div class="vc-order-card-details">

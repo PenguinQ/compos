@@ -35,9 +35,9 @@ const props = withDefaults(defineProps<SalesProductProps>(), {
 defineEmits(['clickDecrement', 'clickIncrement']);
 
 const classes = computed(() => ({
-  'sales-product': true,
-  'sales-product--small': props.small,
-  'sales-product--variant': props.variant,
+  'vc-sales-form-product': true,
+  'vc-sales-form-product--small': props.small,
+  'vc-sales-form-product--variant': props.variant,
 }));
 </script>
 
@@ -47,13 +47,13 @@ const classes = computed(() => ({
       <img v-if="!images.length" :src="no_image" :alt="`${name} image`">
       <img v-else v-for="image of images" :src="image ? image : no_image" :alt="`${name} image`">
     </ProductImage>
-    <div class="sales-product__detail">
+    <div class="vc-sales-form-product__detail">
       <template v-if="type === 'form'">
-        <Text body="large" truncate margin="0 0 4px">{{ name }}</Text>
+        <Text heading="6" truncate margin="0 0 4px">{{ name }}</Text>
         <Text body="small" truncate margin="0">Quantity per Order: {{ quantity }}</Text>
       </template>
       <template v-else>
-        <Text body="large" truncate margin="0">{{ name }}</Text>
+        <Text heading="6" truncate margin="0">{{ name }}</Text>
       </template>
     </div>
     <template v-if="type === 'form'">
@@ -68,7 +68,6 @@ const classes = computed(() => ({
       />
       <Button
         v-if="$attrs.onClickRemove"
-        class="sales-product__remove"
         color="red"
         icon
         :aria-label="`Remove ${name}`"
@@ -86,37 +85,41 @@ const classes = computed(() => ({
 </template>
 
 <style lang="scss">
-.sales-product {
+.vc-sales-form-product {
   background-color: var(--color-white);
-  border: 1px solid var(--color-neutral-2);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 16px;
+  margin-top: -1px;
 
-  & + .sales-product {
-    margin-top: -1px;
+  &:first-of-type {
+    margin-top: 0;
   }
 
   > * {
     flex-shrink: 0;
   }
 
-  picture {
+  .vc-product-image {
     width: 80px;
     height: 80px;
     flex-shrink: 0;
+    display: none;
   }
 
   &__detail {
-    min-width: 0;
-    flex-grow: 1;
+    min-width: 0%;
+    flex: 1;
   }
 
   &--small {
     .vc-product-image {
       width: 60px;
       height: 60px;
+      display: block;
     }
   }
 
@@ -131,6 +134,14 @@ const classes = computed(() => ({
 
   &[role="button"] {
     cursor: pointer;
+  }
+}
+
+@include screen-sm {
+  .vc-sales-form-product {
+    .vc-product-image {
+      display: block;
+    }
   }
 }
 </style>

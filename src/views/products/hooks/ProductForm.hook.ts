@@ -218,8 +218,6 @@ export const useProductForm = () => {
         };
       });
 
-      console.log(variantsData);
-
       return mutateAddProduct({
         name       : formData.name,
         description: formData.description,

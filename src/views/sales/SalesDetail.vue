@@ -161,13 +161,6 @@ watch(
                         {{ product.quantity }}
                       </div>
                     </div>
-                    <!--
-                      .sales-product-items
-                        .sales-product-items-detail
-                          .sales-product-items-detail__item
-
-
-                    -->
                     <div v-if="product.items" class="sales-product-items">
                       <div v-for="item of product.items" class="sales-product-items-details">
                         <div class="sales-product-items-details__item">
@@ -464,7 +457,7 @@ watch(
 
   &-orders-list {
     max-height: 400px;
-    background-color: var(--color-neutral-1);
+    background-color: var(--color-neutral-2);
     overflow-y: auto;
     padding: 16px;
 
