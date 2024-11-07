@@ -24,24 +24,6 @@ export type QueryReturn = {
   observeableProcessor?: (data: unknown) => Promise<object>;
 };
 
-// type ProductsDocMethods = {
-//   updateBundleStatus: (id: string) => Promise<void>;
-//   removeVariants: () => Promise<void>;
-//   removeFromBundles: () => Promise<void>;
-//   removeFromSales: () => Promise<void>;
-// };
-
-// type VariantsDocMethods = {
-//   updateProductStatus: (product: ProductDoc) => Promise<void>;
-//   updateBundleStatus: (id: string) => Promise<void>;
-//   removeFromBundles: () => Promise<void>;
-//   removeFromSales: () => Promise<void>;
-// };
-
-// type BundlesDocMethods = {
-//   removeFromSales: () => Promise<void>;
-// };
-
 /**
  * ---------------------------------------------------------------------------------------
  * 1. Price is optional, since product can have variants, each variant has it's own price.
@@ -131,7 +113,7 @@ export type OrderDocProduct = {
 
 export type OrderDoc = {
   id: string;
-  sales_id: string;
+  sale_id: string;
   canceled: boolean;
   name: string;
   products: OrderDocProduct[];
@@ -140,18 +122,16 @@ export type OrderDoc = {
   total: string;
   created_at: string;
   updated_at: string;
-  // discount?: string;
-  // discount_type?: 'percentage' | 'fixed';
 };
 
 export type OrderCollection = RxCollection<OrderDoc>;
 
-export type SalesDocProduct = {
+export type SaleDocProduct = {
   id: string;
   quantity: number;
 };
 
-export type SalesDocBundleItem = {
+export type SaleDocBundleItem = {
   id: string;
   name: string;
   price: string;
@@ -159,40 +139,38 @@ export type SalesDocBundleItem = {
   sku?: string;
 };
 
-export type SalesDocProductSold = {
+export type SaleDocProductSold = {
   id: string;
   name: string;
   price: string;
   quantity: number;
   sku?: string;
-  items?: SalesDocBundleItem[];
+  items?: SaleDocBundleItem[];
   total: string;
 };
 
-export type SalesDoc = {
+export type SaleDoc = {
   id: string;
   finished: boolean;
   name: string;
-  products: SalesDocProduct[];
-  products_sold: SalesDocProductSold[];
+  products: SaleDocProduct[];
+  products_sold: SaleDocProductSold[];
   orders: string[];
   initial_balance?: string;
   final_balance?: string;
   revenue: string;
   created_at: string;
   updated_at: string;
-  // discount?: string;
-  // discount_type?: 'percentage' | 'fixed';
 };
 
-export type SalesCollection = RxCollection<SalesDoc>;
+export type SaleCollection = RxCollection<SaleDoc>;
 
 export type DatabaseCollection = {
   product: ProductCollection;
   variant: VariantCollection;
   bundle: BundleCollection;
   order: OrderCollection;
-  sales: SalesCollection;
+  sale: SaleCollection;
 };
 
 export type Database = RxDatabase<DatabaseCollection>;

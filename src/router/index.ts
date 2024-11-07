@@ -12,15 +12,15 @@ const router = createRouter({
       },
       children: [
         {
-          path: '/sales',
-          redirect: '/sales/list',
+          path: '/sale',
+          redirect: '/sale/list',
           // component: () => import('../views/sales/SalesViewContainer.vue'),
           children: [
             {
-              path: '/sales/list',
-              name: 'sales-list',
-              meta: { title: 'Sales - ComPOS' },
-              component: () => import('../views/sales/SalesList.vue'),
+              path: '/sale/list',
+              name: 'sale-list',
+              meta: { title: 'Sale List - ComPOS' },
+              component: () => import('../views/sales/SaleList.vue'),
               beforeEnter: (to, _, next) => {;
                 if (to.query.tab && to.query.page) {
                   next();
@@ -34,29 +34,29 @@ const router = createRouter({
               },
             },
             {
-              path: '/sales/detail/:id',
-              name: 'sales-detail',
+              path: '/sale/detail/:id',
+              name: 'sale-detail',
               meta: {
-                title: 'Sales Detail',
+                title: 'Sale Detail',
               },
-              component: () => import('../views/sales/SalesDetail.vue'),
+              component: () => import('../views/sales/SaleDetail.vue'),
             },
             {
-              path: '/sales/add',
-              name: 'sales-add',
+              path: '/sale/add',
+              name: 'sale-add',
               meta: {
-                title: 'Add Sales',
+                title: 'Add Sale',
               },
-              component: () => import('../views/sales/SalesForm.vue'),
+              component: () => import('../views/sales/SaleForm.vue'),
             },
             {
-              path: '/sales/edit/:id',
-              name: 'sales-edit',
+              path: '/sale/edit/:id',
+              name: 'sale-edit',
               meta: {
-                title: 'Edit Sales',
+                title: 'Edit Sale',
                 hideNavbar: true,
               },
-              component: () => import('../views/sales/SalesForm.vue'),
+              component: () => import('../views/sales/SaleForm.vue'),
             },
           ],
         },
@@ -143,10 +143,10 @@ const router = createRouter({
       ],
     },
     {
-      path: '/sales/dashboard/:id',
-      name: 'sales-dashboard',
-      meta: { title: 'Sales Dashboard - ComPOS' },
-      component: () => import('../views/sales/SalesDashboard.vue'),
+      path: '/sale/dashboard/:id',
+      name: 'sale-dashboard',
+      meta: { title: 'Sale Dashboard - ComPOS' },
+      component: () => import('../views/sales/SaleDashboard.vue'),
     },
   ],
 });

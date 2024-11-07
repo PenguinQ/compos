@@ -2,8 +2,8 @@ import { monotonicFactory } from 'ulidx';
 import Big from 'big.js';
 
 import { db } from '../';
-import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX, BUNDLE_ID_PREFIX, SALES_ID_PREFIX } from '../constants'
-import type { BundleDoc, ProductDoc, SalesDoc, VariantDoc } from '../types';
+import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX, BUNDLE_ID_PREFIX, SALE_ID_PREFIX } from '../constants'
+import type { BundleDoc, ProductDoc, SaleDoc, VariantDoc } from '../types';
 
 type SampleProductVariant = {
   name: string;
@@ -119,11 +119,11 @@ const sampleBundles = [
 
 const sampleSales = [
   {
-    name: 'Sales (Day 1)',
+    name: 'Sale (Day 1)',
     initial_balance: '10000000',
   },
   {
-    name: 'Sales (Day 2)',
+    name: 'Sale (Day 2)',
   },
 ];
 
@@ -280,7 +280,7 @@ export default async () => {
   const variantlessProducts = productsData.filter(product => !product.variants);
 
   for (const sale of sampleSales) {
-    const saleID = SALES_ID_PREFIX + ulid();
+    const saleID = SALE_ID_PREFIX + ulid();
     const {
       id,
       finished,
@@ -293,7 +293,7 @@ export default async () => {
       created_at,
       updated_at,
       ...restSale
-    } = sale as SalesDoc;
+    } = sale as SaleDoc;
     const randomProducts = <ProductDoc[] & VariantDoc[] & BundleDoc[]>[];
     const randomProduct  = getRandomProduct(variantlessProducts);
     const randomVariant  = getRandomProduct(variantsData);
@@ -330,5 +330,5 @@ export default async () => {
     });
   };
 
-  await db.sales.bulkInsert(salesData);
+  await db.sale.bulkInsert(salesData);
 };

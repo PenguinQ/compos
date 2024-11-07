@@ -1,4 +1,4 @@
-export const SALES_LIST = {
+export const SALE_LIST = {
   RUNNING_EMPTY_TITLE: 'Hmm...',
   RUNNING_EMPTY_DESCRIPTION: 'Looks like you doesn\'t have any running sales, yet.',
   FINISHED_EMPTY_TITLE: 'Hmm...',
@@ -9,7 +9,7 @@ export const SALES_LIST = {
   ERROR_EMPTY_DESCRIPTION: 'Looks like there\'s some thing wrong, please try again.',
 };
 
-export const SALES_DETAIL = {
+export const SALE_DETAIL = {
   ERROR_DETAIL_TITLE: 'Error Detail Title',
   ERROR_DETAIL_DESCRIPTION: 'Error Detail Description',
   EMPTY_ORDER_EMOJI: '📉',
@@ -20,7 +20,7 @@ export const SALES_DETAIL = {
   EMPTY_SOLD_DESCRIPTION: 'Currently no products has been sold, yet.',
 };
 
-export const SALES_FORM = {
+export const SALE_FORM = {
   LIST_EMPTY_EMOJI: '🤔',
   LIST_EMPTY_TITLE: 'Hmm...',
   LIST_EMPTY_DESCRIPTION: 'There\'s no product added yet, add a new one!',
@@ -38,7 +38,7 @@ export const SALES_FORM = {
   PRODUCT_EMPTY_SEARCH_DESCRIPTION: 'Looks like there\'s no active products with that title, look for another one!',
 };
 
-export const SALES_DASHBOARD = {
+export const SALE_DASHBOARD = {
   ORDER_ITEMS_EMPTY_EMOJI: '🍃',
   ORDER_ITEMS_EMPTY_TITLE: 'Nothing Here Yet...',
   ORDER_ITEMS_EMPTY_DESCRIPTION: 'Time to add your first item!',
