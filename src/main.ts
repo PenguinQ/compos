@@ -9,12 +9,16 @@ import router from './router';
 import { registerPWA } from './utils/pwa';
 import toast from '@/plugins/toast';
 
-const app = createApp(App);
+initDB().then(() => {
+  const app = createApp(App);
 
-app.use(router);
-app.use(toast);
+  app.use(router);
+  app.use(toast);
 
-initDB();
-registerPWA();
+  registerPWA();
 
-app.mount('#app');
+  app.mount('#app');
+}).catch(error => {
+  console.error('Database initialization failed:', error);
+});
+
