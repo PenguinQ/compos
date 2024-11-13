@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ComposIcon from '@components/Icons';
+import ComposIcon from '@/components/Icons';
 
 type Props = {
   active?: boolean;

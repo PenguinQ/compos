@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, Transition, onMounted, watch } from 'vue';
 
-import ComposIcon, { X } from '@components/Icons';
+import ComposIcon, { X } from '@/components/Icons';
 
 export type ToastItemProps = {
   /**

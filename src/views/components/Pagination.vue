@@ -3,14 +3,13 @@ import { computed } from 'vue';
 import * as CSS from 'csstype';
 
 // Common Components
-import Text from '@components/Text';
-import { Bar } from '@components/Loader';
-import ComposIcon, { ChevronDoubleRight, ChevronDoubleLeft, ChevronLeft, ChevronRight } from '@components/Icons';
+import { Bar, Text } from '@/components';
+import ComposIcon, { ChevronDoubleRight, ChevronDoubleLeft, ChevronLeft, ChevronRight } from '@/components/Icons';
 
 // View Components
 import ButtonBlock from './ButtonBlock.vue';
 
-type Props = {
+type Pagination = {
   align?: CSS.Property.AlignSelf;
   disabled?: boolean;
   first_page?: boolean;
@@ -23,7 +22,7 @@ type Props = {
   total_page?: number;
 };
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Pagination>(), {
   disabled: false,
   first_page: true,
   frame: false,

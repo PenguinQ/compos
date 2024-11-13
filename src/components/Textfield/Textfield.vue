@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 import type * as CSS from 'csstype'
 
-import ComposIcon, { Eye, EyeSlash } from '@components/Icons';
+import ComposIcon, { Eye, EyeSlash } from '@/components/Icons';
 
 interface TextfieldProps extends /* @vue-ignore */ InputHTMLAttributes {
   /**

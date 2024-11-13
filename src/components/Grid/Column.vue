@@ -14,14 +14,14 @@ export type ColumnOffset = {
   [key: string]: number | string;
 };
 
-type ColumnProps = {
+type Column = {
   align?: CSS.Property.AlignSelf;
   col?: number | string | ColumnAlign;
   order?: CSS.Property.Order;
   offset?: number | string | ColumnOffset;
 };
 
-const props = defineProps<ColumnProps>();
+const props = defineProps<Column>();
 
 const { col, offset } = props;
 

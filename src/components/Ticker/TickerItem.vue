@@ -2,10 +2,8 @@
 export default { name: 'TickerItem' };
 </script>
 <script setup lang="ts">
-import Text from '@components/Text';
-// import Icon from '@icons';
-
-import ComposIcon, { InfoCircleFilled, XCircleFilled, WarningCircleFilled } from '@components/Icons';
+import { Text } from '@/components';
+import ComposIcon, { InfoCircleFilled, XCircleFilled, WarningCircleFilled } from '@/components/Icons';
 
 export type TickerItemProps = {
   title?: string;
@@ -34,7 +32,6 @@ switch (props.type) {
 <template>
   <div class="cp-ticker-item">
     <ComposIcon class="cp-ticker-item__icon" :name="icon_type" size="72" />
-    <!-- <Icon class="cp-ticker-item__icon" :name="icon_type" size="72" /> -->
     <div class="cp-ticker-item__content">
       <div class="cp-ticker-item__title">
         <Text v-if="title" heading="6" as="h4" margin="0" v-html="title" />

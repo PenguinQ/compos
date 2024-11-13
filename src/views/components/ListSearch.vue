@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref } from 'vue';
 
 // Common Components
-import Textfield from '@components/Textfield';
-import ComposIcon, { XCircleFilled } from '@components/Icons';
+import { Textfield } from '@/components';
+import ComposIcon, { XCircleFilled } from '@/components/Icons';
 
-type ListSearchProps = {
+type ListSearch = {
   placeholder?: string;
   sticky?: boolean;
   modelValue?: string;
@@ -13,7 +13,7 @@ type ListSearchProps = {
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<ListSearchProps>(), {
+const props = withDefaults(defineProps<ListSearch>(), {
   sticky: false,
 });
 
@@ -24,38 +24,6 @@ const classes = computed(() => ({
   'vc-list-search': true,
   'vc-list-search--sticky': props.sticky,
 }));
-
-const handleScroll = () => {
-  const DOM_container = container.value;
-
-  if (DOM_container) {
-    if (window.scrollY > 56) {
-      DOM_container.style.transform = 'translateY(-56px)';
-    } else {
-      DOM_container.style.transform = '';
-    }
-  }
-};
-
-onMounted(() => {
-  if (typeof window !== 'undefined') {
-    const DOM_container = container.value;
-
-    if (props.sticky && DOM_container) {
-      const bound = DOM_container.getBoundingClientRect();
-
-      DOM_container.style.top = `${bound.y}px`;
-    }
-
-    window.addEventListener('scroll', handleScroll);
-  }
-});
-
-onUnmounted(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('scroll', handleScroll);
-  }
-});
 
 const handleInput = (e: Event) => {
   const input = e.target as HTMLInputElement;
@@ -101,7 +69,7 @@ const handleClear = () => {
       rgba(0, 0, 0, 0.23) 0 3px 6px;
     position: sticky;
     top: 0;
-    z-index: var(--z-4);
+    z-index: var(--z-40);
   }
 
   &__clear {
