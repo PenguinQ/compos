@@ -240,14 +240,14 @@ watch(
                   emoji="🍃"
                   :title="BUNDLE_FORM.PRODUCT_LIST_EMPTY_TITLE"
                   :description="BUNDLE_FORM.PRODUCT_LIST_EMPTY_DESCRIPTION"
-                  margin="56px 0"
+                  height="100%"
                 />
                 <EmptyState
                   v-else-if="!product_list?.products.length && searchQuery !== ''"
                   emoji="😵‍💫"
                   :title="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_TITLE"
                   :description="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_DESCRIPTION"
-                  margin="56px 0"
+                  height="100%"
                 />
                 <template v-else>
                   <div class="product-list">
@@ -274,22 +274,23 @@ watch(
                     </template>
                   </div>
                 </template>
+                <template v-if="!productListLoading && !productListError">
+                  <FloatingActions v-if="product_list?.products.length" sticky=".cp-content">
+                    <Pagination
+                      frame
+                      :loading="productListLoading"
+                      :page="page.current"
+                      :total_page="page.total"
+                      :first_page="page.current <= 1"
+                      :last_page="page.current >= page.total"
+                      @clickFirst="toPrevPage($event, true)"
+                      @clickPrev="toPrevPage"
+                      @clickNext="toNextPage"
+                      @clickLast="toNextPage($event, true)"
+                    />
+                  </FloatingActions>
+                </template>
               </template>
-              <FloatingActions sticky=".cp-content">
-                <Pagination
-                  v-if="product_list?.products.length"
-                  frame
-                  :loading="productListLoading"
-                  :page="page.current"
-                  :total_page="page.total"
-                  :first_page="page.current <= 1"
-                  :last_page="page.current >= page.total"
-                  @clickFirst="toPrevPage($event, true)"
-                  @clickPrev="toPrevPage"
-                  @clickNext="toNextPage"
-                  @clickLast="toNextPage($event, true)"
-                />
-              </FloatingActions>
             </template>
           </Content>
         </Dialog>
