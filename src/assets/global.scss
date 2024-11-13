@@ -1,7 +1,11 @@
+.cp-page {
+  @include page;
+}
+
 .cp-container {
   &.page-container {
     padding-top: 16px;
-    padding-bottom: calc(var(--safe-area-bottom, 0) + 16px);
+    padding-bottom: 16px;
   }
 }
 
@@ -73,6 +77,29 @@
     display: flex;
     gap: 16px;
     padding: 16px;
+  }
+}
+
+.padding {
+  --padding-top: var(--app-padding, 16px);
+  --padding-bottom: var(--app-padding, 16px);
+  --padding-start: var(--app-padding, 16px);
+  --padding-end: var(--app-padding, 16px);
+
+  &-top {
+    --padding-top: var(--app-padding, 16px);
+  }
+
+  &-bottom {
+    --padding-bottom: var(--app-padding, 16px);
+  }
+
+  &-start {
+    --padding-start: var(--app-padding, 16px);
+  }
+
+  &-end {
+    --padding-end: var(--app-padding, 16px);
   }
 }
 

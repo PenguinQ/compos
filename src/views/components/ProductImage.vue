@@ -2,13 +2,13 @@
 import { computed } from 'vue';
 import * as CSS from 'csstype';
 
-type ProductImageProps = {
+type ProductImage = {
   width?: CSS.Property.Width;
   height?: CSS.Property.Height;
   borderless?: boolean;
 };
 
-const props = withDefaults(defineProps<ProductImageProps>(), {
+const props = withDefaults(defineProps<ProductImage>(), {
   borderless: false,
 });
 

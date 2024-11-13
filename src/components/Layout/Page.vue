@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div>
-    <slot />
+  <div class="cp-page">
+    <slot></slot>
   </div>
 </template>

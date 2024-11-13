@@ -29,7 +29,7 @@ export default async (svgs: ContentType[]) => {
       const fileName = setFileName(name);
       const icon_name = setIconName(name);
 
-      mapString += `export const ${icon_name} = 'data:image/svg+xml;utf8,${source}';\n`
+      mapString += `export const ${icon_name} = '${source}';\n`
       await fs.outputFile(path.join(__dirname, `../../components/${__foldername}/svg/${fileName}.svg`), source);
       svgCount += 1;
     }

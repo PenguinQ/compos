@@ -20,20 +20,15 @@ import type { TabDataProvider } from '@/views/sales/SaleList.vue';
 
 export const useSaleList = (status: 'running' | 'finished' = 'running') => {
   const { tabData, updateTabData } = inject('TabData') as TabDataProvider;
-  const toast = inject('ToastProvider');
-  const route = useRoute();
+  const toast  = inject('ToastProvider');
+  const route  = useRoute();
   const router = useRouter();
-  const isSaleEmpty = ref(true);
+  const isListEmpty = ref(true);
   const searchQuery = ref(tabData[status].search ? tabData[status].search : '');
   const { page, toNext, toPrev } = usePagination({ current: tabData[status].page });
-  const currentPage = computed(() => tabData[status].page);
+  const currentPage   = computed(() => tabData[status].page);
   const currentSearch = computed(() => tabData[status].search);
 
-  /**
-   * -------------------------------------------------------------------
-   * Watcher to update searchQuery value when navigating through history
-   * -------------------------------------------------------------------
-   */
   watch(
     () => route.query.search,
     (newSearch) => {
@@ -42,10 +37,10 @@ export const useSaleList = (status: 'running' | 'finished' = 'running') => {
   );
 
   const {
-    data,
-    refetch  : saleRefetch,
-    isLoading: saleLoading,
-    isError  : saleError,
+    data     : list,
+    refetch  : listRefetch,
+    isLoading: listLoading,
+    isError  : listError,
   } = useQuery({
     delay: 300,
     queryKey: ['sale-list', searchQuery, status, currentPage],
@@ -71,7 +66,7 @@ export const useSaleList = (status: 'running' | 'finished' = 'running') => {
         page.first = response_page.first;
         page.last = response_page.last;
 
-        isSaleEmpty.value = sales.length ? false : true;
+        isListEmpty.value = sales.length ? false : true;
       }
     },
   });
@@ -82,9 +77,9 @@ export const useSaleList = (status: 'running' | 'finished' = 'running') => {
 
     page.current = 1;
     searchQuery.value = target.value;
-    // Update provider
+
     updateTabData(status, { search: value ? value : undefined, page: 1 });
-    // Update route query
+
     router.push({
       query: {
         ...route.query,
@@ -95,9 +90,8 @@ export const useSaleList = (status: 'running' | 'finished' = 'running') => {
   });
 
   const handleSearchClear = () => {
-    // Update provider
     updateTabData(status, { search: undefined, page: 1 });
-    // Update route query
+
     router.push({
       query: {
         ...route.query,
@@ -109,9 +103,9 @@ export const useSaleList = (status: 'running' | 'finished' = 'running') => {
 
   const handlePaginationPrev = (first?: boolean) => {
     first ? toPrev(true) : toPrev();
-    // Update provider
+
     updateTabData(status, { page: first ? 1 : page.current })
-    // Update route query
+
     router.push({
       query: {
         ...route.query,
@@ -122,9 +116,9 @@ export const useSaleList = (status: 'running' | 'finished' = 'running') => {
 
   const handlePaginationNext = (last?: boolean) => {
     last ? toNext(true) : toNext();
-    // Update context
+
     updateTabData(status, { page: last ? page.total : page.current })
-    // Update route query
+
     router.push({
       query: {
         ...route.query,
@@ -134,16 +128,16 @@ export const useSaleList = (status: 'running' | 'finished' = 'running') => {
   };
 
   return {
-    data: data as Ref<ListNormalizerReturn>,
+    list: list as Ref<ListNormalizerReturn>,
     searchQuery,
     page,
-    saleError,
-    saleLoading,
-    isSaleEmpty,
+    listError,
+    listLoading,
+    isListEmpty,
     handleSearch,
     handleSearchClear,
     handlePaginationPrev,
     handlePaginationNext,
-    saleRefetch,
+    listRefetch,
   };
 };

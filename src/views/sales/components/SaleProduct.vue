@@ -2,13 +2,11 @@
 import { computed } from 'vue';
 
 // Common Components
-import Text from '@components/Text';
-import Button from '@components/Button';
-import QuantityEditor from '@components/QuantityEditor';
-import ComposIcon, { CheckLarge, XLarge } from '@components/Icons';
+import { Button, QuantityEditor, Text } from '@/components';
+import ComposIcon, { CheckLarge, XLarge } from '@/components/Icons';
 
 // View Components
-import ProductImage from '@/views/components/ProductImage.vue';
+import { ProductImage } from '@/views/components';
 
 // Assets
 import no_image from '@assets/illustration/no_image.svg';

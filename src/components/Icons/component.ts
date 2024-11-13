@@ -19,6 +19,9 @@ class ComposIcon extends HTMLElement {
   connectedCallback() {
     this.render();
     this.setAttribute('role', 'img');
+    this.removeAttribute('icon');
+    this.removeAttribute('size');
+    this.removeAttribute('color');
   }
 
   attributeChangedCallback(_name: string, oldValue: string | null, newValue: string | null) {
@@ -54,8 +57,6 @@ class ComposIcon extends HTMLElement {
   getSize() {
     const size = this.getAttribute('size');
 
-    // if (!size) return '24px';
-
     return isNaN(Number(size)) ? size : `${size}px`;
   }
 
@@ -85,29 +86,30 @@ class ComposIcon extends HTMLElement {
       this.style.height = size;
     }
 
+    if (color) {
+      this.style.color = color;
+    }
+
     template.innerHTML = `
       <style>
         :host {
           width: 24px;
           height: 24px;
-          // width: ${size};
-          // height: ${size};
+          fill: currentColor;
           vertical-align: middle;
           display: inline-block;
-          fill: ${color || 'currentColor'};
+          contain: strict;
         }
 
         svg {
           width: 100%;
           height: 100%;
+          display: block;
         }
       </style>
       ${svgContent}
     `;
 
-    this.removeAttribute('icon');
-    this.removeAttribute('size');
-    this.removeAttribute('color');
     this.shadowRoot?.replaceChildren(template.content.cloneNode(true));
   }
 }

@@ -3,10 +3,10 @@ import { computed, reactive, ref, watch } from 'vue';
 import type * as CSS from 'csstype';
 import { useScopeId } from '@hooks';
 
-import Overlay from '@components/Overlay';
-import ComposIcon, { X } from '@components/Icons';
+import Overlay from '@/components/Overlay';
+import ComposIcon, { X } from '@/components/Icons';
 
-type DialogProps = {
+type Dialog = {
   /**
    * Set the dialog height to take 100% of the screen, preferred using it for mobile view.
    */
@@ -43,13 +43,13 @@ type DialogProps = {
 };
 
 defineOptions({ inheritAttrs: false });
-const props = withDefaults(defineProps<DialogProps>(), {
+const props = withDefaults(defineProps<Dialog>(), {
   fullscreen: false,
   hideHeader: false,
   noClose: false,
   persistent: false,
 });
-const emit = defineEmits([
+const emits = defineEmits([
   'update:modelValue',
   'before-enter',
   'enter',
@@ -61,21 +61,21 @@ const emit = defineEmits([
   'leave-cancelled',
 ]);
 
-const scope_id = useScopeId();
+const scopeId = useScopeId();
 const show = ref(props.modelValue !== undefined ? props.modelValue : false);
-const dialog_class = computed(() => ({
+const dialogClass = computed(() => ({
   'cp-dialog': true,
   'cp-dialog--fullscreen': props.fullscreen,
 }));
 
 const closeDialog = () => {
   show.value = false;
-  emit('update:modelValue', false);
+  emits('update:modelValue', false);
 };
 
 const handleClickActivator = () => {
   show.value = !show.value;
-  emit('update:modelValue', show.value);
+  emits('update:modelValue', show.value);
 };
 
 const activator_props = reactive({
@@ -86,7 +86,7 @@ watch(
   () => props.modelValue,
   (newModel) => {
     show.value = newModel;
-    emit('update:modelValue', newModel);
+    emits('update:modelValue', newModel);
   },
 );
 </script>
@@ -111,18 +111,18 @@ watch(
     @onClickBackdrop="!persistent && closeDialog()"
   >
     <div
-      :[scope_id]="''"
+      :[scopeId]="''"
       v-if="show"
       v-bind="$attrs"
-      :class="dialog_class"
+      :class="dialogClass"
       :style="{ maxWidth, minWidth, width }"
     >
-      <div v-if="!hideHeader" :[scope_id]="''" class="cp-dialog-header">
+      <div v-if="!hideHeader" :[scopeId]="''" class="cp-dialog-header">
         <slot name="header" v-bind="{ props: activator_props }" />
-        <div :[scope_id]="''" v-if="!$slots.header" class="cp-dialog-header__content">
-          <h3 :[scope_id]="''" v-if="title" class="cp-dialog__title">{{ title }}</h3>
+        <div :[scopeId]="''" v-if="!$slots.header" class="cp-dialog-header__content">
+          <h3 :[scopeId]="''" v-if="title" class="cp-dialog__title">{{ title }}</h3>
           <button
-            :[scope_id]="''"
+            :[scopeId]="''"
             v-if="!noClose"
             class="cp-dialog__close"
             type="button"
@@ -133,10 +133,12 @@ watch(
           </button>
         </div>
       </div>
-      <div v-if="$slots.default" :[scope_id]="''" class="cp-dialog-body">
-        <slot />
+      <div v-if="$slots.default" :[scopeId]="''" class="cp-dialog-body">
+        <div class="cp-dialog-body__inner">
+          <slot />
+        </div>
       </div>
-      <div v-if="$slots.footer" :[scope_id]="''" class="cp-dialog-footer">
+      <div v-if="$slots.footer" :[scopeId]="''" class="cp-dialog-footer">
         <slot name="footer" v-bind="{ props: activator_props }" />
       </div>
     </div>
@@ -151,35 +153,29 @@ $headerFullHeight: 56px;
   min-width: calc(320px - 32px);
   background-color: white;
   border-radius: 8px;
-  box-shadow:
-    rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
-    rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px, rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
   display: flex;
   flex-direction: column;
   position: relative;
-  transition: all 300ms ease;
+  transition: all var(--transition-duration-normal) var(--transition-timing-function);
 
   &__close {
     line-height: 1px;
     background-color: var(--color-black);
     border: 1px solid var(--color-black);
     border-radius: 8px;
-    box-shadow:
-      rgba(50, 50, 93, 0.25) 0 2px 5px -1px,
-      rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0 2px 5px -1px, rgba(0, 0, 0, 0.3) 0 1px 3px -1px;
     cursor: pointer;
-    transition: all 300ms cubic-bezier(0.63, 0.01, 0.29, 1);
-    transform-origin: center;
     position: absolute;
     top: 0;
     right: 0;
     z-index: 1;
     transform: translate(50%, -50%);
     padding: 0;
+    transition: all var(--transition-duration-normal) var(--transition-timing-function);
+    transform-origin: center;
 
     compos-icon {
-      width: 100%;
-      height: 100%;
       color: var(--color-white);
     }
 
@@ -207,9 +203,8 @@ $headerFullHeight: 56px;
   }
 
   &--fullscreen {
-    width: 100%;
-    align-self: stretch;
-    border-radius: 0;
+    @include page;
+    border-radius: 0px;
 
     #{$root}-header__content {
       height: $headerFullHeight;
@@ -219,9 +214,7 @@ $headerFullHeight: 56px;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      box-shadow:
-        rgba(0, 0, 0, 0.16) 0 3px 6px,
-        rgba(0, 0, 0, 0.23) 0 3px 6px;
+      box-shadow: rgba(0, 0, 0, 0.16) 0 3px 6px, rgba(0, 0, 0, 0.23) 0 3px 6px;
     }
 
     #{$root}__title {
@@ -254,7 +247,14 @@ $headerFullHeight: 56px;
     }
 
     #{$root}-body {
-      overflow-y: auto;
+      @include content;
+
+      &__inner {
+        @include content-inner;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
     }
   }
 

@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
-import ComposIcon, { Plus, Dash } from '@components/Icons';
+import ComposIcon, { Plus, Dash } from '@/components/Icons';
 
 interface QuantityEditorProps extends /* @vue-ignore */ InputHTMLAttributes {
   /**

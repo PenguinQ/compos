@@ -2,13 +2,13 @@
 import { computed } from 'vue';
 import * as CSS from 'csstype';
 
-type ContainerProps = {
+type Container = {
   breakpoint?: 'md';
   fluid?: boolean;
   padding?: CSS.Property.Padding;
 };
 
-const props = defineProps<ContainerProps>();
+const props = defineProps<Container>();
 const containerClass = computed(() => ({
   'cp-container': true,
   'cp-container--fluid': props.fluid,

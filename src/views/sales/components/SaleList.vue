@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-
 // Common Components
-import Button from '@components/Button';
-import { Bar } from '@components/Loader';
-import EmptyState from '@components/EmptyState';
-import ComposIcon, { ChevronRight } from '@components/Icons';
+import { Bar, Button, EmptyState } from '@/components';
+import ComposIcon, { ChevronRight } from '@/components/Icons';
 
 // View Components
-import ButtonBlock from '@/views/components/ButtonBlock.vue';
-import Pagination from '@/views/components/Pagination.vue';
-import ListSearch from '@/views/components/ListSearch.vue';
-import ListFooter from '@/views/components/ListFooter.vue';
-import ListFab from '@/views/components/ListFab.vue';
+import {
+  ButtonBlock,
+  FloatingActions,
+  FloatingActionButton,
+  ListSearch,
+  Pagination,
+} from '@/views/components';
 
 // Hooks
 import { useSaleList } from '../hooks/SaleList.hook';
@@ -27,15 +25,14 @@ type SalesListProps = {
 
 const props = defineProps<SalesListProps>();
 
-const router = useRouter();
 const {
-  data,
-  isSaleEmpty,
+  list,
+  isListEmpty,
   page,
   searchQuery,
-  saleError,
-  saleLoading,
-  saleRefetch,
+  listError,
+  listLoading,
+  listRefetch,
   handlePaginationPrev,
   handlePaginationNext,
   handleSearch,
@@ -45,14 +42,14 @@ const {
 
 <template>
   <EmptyState
-    v-if="saleError"
+    v-if="listError"
     :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
     :title="GLOBAL.ERROR_EMPTY_TITLE"
     :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
     margin="56px 0"
   >
     <template #action>
-      <Button @click="saleRefetch">Try Again</Button>
+      <Button @click="listRefetch">Try Again</Button>
     </template>
   </EmptyState>
   <template v-else>
@@ -62,41 +59,41 @@ const {
       @input="handleSearch"
       @clear="handleSearchClear"
     />
-    <Bar v-if="saleLoading" margin="56px 0" />
+    <Bar v-if="listLoading" margin="56px 0" />
     <template v-else>
       <EmptyState
-        v-if="isSaleEmpty && searchQuery === ''"
+        v-if="isListEmpty && searchQuery === ''"
         emoji="🍃"
         :title="status === 'running' ? SALE_LIST.RUNNING_EMPTY_TITLE : SALE_LIST.FINISHED_EMPTY_TITLE"
         :description="status === 'running' ? SALE_LIST.RUNNING_EMPTY_DESCRIPTION : SALE_LIST.FINISHED_EMPTY_DESCRIPTION"
         margin="56px 0"
       />
       <EmptyState
-        v-else-if="isSaleEmpty && searchQuery !== ''"
+        v-else-if="isListEmpty && searchQuery !== ''"
         emoji="😵‍💫"
         :title="SALE_LIST.SEARCH_EMPTY_TITLE"
         :description="SALE_LIST.SEARCH_EMPTY_DESCRIPTION"
         margin="56px 0"
       />
       <template v-else>
-        <div class="sales-items">
+        <div class="sales-list">
           <div
             :key="sales.id"
-            v-for="sales in data.sales"
-            class="sales-item"
+            v-for="sales in list.sales"
+            class="sale"
           >
             <div
-              class="sales-item__detail"
+              class="sale__detail"
               role="button"
               tabindex="0"
               :aria-label="`Go to ${sales.name} detail`"
               @click="$router.push(`/sale/detail/${sales.id}`)"
             >
-              <div class="sales-item__title text-truncate">{{ sales.name }}</div>
-              <div class="sales-item__count">{{ sales.product_count }} Products</div>
+              <div class="sale__title text-truncate">{{ sales.name }}</div>
+              <div class="sale__count">{{ sales.product_count }} Products</div>
             </div>
             <ButtonBlock
-              class="sales-item__action"
+              class="sale__action"
               width="76px"
               height="76px"
               backgroundColor="var(--color-blue-4)"
@@ -111,12 +108,12 @@ const {
       </template>
     </template>
   </template>
-  <ListFooter sticky>
-    <ListFab v-if="status === 'running'" align="flex-end" @click="router.push('/sale/add')" />
+  <FloatingActions sticky=".cp-content">
+    <FloatingActionButton v-if="status === 'running'" align="flex-end" @click="$router.push('/sale/add')" />
     <Pagination
-      v-if="!isSaleEmpty"
+      v-if="!isListEmpty"
       frame
-      :loading="saleLoading"
+      :loading="listLoading"
       :page="page.current"
       :total_page="page.total"
       :first_page="page.current <= 1"
@@ -126,11 +123,11 @@ const {
       @clickNext="handlePaginationNext"
       @clickLast="handlePaginationNext(true)"
     />
-  </ListFooter>
+  </FloatingActions>
 </template>
 
 <style lang="scss" scoped>
-.sales-item {
+.sale {
   color: var(--color-black);
   background-color: var(--color-neutral-1);
   border-top: 1px solid var(--color-neutral-2);

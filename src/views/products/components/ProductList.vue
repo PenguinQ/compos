@@ -1,18 +1,22 @@
 <script setup lang="ts">
 // Common Components
-import Button from '@components/Button';
-import Card from '@components/Card';
-import Text from '@components/Text';
-import Label from '@components/Label';
-import { Bar } from '@components/Loader';
-import EmptyState from '@components/EmptyState';
+import {
+  Bar,
+  Button,
+  Card,
+  EmptyState,
+  Label,
+  Text,
+} from '@/components';
 
 // View Components
-import Pagination from '@/views/components/Pagination.vue';
-import ProductImage from '@/views/components/ProductImage.vue';
-import ListFab from '@/views/components/ListFab.vue';
-import ListFooter from '@/views/components/ListFooter.vue';
-import ListSearch from '@/views/components/ListSearch.vue';
+import {
+  FloatingActions,
+  FloatingActionButton,
+  ListSearch,
+  Pagination,
+  ProductImage,
+} from '@/views/components';
 
 // Hooks
 import { useProductList } from '../hooks/ProductList.hook';
@@ -81,7 +85,7 @@ const {
         margin="56px 0"
       />
       <template v-else>
-        <div class="product-grid">
+        <div class="products-list">
           <template v-if="type === 'product'">
             <Card class="product" :key="product.id" v-for="product in list.products" :to="`/product/${product.id}`">
               <ProductImage class="product__image">
@@ -120,8 +124,8 @@ const {
       </template>
     </template>
   </template>
-  <ListFooter v-if="!listError" sticky>
-    <ListFab align="flex-end" @click="$router.push(`${type === 'product' ? '/product/add' : '/bundle/add'}`)" />
+  <FloatingActions sticky=".cp-content">
+    <FloatingActionButton align="flex-end" @click="$router.push(`${type === 'product' ? '/product/add' : '/bundle/add'}`)" />
     <Pagination
       v-if="!isListEmpty"
       frame
@@ -135,11 +139,11 @@ const {
       @clickNext="handlePaginationNext"
       @clickLast="handlePaginationNext(true)"
     />
-  </ListFooter>
+  </FloatingActions>
 </template>
 
 <style lang="scss" scoped>
-.product-grid {
+.products-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
@@ -167,19 +171,19 @@ const {
 }
 
 @include screen-md {
-  .product-grid {
+  .products-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @include screen-lg {
-  .product-grid {
+  .products-list {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 @include screen-xl {
-  .product-grid {
+  .products-list {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }

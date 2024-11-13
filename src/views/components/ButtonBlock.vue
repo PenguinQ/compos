@@ -2,14 +2,14 @@
 import { computed } from 'vue';
 import * as CSS from 'csstype';
 
-type ButtonBlockProps = {
+type ButtonBlock = {
   backgroundColor?: CSS.Property.BackgroundColor;
   height?: CSS.Property.Height;
   icon?: boolean;
   width?: CSS.Property.Width;
 };
 
-const props = withDefaults(defineProps<ButtonBlockProps>(), {
+const props = withDefaults(defineProps<ButtonBlock>(), {
   icon: false,
 });
 
