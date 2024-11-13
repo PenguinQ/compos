@@ -16,10 +16,7 @@ const props = defineProps<FloatingActions>();
 const spacer          = ref<HTMLDivElement | null>(null);
 const container       = ref<HTMLDivElement | null>(null);
 const dialog          = computed(() => container.value?.closest('.cp-dialog'));
-const measureFinished = ref(false);
-const measureTimeout  = computed(() => dialog.value ? 0 : 0);
 const measuredHeight  = ref(0);
-const measuredBottom  = ref(0);
 const classes         = computed(() => ({
   'vc-floating-actions'        : true,
   'vc-floating-actions--sticky': props.sticky,
