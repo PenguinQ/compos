@@ -32,11 +32,6 @@ export const useProductList = (type: 'product' | 'bundle') => {
   const currentPage   = computed(() => tabData[type].page);
   const currentSearch = computed(() => tabData[type].search);
 
-  /**
-   * -------------------------------------------------------------------
-   * Watcher to update searchQuery value when navigating through history
-   * -------------------------------------------------------------------
-   */
   watch(
     () => route.query.search,
     (newSearch) => {
@@ -100,10 +95,8 @@ export const useProductList = (type: 'product' | 'bundle') => {
     page.current      = 1;
     searchQuery.value = target.value;
 
-    // Update provider
     updateTabData(type, { search: value ? value : undefined, page: 1 });
 
-    // Update route query
     router.push({
       query: {
         ...route.query,
@@ -111,13 +104,11 @@ export const useProductList = (type: 'product' | 'bundle') => {
         page  : 1,
       },
     });
-  }, 500);
+  });
 
   const handleSearchClear = () => {
-    // Update provider
     updateTabData(type, { search: undefined, page: 1 });
 
-    // Update route query
     router.push({
       query: {
         ...route.query,
@@ -130,10 +121,8 @@ export const useProductList = (type: 'product' | 'bundle') => {
   const handlePaginationPrev = (first?: boolean) => {
     first ? toPrev(true) : toPrev();
 
-    // Update provider
     updateTabData(type, { page: first ? 1 : page.current })
 
-    // Update route query
     router.push({
       query: {
         ...route.query,
@@ -145,10 +134,8 @@ export const useProductList = (type: 'product' | 'bundle') => {
   const handlePaginationNext = (last?: boolean) => {
     last ? toNext(true) : toNext();
 
-    // Update provider
     updateTabData(type, { page: last ? page.total : page.current })
 
-    // Update route query
     router.push({
       query: {
         ...route.query,
@@ -163,11 +150,11 @@ export const useProductList = (type: 'product' | 'bundle') => {
     page,
     listError,
     listLoading,
-    listRefetch,
+    isListEmpty,
     handleSearch,
     handleSearchClear,
-    isListEmpty,
     handlePaginationPrev,
     handlePaginationNext,
+    listRefetch,
   };
 };

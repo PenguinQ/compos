@@ -1,5 +1,5 @@
 import type { App } from 'vue';
-import { useToast } from '@components/Toast/hooks';
+import { useToast } from '@/components/Toast/hooks';
 
 export default {
   install(app: App) {

@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import type * as CSS from 'csstype';
 
-import Text from '../Text';
+import { Text } from '@/components';
 
 type EmptyStateProps = {
   /**

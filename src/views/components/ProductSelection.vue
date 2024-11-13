@@ -2,9 +2,8 @@
 import { computed, defineAsyncComponent } from 'vue';
 
 // Common Components
-import Text from '@components/Text';
-import Button from '@components/Button';
-import ComposIcon, { CheckLarge, XLarge } from '@components/Icons';
+import { Button, Text } from '@/components';
+import ComposIcon, { CheckLarge, XLarge } from '@/components/Icons';
 
 // View Components
 import ProductImage from '@/views/components/ProductImage.vue';
@@ -43,7 +42,7 @@ defineEmits([
   'clickQuantityIncrement',
 ]);
 
-const QuantityEditor = defineAsyncComponent(() => import('@components/QuantityEditor'));
+const QuantityEditor = defineAsyncComponent(() => import('@/components/QuantityEditor/QuantityEditor.vue'));
 const classes = computed(() => ({
   'vc-product-selection': true,
   'vc-product-selection--small': props.small,

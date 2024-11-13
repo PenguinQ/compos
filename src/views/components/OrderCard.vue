@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import Text from '@components/Text';
-import Card, { CardBody } from '@components/Card';
-import ComposIcon, { Box, Cash, CashCoin, Receipt } from '@components/Icons';
+import { Card, CardBody, Text } from '@/components';
+import ComposIcon, { Box, Cash, CashCoin, Receipt } from '@/components/Icons';
 
 type OrderCardProduct = {
   name: string;

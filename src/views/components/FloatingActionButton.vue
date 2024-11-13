@@ -2,24 +2,24 @@
 import * as CSS from 'csstype';
 
 // Common Components
-import Button from '@components/Button';
-import ComposIcon, { PlusLarge } from '@components/Icons';
+import { Button } from '@/components';
+import ComposIcon, { PlusLarge } from '@/components/Icons';
 
-type ListFabProps = {
+type FloatingActionButton = {
   align?: CSS.Property.AlignSelf;
 };
 
-defineProps<ListFabProps>();
+defineProps<FloatingActionButton>();
 </script>
 
 <template>
-  <Button class="vc-list-fab" icon :style="{ alignSelf: align }">
+  <Button class="vc-fab" icon :style="{ alignSelf: align }">
     <ComposIcon :icon="PlusLarge" size="32" />
   </Button>
 </template>
 
 <style lang="scss">
-.vc-list-fab {
+.vc-fab {
   box-shadow:
     rgba(0, 0, 0, 0.12) 0 1px 3px,
     rgba(0, 0, 0, 0.24) 0 1px 2px;

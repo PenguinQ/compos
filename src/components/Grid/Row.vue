@@ -8,7 +8,7 @@ type GutterType =  {
   row?: number | string | null;
 };
 
-type RowProps = {
+type Row = {
   align?: CSS.Property.AlignItems;
   col?: number | string | ColumnType;
   direction?: CSS.Property.FlexDirection;
@@ -17,7 +17,7 @@ type RowProps = {
   margin?: CSS.Property.Margin | number;
 };
 
-const props = defineProps<RowProps>();
+const props = defineProps<Row>();
 
 const { col, gutter } = props;
 const gutters: GutterType = { col: null, row: null };

@@ -1,9 +1,9 @@
 <script setup lang="ts"></script>
 
 <template>
-  <nav class="cp-bottom-navbar">
+  <div class="cp-bottom-navbar">
     <slot />
-  </nav>
+  </div>
 </template>
 
 <style lang="scss">
@@ -17,7 +17,7 @@
   box-shadow:
     rgba(0, 0, 0, 0.16) 0 -3px 6px,
     rgba(0, 0, 0, 0.23) 0 -3px 6px;
-  z-index: var(--z-1);
+  z-index: var(--z-10);
   padding-bottom: env(safe-area-inset-bottom);
 }
 </style>

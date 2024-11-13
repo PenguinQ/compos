@@ -95,21 +95,28 @@
 
   // z-index
   --z-min: 0;
-  --z-1: 10;
-  --z-2: 20;
-  --z-3: 30;
-  --z-4: 40;
-  --z-5: 50;
-  --z-6: 60;
-  --z-7: 70;
-  --z-8: 80;
-  --z-9: 90;
+  --z-0: 0;
+  --z-10: 10;
+  --z-20: 20;
+  --z-30: 30;
+  --z-40: 40;
+  --z-50: 50;
+  --z-60: 60;
+  --z-70: 70;
+  --z-80: 80;
+  --z-90: 90;
+  --z-100: 100;
   --z-max: 100;
 
-  --safe-area-top: env(safe-area-inset-top);
-  --safe-area-bottom: env(safe-area-inset-bottom);
   --focus-outline: 2px dashed var(--color-blue-4);
   --focus-outline-offset: 4px;
+  --safe-area-top: env(safe-area-inset-top);
+  --safe-area-right: env(safe-area-inset-right);
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  --safe-area-left: env(safe-area-inset-left);
+
+  // Spacing
+  --app-padding: 16px;
 }
 
 @include screen-md {

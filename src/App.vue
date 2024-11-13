@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { watchEffect } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
-import { ToastProvider } from '@components/Toast';
-import OfflineStatus from '@components/OfflineStatus';
+import { OfflineStatus, ToastProvider } from '@/components';
 
 const route = useRoute();
 

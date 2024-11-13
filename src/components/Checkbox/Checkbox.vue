@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
-import ComposIcon, { Check } from '@components/Icons';
+import ComposIcon, { Check } from '@/components/Icons';
 
 interface Props extends /* @vue-ignore */ InputHTMLAttributes {
   /**

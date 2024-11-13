@@ -8,61 +8,61 @@ $screen-xxl: 1400px;
   @media screen and (min-width: $screen-sm) {
     @content;
   }
-};
+}
 
 @mixin screen-landscape-sm {
   @media screen and (min-width: $screen-sm) and (orientation: landscape) {
     @content;
   }
-};
+}
 
 @mixin screen-md {
   @media screen and (min-width: $screen-md) {
     @content;
   }
-};
+}
 
 @mixin screen-landscape-md {
   @media screen and (min-width: $screen-md) and (orientation: landscape) {
     @content;
   }
-};
+}
 
 @mixin screen-lg {
   @media screen and (min-width: $screen-lg) {
     @content;
   }
-};
+}
 
 @mixin screen-landscape-lg {
   @media screen and (min-width: $screen-lg) and (orientation: landscape) {
     @content;
   }
-};
+}
 
 @mixin screen-xl {
   @media screen and (min-width: $screen-xl) {
     @content;
   }
-};
+}
 
 @mixin screen-landscape-xl {
   @media screen and (min-width: $screen-xl) and (orientation: landscape) {
     @content;
   }
-};
+}
 
 @mixin screen-xxl {
   @media screen and (min-width: $screen-xxl) {
     @content;
   }
-};
+}
 
 @mixin screen-landscape-xxl {
   @media screen and (min-width: $screen-xxl) and (orientation: landscape) {
     @content;
   }
-};
+}
 
 @mixin screen-rwd($screen) {
   @media screen and (min-width: $screen + 'px') {
@@ -74,4 +74,40 @@ $screen-xxl: 1400px;
   @media screen and (min-width: $screen + 'px') and (orientation: landscape) {
     @content;
   }
+}
+
+@mixin page {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  contain: layout size style;
+  z-index: 0;
+}
+
+@mixin content {
+  flex: 1 1 0%;
+  position: relative;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: var(--z-0);
+}
+
+@mixin content-inner {
+  overflow-y: auto;
+  position: absolute;
+  top: calc(var(--offset-top, 0px) * -1);
+  bottom: calc(var(--offset-bottom, 0px) * -1);
+  right: 0;
+  left: 0;
+  padding-top: calc(var(--padding-top, 0px) + var(--offset-top, 0px));
+  padding-bottom: calc(var(--padding-bottom, 0px) + var(--offset-bottom, 0px));
+  padding-inline-start: var(--padding-start, 0px);
+  padding-inline-end: var(--padding-end, 0px);
 }
