@@ -60,7 +60,10 @@ onMounted(() => {
 });
 
 onUpdated(() => {
-  if (props.sticky) setHeight();
+  if (props.sticky) {
+    setHeight();
+    handleVisibility();
+  }
 });
 
 onUnmounted(() => {
@@ -95,6 +98,10 @@ onUnmounted(() => {
     padding: 16px;
     pointer-events: none;
     transition: opacity var(--transition-duration-normal) var(--transition-timing-function);
+
+    &:empty {
+      padding: 0;
+    }
 
     * {
       pointer-events: auto;

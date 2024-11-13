@@ -290,9 +290,8 @@ watch(
                 </template>
               </div>
               <template v-if="!isProductListLoading && !isProductListError">
-                <FloatingActions sticky=".cp-content">
+                <FloatingActions v-if="productList?.products.length" sticky=".cp-content">
                   <Pagination
-                    v-if="productList?.products.length"
                     frame
                     :page="pageProduct.current"
                     :total_page="pageProduct.total"
