@@ -64,7 +64,7 @@ export const initDB = async () => {
     if (product) {
       const { variants } = product;
 
-      if (variants.length) {
+      if (variants && variants.length) {
         await product.removeVariants();
         await product.removeFromBundles(true);
         await product.removeFromSales();
