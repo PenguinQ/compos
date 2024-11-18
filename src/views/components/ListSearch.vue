@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 
 // Common Components
 import { Textfield } from '@/components';
-import ComposIcon, { XCircleFilled } from '@/components/Icons';
+import ComposIcon, { XCircleFill } from '@/components/Icons';
 
 type ListSearch = {
   placeholder?: string;
@@ -47,7 +47,7 @@ const handleClear = () => {
     >
       <template v-if="modelValue" #append>
         <button class="button button--clear vc-list-search__clear" type="button" @click="handleClear">
-          <ComposIcon :icon="XCircleFilled" />
+          <ComposIcon :icon="XCircleFill" />
         </button>
       </template>
     </Textfield>

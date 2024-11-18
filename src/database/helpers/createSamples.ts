@@ -1,7 +1,7 @@
 import { monotonicFactory } from 'ulidx';
 import Big from 'big.js';
 
-import { db } from '../';
+import { db } from '@/database';
 import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX, BUNDLE_ID_PREFIX, SALE_ID_PREFIX } from '../constants'
 import type { BundleDoc, ProductDoc, SaleDoc, VariantDoc } from '../types';
 

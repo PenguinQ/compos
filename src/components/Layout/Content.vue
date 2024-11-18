@@ -75,6 +75,7 @@ const handleScroll = (e: Event) => {
     <div class="cp-content__inner" @scroll="handleScroll">
       <slot></slot>
     </div>
+    <slot name="fixed"></slot>
   </div>
 </template>
 
@@ -92,7 +93,7 @@ const handleScroll = (e: Event) => {
   contain: size style;
 
   &__inner {
-    overflow-y: auto;
+    overflow-y: var(--overflow, auto);
     position: absolute;
     top: calc(var(--offset-top) * -1);
     bottom: calc(var(--offset-bottom) * -1);

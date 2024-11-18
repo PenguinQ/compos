@@ -19,6 +19,7 @@
   "dependencies": {
     "big.js": "^6.2.2",
     "compressorjs": "^1.2.1",
+    "file-saver": "^2.0.5",
     "isomorphic-dompurify": "^2.4.0",
     "lru-cache": "^10.2.2",
     "rxdb": "^15.34.1",
@@ -36,6 +37,7 @@
     "@storybook/vue3": "^8.2.9",
     "@storybook/vue3-vite": "^8.2.9",
     "@types/big.js": "^6.2.2",
+    "@types/file-saver": "^2.0.7",
     "@types/fs-extra": "^11.0.4",
     "@types/glob": "^8.1.0",
     "@types/lodash": "^4.14.201",
