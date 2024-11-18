@@ -3,7 +3,7 @@ export default { name: 'TickerItem' };
 </script>
 <script setup lang="ts">
 import { Text } from '@/components';
-import ComposIcon, { InfoCircleFilled, XCircleFilled, WarningCircleFilled } from '@/components/Icons';
+import ComposIcon, { InfoCircleFill, XCircleFill, WarningCircleFill } from '@/components/Icons';
 
 export type TickerItemProps = {
   title?: string;
@@ -15,14 +15,14 @@ const props = withDefaults(defineProps<TickerItemProps>(), {
   type: 'info',
 });
 
-let icon_type = InfoCircleFilled;
+let icon_type = InfoCircleFill;
 
 switch (props.type) {
   case 'error':
-    icon_type = XCircleFilled;
+    icon_type = XCircleFill;
     break;
   case 'warning':
-    icon_type = WarningCircleFilled;
+    icon_type = WarningCircleFill;
     break;
   default:
     break;

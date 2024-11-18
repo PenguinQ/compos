@@ -1,6 +1,8 @@
 import { addRxPlugin, createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
+// import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
+import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
 import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
 import { wrappedAttachmentsCompressionStorage } from 'rxdb/plugins/attachments-compression';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
@@ -22,34 +24,28 @@ const createDB = async () => {
   });
 
   db = await createRxDatabase<DatabaseCollection>({
-    name: dbName,
-    storage: compressedStorage,
+    name       : dbName,
+    storage    : compressedStorage,
     eventReduce: true,
   });
 };
 
-export const initDB = async () => {
-  if (import.meta.env.MODE === 'development') addRxPlugin(RxDBDevModePlugin);
-  addRxPlugin(RxDBUpdatePlugin);
-  addRxPlugin(RxDBAttachmentsPlugin);
-
-  if (!db) await createDB();
-
+export const createCollections = async () => {
   const collections = await db.addCollections({
     product: {
-      schema: product,
+      schema : product,
       methods: productORMs,
     },
     variant: {
-      schema: variant,
+      schema : variant,
       methods: variantORMs,
     },
     bundle: {
-      schema: bundle,
+      schema : bundle,
       methods: bundleORMs,
     },
     sale: {
-      schema: sale,
+      schema : sale,
       methods: saleORMs,
     },
     order: {
@@ -57,8 +53,9 @@ export const initDB = async () => {
     },
   });
 
-  // Product Hooks
   collections.product.preRemove(async (data) => {
+    if (import.meta.env.MODE === 'development') console.log('[product preRemove]');
+
     const product = await collections.product.findOne(data.id).exec();
 
     if (product) {
@@ -75,8 +72,9 @@ export const initDB = async () => {
     }
   }, false);
 
-  // Variant Hooks
   collections.variant.preRemove(async (data) => {
+    if (import.meta.env.MODE === 'development') console.log('[variant preRemove]');
+
     const variant = await collections.variant.findOne(data.id).exec();
 
     if (variant) {
@@ -85,8 +83,9 @@ export const initDB = async () => {
     }
   }, false);
 
-  // Bundle Hooks
   collections.bundle.preRemove(async (data) => {
+    if (import.meta.env.MODE === 'development') console.log('[bundle preRemove]');
+
     const bundle = await collections.bundle.findOne(data.id).exec();
 
     if (bundle) {
@@ -94,15 +93,27 @@ export const initDB = async () => {
     }
   }, false);
 
-  // Sale Hooks
   collections.sale.preRemove(async (data) => {
+    if (import.meta.env.MODE === 'development') console.log('[sale preRemove]');
+
     const sale = await collections.sale.findOne(data.id).exec();
 
     if (sale) {
       await sale.removeOrders();
     }
   }, false);
+};
 
-  // Create sample data on development mode.
+export const initDB = async () => {
+  if (import.meta.env.MODE === 'development') addRxPlugin(RxDBDevModePlugin);
+  addRxPlugin(RxDBUpdatePlugin);
+  addRxPlugin(RxDBAttachmentsPlugin);
+  addRxPlugin(RxDBJsonDumpPlugin);
+  // addRxPlugin(RxDBCleanupPlugin); // Somehow create promises error.
+
+  if (!db) await createDB();
+
+  await createCollections();
+
   if (import.meta.env.MODE === 'development') await createSamples();
 };

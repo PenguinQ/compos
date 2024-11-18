@@ -229,7 +229,7 @@ watch(
   </Content>
   <Dialog v-model="dialogDelete" :title="`Delete ${data?.name}?`">
     <Text body="large" textAlign="center" margin="0">
-      Deleting this product will automatically remove this products or any of it's variants in any bundles.
+      Deleting this product will automatically remove this product and it's variants from any sale and bundle.
     </Text>
     <template #footer>
       <div class="dialog-actions">
