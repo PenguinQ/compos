@@ -25,6 +25,7 @@ import Footer from './Layout/Footer.vue';
 import Link from './Link/Link.vue';
 import Bar from './Loader/Bar.vue';
 import Shimmer from './Loader/Shimmer.vue';
+import PullToRefresh from './PullToRefresh/PullToRefresh.vue';
 import QuantityEditor from './QuantityEditor/QuantityEditor.vue';
 import Radio from './Radio/Radio.vue';
 import RadioGroup from './Radio/RadioGroup.vue';
@@ -74,6 +75,7 @@ export {
   Link,
   Bar,
   Shimmer,
+  PullToRefresh,
   QuantityEditor,
   Radio,
   RadioGroup,

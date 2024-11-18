@@ -106,6 +106,12 @@ const router = createRouter({
             },
           ],
         },
+        {
+          path: '/setting',
+          name: 'setting',
+          meta: { title: 'Setting - ComPOS' },
+          component: () => import('../views/settings/Setting.vue'),
+        },
       ],
     },
     {

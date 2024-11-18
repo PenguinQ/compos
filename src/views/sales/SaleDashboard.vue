@@ -22,7 +22,7 @@ import {
 import ComposIcon, {
   ArrowLeftShort,
   BackspaceFill,
-  XCircleFilled,
+  XCircleFill,
   PlusLarge,
   DashLarge,
   Cash,
@@ -34,7 +34,7 @@ import ComposIcon, {
   Boxes,
   Tags,
   CheckLarge,
-  InfoCircleFilled,
+  InfoCircleFill,
 } from '@/components/Icons';
 
 // View Components
@@ -134,7 +134,7 @@ onUnmounted(() => {
         icon
         @click="$router.push(`/sale/detail/${saleId}`)"
       >
-        <ComposIcon :icon="InfoCircleFilled" />
+        <ComposIcon :icon="InfoCircleFill" />
       </ToolbarAction>
       <ToolbarAction
         v-if="!isDetailsError && !isDetailsLoading"
@@ -376,7 +376,7 @@ onUnmounted(() => {
                       aria-label="Clear calculator"
                       @click="paymentInput = '0'"
                     >
-                      <ComposIcon :icon="XCircleFilled" />
+                      <ComposIcon :icon="XCircleFill" />
                     </button>
                     <div>{{ toIDR(paymentTendered.toString()) }}</div>
                     <button
@@ -545,7 +545,7 @@ onUnmounted(() => {
               aria-label="Clear calculator"
               @click="paymentInput = '0'"
             >
-              <ComposIcon :icon="XCircleFilled" />
+              <ComposIcon :icon="XCircleFill" />
             </button>
             <div>{{ toIDR(paymentTendered.toString()) }}</div>
             <button

@@ -1,4 +1,5 @@
 export { default as addImages } from './addImages';
+export { default as base64ToBlob } from './base64ToBlob';
 export { default as isBundle } from './isBundle';
 export { default as compressImage } from './compressImage';
 export { default as compressProductImage } from './compressProductImage';

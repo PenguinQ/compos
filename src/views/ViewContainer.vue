@@ -3,7 +3,7 @@ import { RouterView } from 'vue-router';
 
 // Common Components
 import { Page, BottomNavbar, BottomNavbarButton } from '@/components';
-import { Archive, ArchiveFilled, Basket, BasketFilled } from '@/components/Icons';
+import { Archive, ArchiveFill, Basket, BasketFill, Gear, GearFill } from '@/components/Icons';
 </script>
 
 <template>
@@ -12,15 +12,21 @@ import { Archive, ArchiveFilled, Basket, BasketFilled } from '@/components/Icons
     <BottomNavbar ref="nav">
       <BottomNavbarButton
         title="Sale Management"
-        :icon="($route.name as string).startsWith('sale') ? BasketFilled : Basket"
+        :icon="($route.name as string).startsWith('sale') ? BasketFill : Basket"
         :active="($route.name as string).startsWith('sale')"
         @click="$router.push('/sale')"
       />
       <BottomNavbarButton
         title="Product Management"
-        :icon="($route.name as string).startsWith('product') ? ArchiveFilled : Archive"
+        :icon="($route.name as string).startsWith('product') ? ArchiveFill : Archive"
         :active="($route.name as string).startsWith('product')"
         @click="$router.push('/product')"
+      />
+      <BottomNavbarButton
+        title="Settings"
+        :icon="($route.name as string).startsWith('setting') ? GearFill : Gear"
+        :active="($route.name as string).startsWith('setting')"
+        @click="$router.push('/setting')"
       />
     </BottomNavbar>
   </Page>

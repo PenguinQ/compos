@@ -76,7 +76,10 @@
   &-actions {
     display: flex;
     gap: 16px;
-    padding: 16px;
+    padding-top: var(--padding-top, 16px);
+    padding-bottom: var(--padding-bottom, 16px);
+    padding-inline-start: var(--padding-start, 16px);
+    padding-inline-end: var(--padding-end, 16px);
   }
 }
 
@@ -86,20 +89,43 @@
   --padding-start: var(--app-padding, 16px);
   --padding-end: var(--app-padding, 16px);
 
+  &-0 {
+    --padding-top: 0;
+    --padding-bottom: 0;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+
   &-top {
     --padding-top: var(--app-padding, 16px);
+
+    &-0 {
+      --padding-top: 0;
+    }
   }
 
   &-bottom {
     --padding-bottom: var(--app-padding, 16px);
+
+    &-0 {
+      --padding-bottom: 0;
+    }
   }
 
   &-start {
     --padding-start: var(--app-padding, 16px);
+
+    &-0 {
+      --padding-start: 0;
+    }
   }
 
   &-end {
     --padding-end: var(--app-padding, 16px);
+
+    &-0 {
+      --padding-end: 0;
+    }
   }
 }
 
