@@ -379,8 +379,7 @@ watch(
         }
 
         &__item {
-          font-size: var(--text-body-small-size);
-          line-height: var(--text-body-small-height);
+          @include text-body-sm;
           display: flex;
           align-items: center;
           gap: 8px;
@@ -439,8 +438,7 @@ watch(
         tr {
           &[data-product-item] {
             td {
-              font-size: var(--text-body-small-size);
-              line-height: var(--text-body-small-height);
+              @include text-body-sm;
               text-align: left;
             }
 

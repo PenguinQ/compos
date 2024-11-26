@@ -167,8 +167,7 @@ watch(isRefreshing, (refreshing) => {
 
 <style lang="scss">
 .cp-refresh {
-  font-size: var(--text-body-large-size);
-  line-height: var(--text-body-large-height);
+  @include text-body-lg;
   font-weight: 700;
   text-align: center;
   width: 100%;

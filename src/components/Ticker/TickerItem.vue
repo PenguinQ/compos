@@ -85,9 +85,8 @@ $root: '.cp-ticker-item';
   }
 
   &__title {
+    @include text-heading-6;
     font-family: var(--text-heading-family);
-    font-size: var(--text-heading-6-size);
-    line-height: var(--text-heading-6-height);
   }
 
   &__description {

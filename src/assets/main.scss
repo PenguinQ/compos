@@ -21,10 +21,9 @@ body {
   width: 100%;
   height: 100%;
   color: var(--color-black, #2E4057);
-  background-color: var(--color-background, #FAFAFF);
+  background-color: var(--color-background);
   font-family: var(--text-body-family);
-  font-size: var(--text-body-medium-size, 14px);
-  line-height: var(--text-body-medium-height, 18px);
+  @include text-body-md;
   font-weight: 400;
   word-wrap: break-word;
   text-rendering: optimizeLegibility;
@@ -44,69 +43,63 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: 28px;
-  line-height: 34px;
+  @include text-heading-1;
 }
 
 h2 {
-  font-size: 24px;
-  line-height: 30px;
+  @include text-heading-2;
 }
 
 h3 {
-  font-size: 20px;
-  line-height: 26px;
+  @include text-heading-3;
 }
 
 h4 {
-  font-size: 16px;
-  line-height: 22px;
+  @include text-heading-4;
 }
 
 h5 {
-  font-size: 14px;
-  line-height: 20px;
+  @include text-heading-5;
 }
 
 h6 {
-  font-size: 12px;
-  line-height: 18px;
+  @include text-heading-6;
 }
 
-p {
-  font-size: 14px;
-  line-height: 18px;
-  font-weight: 400;
+ul {
+  padding-inline-start: var(--padding-start, 24px);
+  margin-top: var(--margin-top, 12px);
+  margin-bottom: var(--margin-bottom, 12px);
 }
 
-@include screen-md {
-  h1 {
-    font-size: 36px;
-    line-height: 44px;
-  }
+// @include screen-md {
+//   h1 {
+//     font-size: var(--text-heading-size-1);
+//     line-height: var(--text-heading-height-1);
+//   }
 
-  h2 {
-    font-size: 32px;
-    line-height: 40px;
-  }
+//   h2 {
+//     font-size: var(--text-heading-size-2);
+//     line-height: var(--text-heading-height-2);
+//   }
 
-  h3 {
-    font-size: 28px;
-    line-height: 36px;
-  }
+//   h3 {
+//     font-size: var(--text-heading-size-3);
+//     line-height: var(--text-heading-height-3);
+//   }
 
-  h4 {
-    font-size: 24px;
-    line-height: 32px;
-  }
+//   h4 {
+//     font-size: var(--text-heading-size-4);
+//     line-height: var(--text-heading-height-4);
+//   }
 
-  h5 {
-    font-size: 20px;
-    line-height: 28px;
-  }
+//   h5 {
+//     font-size: var(--text-heading-size-5);
+//     line-height: var(--text-heading-height-5);
+//   }
 
-  h6 {
-    font-size: 16px;
-    line-height: 24px;
-  }
-}
+//   h6 {
+//     font-size: var(--text-heading-size-6);
+//     line-height: var(--text-heading-height-6);
+//   }
+// }

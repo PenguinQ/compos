@@ -64,26 +64,26 @@
   // Typography
   --text-heading-family: "Nunito", sans-serif;
   --text-body-family: "DM Sans", sans-serif;
-  --text-heading-1-size: 26px;
-  --text-heading-2-size: 24px;
-  --text-heading-3-size: 22px;
-  --text-heading-4-size: 20px;
-  --text-heading-5-size: 18px;
-  --text-heading-6-size: 16px;
-  --text-heading-1-height: 32px;
-  --text-heading-2-height: 30px;
-  --text-heading-3-height: 28px;
-  --text-heading-4-height: 26px;
-  --text-heading-5-height: 24px;
-  --text-heading-6-height: 22px;
-  --text-body-large-size: 16px;
-  --text-body-medium-size: 14px;
-  --text-body-small-size: 12px;
-  --text-body-micro-size: 10px;
-  --text-body-large-height: 20px;
-  --text-body-medium-height: 18px;
-  --text-body-small-height: 16px;
-  --text-body-micro-height: 14px;
+  --text-heading-size-1: 26px;
+  --text-heading-size-2: 24px;
+  --text-heading-size-3: 22px;
+  --text-heading-size-4: 20px;
+  --text-heading-size-5: 18px;
+  --text-heading-size-6: 16px;
+  --text-heading-height-1: 1.3;
+  --text-heading-height-2: 1.3;
+  --text-heading-height-3: 1.35;
+  --text-heading-height-4: 1.35;
+  --text-heading-height-5: 1.4;
+  --text-heading-height-6: 1.4;
+  --text-body-size-lg: 16px;
+  --text-body-size-md: 14px;
+  --text-body-size-sm: 12px;
+  --text-body-size-xs: 10px;
+  --text-body-height-lg: 1.5;
+  --text-body-height-md: 1.4;
+  --text-body-height-sm: 1.33;
+  --text-body-height-xs: 1.2;
 
   // Transition
   --transition-duration-very-fast: 200ms;
@@ -93,7 +93,7 @@
   --transition-duration-very-slow: 360ms;
   --transition-timing-function: cubic-bezier(0.63, 0.01, 0.29, 1);
 
-  // z-index
+  // Z-index
   --z-min: 0;
   --z-0: 0;
   --z-10: 10;
@@ -110,6 +110,8 @@
 
   --focus-outline: 2px dashed var(--color-blue-4);
   --focus-outline-offset: 4px;
+
+  // Environment Specific
   --safe-area-top: env(safe-area-inset-top);
   --safe-area-right: env(safe-area-inset-right);
   --safe-area-bottom: env(safe-area-inset-bottom);
@@ -117,21 +119,22 @@
 
   // Spacing
   --app-padding: 16px;
+  --app-margin: 16px;
 }
 
 @include screen-md {
   :root {
-    --text-heading-1-size: 36px;
-    --text-heading-2-size: 32px;
-    --text-heading-3-size: 28px;
-    --text-heading-4-size: 24px;
-    --text-heading-5-size: 20px;
-    --text-heading-6-size: 16px;
-    --text-heading-1-height: 44px;
-    --text-heading-2-height: 40px;
-    --text-heading-3-height: 36px;
-    --text-heading-4-height: 32px;
-    --text-heading-5-height: 28px;
-    --text-heading-6-height: 24px;
+    --text-heading-size-1: 36px;
+    --text-heading-size-2: 32px;
+    --text-heading-size-3: 28px;
+    --text-heading-size-4: 24px;
+    --text-heading-size-5: 20px;
+    --text-heading-size-6: 16px;
+    --text-heading-height-1: 1.2;
+    --text-heading-height-2: 1.25;
+    --text-heading-height-3: 1.3;
+    --text-heading-height-4: 1.3;
+    --text-heading-height-5: 1.35;
+    --text-heading-height-6: 1.4;
   }
 }

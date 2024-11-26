@@ -735,8 +735,7 @@ onUnmounted(() => {
 
   &-details {
     &__item {
-      font-size: var(--text-body-small-size);
-      line-height: var(--text-body-small-height);
+      @include text-body-sm;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -753,9 +752,8 @@ onUnmounted(() => {
   }
 
   &__name {
+    @include text-body-lg;
     font-family: var(--text-heading-family);
-    font-size: var(--text-body-large-size);
-    line-height: var(--text-body-large-height);
     font-weight: 700;
     margin-bottom: 4px;
   }
@@ -802,8 +800,7 @@ onUnmounted(() => {
   margin: 0;
 
   &__item {
-    font-size: var(--text-body-large-size);
-    line-height: var(--text-body-large-height);
+    @include text-body-lg;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -881,8 +878,8 @@ onUnmounted(() => {
     padding: 16px;
 
     button {
+      @include text-body-lg;
       color: var(--color-black);
-      font-size: var(--text-body-large-size);
       background-color: var(--color-white);
       border: 1px solid var(--color-neutral-4);
       border-radius: 4px;
@@ -1012,9 +1009,8 @@ onUnmounted(() => {
     gap: 8px;
 
     &__item {
+      @include text-body-sm;
       min-width: 0%;
-      font-size: var(--text-body-small-size);
-      line-height: var(--text-body-small-height);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -1039,9 +1035,8 @@ onUnmounted(() => {
     }
 
     &__item {
+      @include text-body-sm;
       min-width: 0%;
-      font-size: var(--text-body-small-size);
-      line-height: var(--text-body-small-height);
       display: flex;
       align-items: center;
       gap: 8px;

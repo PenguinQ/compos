@@ -30,8 +30,12 @@ const containerClass = computed(() => ({
   &,
   &--fluid {
     width: 100%;
-    margin-right: auto;
-    margin-left: auto;
+    padding-top: var(--padding-top, 0);
+    padding-bottom: var(--padding-bottom, 0);
+    padding-inline-start: var(--padding-start, 0);
+    padding-inline-end: var(--padding-end, 0);
+    margin-inline-start: var(--margin-start, auto);
+    margin-inline-end: var(--margin-end, auto);
   }
 }
 

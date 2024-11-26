@@ -62,8 +62,7 @@ defineProps<OrderCard>()
     margin-top: 12px;
 
     &__item {
-      font-size: var(--text-body-small-size);
-      line-height: var(--text-body-small-height);
+      @include text-body-sm;
       display: flex;
       align-items: center;
       flex: 1 1 auto;
@@ -89,8 +88,7 @@ defineProps<OrderCard>()
     gap: 8px;
 
     &__item {
-      font-size: var(--text-body-small-size);
-      line-height: var(--text-body-small-height);
+      @include text-body-sm;
       display: flex;
 
       compos-icon {
