@@ -30,11 +30,10 @@ const button_class = computed(() => ({
 .cp-toolbar-action {
   $root: &;
 
+  @include text-body-lg;
   min-width: var(--toolbar-height);
   height: var(--toolbar-height);
   color: var(--color-white);
-  font-size: var(--text-body-large-size);
-  line-height: var(--text-body-large-height);
   background-color: transparent;
   border: none;
   display: flex;

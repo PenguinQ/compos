@@ -77,31 +77,26 @@ const linkClass = computed(() => ({
 
 <style lang="scss">
 .cp-link {
+  @include text-body-md;
   color: var(--color-green-3);
   font-family: "DM Sans", sans-serif;
-  font-size: var(--text-body-medium-size);
   font-weight: 400;
-  line-height: var(--text-body-medium-height);
   text-decoration: none;
 
   &--body-large {
-    font-size: var(--text-body-large-size);
-    line-height: var(--text-body-large-height);
+    @include text-body-lg;
   }
 
   &--body-medium {
-    font-size: var(--text-body-medium-size);
-    line-height: var(--text-body-medium-height);
+    @include text-body-md;
   }
 
   &--body-small {
-    font-size: var(--text-body-small-size);
-    line-height: var(--text-body-small-height);
+    @include text-body-sm;
   }
 
   &--body-micro {
-    font-size: var(--text-body-micro-size);
-    line-height: var(--text-body-micro-height);
+    @include text-body-xs;
   }
 
   .cp-text & {

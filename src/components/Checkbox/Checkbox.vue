@@ -214,9 +214,8 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 
   &__label {
+    @include text-body-md;
     color: var(--color-black);
-    font-size: var(--text-body-medium-size);
-    line-height: var(--text-body-medium-height);
     font-weight: 400;
     flex: 1;
   }

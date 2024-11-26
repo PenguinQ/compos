@@ -18,10 +18,9 @@ defineProps<TabControlprops>();
 $parent: '.cp-tab-controls';
 
 .cp-tab-control {
+  @include text-body-md;
   height: var(--tab-height);
   color: var(--color-white);
-  font-size: var(--text-body-medium-size);
-  line-height: var(--text-body-medium-height);
   font-weight: 600;
   background-color: var(--color-black);
   flex: 0 0 auto;

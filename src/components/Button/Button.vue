@@ -55,6 +55,7 @@ const buttonClass = computed(() => ({
   transition: all 300ms cubic-bezier(0.63, 0.01, 0.29, 1);
   transform-origin: center;
   padding: 10px 12px;
+  user-select: none;
 
   &--full {
     width: 100%;

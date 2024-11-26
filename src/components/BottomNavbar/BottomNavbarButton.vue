@@ -21,10 +21,9 @@ defineProps<Props>()
 
 <style lang="scss">
 .cp-bottom-navbar-button {
+  @include text-body-sm;
   flex: 1;
   color: var(--color-white);
-  font-size: var(--text-body-small-size);
-  line-height: var(--text-body-small-height);
   font-weight: 400;
   background-color: transparent;
   border: none;

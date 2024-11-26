@@ -218,9 +218,8 @@ $headerFullHeight: 56px;
     }
 
     #{$root}__title {
+      @include text-heading-3;
       color: var(--color-white);
-      font-size: var(--text-heading-3-size);
-      line-height: var(--text-heading-3-height);
       text-align: left;
       padding: 0 0 0 16px;
     }
@@ -273,14 +272,12 @@ $headerFullHeight: 56px;
 @include screen-md {
   .cp-dialog {
     &__title {
-      font-size: var(--text-heading-4-size);
-      line-height: var(--text-heading-4-height);
+      @include text-heading-4;
     }
 
     &--fullscreen {
       #{$root}__title {
-        font-size: var(--text-heading-5-size);
-        line-height: var(--text-heading-5-height);
+        @include text-heading-5;
       }
     }
   }

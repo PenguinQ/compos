@@ -72,9 +72,26 @@ const handleRefresh = (e: CustomEvent) => {
   }, 500);
 };
 
-onMounted(() => [
-  document.querySelector('.test')?.setAttribute('href', URL.createObjectURL(new Blob(['asdas'])))
-]);
+function isFirefoxiOS() {
+  const ua = navigator.userAgent.toLowerCase();
+
+  // Firefox on iOS includes both "FxiOS" and "Mobile" in user agent
+  const isFirefoxiOS = ua.includes('fxios') && ua.includes('mobile');
+
+  // Firefox on Android includes "Firefox" and "Android" but not "FxiOS"
+  const isFirefoxAndroid = ua.includes('firefox') && ua.includes('android');
+
+  // Additional check for iOS platform
+  const isiOSPlatform = /iPad|iPhone|iPod/.test(ua)
+
+      // return isFirefoxiOS && isiOSPlatform && !isFirefoxAndroid;
+  alert(`${ua}\n\n${navigator.maxTouchPoints}\n\n${isFirefoxiOS},\n${isiOSPlatform},\n${isFirefoxAndroid}`);
+}
+
+onMounted(() => {
+  // isFirefoxiOS();
+  // document.querySelector('.test')?.setAttribute('href', URL.createObjectURL(new Blob(['asdas'])))
+});
 </script>
 
 <template>
@@ -90,7 +107,6 @@ onMounted(() => [
     <Container>
       <input ref="backupInput" type="file" accept=".json" @change="handleChangeRestore">
       <Button @click="dialogBackup = true">Backup</Button>
-      <a class="test" download>Test Download</a>
       <div style="height: 1000px; background-color: var(--color-neutral-2)"></div>
       <!-- <Button @click="dialogRestore = true">Restore</Button> -->
     </Container>

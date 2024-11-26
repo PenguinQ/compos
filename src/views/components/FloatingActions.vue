@@ -33,9 +33,10 @@ const handleVisibility = () => {
     const refRect = refDOM?.getBoundingClientRect();
 
     if (refRect) {
-      const bottom  = window.innerHeight - Math.floor(refRect.bottom);
+      const bottom      = window.innerHeight - Math.floor(refRect.bottom);
+      const bottomStyle = window.innerHeight <= Math.floor(refRect.bottom) ? `calc(var(--safe-area-bottom) + ${bottom}px)` : `${bottom}px`;
 
-      container.value.style.bottom  = `calc(var(--safe-area-bottom, 0) + ${bottom}px)`;
+      container.value.style.bottom  = bottomStyle;
       container.value.style.opacity = '1';
     }
   }
@@ -77,7 +78,7 @@ onUnmounted(() => {
       v-if="sticky"
       ref="spacer"
       class="vc-floating-actions__spacer"
-      :style="{ height: sticky ? `calc(var(--safe-area-bottom, 0) + ${measuredHeight}px)` : undefined }"
+      :style="{ height: sticky ? `calc(${measuredHeight}px)` : undefined }"
     />
     <div ref="container" class="vc-floating-actions__container">
       <slot />

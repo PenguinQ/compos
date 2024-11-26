@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { watchEffect } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
+
+// Common Components
 import { OfflineStatus, ToastProvider } from '@/components';
+
+// View Components
+import WarningFirefox from '@/views/components/WarningFirefox.vue';
 
 const route = useRoute();
 
@@ -15,6 +20,7 @@ watchEffect(() => {
 <template>
   <ToastProvider>
     <OfflineStatus />
+    <WarningFirefox />
     <RouterView />
     <RouterView name="navigation" />
   </ToastProvider>
