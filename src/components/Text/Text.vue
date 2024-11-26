@@ -77,14 +77,13 @@ const textClass = computed(() => ({
 
 <style lang="scss">
 .cp-text {
+  @include text-body-md;
   color: var(--color-black);
   font-family: var(--text-body-family);
-  font-size: var(--text-body-medium-size);
   font-weight: 400;
-  line-height: var(--text-body-medium-height);
   text-decoration: none;
-  margin-top: 0;
-  margin-bottom: 12px;
+  margin-top: var(--margin-top, 0);
+  margin-bottom: var(--margin-bottom, 12px);
 
   &--truncate {
     white-space: nowrap;
@@ -93,23 +92,19 @@ const textClass = computed(() => ({
   }
 
   &--body-large {
-    font-size: var(--text-body-large-size);
-    line-height: var(--text-body-large-height);
+    @include text-body-lg;
   }
 
   &--body-medium {
-    font-size: var(--text-body-medium-size);
-    line-height: var(--text-body-medium-height);
+    @include text-body-md;
   }
 
   &--body-small {
-    font-size: var(--text-body-small-size);
-    line-height: var(--text-body-small-height);
+    @include text-body-sm;
   }
 
   &--body-micro {
-    font-size: var(--text-body-micro-size);
-    line-height: var(--text-body-micro-height);
+    @include text-body-xs;
   }
 
   &[class*="cp-text--heading"] {
@@ -118,33 +113,27 @@ const textClass = computed(() => ({
   }
 
   &--heading-1 {
-    font-size: var(--text-heading-1-size);
-    line-height: var(--text-heading-1-height);
+    @include text-heading-1;
   }
 
   &--heading-2 {
-    font-size: var(--text-heading-2-size);
-    line-height: var(--text-heading-2-height);
+    @include text-heading-2;
   }
 
   &--heading-3 {
-    font-size: var(--text-heading-3-size);
-    line-height: var(--text-heading-3-height);
+    @include text-heading-3;
   }
 
   &--heading-4 {
-    font-size: var(--text-heading-4-size);
-    line-height: var(--text-heading-4-height);
+    @include text-heading-4;
   }
 
   &--heading-5 {
-    font-size: var(--text-heading-5-size);
-    line-height: var(--text-heading-5-height);
+    @include text-heading-5;
   }
 
   &--heading-6 {
-    font-size: var(--text-heading-6-size);
-    line-height: var(--text-heading-6-height);
+    @include text-heading-6;
   }
 }
 </style>

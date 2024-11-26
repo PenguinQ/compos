@@ -1,3 +1,4 @@
+import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import type { RxDumpCollection } from 'rxdb';
 
@@ -69,14 +70,22 @@ export default async (backupAttachments = false) => {
     const downloadUrl  = URL.createObjectURL(backupBlob);
     const downloadLink = document.createElement('a');
 
-    window.open(downloadUrl);
+    downloadLink.href     = downloadUrl;
+    downloadLink.download = backupName;
 
-    // downloadLink.href     = downloadUrl;
-    // downloadLink.download = backupName;
-    // document.body.appendChild(downloadLink);
-    // downloadLink.click();
-    // document.body.removeChild(downloadLink);
-    // URL.revokeObjectURL(downloadUrl);
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+
+    URL.revokeObjectURL(downloadUrl);
+
+    // saveAs(backupBlob, backupName);
+
+    // downloadLink.style.setProperty('position', 'absolute');
+    // downloadLink.style.setProperty('top', '150px');
+    // downloadLink.style.setProperty('width', '100px');
+    // downloadLink.style.setProperty('height', '100px');
+    // downloadLink.style.setProperty('background', 'red');
 
     return { result: true };
   } catch (error) {

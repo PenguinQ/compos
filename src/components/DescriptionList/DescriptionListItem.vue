@@ -36,9 +36,8 @@ $root: '.cp-description-list';
   }
 
   dd {
+    @include text-body-md;
     color: var(--color-black);
-    font-size: var(--text-body-medium-size);
-    line-height: var(--text-body-medium-height);
     opacity: 0.8;
     margin: 4px 0 0;
   }
@@ -49,9 +48,8 @@ $root: '.cp-description-list';
     gap: 12px;
 
     dt {
+      @include text-body-sm;
       width: 128px;
-      font-size: var(--text-body-medium-size);
-      line-height: var(--text-body-medium-height);
       flex: 0 0 128px;
     }
 

@@ -4,6 +4,95 @@ $screen-lg: 992px;
 $screen-xl: 1200px;
 $screen-xxl: 1400px;
 
+// Layouting mixins
+@mixin page {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  contain: layout size style;
+  z-index: 0;
+}
+
+@mixin content {
+  flex: 1 1 0%;
+  position: relative;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: var(--z-0);
+}
+
+@mixin content-inner {
+  overflow-y: auto;
+  position: absolute;
+  top: calc(var(--offset-top, 0px) * -1);
+  bottom: calc(var(--offset-bottom, 0px) * -1);
+  right: 0;
+  left: 0;
+  padding-top: calc(var(--padding-top, 0px) + var(--offset-top, 0px));
+  padding-bottom: calc(var(--padding-bottom, 0px) + var(--offset-bottom, 0px));
+  padding-inline-start: var(--padding-start, 0px);
+  padding-inline-end: var(--padding-end, 0px);
+}
+
+// Typography mixins
+@mixin text-heading-1 {
+  font-size: var(--text-heading-size-1);
+  line-height: var(--text-heading-height-1);
+}
+
+@mixin text-heading-2 {
+  font-size: var(--text-heading-size-2);
+  line-height: var(--text-heading-height-2);
+}
+
+@mixin text-heading-3 {
+  font-size: var(--text-heading-size-3);
+  line-height: var(--text-heading-height-3);
+}
+
+@mixin text-heading-4 {
+  font-size: var(--text-heading-size-4);
+  line-height: var(--text-heading-height-4);
+}
+
+@mixin text-heading-5 {
+  font-size: var(--text-heading-size-5);
+  line-height: var(--text-heading-height-5);
+}
+
+@mixin text-heading-6 {
+  font-size: var(--text-heading-size-6);
+  line-height: var(--text-heading-height-6);
+}
+
+@mixin text-body-lg {
+  font-size: var(--text-body-size-lg);
+  line-height: var(--text-body-height-lg);
+}
+
+@mixin text-body-md {
+  font-size: var(--text-body-size-md);
+  line-height: var(--text-body-height-md);
+}
+
+@mixin text-body-sm {
+  font-size: var(--text-body-size-sm);
+  line-height: var(--text-body-height-sm);
+}
+
+@mixin text-body-xs {
+  font-size: var(--text-body-size-xs);
+  line-height: var(--text-body-height-xs);
+}
+
+// Media screen mixins
 @mixin screen-sm {
   @media screen and (min-width: $screen-sm) {
     @content;
@@ -74,40 +163,4 @@ $screen-xxl: 1400px;
   @media screen and (min-width: $screen + 'px') and (orientation: landscape) {
     @content;
   }
-}
-
-@mixin page {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  contain: layout size style;
-  z-index: 0;
-}
-
-@mixin content {
-  flex: 1 1 0%;
-  position: relative;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  z-index: var(--z-0);
-}
-
-@mixin content-inner {
-  overflow-y: auto;
-  position: absolute;
-  top: calc(var(--offset-top, 0px) * -1);
-  bottom: calc(var(--offset-bottom, 0px) * -1);
-  right: 0;
-  left: 0;
-  padding-top: calc(var(--padding-top, 0px) + var(--offset-top, 0px));
-  padding-bottom: calc(var(--padding-bottom, 0px) + var(--offset-bottom, 0px));
-  padding-inline-start: var(--padding-start, 0px);
-  padding-inline-end: var(--padding-end, 0px);
 }

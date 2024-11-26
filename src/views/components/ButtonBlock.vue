@@ -31,11 +31,10 @@ const button_class = computed(() => ({
 $root: '.vc-button-block';
 
 .vc-button-block {
+  @include text-body-lg;
   width: 56px;
   height: 56px;
   color: var(--color-white);
-  font-size: var(--text-body-large-size);
-  line-height: var(--text-body-large-height);
   background-color: var(--color-black);
   border: none;
   display: inline-flex;

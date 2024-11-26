@@ -1,30 +1,32 @@
-.cp-page {
-  @include page;
-}
-
-.cp-container {
-  &.page-container {
-    padding-top: 16px;
-    padding-bottom: 16px;
+.cp {
+  &-page {
+    @include page;
   }
-}
 
-.cp-card {
-  &.section-card {
-    border-right: none;
-    border-left: none;
-    border-radius: 0;
-
-    + .section-card {
-      margin-top: 16px;
+  &-container {
+    &.page-container {
+      --padding-top: 16px;
+      --padding-bottom: 16px;
     }
+  }
 
-    .cp-card__header {
-      background-color: var(--color-neutral-1);
-      border-bottom: 1px solid var(--color-border);
+  &-card {
+    &.section-card {
+      border-right: none;
+      border-left: none;
+      border-radius: 0;
 
-      + .cp-card__body {
-        padding-top: 16px;
+      + .section-card {
+        margin-top: 16px;
+      }
+
+      .cp-card__header {
+        background-color: var(--color-neutral-1);
+        border-bottom: 1px solid var(--color-border);
+
+        + .cp-card__body {
+          padding-top: 16px;
+        }
       }
     }
   }
@@ -129,6 +131,52 @@
   }
 }
 
+.margin {
+  --margin-top: var(--app-margin, 16px);
+  --margin-bottom: var(--app-margin, 16px);
+  --margin-start: var(--app-margin, 16px);
+  --margin-end: var(--app-margin, 16px);
+
+  &-0 {
+    --margin-top: 0;
+    --margin-bottom: 0;
+    --margin-start: 0;
+    --margin-end: 0;
+  }
+
+  &-top {
+    --margin-top: var(--app-margin, 16px);
+
+    &-0 {
+      --margin-top: 0;
+    }
+  }
+
+  &-bottom {
+    --margin-bottom: var(--app-margin, 16px);
+
+    &-0 {
+      --margin-bottom: 0;
+    }
+  }
+
+  &-start {
+    --margin-start: var(--app-margin, 16px);
+
+    &-0 {
+      --margin-start: 0;
+    }
+  }
+
+  &-end {
+    --margin-end: var(--app-margin, 16px);
+
+    &-0 {
+      --margin-end: 0;
+    }
+  }
+}
+
 @media screen and (max-width: 767px) {
   .cp-ticker {
     &.page-ticker {
@@ -142,8 +190,8 @@
 @include screen-md {
   .cp-container {
     &.page-container {
-      padding-right: 16px;
-      padding-left: 16px;
+      --padding-start: 16px;
+      --padding-end: 16px;
     }
   }
 

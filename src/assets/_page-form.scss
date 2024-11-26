@@ -114,9 +114,8 @@
   }
 
   &-search {
+    @include text-body-md;
     min-width: 100px;
-    font-size: var(--text-body-medium-size);
-    line-height: var(--text-body-medium-height);
     flex-grow: 1;
     height: 40px;
     border: none;

@@ -1,7 +1,8 @@
-import { fileURLToPath, URL } from 'url';
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import vue from '@vitejs/plugin-vue'
+import { fileURLToPath, URL } from 'url';
+import autoprefixer from 'autoprefixer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,8 +13,12 @@ export default defineConfig({
       manifest: {
         name: 'ComPOS',
         short_name: 'ComPOS',
+        display: 'standalone',
         description: 'Simple Web POS',
+        background_color: '#FFFFFF',
         theme_color: '#FFFFFF',
+        start_url: '/',
+        scope: '/',
         icons: [
           {
             src: 'pwa-64.png',
@@ -82,6 +87,11 @@ export default defineConfig({
           @import '@assets/_mixins.scss';
         `,
       },
+    },
+    postcss: {
+      plugins: [
+        autoprefixer({}),
+      ],
     },
   },
 });

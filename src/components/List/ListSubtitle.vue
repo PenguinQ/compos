@@ -22,9 +22,8 @@ const markup = ref(props.as);
 
 <style lang="scss">
 .cp-list-item__subtitle {
+  @include text-body-md;
   color: var(--color-black);
-  font-size: var(--text-body-medium-size);
-  line-height: var(--text-body-medium-height);
   opacity: 0.8;
   margin: 4px 0 0;
   text-overflow: ellipsis;

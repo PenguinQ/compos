@@ -8,9 +8,8 @@
 
 <style lang="scss">
 .cp-toolbar-title {
+  @include text-heading-3;
   color: inherit;
-  font-size: var(--text-heading-3-size);
-  line-height: var(--text-heading-3-height);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -25,8 +24,7 @@
 
 @include screen-md {
   .cp-toolbar-title {
-    font-size: var(--text-heading-5-size);
-    line-height: var(--text-heading-5-height);
+    @include text-heading-5;
   }
 }
 </style>

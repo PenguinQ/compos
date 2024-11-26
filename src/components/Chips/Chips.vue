@@ -27,9 +27,8 @@ const chipsClass = computed(() => ({
 .cp-chips {
   $parent: &;
 
+  @include text-body-sm;
   color: var(--color-white);
-  font-size: var(--text-body-small-size);
-  line-height: var(--text-body-small-height);
   font-weight: 600;
   background-color: var(--color-black);
   border: 1px solid var(--color-black);
