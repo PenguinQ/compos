@@ -1,47 +1,49 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
+import { ComponentProps } from 'vue-component-type-helpers';
 
-import Icons from './Icons.vue';
-import ComposIcon, { Archive } from '@components/Icons';
+import ComposIcon, { CashCoin } from '@components/Icons';
+import IconList from './IconList.vue';
 
-const meta: Meta<typeof ComposIcon> = {
+type IconProps = ComponentProps<typeof ComposIcon>;
+
+const meta: Meta<IconProps> = {
+  title: 'Icons',
   component: ComposIcon,
+};
+
+export default meta;
+
+type PlaygroundStory = StoryObj<IconProps>;
+
+export const Playground: PlaygroundStory = {
+  render: (args) => ({
+    components: { ComposIcon },
+    setup() {
+      return { args, CashCoin };
+    },
+    template: `
+      <ComposIcon v-bind="args" :icon="CashCoin" />
+    `,
+  }),
   argTypes: {
     size: {
       control: 'text',
     },
     color: {
-      conrol: 'text',
+      control: 'text',
     },
-  },
-  args: {
-    size: '48px',
-    color: '',
   },
 };
 
-export default meta;
-
-type Story = StoryObj<typeof ComposIcon>;
-
-export const Default: Story = {
-  render: (args) => ({
-    components: { ComposIcon },
+export const List = {
+  name: 'List',
+  render: () => ({
+    components: { IconList },
     setup() {
-      return { args, Archive };
+      return {};
     },
     template: `
-      <ComposIcon v-bind="args" :icon="Archive" />
+      <IconList />
     `,
-  }),
-};
-
-export const List: Story = {
-  tags: ['!dev'], // Hide from sidebar
-  render: (args) => ({
-    components: { Icons },
-    setup() {
-      return { args };
-    },
-    template: `<Icons />`,
   }),
 };

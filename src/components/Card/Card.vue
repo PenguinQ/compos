@@ -2,22 +2,22 @@
 export default { inheritAttrs: false };
 </script>
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { RouterLink } from 'vue-router';
 import type { AnchorHTMLAttributes } from 'vue';
 import type { RouterLinkProps, RouteLocationRaw } from 'vue-router';
 import type * as CSS from 'csstype';
 
-import CardHeader from './CardHeader.vue';
-import CardTitle from './CardTitle.vue';
-import CardSubtitle from './CardSubtitle.vue';
+// import CardHeader from './CardHeader.vue';
+// import CardTitle from './CardTitle.vue';
+// import CardSubtitle from './CardSubtitle.vue';
 import CardBody from './CardBody.vue';
 
 interface CardProps extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLinkProps, 'to'> {
   title?: string;
   subtitle?: string;
   content?: string;
-  clicky?: boolean;
+  clickable?: boolean;
   margin?: CSS.Property.Margin;
   padding?: CSS.Property.Padding;
   target?: '_self' | '_blank';
@@ -26,17 +26,21 @@ interface CardProps extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterL
 }
 
 const props = withDefaults(defineProps<CardProps>(), {
-  clicky: false,
+  clickable: false,
   target: '_self',
 });
 
+const CardHeader   = defineAsyncComponent(() => import('./CardHeader.vue'));
+const CardTitle    = defineAsyncComponent(() => import('./CardTitle.vue'));
+const CardSubtitle = defineAsyncComponent(() => import('./CardSubtitle.vue'));
+
 const isExternal = computed(() => typeof props.to === 'string' && props.to.startsWith('http'));
-const cardClass = computed(() => ({
-  'cp-card': true,
-  'cp-card--link': props.to,
-  'cp-card--clicky': props.clicky,
-  'cp-card--flat': props.variant === 'flat',
-  'cp-card--outline': props.variant === 'outline',
+const cardClass  = computed(() => ({
+  'cp-card'           : true,
+  'cp-card--link'     : props.to,
+  'cp-card--clickable': props.clickable,
+  'cp-card--flat'     : props.variant === 'flat',
+  'cp-card--outline'  : props.variant === 'outline',
 }));
 </script>
 
@@ -105,7 +109,7 @@ const cardClass = computed(() => ({
   display: block;
   overflow: hidden;
 
-  &--clicky,
+  &--clickable,
   &--link {
     cursor: pointer;
     transition-property: transform, box-shadow;

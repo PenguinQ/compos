@@ -373,7 +373,7 @@ watch(
   </Dialog>
 </template>
 
-<style lang="scss" src="@assets/_page-form.scss" />
+<style lang="scss" src="@assets/page-form.scss" />
 <style lang="scss" scoped>
 .products-list {
   .vc-sales-form-product {

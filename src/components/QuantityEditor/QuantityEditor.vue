@@ -173,7 +173,7 @@ watch(
   </div>
 </template>
 
-<style src="../../assets/_form.scss" />
+<style src="../../assets/form.scss" />
 <style lang="scss">
 .cp-form-quantity {
   display: inline-grid;

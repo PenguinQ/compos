@@ -1,5 +1,7 @@
 import path from 'path';
 import type { StorybookConfig } from '@storybook/vue3-vite';
+import remarkGfm from 'remark-gfm';
+import autoprefixer from 'autoprefixer';
 
 const config: StorybookConfig = {
   stories: [
@@ -12,6 +14,16 @@ const config: StorybookConfig = {
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
+    {
+      name: '@storybook/addon-docs',
+      options: {
+        mdxPluginOptions: {
+          mdxCompileOptions: {
+            remarkPlugins: [remarkGfm],
+          },
+        },
+      },
+    }
   ],
   framework: {
     name: '@storybook/vue3-vite',
@@ -21,16 +33,6 @@ const config: StorybookConfig = {
   async viteFinal(config: any, {}) {
     return {
       ...config,
-      css: {
-        postcss: null,
-        preprocessorOptions: {
-          scss: {
-            additionalData: `
-              @import '@assets/mixins';
-            `,
-          },
-        },
-      },
       resolve: {
         alias: {
           ...config.resolve.alias,
@@ -41,6 +43,20 @@ const config: StorybookConfig = {
           '@hooks': path.resolve(__dirname, '../src/hooks'),
           '@icons': path.resolve(__dirname, '../src/components/icons'),
           '@docs': path.resolve(__dirname, '../.storybook'),
+        },
+      },
+      css: {
+        preprocessorOptions: {
+          scss: {
+            additionalData: `
+            @import '@assets/mixins';
+            `,
+          },
+        },
+        postcss: {
+          plugins: [
+            autoprefixer({}),
+          ],
         },
       },
     };

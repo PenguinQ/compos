@@ -152,7 +152,7 @@ const handleKeydown = (e: KeyboardEvent) => {
   </div>
 </template>
 
-<style src="../../assets/_form.scss" />
+<style src="../../assets/form.scss" />
 <style lang="scss">
 .cp-form-checkbox {
   display: inline-flex;

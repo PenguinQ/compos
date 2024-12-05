@@ -1,11 +1,11 @@
 import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 
+import { Text } from '@components';
 import TabControls from './TabControls.vue';
 import TabControl from './TabControl.vue';
 import TabPanels from './TabPanels.vue';
 import TabPanel from './TabPanel.vue';
-import Text from '@components/Text';
 
 const meta: Meta<typeof TabControls> = {
   component: TabControls,

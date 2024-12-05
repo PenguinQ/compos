@@ -1,10 +1,9 @@
 import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 
+import { Card, Text } from '@components';
 import Ticker from './Ticker.vue';
 import TickerItem from './TickerItem.vue';
-import Card from '@components/Card';
-import Text from '@components/Text';
 
 const meta: Meta<typeof Ticker> = {
   component: Ticker,

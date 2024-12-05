@@ -299,7 +299,7 @@ watch(
   </Content>
 </template>
 
-<style lang="scss" src="@assets/_page-form.scss" />
+<style lang="scss" src="@assets/page-form.scss" />
 <style lang="scss" scoped>
 .selected-products {
   margin-bottom: 16px;
