@@ -82,15 +82,18 @@ function isFirefoxiOS() {
   const isFirefoxAndroid = ua.includes('firefox') && ua.includes('android');
 
   // Additional check for iOS platform
-  const isiOSPlatform = /iPad|iPhone|iPod/.test(ua)
+  const isApple = /iPad|iPhone|iPod/.test(ua) || ua.includes('macintosh');
+
+  // console.log(isApple);
 
       // return isFirefoxiOS && isiOSPlatform && !isFirefoxAndroid;
-  alert(`${ua}\n\n${navigator.maxTouchPoints}\n\n${isFirefoxiOS},\n${isiOSPlatform},\n${isFirefoxAndroid}`);
+  // alert(`${ua}\n\n${navigator.maxTouchPoints}\n\n${isFirefoxiOS},\n${isiOSPlatform},\n${isFirefoxAndroid}`);
 }
 
 onMounted(() => {
   // isFirefoxiOS();
   // document.querySelector('.test')?.setAttribute('href', URL.createObjectURL(new Blob(['asdas'])))
+  // font: var(--ion-dynamic-font, 16px var(--ion-font-family));
 });
 </script>
 
@@ -105,6 +108,15 @@ onMounted(() => {
       <PullToRefresh @refresh="handleRefresh" />
     </template>
     <Container>
+      <p>
+        Restoring images only possible if the backup file has the image data. Restoring all images will takes longer time to complete.
+      </p>
+      <Text margin="4px 0 0">
+        Restoring images only possible if the backup file has the image data. Restoring all images will takes longer time to complete.
+      </Text>
+      <Text body="small" margin="4px 0 0">
+        Restoring images only possible if the backup file has the image data. Restoring all images will takes longer time to complete.
+      </Text>
       <input ref="backupInput" type="file" accept=".json" @change="handleChangeRestore">
       <Button @click="dialogBackup = true">Backup</Button>
       <div style="height: 1000px; background-color: var(--color-neutral-2)"></div>

@@ -13,7 +13,7 @@ type CardStories = {
 const meta: Meta<typeof Card> = {
   component: Card,
   argTypes: {
-    clicky: {
+    clickable: {
       control: 'boolean',
     },
     to: {
@@ -31,12 +31,12 @@ const meta: Meta<typeof Card> = {
     },
   },
   args: {
-    clicky: false,
-    margin: '',
-    padding: '',
-    target: '_self',
-    to: '',
-    variant: undefined,
+    // clickable: false,
+    // margin: '',
+    // padding: '',
+    // target: '_self',
+    // to: '',
+    // variant: undefined,
   },
 };
 
@@ -66,8 +66,7 @@ export const Default: Story = {
     },
   },
   args: {
-    content:
-      'A colossal structure located in the Asdana system, with the soaring hotel "The Reverie" as its iconic landmark. Once a frontier prison belonging to the IPC, The Family had modeled it to serve as an interstellar transportation hub and the gateway to the Sweetdream Paradise.',
+    content: 'A colossal structure located in the Asdana system, with the soaring hotel "The Reverie" as its iconic landmark. Once a frontier prison belonging to the IPC, The Family had modeled it to serve as an interstellar transportation hub and the gateway to the Sweetdream Paradise.',
     subtitle: 'Planet of Festivities',
     title: 'Penacony',
   },

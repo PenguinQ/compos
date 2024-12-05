@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Content from './Content.vue';
-import Footer from './Footer.vue';
-import Header from './Header.vue';
 import Page from './Page.vue';
+import Header from './Header.vue';
+import Content from './Content.vue';
+import Container from './Container.vue';
+import Footer from './Footer.vue';
 
 const meta: Meta<typeof Content> = {
+  title: 'Layout/Content',
   component: Content,
   argTypes: {
   },
@@ -26,3 +28,29 @@ export const Default: Story = {
     template: `<Content v-bind="args">{{ args.default }}</Content>`,
   }),
 };
+
+// export const ContainerStory: StoryContainer = {
+//   render: (args) => ({
+//     components: { Container },
+//     setup() {
+//       return { args };
+//     },
+//     template: `
+//       <Container v-bind="args">Content</Container>
+//     `,
+//   }),
+//   argTypes: {
+//     fluid: {
+//       control: 'boolean',
+//     },
+//     breakpoint: {
+//       control: 'select',
+//       options: ['md'],
+//     },
+//   },
+//   args: {
+//     fluid: false,
+//   },
+// };
+
+// ContainerStory.storyName = 'Container';

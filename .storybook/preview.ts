@@ -1,8 +1,11 @@
-import type { Preview } from "@storybook/vue3";
+import type { Preview } from '@storybook/vue3';
+
+// CSS
+import './preview.scss';
 
 const preview: Preview = {
   parameters: {
-    actions: { argTypesRegex: "^on[A-Z].*" },
+    // actions: { argTypesRegex: "^on[A-Z].*" }, // Dropped in v8
     controls: {
       matchers: {
         color: /(background|color)$/i,

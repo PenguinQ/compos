@@ -1,8 +1,7 @@
 import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Ticker, { TickerItem } from '@components/Ticker';
-import Text from '@components/Text';
+import { Text, Ticker, TickerItem } from '@components';
 import Textfield from './Textfield.vue';
 
 const meta: Meta<typeof Textfield> = {

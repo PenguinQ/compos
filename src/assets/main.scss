@@ -1,10 +1,6 @@
 @import './variables';
 @import './normalizer';
 
-html {
-  box-sizing: border-box;
-}
-
 *,
 *::before,
 *::after {
@@ -13,6 +9,17 @@ html {
 
 * {
   touch-action: manipulation;
+}
+
+html {
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+@supports (-webkit-touch-callout: none) and (font: -apple-system-body) {
+  html {
+    font: var(--text-dynamic-font, 16px var(--text-body-family));
+  }
 }
 
 body {
@@ -27,7 +34,7 @@ body {
   font-weight: 400;
   word-wrap: break-word;
   text-rendering: optimizeLegibility;
-  -webkit-text-size-adjust: none;
+  text-size-adjust: 100%;
   overflow: hidden;
   overscroll-behavior-y: none;
   touch-action: manipulation;
@@ -37,7 +44,12 @@ body {
   transform: translateZ(0);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--text-heading-family);
   font-weight: 600;
 }
@@ -71,35 +83,3 @@ ul {
   margin-top: var(--margin-top, 12px);
   margin-bottom: var(--margin-bottom, 12px);
 }
-
-// @include screen-md {
-//   h1 {
-//     font-size: var(--text-heading-size-1);
-//     line-height: var(--text-heading-height-1);
-//   }
-
-//   h2 {
-//     font-size: var(--text-heading-size-2);
-//     line-height: var(--text-heading-height-2);
-//   }
-
-//   h3 {
-//     font-size: var(--text-heading-size-3);
-//     line-height: var(--text-heading-height-3);
-//   }
-
-//   h4 {
-//     font-size: var(--text-heading-size-4);
-//     line-height: var(--text-heading-height-4);
-//   }
-
-//   h5 {
-//     font-size: var(--text-heading-size-5);
-//     line-height: var(--text-heading-height-5);
-//   }
-
-//   h6 {
-//     font-size: var(--text-heading-size-6);
-//     line-height: var(--text-heading-height-6);
-//   }
-// }

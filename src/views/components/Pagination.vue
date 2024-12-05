@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import * as CSS from 'csstype';
+import type * as CSS from 'csstype';
 
 // Common Components
 import { Bar, Text } from '@/components';

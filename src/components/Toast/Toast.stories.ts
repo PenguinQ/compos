@@ -1,11 +1,9 @@
 import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 
+import { Button, Text, Ticker } from '@components';
 import Toast from './Toast.vue';
 import ToastItem from './ToastItem.vue';
-import Button from '@components/Button';
-import Text from '@components/Text';
-import Ticker from '@components/Ticker';
 
 const meta: Meta<typeof Toast> = {
   component: Toast,

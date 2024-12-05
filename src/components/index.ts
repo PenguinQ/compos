@@ -13,7 +13,6 @@ import DescriptionList from './DescriptionList/DescriptionList.vue';
 import DescriptionListItem from './DescriptionList/DescriptionListItem.vue';
 import Dialog from './Dialog/Dialog.vue';
 import EmptyState from './EmptyState/EmptyState.vue';
-import Container from './Grid/Container.vue';
 import Row from './Grid/Row.vue';
 import Column from './Grid/Column.vue';
 import Label from './Label/Label.vue';
@@ -21,6 +20,7 @@ import OfflineStatus from './OfflineStatus/OfflineStatus.vue';
 import Page from './Layout/Page.vue';
 import Header from './Layout/Header.vue';
 import Content from './Layout/Content.vue';
+import Container from './Layout/Container.vue';
 import Footer from './Layout/Footer.vue';
 import Link from './Link/Link.vue';
 import Bar from './Loader/Bar.vue';
@@ -29,6 +29,7 @@ import PullToRefresh from './PullToRefresh/PullToRefresh.vue';
 import QuantityEditor from './QuantityEditor/QuantityEditor.vue';
 import Radio from './Radio/Radio.vue';
 import RadioGroup from './Radio/RadioGroup.vue';
+import Select from './Select/Select.vue';
 import Separator from './Separator/Separator.vue';
 import TabControl from './TabsV2/TabControl.vue';
 import TabControls from './TabsV2/TabControls.vue';
@@ -79,6 +80,7 @@ export {
   QuantityEditor,
   Radio,
   RadioGroup,
+  Select,
   Separator,
   TabControl,
   TabControls,

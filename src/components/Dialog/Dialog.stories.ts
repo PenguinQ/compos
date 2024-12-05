@@ -1,10 +1,16 @@
 import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Button from '@components/Button';
-import Text from '@components/Text';
-import Ticker, { TickerItem } from '@components/Ticker';
-import Toolbar, { ToolbarAction, ToolbarSpacer, ToolbarTitle } from '@components/Toolbar';
+import {
+  Button,
+  Text,
+  Ticker,
+  TickerItem,
+  Toolbar,
+  ToolbarAction,
+  ToolbarSpacer,
+  ToolbarTitle,
+} from '@components';
 import ComposIcon, { X, WarningCircle } from '@components/Icons';
 import Dialog from './Dialog.vue';
 

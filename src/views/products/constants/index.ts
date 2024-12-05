@@ -31,6 +31,6 @@ export const BUNDLE_FORM = {
   PRODUCT_LIST_EMPTY_DESCRIPTION: 'Looks like there\'s no active products, try adding new product or update the existing one.',
   PRODUCT_SEARCH_EMPTY_TITLE: 'Welp.',
   PRODUCT_SEARCH_EMPTY_DESCRIPTION: 'There\'s no active products with that name, try another keyword perhaps?',
-  PRICE_MESSAGE: 'The price automatically follows the sum of all products in the products list.',
+  PRICE_MESSAGE: 'The price automatically follows the sum of all products in the product list.',
   AUTO_PRICE_MESSAGE: 'Uncheck this box if you want to set the price to your preferences.'
 };

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Card from '@components/Card';
+import { Card } from '@components';
 import List from './List.vue';
 import ListItem from './ListItem.vue';
 import ListTitle from './ListTitle.vue';

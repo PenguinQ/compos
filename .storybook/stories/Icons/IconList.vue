@@ -19,8 +19,6 @@ const { default: _, ...icons } = Icons;
   grid-template-columns: repeat(6, 1fr);
   flex-wrap: wrap;
   gap: 32px;
-  margin-top: 48px;
-  margin-bottom: 24px;
 }
 
 .docs-icon {

@@ -1,17 +1,32 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { ButtonHTMLAttributes } from 'vue';
-import * as CSS from 'csstype';
+import type * as CSS from 'csstype';
 
 /**
  * @vue-ignore inline below to allow compiler ignore warning.
  * Reference: https://github.com/vuejs/core/issues/8286
  */
 interface Props extends /* @vue-ignore */ ButtonHTMLAttributes {
+  /**
+   * Set the color of the button.
+   */
   color?: 'red' | 'green' | 'blue';
+  /**
+   * Set the button width to 100%.
+   */
   full?: boolean;
+  /**
+   * Set the button to icon mode that has 50% border radius.
+   */
   icon?: boolean;
+  /**
+   * Set the button padding.
+   */
   padding?: CSS.Property.Padding;
+  /**
+   * Set the button variant.
+   */
   variant?: 'outline' | 'text';
 }
 
@@ -21,14 +36,14 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const buttonClass = computed(() => ({
-  'cp-button': true,
-  'cp-button--full': props.full,
-  'cp-button--icon': props.icon,
+  'cp-button'         : true,
+  'cp-button--full'   : props.full,
+  'cp-button--icon'   : props.icon,
   'cp-button--outline': props.variant === 'outline',
-  'cp-button--text': props.variant === 'text',
-  'cp-button--red': props.color === 'red',
-  'cp-button--green': props.color === 'green',
-  'cp-button--blue': props.color === 'blue',
+  'cp-button--text'   : props.variant === 'text',
+  'cp-button--red'    : props.color === 'red',
+  'cp-button--green'  : props.color === 'green',
+  'cp-button--blue'   : props.color === 'blue',
 }));
 </script>
 

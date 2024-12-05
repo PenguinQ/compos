@@ -69,6 +69,13 @@ export interface TextfieldExpose {
   input: typeof input;
 }
 
+// type TextfieldSlots = {
+//   append?: any;
+//   label?: any;
+//   message?: any;
+//   prepend?: any;
+// };
+
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<TextfieldProps>(), {
@@ -78,6 +85,8 @@ const props = withDefaults(defineProps<TextfieldProps>(), {
   type: 'text',
 });
 const emits = defineEmits(['update:modelValue']);
+
+// defineSlots<TextfieldSlots>()
 
 const isPassword = computed(() => props.type === 'password');
 const showPassword = ref(false);
@@ -156,7 +165,7 @@ defineExpose<TextfieldExpose>({ input });
   </div>
 </template>
 
-<style src="../../assets/_form.scss" />
+<style src="@/assets/form.scss" />
 <style lang="scss">
 .cp-form-textfield {
   width: 100%;
@@ -166,7 +175,7 @@ defineExpose<TextfieldExpose>({ input });
     font-size: 16px;
     line-height: 22px;
     font-weight: 400;
-    transition: color 300ms cubic-bezier(0.63, 0.01, 0.29, 1);
+    transition: color var(--transition-duration-normal) var(--transition-timing-function);
     display: flex;
 
     &:first-child {

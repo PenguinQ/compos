@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Text from '@components/Text';
+import { Text } from '@components';
 import Textarea from './Textarea.vue';
 
 const meta: Meta<typeof Textarea> = {

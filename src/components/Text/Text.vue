@@ -33,16 +33,16 @@ const headingMap: { [key: string]: string } = {
   6: 'h6',
 };
 const textStyle = computed(() => ({
-  color: props.color,
-  fontSize: props.fontSize,
-  fontStyle: props.fontStyle,
-  fontWeight: props.fontWeight,
-  lineHeight: props.lineHeight,
-  textAlign: props.textAlign,
+  color         : props.color,
+  fontSize      : props.fontSize,
+  fontStyle     : props.fontStyle,
+  fontWeight    : props.fontWeight,
+  lineHeight    : props.lineHeight,
+  textAlign     : props.textAlign,
   textDecoration: props.textDecoration,
-  textTransform: props.textTransform,
-  padding: props.padding,
-  margin: props.margin,
+  textTransform : props.textTransform,
+  padding       : props.padding,
+  margin        : props.margin,
 }));
 
 watchEffect(() => {
@@ -54,18 +54,18 @@ watchEffect(() => {
 });
 
 const textClass = computed(() => ({
-  'cp-text': true,
-  'cp-text--truncate': props.truncate,
-  'cp-text--heading-1': props.heading == 1,
-  'cp-text--heading-2': props.heading == 2,
-  'cp-text--heading-3': props.heading == 3,
-  'cp-text--heading-4': props.heading == 4,
-  'cp-text--heading-5': props.heading == 5,
-  'cp-text--heading-6': props.heading == 6,
-  'cp-text--body-large': props.body === 'large',
+  'cp-text'             : true,
+  'cp-text--truncate'   : props.truncate,
+  'cp-text--heading-1'  : props.heading == 1,
+  'cp-text--heading-2'  : props.heading == 2,
+  'cp-text--heading-3'  : props.heading == 3,
+  'cp-text--heading-4'  : props.heading == 4,
+  'cp-text--heading-5'  : props.heading == 5,
+  'cp-text--heading-6'  : props.heading == 6,
+  'cp-text--body-large' : props.body === 'large',
   'cp-text--body-medium': props.body === 'medium',
-  'cp-text--body-small': props.body === 'small',
-  'cp-text--body-micro': props.body === 'micro',
+  'cp-text--body-small' : props.body === 'small',
+  'cp-text--body-micro' : props.body === 'micro',
 }));
 </script>
 
@@ -77,9 +77,9 @@ const textClass = computed(() => ({
 
 <style lang="scss">
 .cp-text {
-  @include text-body-md;
   color: var(--color-black);
   font-family: var(--text-body-family);
+  @include text-body-md;
   font-weight: 400;
   text-decoration: none;
   margin-top: var(--margin-top, 0);

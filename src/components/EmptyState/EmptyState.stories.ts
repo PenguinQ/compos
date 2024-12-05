@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Button from '@components/Button';
+import { Button } from '@components';
 import EmptyState from './EmptyState.vue';
 
 const meta: Meta<typeof EmptyState> = {

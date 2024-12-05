@@ -1,0 +1,70 @@
+@import '../src/assets/variables';
+@import '../src/assets/normalizer';
+
+html {
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+* {
+  touch-action: manipulation;
+}
+
+body {
+  font-family: var(--text-body-family);
+  color: var(--color-black, #2E4057);
+  @include text-body-md;
+  font-weight: 400;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--text-heading-family);
+  font-weight: 600;
+}
+
+h1 {
+  @include text-heading-1;
+}
+
+h2 {
+  @include text-heading-2;
+}
+
+h3 {
+  @include text-heading-3;
+}
+
+h4 {
+  @include text-heading-4;
+}
+
+h5 {
+  @include text-heading-5;
+}
+
+h6 {
+  @include text-heading-6;
+}
+
+ul {
+  padding-inline-start: var(--padding-start, 24px);
+  margin-top: var(--margin-top, 12px);
+  margin-bottom: var(--margin-bottom, 12px);
+}
+
+.grid-column {
+  height: 100px;
+  color: white;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

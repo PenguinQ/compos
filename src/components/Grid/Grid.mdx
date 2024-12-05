@@ -1,0 +1,50 @@
+import { Canvas, Meta, Story } from '@storybook/blocks';
+import * as RowStories from './Row.stories';
+import * as ColumnStories from './Column.stories';
+
+<Meta title="Layouts/Grid" />
+
+# 🔳 Grid
+Grid are are 12-column system to organizes layout using a series of `Row`, and `Column` component that provides:
+
+1. Consistent spacing and alignment
+2. Responsive design
+3. Flexible container for the content inside the column
+
+> Optionally, you can use grid system with `Container` component to provide basic container layout for the page.
+
+<br />
+
+## Usages
+To start using the grid system, import the required components:
+```ts
+<script setup lang="ts">
+import { Container, Row, Column } from '@components';
+</script>
+
+<template>
+  <Container>
+    <Row>
+      <Column>1</Column>
+      <Column>2</Column>
+      <Column>3</Column>
+      <Column>4</Column>
+      <Column>5</Column>
+      <Column>6</Column>
+      <Column>7</Column>
+      <Column>8</Column>
+      <Column>9</Column>
+      <Column>10</Column>
+      <Column>11</Column>
+      <Column>12</Column>
+    </Row>
+  </Container>
+</template>
+```
+
+## Examples
+The example on the [Usage](#usage) section will results in something you can see below.
+
+<Story of={RowStories.GridPreview} />
+
+> The striped background, and column background are for preview only
