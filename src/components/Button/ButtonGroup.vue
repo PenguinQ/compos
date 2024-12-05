@@ -10,7 +10,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const groupClass = computed(() => ({
-  'cp-button-group': true,
+  'cp-button-group'      : true,
   'cp-button-group--full': props.full,
 }));
 </script>

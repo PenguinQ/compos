@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Card from '@components/Card';
+import { Card } from '@components';
 import DescriptionList from './DescriptionList.vue';
 
 const meta: Meta<typeof DescriptionList> = {

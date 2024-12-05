@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import * as CSS from 'csstype';
+import type * as CSS from 'csstype';
 
 // Common Components
 import { Button } from '@/components';

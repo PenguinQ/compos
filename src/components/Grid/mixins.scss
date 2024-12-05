@@ -32,7 +32,7 @@
   }
 }
 
-@mixin create-column-offset($size: '', $column: 12) {
+@mixin create-column-offset($size: '', $column: 12 - 1) {
   $dataSelector: 'data-cp-offset';
 
   @if $size != '' {

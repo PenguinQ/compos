@@ -1,11 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Ticker, { TickerItem } from '@components/Ticker';
-import Button from '@components/Button';
+import { Button, Ticker, TickerItem } from '@components';
+import ComposIcon, { Bag } from '@components/Icons';
 import Toolbar from './Toolbar.vue';
 import ToolbarAction from './ToolbarAction.vue';
 import ToolbarSpacer from './ToolbarSpacer.vue';
-import ComposIcon, { Bag } from '@components/Icons';
 
 const meta: Meta<typeof Toolbar> = {
   component: Toolbar,
