@@ -1,78 +1,76 @@
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 
 import { Text, Ticker, TickerItem } from '@components';
 import Textfield from './Textfield.vue';
 
+import { onlyShowArgs } from '@docs/helpers';
+
+const defaultArgs: any = {
+  append: {
+    control: 'text',
+  },
+  containerProps: {
+    control: 'object',
+  },
+  disabled: {
+    control: 'boolean',
+  },
+  error: {
+    control: 'boolean',
+  },
+  label: {
+    control: 'text',
+  },
+  labelProps: {
+    control: 'object',
+  },
+  margin: {
+    control: 'text',
+  },
+  message: {
+    control: 'text',
+  },
+  placeholder: {
+    control: 'text',
+  },
+  prepend: {
+    control: 'text',
+  },
+  success: {
+    control: 'boolean',
+  },
+  type: {
+    control: 'select',
+    options: ['email', 'number', 'password', 'tel', 'text'],
+  },
+  value: {
+    control: 'text',
+  },
+  modelValue: {
+    name: 'v-model',
+    control: 'text',
+  },
+};
+
 const meta: Meta<typeof Textfield> = {
   component: Textfield,
-  argTypes: {
-    append: {
-      control: 'text',
-    },
-    containerProps: {
-      control: 'object',
-    },
-    disabled: {
-      control: 'boolean',
-    },
-    error: {
-      control: 'boolean',
-    },
-    label: {
-      control: 'text',
-    },
-    labelProps: {
-      control: 'object',
-    },
-    margin: {
-      control: 'text',
-    },
-    message: {
-      control: 'text',
-    },
-    placeholder: {
-      control: 'text',
-    },
-    prepend: {
-      control: 'text',
-    },
-    success: {
-      control: 'boolean',
-    },
-    type: {
-      control: 'select',
-      options: ['email', 'number', 'password', 'tel', 'text'],
-    },
-    value: {
-      table: {
-        disable: true,
-      },
-    },
-    ['modelValue']: {
-      table: {
-        disable: true,
-      },
-    },
-    ['update:modelValue']: {
-      table: {
-        disable: true,
-      },
-    },
-  },
+  argTypes: defaultArgs,
   args: {
     append: '',
-    containerProps: {},
-    disabled: false,
-    error: false,
+    containerProps: undefined,
+    disabled: undefined,
+    error: undefined,
     label: '',
-    labelProps: {},
+    labelProps: undefined,
     margin: '',
     message: '',
     placeholder: '',
     prepend: '',
-    success: false,
-    type: 'text',
+    modelValue: '',
+    success: undefined,
+    type: undefined,
+    value: '',
   },
 };
 
@@ -80,7 +78,7 @@ export default meta;
 
 type Story = StoryObj<typeof Textfield>;
 
-export const Default: Story = {
+export const Playground: Story = {
   render: (args) => ({
     components: { Textfield },
     setup() {
@@ -91,6 +89,7 @@ export const Default: Story = {
 };
 
 export const AppendPrependSlot: Story = {
+  name: 'Append/prepend using slot',
   render: (args) => ({
     components: { Text, Textfield, Ticker, TickerItem },
     setup() {
@@ -135,42 +134,54 @@ export const AppendPrependSlot: Story = {
   },
 };
 
-AppendPrependSlot.storyName = 'Append/prepend slot';
-
 export const UsingVModel: Story = {
+  name: 'Using v-model (two-way data binding)',
   render: (args) => ({
     components: { Text, Textfield },
     setup() {
-      const value = ref('');
+      const textfieldValue = ref(args.modelValue);
 
-      return { args, value };
+      watch(
+        () => args.modelValue,
+        (newValue) => {
+          textfieldValue.value = newValue;
+        },
+      );
+
+      return { textfieldValue };
     },
     template: `
-      <Text>v-model: {{ value }}</Text>
-      <Textfield v-bind="args" v-model="value" />
+      <Text>v-model value: {{ textfieldValue ? textfieldValue : '-' }}</Text>
+      <Textfield v-model="textfieldValue" />
     `,
   }),
+  argTypes: onlyShowArgs(defaultArgs, ['modelValue']),
 };
-
-UsingVModel.storyName = 'Using v-model (recommended)';
 
 export const UsingValue: Story = {
+  name: 'Using value (non two-way data binding)',
   render: (args) => ({
     components: { Text, Textfield },
     setup() {
-      const input_value = ref('');
+      const textfieldValue = ref(args.value);
+
+      watch(
+        () => args.value,
+        (newValue) => {
+          textfieldValue.value = newValue;
+        },
+      );
 
       const handleInput = (e: Event) => {
-        input_value.value = (e.target as HTMLInputElement).value;
+        textfieldValue.value = (e.target as HTMLInputElement).value;
       };
 
-      return { args, input_value, handleInput };
+      return { textfieldValue, handleInput };
     },
     template: `
-      <Text>value: {{ input_value }}</Text>
-      <Textfield v-bind="args" :value="input_value" @input="handleInput" />
+      <Text>Inputted value: {{ textfieldValue ? textfieldValue : '-' }}</Text>
+      <Textfield :value="textfieldValue" @input="handleInput" />
     `,
   }),
+  argTypes: onlyShowArgs(defaultArgs, ['value']),
 };
-
-UsingValue.storyName = 'Using value';
