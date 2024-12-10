@@ -21,6 +21,7 @@ import {
   Dialog,
   EmptyState,
   PullToRefresh,
+  Select,
   Label,
   Text,
   Toolbar,
@@ -108,6 +109,16 @@ onMounted(() => {
       <PullToRefresh @refresh="handleRefresh" />
     </template>
     <Container>
+      <Select>
+        <option value="">Pick your Character</option>
+        <option value="Himeko">Himeko</option>
+        <option value="Jade">Jade</option>
+        <option value="Kafka">Kafka</option>
+        <option value="Natasha">Natasha</option>
+        <option value="Black Swan">Black Swan</option>
+        <option value="Acheron">Acheron</option>
+        <option value="Feixiao">Feixiao</option>
+      </Select>
       <p>
         Restoring images only possible if the backup file has the image data. Restoring all images will takes longer time to complete.
       </p>

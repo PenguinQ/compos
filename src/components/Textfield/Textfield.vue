@@ -69,12 +69,24 @@ export interface TextfieldExpose {
   input: typeof input;
 }
 
-// type TextfieldSlots = {
-//   append?: any;
-//   label?: any;
-//   message?: any;
-//   prepend?: any;
-// };
+type TextfieldSlots = {
+  /**
+   * Slot used to create custom append, since append property only accept string.
+   */
+  append?: any;
+  /**
+   * Slot used to create custom label, since label property only accept string.
+   */
+  label?: any;
+  /**
+   * Slot used to create custom message, since message property only accept string.
+   */
+  message?: any;
+  /**
+   * Slot used to create custom prepend, since prepend property only accept string.
+   */
+  prepend?: any;
+};
 
 defineOptions({ inheritAttrs: false });
 
@@ -84,9 +96,14 @@ const props = withDefaults(defineProps<TextfieldProps>(), {
   success: false,
   type: 'text',
 });
-const emits = defineEmits(['update:modelValue']);
+const emits = defineEmits([
+  /**
+   * Callback for v-model two-way data binding, **used internally**, Storybook shows by default.
+   */
+  'update:modelValue'
+]);
 
-// defineSlots<TextfieldSlots>()
+defineSlots<TextfieldSlots>();
 
 const isPassword = computed(() => props.type === 'password');
 const showPassword = ref(false);

@@ -58,6 +58,17 @@ interface Props extends /* @vue-ignore */ TextareaHTMLAttributes {
   value?: string | number;
 }
 
+type TextareaSlots = {
+  /**
+   * Slot used to create custom label, since label property only accept string.
+   */
+  label?: any;
+  /**
+   * Slot used to create custom message, since message property only accept string.
+   */
+  message?: any;
+};
+
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<Props>(), {
@@ -67,7 +78,14 @@ const props = withDefaults(defineProps<Props>(), {
   minRows: 4,
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits([
+  /**
+   * Slot used to create custom prepend, since message property only accept string.
+   */
+  'update:modelValue',
+]);
+
+defineSlots<TextareaSlots>();
 
 const lineHeight = ref(24);
 const minHeight  = ref<number>(props.minRows ? props.minRows * lineHeight.value : lineHeight.value);
@@ -117,12 +135,14 @@ const handleFieldClick = () => {
 
 onMounted(() => {
   if (inputRef.value) {
-    const inputStyle  = getComputedStyle(inputRef.value);
-    const inputHeight = inputStyle.getPropertyValue('line-height');
+    if (typeof window !== 'undefined') {
+      const inputStyle  = getComputedStyle(inputRef.value);
+      const inputHeight = inputStyle.getPropertyValue('line-height');
 
-    lineHeight.value = parseInt(inputHeight);
-    minHeight.value  = props.minRows ? props.minRows * parseInt(inputHeight) : parseInt(inputHeight)
-    maxHeight.value  = props.maxRows ? props.maxRows * parseInt(inputHeight) : 0;
+      lineHeight.value = parseInt(inputHeight);
+      minHeight.value  = props.minRows ? props.minRows * parseInt(inputHeight) : parseInt(inputHeight)
+      maxHeight.value  = props.maxRows ? props.maxRows * parseInt(inputHeight) : 0;
+    }
 
     if (props.maxRows) {
       inputRef.value.style.height = `${props.minRows > props.maxRows ? maxHeight.value : minHeight.value}px`;
