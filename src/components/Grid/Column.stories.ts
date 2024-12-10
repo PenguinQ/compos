@@ -50,7 +50,7 @@ export const ColumnStory: StoryColumn = {
             1
             <br />
             (Changing Column)
-          <div>
+          </div>
         </Column>
         <Column class="grid-column" order="2">
           2

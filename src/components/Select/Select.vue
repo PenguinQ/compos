@@ -1,19 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import type { OptionHTMLAttributes } from 'vue';
 import type * as CSS from 'csstype'
 
-import ComposIcon, { ChevronUp } from '@/components/Icons';
+import ComposIcon, { ChevronDown } from '@/components/Icons';
 
-type SelectOptions = OptionHTMLAttributes & {
+type SelectOptions = Omit<OptionHTMLAttributes, 'selected'> & {
   text: string;
 };
 
 type Select = {
-  /**
-   * Append text to the select.
-   */
-  append?: string;
   /**
    * Set additional properties for the select container.
    */
@@ -51,10 +47,6 @@ type Select = {
    */
   modelValue?: string | number;
   /**
-   * Prepend text to the select.
-   */
-  prepend?: string;
-  /**
    * Set the select into success state.
    */
   success?: boolean;
@@ -62,6 +54,21 @@ type Select = {
    * Set the value for the select without using v-model two way data binding.
    */
   value?: string | number;
+};
+
+type SelectSlots = {
+  /**
+   * `default` slot are used to render `option` tag.
+   */
+  default: any;
+  /**
+   * Slot used to create custom label, since label property only accept string.
+   */
+  label: any;
+  /**
+   * Slot used to create custom message, since message property only accept string.
+   */
+  message: any;
 };
 
 defineOptions({ inheritAttrs: false });
@@ -72,13 +79,56 @@ const props = withDefaults(defineProps<Select>(), {
   success: false,
 });
 
-const emits = defineEmits(['update:modelValue']);
+const emits = defineEmits([
+  /**
+   * Callback for v-model two-way data binding, **used internally**, Storybook shows by default.
+   */
+  'update:modelValue',
+  /**
+   * Callback when the value is changed, usually used if you don't want to use v-model two-way data binding.
+   */
+  'change',
+  /**
+   * Callback when the value is inputted, usually used if you don't want to use v-model two-way data binding.
+   */
+  'input',
+]);
+
+defineSlots<SelectSlots>();
+
+const selected  = ref(false);
+
+onMounted(() => {
+  if (props.value || props.modelValue) selected.value = true;
+});
+
+const handleChange = (e: Event) => {
+  emits('change', (e.target as HTMLSelectElement).value);
+};
+
+const handleInput = (e: Event) => {
+  const target = e.target as HTMLSelectElement;
+
+  emits('input', target.value);
+  emits('update:modelValue', target.value);
+};
+
+watch(
+  [
+    () => props.value,
+    () => props.modelValue,
+  ],
+  ([newValue, newModelValue]) => {
+    selected.value = newValue || newModelValue ? true : false;
+  },
+);
 </script>
 
 <template>
   <div
     v-bind="containerProps"
     class="cp-form cp-form-select"
+    :data-cp-selected="selected ? true : undefined"
     :data-cp-disabled="disabled ? true : undefined"
     :data-cp-error="error ? true : undefined"
     :data-cp-success="success ? true : undefined"
@@ -89,29 +139,20 @@ const emits = defineEmits(['update:modelValue']);
       {{ label }}
     </label>
     <div class="cp-form-container">
-      <div v-if="prepend || $slots['prepend']" class="cp-form-affix">
-        <slot name="prepend" />
-        {{ prepend }}
-      </div>
       <select
         v-bind="$attrs"
         class="cp-form-field"
         :disabled="disabled"
         :value="value || modelValue"
-        @input="emits('update:modelValue', $event)"
+        @input="handleInput"
+        @change="handleChange"
       >
         <option v-if="options" v-for="{ text, ...rest } of options" v-bind="rest">
           {{ text }}
         </option>
         <slot v-else></slot>
       </select>
-      <div class="cp-form-affix">
-        <ComposIcon :icon="ChevronUp" size="16px" />
-      </div>
-      <div v-if="append || $slots['append']" class="cp-form-affix">
-        <slot name="append" />
-        {{ append }}
-      </div>
+      <ComposIcon :icon="ChevronDown" class="cp-form-select__icon" />
     </div>
     <div class="cp-form-message" v-if="message || $slots['message']">
       <slot name="message" />
@@ -123,38 +164,40 @@ const emits = defineEmits(['update:modelValue']);
 <style src="@/assets/form.scss" />
 <style lang="scss">
 .cp-form-select {
-  .cp-form-affix {
-    color: inherit;
-    font-size: 16px;
-    line-height: 22px;
-    font-weight: 400;
-    transition: color var(--transition-duration-normal) var(--transition-timing-function);
-    display: flex;
-
-    &:first-child {
-      padding-left: 12px;
-    }
-
-    &:last-child {
-      padding-right: 12px;
-    }
-  }
-
   .cp-form-field {
+    color: #CED3DC;
     background-color: transparent;
     border: none;
     appearance: none;
+    position: relative;
+    z-index: 2;
     padding: 0;
     outline: none;
     padding-top: 14px;
     padding-bottom: 14px;
+    padding-inline-start: 12px;
+    padding-inline-end: 42px;
 
-    &:first-child {
-      padding-left: 12px;
+    & + compos-icon {
+      width: 18px;
+      height: 18px;
+      position: absolute;
+      top: 50%;
+      right: 0;
+      z-index: 1;
+      margin-inline-end: 12px;
+      transition: transform var(--transition-duration-very-fast) var(--transition-timing-function);
+      transform: translateY(-50%);
     }
 
-    &:last-child {
-      padding-right: 12px;
+    &:focus + compos-icon {
+      transform: translateY(-50%) rotate(180deg);
+    }
+  }
+
+  &[data-cp-selected] {
+    .cp-form-field {
+      color: var(--color-black);
     }
   }
 }
