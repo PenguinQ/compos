@@ -1,10 +1,13 @@
 import { ref, watch } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
+import type { ComponentProps } from 'vue-component-type-helpers';
 
 import { Text, Ticker, TickerItem } from '@components';
 import Textfield from './Textfield.vue';
 
 import { onlyShowArgs } from '@docs/helpers';
+
+type TextfieldProps = ComponentProps<typeof Textfield>;
 
 const defaultArgs: any = {
   append: {
@@ -53,7 +56,7 @@ const defaultArgs: any = {
   },
 };
 
-const meta: Meta<typeof Textfield> = {
+const meta: Meta<TextfieldProps> = {
   component: Textfield,
   argTypes: defaultArgs,
   args: {
@@ -76,7 +79,7 @@ const meta: Meta<typeof Textfield> = {
 
 export default meta;
 
-type Story = StoryObj<typeof Textfield>;
+type Story = StoryObj<TextfieldProps>;
 
 export const Playground: Story = {
   render: (args) => ({

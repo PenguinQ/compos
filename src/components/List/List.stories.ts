@@ -1,164 +1,302 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import { ref } from 'vue';
 
-import { Card } from '@components';
+import type { Meta, StoryObj } from '@storybook/vue3';
+import type { ComponentProps } from 'vue-component-type-helpers';
+
+import {
+  Text,
+  Select,
+  Checkbox,
+} from '@components';
 import List from './List.vue';
 import ListItem from './ListItem.vue';
 import ListTitle from './ListTitle.vue';
-import ListSubtitle from './ListSubtitle.vue';
+import ListDescription from './ListDescription.vue';
 
-const meta: Meta<typeof List> = {
+import { onlyShowArgs } from '@docs/helpers';
+
+type ListProps = ComponentProps<typeof List>;
+type ListItemProps = ComponentProps<typeof ListItem>;
+
+const defaultArgTypes = {
+  inset: {
+    control: 'boolean',
+  },
+  items: {
+    control: 'object',
+  },
+};
+
+const defaultItems = [
+  {
+    title: 'Firmament Frontline: Glamoth',
+    description: 'Firmament Frontline: Glamoth is a Planar Ornament Relic Set that can be obtained by challenging World 8 in Simulated Universe or Divergent Universe in 2-5 ✨ rarities.',
+  },
+  {
+    title: 'Rutilant Arena',
+    description: 'Rutilant Arena is a Planar Ornament Relic Set that can be obtained by challenging World 7 in Simulated Universe or Divergent Universe in 2-5 ✨ rarities.',
+  },
+  {
+    title: 'Duran, Dynasty of Running Wolves',
+    description: 'Duran, Dynasty of Running Wolves is a Planar Ornament Relic Set that can be obtained by challenging Divergent Universe: Eternal Comedy in 2-5 ✨ rarities.',
+  },
+  {
+    title: 'Izumo Gensei and Takama Divine Realm',
+    description: 'Izumo Gensei and Takama Divine Realm is a Planar Ornament Relic Set that can be obtained by challenging World 9 in Simulated Universe or Divergent Universe in 2-5 ✨ rarities.',
+  },
+];
+
+const meta: Meta<ListProps> = {
   component: List,
-  argTypes: {},
-  args: {},
+  subcomponents: { ListItem, ListTitle, ListDescription },
+  argTypes: defaultArgTypes,
 };
 
 export default meta;
-type Story = StoryObj<typeof List>;
 
-export const DefaultTBA: Story = {
-  render: (args: any) => ({
-    components: {
-      Card,
-      List,
-      ListItem,
-      ListTitle,
-      ListSubtitle,
-    },
+type Story = StoryObj<ListProps>;
+
+export const Playground: Story = {
+  render: (args) => ({
+    components: { List },
     setup() {
-      const items = [
-        {
-          title: 'Name',
-          subtitle: 'Dosanko Gal wa Namaramenkoi',
-        },
-        {
-          title: 'Description',
-          subtitle:
-            'Shiki Tsubasa has just moved from Tokyo to Hokkaido in the middle of winter. Not quite appreciating how far apart towns are in the country, he gets off the taxi at the next town over from his destination so he can see the sights around his home, but he is shocked when he learns the "next town" is a 3-hour walk away. However, he also meets a cute Dosanko (born and raised in Hokkaido) gyaru named Fuyuki Minami who is braving 8 degrees celcius below 0 weather in the standard gyaru outfit of short skirts and bare legs!',
-        },
-        {
-          title: 'Stock',
-          subtitle: '87',
-        },
-        {
-          title: 'Price',
-          subtitle: 'Rp100,000',
-        },
-      ];
-
-      return { args, items };
+      return { args };
     },
     template: `
-      <Card>
-        <List :items="items" />
-      </Card>
-      <br />
-      <Card>
-        <List>
-          <ListItem>
-            <ListTitle>Name</ListTitle>
-            <ListSubtitle>Dosanko Gal wa Namaramenkoi</ListSubtitle>
-          </ListItem>
-          <ListItem>
-            <ListTitle>Description</ListTitle>
-            <ListSubtitle>
-              Shiki Tsubasa has just moved from Tokyo to Hokkaido in the middle of winter. Not quite appreciating how far apart towns are in the country, he gets off the taxi at the next town over from his destination so he can see the sights around his home, but he is shocked when he learns the "next town" is a 3-hour walk away. However, he also meets a cute Dosanko (born and raised in Hokkaido) gyaru named Fuyuki Minami who is braving 8 degrees celcius below 0 weather in the standard gyaru outfit of short skirts and bare legs!
-            </ListSubtitle>
-          </ListItem>
-        </List>
-      </Card>
-      <br />
-      <List>
-        <ListItem>
-          <template #prepend>Prepend</template>
-          <ListTitle>Name</ListTitle>
-          <ListSubtitle>Dosanko Gal wa Namaramenkoi</ListSubtitle>
-        </ListItem>
-        <ListItem>
-          <ListTitle>Name</ListTitle>
-          <ListSubtitle>Dosanko Gal wa Namaramenkoi</ListSubtitle>
-          <template #append>Append</template>
-        </ListItem>
-        <ListItem>
-          <template #prepend>Prepend</template>
-          <ListTitle>Name</ListTitle>
-          <ListSubtitle>Dosanko Gal wa Namaramenkoi</ListSubtitle>
-          <template #append>Append</template>
-        </ListItem>
-      </List>
+      <List v-bind="args" />
     `,
   }),
+  args: {
+    items: defaultItems,
+  },
 };
 
-export const Tests: Story = {
-  render: (args: any) => ({
+export const UsingSubcomponents: Story = {
+  render: (args) => ({
     components: {
-      Card,
       List,
       ListItem,
       ListTitle,
-      ListSubtitle,
+      ListDescription,
     },
     setup() {
-      const items = [
-        {
-          title: 'Name',
-          subtitle: 'Dosanko Gal wa Namaramenkoi',
-        },
-        {
-          title: 'Description',
-          subtitle:
-            'Shiki Tsubasa has just moved from Tokyo to Hokkaido in the middle of winter. Not quite appreciating how far apart towns are in the country, he gets off the taxi at the next town over from his destination so he can see the sights around his home, but he is shocked when he learns the "next town" is a 3-hour walk away. However, he also meets a cute Dosanko (born and raised in Hokkaido) gyaru named Fuyuki Minami who is braving 8 degrees celcius below 0 weather in the standard gyaru outfit of short skirts and bare legs!',
-        },
-        {
-          title: 'Stock',
-          subtitle: '87',
-        },
-        {
-          title: 'Price',
-          subtitle: 'Rp100,000',
-        },
-      ];
-
-      return { args, items };
+      return { args, defaultItems };
     },
     template: `
-      <Card>
-        <List v-bind="args">
-          <ListItem>
-            <ListTitle>Name</ListTitle>
-            <ListSubtitle>Dosanko Gal wa Namaramenkoi</ListSubtitle>
-          </ListItem>
-          <ListItem>
-            <ListTitle>Description</ListTitle>
-            <ListSubtitle>
-              Shiki Tsubasa has just moved from Tokyo to Hokkaido in the middle of winter. Not quite appreciating how far apart towns are in the country, he gets off the taxi at the next town over from his destination so he can see the sights around his home, but he is shocked when he learns the "next town" is a 3-hour walk away. However, he also meets a cute Dosanko (born and raised in Hokkaido) gyaru named Fuyuki Minami who is braving 8 degrees celcius below 0 weather in the standard gyaru outfit of short skirts and bare legs!
-            </ListSubtitle>
-          </ListItem>
-        </List>
-      </Card>
-      <br />
-      <List v-bind="args">
-        <ListItem>
-          <ListTitle>Grace Howard</ListTitle>
-          <ListSubtitle>Grace Howard is a playable Electric Anomaly Agent in Zenless Zone Zero and a member of Belobog Heavy Industries.</ListSubtitle>
-        </ListItem>
-        <ListItem>
-          <template #prepend>Prepend</template>
-          <ListTitle>Name</ListTitle>
-          <ListSubtitle>Dosanko Gal wa Namaramenkoi</ListSubtitle>
-        </ListItem>
-        <ListItem>
-          <ListTitle>Name</ListTitle>
-          <ListSubtitle>Dosanko Gal wa Namaramenkoi</ListSubtitle>
-          <template #append>Append</template>
-        </ListItem>
-        <ListItem>
-          <template #prepend>Prepend</template>
-          <ListTitle>Name</ListTitle>
-          <ListSubtitle>Dosanko Gal wa Namaramenkoi</ListSubtitle>
-          <template #append>Append</template>
+      <List>
+        <ListItem v-for="item of defaultItems">
+          <ListTitle>{{ item.title }}</ListTitle>
+          <ListDescription>{{ item.description }}</ListDescription>
         </ListItem>
       </List>
     `,
   }),
+  argTypes: onlyShowArgs(defaultArgTypes, []),
+};
+
+export const AsClickable: StoryObj<ListItemProps> = {
+  render: (args) => ({
+    components: {
+      List,
+      ListItem,
+      ListTitle,
+      ListDescription,
+    },
+    setup() {
+      const handleClick = () => {
+        console.log('Clicked!');
+      };
+
+      return { args, handleClick };
+    },
+    template: `
+      <List>
+        <ListItem clickable @click="handleClick">
+          <ListTitle>Firmament Frontline: Glamoth</ListTitle>
+          <ListDescription>Firmament Frontline: Glamoth is a Planar Ornament Relic Set that can be obtained by challenging World 8 in Simulated Universe or Divergent Universe in 2-5 ✨ rarities.</ListDescription>
+        </ListItem>
+        <ListItem clickable @click="handleClick">
+          <ListTitle>Rutilant Arena</ListTitle>
+          <ListDescription>Rutilant Arena is a Planar Ornament Relic Set that can be obtained by challenging World 7 in Simulated Universe or Divergent Universe in 2-5 ✨ rarities.</ListDescription>
+        </ListItem>
+      </List>
+    `,
+  }),
+  argTypes: onlyShowArgs(defaultArgTypes, []),
+};
+
+export const AsSelectInput: Story = {
+  render: (args) => ({
+    components: {
+      List,
+      ListItem,
+      ListTitle,
+      ListDescription,
+      Select,
+      Text,
+    },
+    setup() {
+      const selectValue   = ref('');
+      const selectOptions = [
+        { value: '', label: 'Select Path' },
+        { value: 'Remembrance', label: 'Remembrance' },
+        { value: 'Elation', label: 'Elation' },
+        { value: 'The Hunt', label: 'The Hunt' },
+        { value: 'Destruction', label: 'Destruction' },
+        { value: 'Nihility', label: 'Nihility' },
+        { value: 'Abundance', label: 'Abundance' },
+        { value: 'Propagation', label: 'Propagation' },
+        { value: 'Erudition', label: 'Erudition' },
+      ]
+
+      return { args, selectValue, selectOptions };
+    },
+    template: `
+      <List>
+        <ListItem>
+          <ListTitle>Simulated Universe</ListTitle>
+          <ListDescription>
+            Please select which Path you want to travel on.
+          </ListDescription>
+          <template #prepend>
+            <Select v-model="selectValue" error>
+              <option v-for="option of selectOptions" :value="option.value">{{ option.label }}</option>
+            </Select>
+          </template>
+        </ListItem>
+        <ListItem>
+          <ListTitle>Simulated Universe</ListTitle>
+          <ListDescription>
+            Please select which Path you want to travel on.
+          </ListDescription>
+          <template #prepend>
+            <Select v-model="selectValue" disabled>
+              <option v-for="option of selectOptions" :value="option.value">{{ option.label }}</option>
+            </Select>
+          </template>
+        </ListItem>
+        <ListItem>
+          <ListTitle>Simulated Universe</ListTitle>
+          <ListDescription>
+            Please select which Path you want to travel on.
+          </ListDescription>
+          <template #prepend>
+            <Select v-model="selectValue">
+              <option v-for="option of selectOptions" :value="option.value">{{ option.label }}</option>
+            </Select>
+          </template>
+        </ListItem>
+        <ListItem>
+          <ListTitle>Simulated Universe</ListTitle>
+          <ListDescription>
+            Please select which Path you want to travel on.
+          </ListDescription>
+          <template #append>
+            <Select v-model="selectValue" error>
+              <option v-for="option of selectOptions" :value="option.value">{{ option.label }}</option>
+            </Select>
+          </template>
+        </ListItem>
+        <ListItem>
+          <ListTitle>Simulated Universe</ListTitle>
+          <ListDescription>
+            Please select which Path you want to travel on.
+          </ListDescription>
+          <template #append>
+            <Select v-model="selectValue" disabled>
+              <option v-for="option of selectOptions" :value="option.value">{{ option.label }}</option>
+            </Select>
+          </template>
+        </ListItem>
+        <ListItem>
+          <ListTitle>Simulated Universe</ListTitle>
+          <ListDescription>
+            Please select which Path you want to travel on.
+          </ListDescription>
+          <template #append>
+            <Select v-model="selectValue">
+              <option v-for="option of selectOptions" :value="option.value">{{ option.label }}</option>
+            </Select>
+          </template>
+        </ListItem>
+      </List>
+    `,
+  }),
+  argTypes: onlyShowArgs(defaultArgTypes, []),
+};
+
+export const AsCheckboxInput: Story = {
+  render: (args) => ({
+    components: {
+      List,
+      ListItem,
+      ListTitle,
+      ListDescription,
+      Checkbox,
+    },
+    setup() {
+      const checkboxValue = ref(false);
+
+      return { args, checkboxValue };
+    },
+    template: `
+      <List>
+        <ListItem>
+          <ListTitle>Effect Hit Rate Boost</ListTitle>
+          <ListDescription>
+            In the Simulated Universe, all character's Effect Hit Rate increases by 8%.
+          </ListDescription>
+          <template #prepend>
+            <Checkbox v-model="checkboxValue" error />
+          </template>
+        </ListItem>
+        <ListItem>
+          <ListTitle>Effect Hit Rate Boost</ListTitle>
+          <ListDescription>
+            In the Simulated Universe, all character's Effect Hit Rate increases by 8%.
+          </ListDescription>
+          <template #prepend>
+            <Checkbox v-model="checkboxValue" disabled />
+          </template>
+        </ListItem>
+        <ListItem>
+          <ListTitle>Effect Hit Rate Boost</ListTitle>
+          <ListDescription>
+            In the Simulated Universe, all character's Effect Hit Rate increases by 8%.
+          </ListDescription>
+          <template #prepend>
+            <Checkbox v-model="checkboxValue" />
+          </template>
+        </ListItem>
+        <ListItem>
+          <ListTitle>Effect Hit Rate Boost</ListTitle>
+          <ListDescription>
+            In the Simulated Universe, all character's Effect Hit Rate increases by 8%.
+          </ListDescription>
+          <template #append>
+            <Checkbox v-model="checkboxValue" error />
+          </template>
+        </ListItem>
+        <ListItem>
+          <ListTitle>Effect Hit Rate Boost</ListTitle>
+          <ListDescription>
+            In the Simulated Universe, all character's Effect Hit Rate increases by 8%.
+          </ListDescription>
+          <template #append>
+            <Checkbox v-model="checkboxValue" disabled />
+          </template>
+        </ListItem>
+        <ListItem>
+          <ListTitle>Effect Hit Rate Boost</ListTitle>
+          <ListDescription>
+            In the Simulated Universe, all character's Effect Hit Rate increases by 8%.
+          </ListDescription>
+          <template #append>
+            <Checkbox v-model="checkboxValue" />
+          </template>
+        </ListItem>
+      </List>
+    `,
+  }),
+  argTypes: onlyShowArgs(defaultArgTypes, []),
 };

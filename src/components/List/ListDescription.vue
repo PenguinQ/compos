@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-export type ListSubtitleAs = 'p' | 'div';
+export type ListDescriptionAs = 'p' | 'div';
 
-type ListSubtitleProps = {
-  as?: ListSubtitleAs;
+type ListDescription = {
+  as?: ListDescriptionAs;
 };
 
-const props = withDefaults(defineProps<ListSubtitleProps>(), {
+const props = withDefaults(defineProps<ListDescription>(), {
   as: 'p',
 });
 
@@ -15,14 +15,14 @@ const markup = ref(props.as);
 </script>
 
 <template>
-  <component :is="markup" class="cp-list-item__subtitle">
+  <component :is="markup" class="cp-list-item__description">
     <slot />
   </component>
 </template>
 
 <style lang="scss">
-.cp-list-item__subtitle {
-  @include text-body-md;
+.cp-list-item__description {
+  @include text-body-sm;
   color: var(--color-black);
   opacity: 0.8;
   margin: 4px 0 0;

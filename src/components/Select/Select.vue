@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import type { OptionHTMLAttributes } from 'vue';
+import type { Slot, OptionHTMLAttributes } from 'vue';
 import type * as CSS from 'csstype'
 
-import ComposIcon, { ChevronDown } from '@/components/Icons';
+import ComposIcon, { ChevronDown, ChevronExpand } from '@/components/Icons';
+
+import { hasClassStartsWith } from '@/helpers';
 
 type SelectOptions = Omit<OptionHTMLAttributes, 'selected'> & {
   text: string;
@@ -54,21 +56,25 @@ type Select = {
    * Set the value for the select without using v-model two way data binding.
    */
   value?: string | number;
+  /**
+   * Set the select into list mode, to be used inside `ListItem`.
+   */
+  mode?: 'list';
 };
 
 type SelectSlots = {
   /**
-   * `default` slot are used to render `option` tag.
+   * Slot used to render `option` tag.
    */
-  default: any;
+  default: Slot;
   /**
    * Slot used to create custom label, since label property only accept string.
    */
-  label: any;
+  label: Slot;
   /**
    * Slot used to create custom message, since message property only accept string.
    */
-  message: any;
+  message: Slot;
 };
 
 defineOptions({ inheritAttrs: false });
@@ -96,10 +102,14 @@ const emits = defineEmits([
 
 defineSlots<SelectSlots>();
 
-const selected  = ref(false);
+const containerRef = ref<HTMLDivElement | null>(null);
+const selectRef    = ref<HTMLSelectElement | null>(null);
+const inListItem   = ref(false);
 
 onMounted(() => {
-  if (props.value || props.modelValue) selected.value = true;
+  const parent = containerRef.value?.parentElement as HTMLElement;
+
+  inListItem.value = parent ? hasClassStartsWith('cp-list-item__', parent) : false;
 });
 
 const handleChange = (e: Event) => {
@@ -112,23 +122,13 @@ const handleInput = (e: Event) => {
   emits('input', target.value);
   emits('update:modelValue', target.value);
 };
-
-watch(
-  [
-    () => props.value,
-    () => props.modelValue,
-  ],
-  ([newValue, newModelValue]) => {
-    selected.value = newValue || newModelValue ? true : false;
-  },
-);
 </script>
 
 <template>
   <div
+    ref="containerRef"
     v-bind="containerProps"
     class="cp-form cp-form-select"
-    :data-cp-selected="selected ? true : undefined"
     :data-cp-disabled="disabled ? true : undefined"
     :data-cp-error="error ? true : undefined"
     :data-cp-success="success ? true : undefined"
@@ -140,6 +140,7 @@ watch(
     </label>
     <div class="cp-form-container">
       <select
+        ref="selectRef"
         v-bind="$attrs"
         class="cp-form-field"
         :disabled="disabled"
@@ -152,9 +153,9 @@ watch(
         </option>
         <slot v-else></slot>
       </select>
-      <ComposIcon :icon="ChevronDown" class="cp-form-select__icon" />
+      <ComposIcon :icon="inListItem ? ChevronExpand : ChevronDown" class="cp-form-select__icon" />
     </div>
-    <div class="cp-form-message" v-if="message || $slots['message']">
+    <div class="cp-form-message" v-if="mode !== 'list' && (message || $slots['message'])">
       <slot name="message" />
       {{ message }}
     </div>
@@ -165,7 +166,7 @@ watch(
 <style lang="scss">
 .cp-form-select {
   .cp-form-field {
-    color: #CED3DC;
+    color: var(--color-black);
     background-color: transparent;
     border: none;
     appearance: none;

@@ -1,11 +1,13 @@
 <script setup lang="ts">
-interface Props {
+import { ref, provide } from 'vue';
+
+type RadioGroup = {
   gap?: string | number;
   margin?: string | number;
   padding?: string | number;
 }
 
-defineProps<Props>()
+defineProps<RadioGroup>()
 </script>
 
 <template>

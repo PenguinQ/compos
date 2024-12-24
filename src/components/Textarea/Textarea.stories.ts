@@ -1,10 +1,13 @@
 import { ref, watch } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
+import type { ComponentProps } from 'vue-component-type-helpers';
 
 import { Text } from '@components';
 import Textarea from './Textarea.vue';
 
 import { onlyShowArgs } from '@docs/helpers';
+
+type TextareaProps = ComponentProps<typeof Textarea>;
 
 const defaultArgs: any = {
   containerProps: {
@@ -49,7 +52,7 @@ const defaultArgs: any = {
   },
 };
 
-const meta: Meta<typeof Textarea> = {
+const meta: Meta<TextareaProps> = {
   component: Textarea,
   argTypes: defaultArgs,
   args: {
@@ -71,7 +74,7 @@ const meta: Meta<typeof Textarea> = {
 
 export default meta;
 
-type Story = StoryObj<typeof Textarea>;
+type Story = StoryObj<TextareaProps>;
 
 export const Playground: Story = {
   render: (args) => ({
