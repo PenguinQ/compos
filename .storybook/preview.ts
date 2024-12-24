@@ -14,7 +14,7 @@ const preview: Preview = {
     },
   },
   // @ts-ignore
-  tags: ["autodocs"],
+  tags: ['autodocs'],
 };
 
 export default preview;

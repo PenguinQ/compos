@@ -1,68 +1,106 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import type { InputHTMLAttributes } from 'vue';
+import { computed, ref, getCurrentInstance } from 'vue';
+import type { InputHTMLAttributes, Slot } from 'vue';
 
 import ComposIcon, { Check } from '@/components/Icons';
 
-interface Props extends /* @vue-ignore */ InputHTMLAttributes {
+export type CheckboxValue = string | number | boolean;
+
+interface Checkbox extends /* @vue-ignore */ InputHTMLAttributes {
   /**
-   * Set the class for checkbox outer container.
+   * Set the Checkbox container additional properties.
    */
-  class?: string;
+  containerProps?: object;
   /**
-   * Set the checkbox label additional properties.
-   */
-  labelProps?: object;
-  /**
-   * Set checkbox to disabled state.
+   * Set the Checkbox to disabled state.
    */
   disabled?: boolean;
   /**
-   * Set the false value for the checkbox without using v-model two way data binding.
+   * Set the Checkbox into error state.
    */
-  falseValue?: string | number | boolean;
+  error?: boolean;
   /**
-   * Set the checkbox width to 100%.
+   * Set the unchecked value for the Checkbox.
+   */
+  falseValue?: CheckboxValue;
+  /**
+   * Set the Checkbox width to 100%.
    */
   full?: boolean;
   /**
-   * Set the checkbox label.
+   * Set the Checkbox label.
    */
   label?: string;
   /**
-   * Set the message for the quantity editor.
+   * Set the Checkbox label additional properties.
+   */
+  labelProps?: object;
+  /**
+   * Set the message for the Checkbox.
    */
   message?: string;
   /**
    * Set the value using v-model two way data binding.
    */
-  modelValue?: string | number | boolean | [];
+  modelValue?: CheckboxValue | CheckboxValue[];
   /**
-   * Set the checkbox tabindex.
+   * Set the Checkbox tabindex.
    */
   tabindex?: string | number;
   /**
-   * Set the true value for the checkbox without using v-model two way data binding.
+   * Set the checked value for the Checkbox.
    */
-  trueValue?: string | number | boolean;
+  trueValue?: CheckboxValue;
   /**
-   * Set the value for the checkbox without using v-model two way data binding.
+   * Set the value for the Checkbox without using v-model two way data binding.
    */
-  value?: string | number | boolean;
+  value?: CheckboxValue;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+type CheckboxSlots = {
+  /**
+   * Slot used to create custom label, since label property only accept string.
+   */
+  label: Slot;
+  /**
+   * Slot used to create custom message, since message property only accept string.
+   */
+  message: Slot;
+};
+
+defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(defineProps<Checkbox>(), {
   disabled: false,
   full: false,
   tabindex: 0,
+  trueValue: undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
+  falseValue: undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
 });
 
-const emits = defineEmits(['update:modelValue']);
+const emits = defineEmits([
+  /**
+   * Callback for v-model two-way data binding, **used internally**, Storybook shows by default.
+   */
+  'update:modelValue',
+  /**
+   * Callback when the Checkbox state is changed, return Checkbox value.
+   */
+  'change',
+]);
 
-const container = ref();
-const input = ref<HTMLInputElement>();
-const computedValue = computed(() => props.trueValue ? props.trueValue : props.value);
-const computedArray = computed({
+defineSlots<CheckboxSlots>();
+
+const instance     = getCurrentInstance();
+const isControlled = computed(() => 'modelValue' in (instance?.vnode.props || {}));
+const checkedValue = computed(() => {
+  if (props.trueValue !== undefined) return props.trueValue;
+
+  if (props.value !== undefined) return props.value;
+
+  return true;
+});
+const valueArray   = computed({
   get() {
     return props.modelValue;
   },
@@ -70,22 +108,27 @@ const computedArray = computed({
     emits('update:modelValue', value);
   },
 });
-const isArray = computed(() => props.modelValue instanceof Array);
-const isChecked = computed((): any => {
-  if (computedValue.value) {
-    return props.modelValue === computedValue.value;
-  } else {
-    if (typeof props.modelValue !== 'string') return props.modelValue;
+const isArray   = computed(() => props.modelValue instanceof Array);
+const isChecked = computed(() => {
+  if (checkedValue.value) {
+    if (isControlled.value) return props.modelValue === checkedValue.value;
   }
 });
+const containerRef = ref<HTMLLabelElement | null>(null);
+const inputRef     = ref<HTMLInputElement | null>(null);
+const inListItem   = ref(false);
+
 const classes = computed(() => ({
-  'cp-form-checkbox': true,
+  'cp-form-checkbox'      : true,
   'cp-form-checkbox--full': props.full,
+  'cp-form-checkbox--list': inListItem.value,
 }));
 
 const handleChange = (e: Event) => {
+  e.stopPropagation();
+
   const checked = (e.target as HTMLInputElement).checked;
-  let updateValue: string | number | boolean;
+  let updateValue;
 
   if (checked) {
     updateValue = props.trueValue
@@ -98,46 +141,52 @@ const handleChange = (e: Event) => {
   }
 
   emits('update:modelValue', updateValue);
+  emits('change', e);
 };
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter') input.value?.click();
+  if (e.key === 'Enter') inputRef.value?.click();
 };
 </script>
 
 <template>
-  <div :class="[classes, $props.class]" :data-cp-disabled="disabled ? disabled : undefined">
+  <div
+    ref="containerRef"
+    v-bind="containerProps"
+    :class="classes"
+    :data-cp-error="error ? error : undefined"
+    :data-cp-disabled="disabled ? disabled : undefined"
+  >
     <label
-      ref="container"
       v-bind="labelProps"
       class="cp-form-checkbox__field"
       @keydown="handleKeydown"
     >
       <div class="cp-form-checkbox__input">
         <input
-          v-if="isArray"
-          ref="input"
+          v-if="isControlled && isArray"
+          ref="inputRef"
           type="checkbox"
           v-bind="$attrs"
-          v-model="computedArray"
+          v-model="valueArray"
           :tabindex="tabindex"
-          :checked="computedArray === computedValue"
+          :checked="valueArray === checkedValue"
           :disabled="disabled"
-          :value="computedValue"
+          :value="checkedValue"
         />
         <input
           v-else
-          ref="input"
+          ref="inputRef"
           type="checkbox"
           v-bind="$attrs"
           :tabindex="tabindex"
           :checked="isChecked"
           :disabled="disabled"
-          :value="computedValue"
-          @input="handleChange"
+          :value="checkedValue"
+          @change="handleChange"
         />
         <div class="cp-form-checkbox__box">
-          <ComposIcon :icon="Check" color="var(--color-white)" />
+          <ComposIcon :icon="Check" />
         </div>
       </div>
       <span v-if="label && !$slots.label" class="cp-form-checkbox__label">{{ label }}</span>
@@ -152,7 +201,7 @@ const handleKeydown = (e: KeyboardEvent) => {
   </div>
 </template>
 
-<style src="../../assets/form.scss" />
+<style src="@/assets/form.scss" />
 <style lang="scss">
 .cp-form-checkbox {
   display: inline-flex;
@@ -225,6 +274,19 @@ const handleKeydown = (e: KeyboardEvent) => {
 
     .cp-form-checkbox__field {
       width: 100%;
+    }
+  }
+
+  &[data-cp-error] {
+    .cp-form-checkbox__box {
+      border-color: var(--color-red-4);
+    }
+
+    input[type="checkbox"] {
+      &:checked + .cp-form-checkbox__box {
+        background-color: var(--color-red-4);
+        border-color: var(--color-red-4);
+      }
     }
   }
 

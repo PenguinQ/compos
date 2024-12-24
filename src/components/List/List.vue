@@ -3,36 +3,30 @@ import { computed } from 'vue';
 import ListItem from './ListItem.vue';
 import type { ListItemProps } from './ListItem.vue';
 
-// type ItemProps = {
-//   props: object;
-// };
-
-type ListProps = {
+type List = {
+  /**
+   * Set the inset spacing.
+   */
   inset?: boolean;
+  /**
+   * Set the list of item to be shown on the list.
+   */
   items?: ListItemProps[];
 };
 
-const props = withDefaults(defineProps<ListProps>(), {
+const props = withDefaults(defineProps<List>(), {
   inset: false,
 });
 
 const classes = computed(() => ({
-  'cp-list': true,
+  'cp-list'       : true,
   'cp-list--inset': props.inset,
 }));
 </script>
 
 <template>
   <div :class="classes">
-    <ListItem
-      :key="item.title"
-      v-for="item of items"
-      :title="item.title"
-      :titleAs="item.titleAs"
-      :subtitle="item.subtitle"
-      :subtitleAs="item.subtitleAs"
-      :prepend="item.prepend"
-    />
+    <ListItem :key="item.title" v-for="item of items" v-bind="item" />
     <slot />
   </div>
 </template>

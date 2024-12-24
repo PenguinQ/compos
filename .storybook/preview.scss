@@ -68,3 +68,21 @@ ul {
   align-items: center;
   justify-content: center;
 }
+
+.demo-block {
+  margin-top: 32px !important;
+  margin-bottom: 32px !important;
+
+  .sb-story {
+    border-radius: 4px;
+    background-color: var(--color-neutral-1);
+    padding: 16px;
+    margin-top: 16px;
+    margin-bottom: 16px;
+  }
+
+  .docblock-source {
+    margin-top: 16px;
+    margin-bottom: 0;
+  }
+}
