@@ -3,6 +3,8 @@ export { default as cleanWhitespace } from './cleanWhitespace';
 export { default as debounce } from './debounce';
 export { default as deepClone } from './deepClone';
 export { default as getUpdateTime } from './getUpdateTime';
+export { default as hasClass } from './hasClass';
+export { default as hasClassStartsWith } from './hasClassStartsWith';
 export { default as removeClass } from './removeClass';
 export { default as sanitizeHTML } from './sanitizeHTML';
 export { default as sanitizeNumeric } from './sanitizeNumeric';

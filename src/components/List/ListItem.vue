@@ -1,33 +1,171 @@
 <script setup lang="ts">
-import ListTitle from './ListTitle.vue';
-import ListSubtitle from './ListSubtitle.vue';
-import type { ListTitleAs } from './ListTitle.vue';
-import type { ListSubtitleAs } from './ListSubtitle.vue';
+import { computed, ref, reactive, onMounted, defineAsyncComponent } from 'vue';
+import type { Slot, UnwrapRef } from 'vue';
 
-export type ListItemProps = {
+import type { ListTitleAs } from './ListTitle.vue';
+import type { ListDescriptionAs } from './ListDescription.vue';
+
+export type ListItem = {
+  /**
+   * Set the title of the ListItem.
+   */
   title?: string;
+  /**
+   * Render the title as another HTML tag, default as `h4`.
+   */
   titleAs?: ListTitleAs;
-  subtitle?: string;
-  subtitleAs?: ListSubtitleAs;
-  prepend?: any;
-  append?: any;
+  /**
+   * Set the description text of the ListItem.
+   */
+  description?: string;
+  /**
+   * Render the description as another HTML tag, default as `p`.
+   */
+  descriptionAs?: ListDescriptionAs;
+  /**
+   * Set some text at the start of the ListItem.
+   */
+  prepend?: string;
+  /**
+   * Set some text at the end of the ListItem.
+   */
+  append?: string;
+  /**
+   * Set the ListItem as a clickable button.
+   */
+  clickable?: boolean;
 };
 
-defineProps<ListItemProps>();
+type ListItemSlots = {
+  /**
+   * Slot used to create custom append, since append property only accept string.
+   */
+  append: Slot;
+  /**
+   * Slot used to render `ListTitle`, `ListDescription` and other custom HTML or components.
+   */
+  default: Slot;
+  /**
+   * Slot used to create custom prepend, since prepend property only accept string.
+   */
+  prepend: Slot;
+};
+
+type ListInputs = {
+  checkbox: HTMLDivElement | null,
+  select: HTMLDivElement | null,
+  textfield: HTMLDivElement | null,
+};
+
+const props = withDefaults(defineProps<ListItem>(), {
+  clickable: false,
+});
+const slots = defineSlots<ListItemSlots>();
+
+const ListTitle       = defineAsyncComponent(() => import('./ListTitle.vue'));
+const ListDescription = defineAsyncComponent(() => import('./ListDescription.vue'));
+
+const containerRef     = ref<HTMLDivElement | null>(null);
+const appendRef        = ref<HTMLDivElement | null>(null);
+const prependRef       = ref<HTMLDivElement | null>(null);
+const hasInput         = ref(false);
+const hasDisabledInput = ref(false);
+const appendedInputs   = reactive<ListInputs>({
+  checkbox : null,
+  select   : null,
+  textfield: null,
+});
+const prependedInputs = reactive<ListInputs>({
+  checkbox : null,
+  select   : null,
+  textfield: null,
+});
+const classes = computed(() => ({
+  'cp-list-item'           : true,
+  'cp-list-item--clickable': props.clickable,
+  'cp-list-item--input'    : hasInput.value,
+}));
+
+const searchElements = (inputs: UnwrapRef<ListInputs>, container: HTMLDivElement) => {
+  inputs.checkbox  = container.querySelector<HTMLDivElement>('.cp-form-checkbox');
+  inputs.select    = container.querySelector<HTMLDivElement>('.cp-form-select');
+  inputs.textfield = container.querySelector<HTMLDivElement>('.cp-form-textfield');
+};
+
+const handleSelect = (wrapper: UnwrapRef<HTMLDivElement>) => {
+  const select = wrapper.querySelector('select');
+
+  if (select?.hasAttribute('disabled')) hasDisabledInput.value = true;
+
+  containerRef.value?.addEventListener('click', () => {
+    select?.focus();
+
+    if ('showPicker' in HTMLSelectElement.prototype) {
+      select?.showPicker();
+    } else {
+      select?.dispatchEvent(new MouseEvent('mousedown'));
+    }
+  });
+
+  hasInput.value = true;
+};
+
+const handleCheckbox = (wrapper: UnwrapRef<HTMLDivElement>) => {
+  const checkbox = wrapper.querySelector('input[type="checkbox"]') as HTMLInputElement;
+
+  if (checkbox?.hasAttribute('disabled')) hasDisabledInput.value = true;
+
+  containerRef.value?.addEventListener('click', () => {
+    checkbox?.click();
+  });
+
+  hasInput.value = true;
+};
+
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter') containerRef.value?.click();
+};
+
+onMounted(() => {
+  const container = containerRef.value;
+
+  if (container) {
+    if (slots.append !== undefined) {
+      searchElements(appendedInputs, appendRef.value as HTMLDivElement);
+
+      if (appendedInputs.select)   handleSelect(appendedInputs.select);
+      if (appendedInputs.checkbox) handleCheckbox(appendedInputs.checkbox);
+    }
+
+    if (slots.prepend !== undefined) {
+      searchElements(prependedInputs, prependRef.value as HTMLDivElement);
+
+      if (prependedInputs.select)   handleSelect(prependedInputs.select);
+      if (prependedInputs.checkbox) handleCheckbox(prependedInputs.checkbox);
+    }
+  }
+});
 </script>
 
 <template>
-  <div class="cp-list-item">
-    <div v-if="$slots.prepend || prepend" class="cp-list-item__prepend">
+  <div
+    ref="containerRef"
+    :class="classes"
+    :role="clickable ? 'button' : undefined"
+    :tabindex="clickable ? 0 : undefined"
+    :data-cp-disabled="hasDisabledInput ? hasDisabledInput : undefined"
+    @keydown="handleKeydown"
+  >
+    <div ref="prependRef" v-if="$slots.prepend || prepend" class="cp-list-item__prepend">
       <slot name="prepend" />
       <template v-if="prepend">{{ prepend }}</template>
     </div>
     <div class="cp-list-item__content">
       <ListTitle v-if="title" :as="titleAs" v-html="title" />
-      <ListSubtitle v-if="subtitle" :as="subtitleAs" v-html="subtitle" />
+      <ListDescription v-if="description" :as="descriptionAs" v-html="description" />
       <slot />
     </div>
-    <div v-if="$slots.append || append" class="cp-list-item__append">
+    <div ref="appendRef" v-if="$slots.append || append" class="cp-list-item__append">
       <slot name="append" />
       <template v-if="append">{{ append }}</template>
     </div>
@@ -40,18 +178,117 @@ defineProps<ListItemProps>();
   align-items: center;
   gap: 16px;
   border-bottom: 1px solid var(--color-border);
-  padding: 12px 16px;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-inline-start: var(--padding-start, 16px);
+  padding-inline-end: var(--padding-start, 16px);
+
+  &:last-of-type {
+    border-bottom-color: transparent;
+  }
 
   &__content {
     flex-grow: 1;
+    padding-top: 16px;
+    padding-bottom: 16px;
   }
 
   &__prepend {
     margin-right: auto;
+
+    .cp-form-select {
+      .cp-form-field {
+        text-align: left;
+        text-align-last: left;
+        padding-inline-start: 24px;
+        padding-inline-end: 0;
+
+        & + compos-icon {
+          left: 0;
+        }
+      }
+    }
   }
 
   &__append {
     margin-left: auto;
+
+    .cp-form-select {
+      .cp-form-field {
+        text-align: right;
+        text-align-last: right;
+        padding-inline-start: 0;
+        padding-inline-end: 24px;
+      }
+    }
+  }
+
+  &__prepend,
+  &__append {
+    .cp-form-checkbox {
+      display: flex;
+    }
+
+    .cp-form-select {
+      min-width: 120px;
+
+      .cp-form-container {
+        border: none;
+        box-shadow: none;
+      }
+
+      .cp-form-field {
+        @include text-body-md;
+        text-overflow: ellipsis;
+
+        & + compos-icon {
+          width: 16px;
+          height: 16px;
+          margin-inline-end: 0;
+          transition: none;
+        }
+      }
+
+      &[data-cp-error] {
+        .cp-form-field {
+          color: var(--color-red-4);
+
+          & + compos-icon {
+            color: var(--color-red-4);
+          }
+        }
+      }
+
+      &[data-cp-disabled] {
+        .cp-form-container {
+          background-color: transparent;
+        }
+
+        .cp-form-field {
+          color: var(--color-disabled-border);
+
+          & + compos-icon {
+            color: var(--color-disabled-border);
+          }
+        }
+      }
+    }
+  }
+
+  &--clickable,
+  &--input {
+    user-select: none;
+    cursor: pointer;
+  }
+
+  &--clickable {
+    &:active {
+      background-color: var(--color-neutral-1);
+    }
+  }
+
+  &[data-cp-disabled] {
+    cursor: not-allowed;
   }
 }
 </style>

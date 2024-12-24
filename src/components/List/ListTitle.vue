@@ -3,11 +3,11 @@ import { ref } from 'vue';
 
 export type ListTitleAs = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'div';
 
-type ListTitleProps = {
+type ListTitle = {
   as?: ListTitleAs;
 };
 
-const props = withDefaults(defineProps<ListTitleProps>(), {
+const props = withDefaults(defineProps<ListTitle>(), {
   as: 'h4',
 });
 
@@ -22,10 +22,10 @@ const markup = ref(props.as);
 
 <style lang="scss">
 .cp-list-item__title {
-  font-family: 'Nunito', sans-serif;
+  @include text-heading-6;
+  font-family: var(--text-heading-family);
   font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
-  margin: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 </style>

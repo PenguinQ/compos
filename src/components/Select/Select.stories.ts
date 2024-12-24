@@ -65,7 +65,7 @@ const meta: Meta<SelectProps> = {
 
 export default meta;
 
-type Story = StoryObj<typeof Select>;
+type Story = StoryObj<SelectProps>;
 
 export const Playground: Story = {
   render: (args) => ({

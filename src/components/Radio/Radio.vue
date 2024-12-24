@@ -22,7 +22,7 @@ const container = ref<HTMLLabelElement>();
 const input = ref<HTMLInputElement>();
 const isChecked = computed(() => props.modelValue === props.value);
 const radioClass = computed(() => ({
-  'cp-radio': true,
+  'cp-radio'      : true,
   'cp-radio--full': props.full,
 }));
 
