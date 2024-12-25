@@ -1,4 +1,3 @@
-import { createBlob, createBlobFromBase64 } from 'rxdb';
 import type { RxDumpCollection } from 'rxdb';
 
 import { db, createCollections } from '@/database';
@@ -11,7 +10,7 @@ import type {
   SaleDoc,
   VariantDoc,
 } from '@/database/types';
-import type { BackupData } from '@/database/helpers/backup';
+import type { BackupData } from '@/database/helpers/createBackup';
 
 type CollectionsDump = RxDumpCollection<ProductDoc> & RxDumpCollection<VariantDoc> & RxDumpCollection<BundleDoc> & RxDumpCollection<SaleDoc> & RxDumpCollection<OrderDoc>;
 

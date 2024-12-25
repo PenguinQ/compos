@@ -64,18 +64,22 @@ export const useQuery = (params: UseQueryParams) => {
 
       if (cache_data) {
         if (delay) {
-          delayTimeout = setTimeout(() => {
-            states.data = cache_data;
+          await new Promise<void>((resolve) => {
+            delayTimeout = setTimeout(() => {
+              states.data = cache_data;
 
-            if (!isStale) {
-              states.isLoading = false;
-              states.isSuccess = true;
+              if (!isStale) {
+                states.isLoading = false;
+                states.isSuccess = true;
 
-              if (onSuccess) onSuccess(states.data);
+                if (onSuccess) onSuccess(states.data);
+              }
 
-              return;
-            }
-          }, delay);
+              resolve();
+            }, delay);
+
+            return;
+          });
         } else {
           states.data = cache_data;
 
@@ -93,16 +97,20 @@ export const useQuery = (params: UseQueryParams) => {
       const { result } = await queryFn();
 
       if (delay) {
-        delayTimeout = setTimeout(() => {
-          states.isError   = false;
-          states.isLoading = false;
-          states.isSuccess = true;
-          states.data      = result as object;
+        await new Promise<void>((resolve) => {
+          delayTimeout = setTimeout(() => {
+            states.isError   = false;
+            states.isLoading = false;
+            states.isSuccess = true;
+            states.data      = result as object;
 
-          if (onSuccess) onSuccess(states.data);
+            if (onSuccess) onSuccess(states.data);
 
-          queryCache.set(cache_key, states.data, staleTime, cacheTime);
-        }, delay);
+            queryCache.set(cache_key, states.data, staleTime, cacheTime);
+
+            resolve();
+          }, delay);
+        });
       } else {
         states.isError   = false;
         states.isLoading = false;

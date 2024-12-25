@@ -131,7 +131,7 @@ export const UsingVModel: Story = {
   render: (args) => ({
     components: { Text, Checkbox },
     setup() {
-      const checkboxValue = ref(args.modelValue);
+      const checkboxValue = ref('');
 
       watch(
         () => args.modelValue,

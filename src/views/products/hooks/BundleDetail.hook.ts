@@ -53,6 +53,11 @@ export const useBundleDetail = () => {
     },
   });
 
+  const handleRefresh = async (e: any) => {
+    await refetch();
+    e.complete();
+  };
+
   return {
     bundleId: params.id,
     data    : data as Ref<BundleDetailNormalizerReturn>,
@@ -63,5 +68,6 @@ export const useBundleDetail = () => {
     deleteBundle,
     deleteBundleLoading,
     refetch,
+    handleRefresh,
   };
 };

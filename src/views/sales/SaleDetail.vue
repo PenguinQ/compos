@@ -20,6 +20,7 @@ import {
   Dialog,
   EmptyState,
   Label,
+  PullToRefresh,
   Text,
   Toolbar,
   ToolbarAction,
@@ -58,11 +59,12 @@ const {
   data,
   isError,
   isLoading,
+  isMutateDeleteLoading,
+  isMutateFinishLoading,
   refetch,
   mutateDelete,
   mutateFinish,
-  isMutateDeleteLoading,
-  isMutateFinishLoading,
+  handleRefresh,
 } = useSaleDetail();
 
 watch(
@@ -100,6 +102,9 @@ watch(
     </Toolbar>
   </Header>
   <Content>
+    <template #fixed>
+      <PullToRefresh @refresh="handleRefresh" />
+    </template>
     <EmptyState
       v-if="isError"
       :emoji="GLOBAL.ERROR_EMPTY_EMOJI"

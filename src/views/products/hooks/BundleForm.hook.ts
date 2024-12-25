@@ -451,6 +451,36 @@ export const useBundleForm = () => {
     return total_price.toString();
   };
 
+  const handleRefresh = async (e: any) => {
+    // Reset any possible dynamic fields
+    formData.name              = '';
+    formData.description       = '';
+    formData.price             = '0';
+    formData.auto_price        = true;
+    formData.products          = [];
+    formData.selected_products = [];
+    formError.name             = '';
+    formError.price            = '';
+    formError.products         = [];
+
+    await bundleDetailRefetch();
+    e.complete();
+  };
+
+  const handleRefreshList = async (e: any) => {
+    const resetPage = async () => {
+      loadProducts.value = false;
+      page.current       = 1;
+      page.first         = true;
+      page.last          = true;
+      loadProducts.value = true;
+    };
+
+    await resetPage();
+    await productListRefetch();
+    e.complete();
+  };
+
   watch(
     () => formData.products,
     (products) => {
@@ -497,6 +527,8 @@ export const useBundleForm = () => {
     handleSelectProduct,
     handleSelectVariant,
     handleRemoveProduct,
+    handleRefresh,
+    handleRefreshList,
     toPrevPage,
     toNextPage,
     mutateAdd,

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
+import { Text } from '@/components';
 import ListItem from './ListItem.vue';
-import type { ListItemProps } from './ListItem.vue';
+import type { ListItem as ListItemProps } from './ListItem.vue';
 
 type List = {
+  title?: string;
   /**
    * Set the inset spacing.
    */
@@ -26,6 +29,7 @@ const classes = computed(() => ({
 
 <template>
   <div :class="classes">
+    <Text v-if="title" class="cp-list__title" body="medium" as="h3">{{ title }}</Text>
     <ListItem :key="item.title" v-for="item of items" v-bind="item" />
     <slot />
   </div>
@@ -37,6 +41,14 @@ const classes = computed(() => ({
 
   &--inset {
     margin: 16px;
+  }
+
+  &__title {
+    color: var(--color-neutral-5);
+    font-weight: 600;
+    background-color: var(--color-neutral-1);
+    padding: 16px;
+    margin: 0;
   }
 }
 </style>

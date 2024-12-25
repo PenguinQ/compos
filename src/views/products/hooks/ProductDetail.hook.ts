@@ -12,10 +12,10 @@ import { detailNormalizer } from '../normalizer/ProductDetail.normalizer';
 import type { ProductDetailNormalizerReturn } from '../normalizer/ProductDetail.normalizer';
 
 export const useProductDetail = () => {
-  const route = useRoute();
+  const toast  = inject('ToastProvider');
+  const route  = useRoute();
   const router = useRouter();
   const { params } = route;
-  const toast = inject('ToastProvider');
   const dialogDelete = ref(false);
 
   const {
@@ -27,7 +27,7 @@ export const useProductDetail = () => {
   } = useQuery({
     queryKey: ['product-details', params.id],
     queryFn: () => getProductDetail({
-      id: params.id as string,
+      id        : params.id as string,
       normalizer: detailNormalizer,
     }),
     onError: error => {
@@ -54,6 +54,11 @@ export const useProductDetail = () => {
     }
   });
 
+  const handleRefresh = async (e: any) => {
+    await refetch();
+    e.complete();
+  };
+
   return {
     productId: params.id,
     data: data as Ref<ProductDetailNormalizerReturn>,
@@ -64,5 +69,6 @@ export const useProductDetail = () => {
     deleteProduct,
     deleteProductLoading,
     refetch,
+    handleRefresh,
   };
 };

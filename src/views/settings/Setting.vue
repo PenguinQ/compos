@@ -1,49 +1,22 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
-
 // Common Components
 import {
   Header,
   Content,
-  Container,
-  Row,
-  Column,
   Bar,
   Button,
   Card,
-  CardBody,
-  CardHeader,
-  CardTitle,
   Checkbox,
-  DescriptionList,
-  DescriptionListItem,
   Dialog,
-  EmptyState,
-  PullToRefresh,
-  Select,
-  Label,
   Text,
   Toolbar,
-  ToolbarAction,
-  ToolbarSpacer,
   ToolbarTitle,
+  List,
+  ListItem,
 } from '@/components';
-import ComposIcon, {
-  Box,
-  ArrowLeftShort,
-  PencilSquare,
-  Trash,
-  CheckLarge,
-  Tag,
-  LayoutSidebarReverse,
-  CartPlus,
-} from '@/components/Icons';
+import ComposIcon, { DatabaseDown, DatabaseUp } from '@/components/Icons';
 
 import { useSetting } from './hooks/Setting.hook';
-
-// Helpers
-import { backup, restore } from '@/database/helpers';
 
 const {
   backupInput,
@@ -52,50 +25,12 @@ const {
   dialogBackup,
   dialogRestore,
   isBackupLoading,
-  isBackupError,
-  isRestoreError,
   isRestoreLoading,
   backupRefetch,
   restoreRefetch,
   handleChangeRestore,
   handleDialogRestoreLeave,
 } = useSetting();
-
-const downloadTest = (e: Event) => {
-  e.preventDefault();
-};
-
-const handleRefresh = (e: CustomEvent) => {
-  console.log(e);
-
-  setTimeout(() => {
-    e.complete();
-  }, 500);
-};
-
-function isFirefoxiOS() {
-  const ua = navigator.userAgent.toLowerCase();
-
-  // Firefox on iOS includes both "FxiOS" and "Mobile" in user agent
-  const isFirefoxiOS = ua.includes('fxios') && ua.includes('mobile');
-
-  // Firefox on Android includes "Firefox" and "Android" but not "FxiOS"
-  const isFirefoxAndroid = ua.includes('firefox') && ua.includes('android');
-
-  // Additional check for iOS platform
-  const isApple = /iPad|iPhone|iPod/.test(ua) || ua.includes('macintosh');
-
-  // console.log(isApple);
-
-      // return isFirefoxiOS && isiOSPlatform && !isFirefoxAndroid;
-  // alert(`${ua}\n\n${navigator.maxTouchPoints}\n\n${isFirefoxiOS},\n${isiOSPlatform},\n${isFirefoxAndroid}`);
-}
-
-onMounted(() => {
-  // isFirefoxiOS();
-  // document.querySelector('.test')?.setAttribute('href', URL.createObjectURL(new Blob(['asdas'])))
-  // font: var(--ion-dynamic-font, 16px var(--ion-font-family));
-});
 </script>
 
 <template>
@@ -105,36 +40,42 @@ onMounted(() => {
     </Toolbar>
   </Header>
   <Content>
-    <template #fixed>
-      <PullToRefresh @refresh="handleRefresh" />
-    </template>
-    <Container>
-      <Select>
-        <option value="">Pick your Character</option>
-        <option value="Himeko">Himeko</option>
-        <option value="Jade">Jade</option>
-        <option value="Kafka">Kafka</option>
-        <option value="Natasha">Natasha</option>
-        <option value="Black Swan">Black Swan</option>
-        <option value="Acheron">Acheron</option>
-        <option value="Feixiao">Feixiao</option>
-      </Select>
-      <p>
-        Restoring images only possible if the backup file has the image data. Restoring all images will takes longer time to complete.
-      </p>
-      <Text margin="4px 0 0">
-        Restoring images only possible if the backup file has the image data. Restoring all images will takes longer time to complete.
-      </Text>
-      <Text body="small" margin="4px 0 0">
-        Restoring images only possible if the backup file has the image data. Restoring all images will takes longer time to complete.
-      </Text>
-      <input ref="backupInput" type="file" accept=".json" @change="handleChangeRestore">
-      <Button @click="dialogBackup = true">Backup</Button>
-      <div style="height: 1000px; background-color: var(--color-neutral-2)"></div>
-      <!-- <Button @click="dialogRestore = true">Restore</Button> -->
-    </Container>
+    <Card radius="0" margin="16px 0">
+      <List title="Backup and Restore">
+        <ListItem
+          title="Create Backup File"
+          description="Export all your data as a backup file (.json) for future recovery and restoration."
+          clickable
+          @click="dialogBackup = true"
+        >
+          <template #prepend>
+            <ComposIcon :icon="DatabaseUp" :size="28" />
+          </template>
+        </ListItem>
+        <ListItem
+          title="Restore From Backup File"
+          description="Restore data from .json backup file that you've already created."
+          clickable
+          @click="backupInput?.click()"
+        >
+          <template #prepend>
+            <ComposIcon :icon="DatabaseDown" :size="28" />
+          </template>
+        </ListItem>
+      </List>
+      <!-- Hidden Input -->
+      <input
+        ref="backupInput"
+        id="restore-input"
+        type="file"
+        accept=".json"
+        @change="handleChangeRestore"
+      />
+    </Card>
   </Content>
-  <Dialog v-model="dialogBackup" title="Create Backup Data?" @leave="">
+
+  <!-- Dialog Backup -->
+  <Dialog v-model="dialogBackup" title="Create Backup Data?">
     <Checkbox v-model="backupImages" label="Backup Images?" />
     <Text body="small" margin="4px 0 0">
       Backup all images will takes longer time to complete and increase the backup file size.
@@ -149,7 +90,9 @@ onMounted(() => {
       </div>
     </template>
   </Dialog>
-  <Dialog v-model="dialogRestore" title="Restore from Backup File?">
+
+  <!-- Dialog Restore -->
+  <Dialog v-model="dialogRestore" title="Restore from Backup File?" @leave="handleDialogRestoreLeave">
     <Text body="large" textAlign="center" margin="0 0 24px">
       Restore using the backup file will replace current existing data with the new one.
     </Text>
@@ -170,4 +113,7 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
+#restore-input {
+  display: none;
+}
 </style>

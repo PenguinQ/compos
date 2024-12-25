@@ -1,8 +1,8 @@
-import { ref, inject, watch } from 'vue';
+import { ref, inject } from 'vue';
 
 // Databases
 import { useQuery } from '@/database/hooks';
-import { backup, restore } from '@/database/helpers';
+import { createBackup, restoreBackup } from '@/database/helpers';
 
 export const useSetting = () => {
   const toast         = inject('ToastProvider');
@@ -20,7 +20,7 @@ export const useSetting = () => {
   } = useQuery({
     enabled: false,
     queryKey: ['compos-backup'],
-    queryFn: () => backup(backupImages.value) as any,
+    queryFn: () => createBackup(backupImages.value) as any,
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Error creating backup file.', type: 'error' });
@@ -32,8 +32,6 @@ export const useSetting = () => {
 
       backupImages.value = false;
       dialogBackup.value = false;
-
-      console.log('Success:', response);
     },
   });
 
@@ -44,7 +42,7 @@ export const useSetting = () => {
   } = useQuery({
     enabled: false,
     queryKey: ['compos-restore'],
-    queryFn: () => restore(restoreFile.value!, restoreImages.value) as any,
+    queryFn: () => restoreBackup(restoreFile.value!, restoreImages.value) as any,
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Error restoring from backup file.', type: 'error' });
@@ -54,7 +52,6 @@ export const useSetting = () => {
       // @ts-ignore
       toast.add({ message: 'Restore completed.', type: 'success' });
 
-      console.log(response);
       dialogRestore.value = false;
     },
   });

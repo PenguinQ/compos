@@ -1,4 +1,4 @@
-import { reactive, inject } from 'vue';
+import { ref, reactive, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 
@@ -66,9 +66,9 @@ type FormError = {
 };
 
 export const useProductForm = () => {
-  const toast  = inject('ToastProvider');
-  const route  = useRoute();
-  const router = useRouter();
+  const toast     = inject('ToastProvider');
+  const route     = useRoute();
+  const router    = useRouter();
   const { params } = route;
   const formData = reactive<FormData>({
     id              : '',
@@ -403,6 +403,28 @@ export const useProductForm = () => {
     }
   };
 
+  const handleRefresh = async (e: any) => {
+    // Reset any possible dynamic fields
+    formData.name            = '';
+    formData.description     = '';
+    formData.by              = '';
+    formData.price           = '0';
+    formData.stock           = 0;
+    formData.sku             = '';
+    formData.variants        = [];
+    formData.deletedVariants = [];
+    formData.images          = [];
+    formData.newImages       = [];
+    formData.deletedImages   = [];
+    formError.name           = '';
+    formError.price          = '';
+    formError.stock          = '';
+    formError.variants       = [];
+
+    await productDetailRefetch();
+    e.complete();
+  };
+
   return {
     productId    : params.id,
     productDetail: productDetail as Ref<ProductFormNormalizerReturn>,
@@ -418,6 +440,7 @@ export const useProductForm = () => {
     handleRemoveVariant,
     handleRemoveVariantImage,
     handleSubmit,
+    handleRefresh,
     mutateAddLoading,
     mutateAdd,
     mutateEditLoading,

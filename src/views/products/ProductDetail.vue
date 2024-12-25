@@ -18,6 +18,7 @@ import {
   CardTitle,
   DescriptionList,
   DescriptionListItem,
+  PullToRefresh,
   Dialog,
   EmptyState,
   Label,
@@ -54,6 +55,7 @@ const {
   deleteProduct,
   deleteProductLoading,
   refetch,
+  handleRefresh,
 } = useProductDetail();
 
 watch(
@@ -93,6 +95,9 @@ watch(
     </Toolbar>
   </Header>
   <Content>
+    <template #fixed>
+      <PullToRefresh @refresh="handleRefresh" />
+    </template>
     <EmptyState
       v-if="isError"
       :emoji="GLOBAL.ERROR_EMPTY_EMOJI"

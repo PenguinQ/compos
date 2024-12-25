@@ -15,6 +15,7 @@ import {
   CardTitle,
   Dialog,
   EmptyState,
+  PullToRefresh,
   TabControl,
   TabControls,
   TabPanel,
@@ -75,6 +76,8 @@ const {
   handleSelectVariant,
   handleSelectBundle,
   handleSubmit,
+  handleRefresh,
+  handleRefreshList,
   bundleListRefetch,
   productListRefetch,
 } = useSaleForm();
@@ -95,7 +98,7 @@ watch(
       <ToolbarAction icon @click="$router.back">
         <ComposIcon :icon="ArrowLeftShort" :size="40" />
       </ToolbarAction>
-      <ToolbarTitle>{{ saleId ? `Edit ${saleDetail?.name}` : 'Add Sale' }}</ToolbarTitle>
+      <ToolbarTitle>{{ saleId ? `Edit ${saleDetail ? saleDetail.name : 'Sale'}` : 'Add Sale' }}</ToolbarTitle>
       <ToolbarSpacer />
       <template v-if="!isDetailError && !isDetailLoading">
         <ToolbarAction v-if="isMutateAddLoading || isMutateEditLoading" backgroundColor="var(--color-blue-4)" icon>
@@ -108,6 +111,9 @@ watch(
     </Toolbar>
   </Header>
   <Content>
+    <template v-if="saleId" #fixed>
+      <PullToRefresh @refresh="handleRefresh" />
+    </template>
     <Container class="page-container">
       <EmptyState
         v-if="isDetailError"
@@ -234,9 +240,12 @@ watch(
       </template>
     </Toolbar>
     <Content>
+      <template #fixed>
+        <PullToRefresh @refresh="handleRefreshList" />
+      </template>
       <TabPanels v-model="productListTab">
         <TabPanel>
-          <Bar v-if="isProductListLoading" margin="56px 0" />
+          <Bar v-if="isProductListLoading" margin="116px 0" />
           <template v-else>
             <EmptyState
               v-if="isProductListError"
@@ -308,7 +317,7 @@ watch(
           </template>
         </TabPanel>
         <TabPanel lazy>
-          <Bar v-if="isBundleListLoading" margin="56px 0" />
+          <Bar v-if="isBundleListLoading" margin="116px 0" />
           <template v-else>
             <EmptyState
               v-if="isBundleListError"
