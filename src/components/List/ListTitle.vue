@@ -4,6 +4,9 @@ import { ref } from 'vue';
 export type ListTitleAs = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'div';
 
 type ListTitle = {
+  /**
+   * Render the title as another HTML tag.
+   */
   as?: ListTitleAs;
 };
 

@@ -71,11 +71,12 @@ type CheckboxSlots = {
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<Checkbox>(), {
-  disabled: false,
-  full: false,
-  tabindex: 0,
-  trueValue: undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
+  disabled  : false,
+  full      : false,
+  tabindex  : 0,
+  trueValue : undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
   falseValue: undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
+  value     : undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
 });
 
 const emits = defineEmits([
@@ -100,7 +101,7 @@ const checkedValue = computed(() => {
 
   return true;
 });
-const valueArray   = computed({
+const valueArray = computed({
   get() {
     return props.modelValue;
   },
@@ -110,7 +111,7 @@ const valueArray   = computed({
 });
 const isArray   = computed(() => props.modelValue instanceof Array);
 const isChecked = computed(() => {
-  if (checkedValue.value) {
+  if (checkedValue.value !== undefined) {
     if (isControlled.value) return props.modelValue === checkedValue.value;
   }
 });
@@ -127,18 +128,27 @@ const classes = computed(() => ({
 const handleChange = (e: Event) => {
   e.stopPropagation();
 
-  const checked = (e.target as HTMLInputElement).checked;
+  const target  = e.target as HTMLInputElement;
+  const checked = target.checked;
   let updateValue;
 
   if (checked) {
-    updateValue = props.trueValue
-      ? props.trueValue
-      : props.value
-      ? props.value
-      : true;
+    if (props.trueValue !== undefined) {
+      updateValue = props.trueValue;
+    } else if (props.value !== undefined) {
+      updateValue = props.value;
+    } else {
+      updateValue = true;
+    }
   } else {
-    updateValue = props.falseValue ? props.falseValue : false;
+    if (props.falseValue !== undefined) {
+      updateValue = props.falseValue;
+    } else {
+      updateValue = false;
+    }
   }
+
+  if (props.modelValue === props.falseValue) target.checked = true;
 
   emits('update:modelValue', updateValue);
   emits('change', e);

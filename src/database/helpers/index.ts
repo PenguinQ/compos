@@ -1,3 +1,3 @@
-export { default as backup } from './backup';
+export { default as createBackup } from './createBackup';
 export { default as createSamples } from './createSamples';
-export { default as restore } from './restore';
+export { default as restoreBackup } from './restoreBackup';

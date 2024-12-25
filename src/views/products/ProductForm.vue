@@ -17,6 +17,7 @@ import {
   CardSubtitle,
   CardTitle,
   EmptyState,
+  PullToRefresh,
   QuantityEditor,
   Textarea,
   Textfield,
@@ -49,6 +50,8 @@ const {
   formError,
   productDetailError,
   productDetailLoading,
+  mutateAddLoading,
+  mutateEditLoading,
   productDetailRefetch,
   handleAddImage,
   handleAddVariant,
@@ -57,8 +60,7 @@ const {
   handleRemoveVariantImage,
   handleRemoveImage,
   handleSubmit,
-  mutateAddLoading,
-  mutateEditLoading,
+  handleRefresh,
 } = useProductForm();
 
 watch(
@@ -77,7 +79,7 @@ watch(
       <ToolbarAction icon @click="router.push('/product')">
         <ComposIcon :icon="ArrowLeftShort" :size="40" />
       </ToolbarAction>
-      <ToolbarTitle>{{ productId ? `Edit ${productDetail?.name}` : 'Add Product' }}</ToolbarTitle>
+      <ToolbarTitle>{{ productId ? `Edit ${productDetail ? productDetail.name : 'Product'}` : 'Add Product' }}</ToolbarTitle>
       <ToolbarSpacer />
       <ToolbarAction v-if="mutateAddLoading || mutateEditLoading" backgroundColor="var(--color-blue-4)" icon>
         <Bar size="24px" color="var(--color-white)" />
@@ -88,6 +90,9 @@ watch(
     </Toolbar>
   </Header>
   <Content>
+    <template v-if="productId" #fixed>
+      <PullToRefresh @refresh="handleRefresh" />
+    </template>
     <Container class="page-container">
       <EmptyState
         v-if="productDetailError"

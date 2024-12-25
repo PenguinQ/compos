@@ -49,7 +49,12 @@ const slideUp = ({
   duration = 120,
   element,
   onFinish,
-}: { element: any, distance?: string, duration?: number, onFinish?: () => void }) => {
+}: {
+  element: any,
+  distance?: string,
+  duration?: number,
+  onFinish?: () => void,
+}) => {
   if (!element) return;
 
   const animatedElement = element.animate(
@@ -57,12 +62,7 @@ const slideUp = ({
     { duration, fill: 'both' },
   );
 
-  if (onFinish) {
-    animatedElement.onfinish = () => {
-      console.log('Finished');
-      onFinish();
-    };
-  }
+  if (onFinish) animatedElement.onfinish = () => onFinish();
 };
 
 const handleMove = (e: MouseEvent | TouchEvent) => {
@@ -104,6 +104,7 @@ const handleEnd = (e: MouseEvent | TouchEvent) => {
   }
 
   reference.value?.style.setProperty('--overflow', 'auto');
+
   slideUp({
     element: pulley.value,
     onFinish: () => {
@@ -152,6 +153,8 @@ watch(isRefreshing, (refreshing) => {
     });
   }
 });
+
+defineExpose({ cancel, complete });
 </script>
 
 <template>
@@ -160,7 +163,7 @@ watch(isRefreshing, (refreshing) => {
       {{ isReached ? 'Release to Refresh' : 'Pull to Refresh' }}
     </div>
     <div ref="indicator" class="cp-refresh__indicator">
-      <Bar size="24px" color="var(--color-white)" @click="complete" />
+      <Bar size="24px" color="var(--color-white)" />
     </div>
   </div>
 </template>

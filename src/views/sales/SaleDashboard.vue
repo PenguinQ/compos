@@ -3,6 +3,7 @@ import { onMounted, onUnmounted } from 'vue';
 
 // Common Components
 import {
+  Header,
   Content,
   Bar,
   Button,

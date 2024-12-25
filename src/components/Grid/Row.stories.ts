@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import { ComponentProps } from 'vue-component-type-helpers';
 
-import { Container } from '@/components';
+import { Container } from '@components';
 import Column from './Column.vue';
 import Row from './Row.vue';
 
