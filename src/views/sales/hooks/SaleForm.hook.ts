@@ -436,6 +436,47 @@ export const useSaleForm = () => {
     }
   };
 
+  const handleRefresh = async (e: any) => {
+    // Reset any possible dynamic fields
+    formData.name     = '';
+    formData.balance  = '';
+    formData.products = [];
+    formError.name    = '';
+    formError.product = '';
+    formError.balance = '';
+
+    await detailRefetch();
+    e.complete();
+  };
+
+  const handleRefreshList = async (e: any) => {
+    const resetTabPage = async (index: number) => {
+      if (index === 0) {
+        loadProducts.value  = false;
+        pageProduct.current = 1;
+        pageProduct.first   = true;
+        pageProduct.last    = true;
+        loadProducts.value  = true;
+      } else if (index === 1) {
+        loadBundles.value  = false;
+        pageBundle.current = 1;
+        pageBundle.first   = true;
+        pageBundle.last    = true;
+        loadBundles.value  = true;
+      }
+    };
+
+    await resetTabPage(productListTab.value);
+
+    if (productListTab.value === 0) {
+      await productListRefetch();
+    } else if (productListTab.value === 1) {
+      await bundleListRefetch();
+    }
+
+    e.complete();
+  };
+
   return {
     saleId     : params.id,
     saleDetail : saleDetail as Ref<DetailNormalizerReturn>,
@@ -475,6 +516,8 @@ export const useSaleForm = () => {
     handleSelectVariant,
     handleSelectBundle,
     handleSubmit,
+    handleRefresh,
+    handleRefreshList,
     bundleListRefetch,
     productListRefetch,
     mutateAdd,

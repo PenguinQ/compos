@@ -4,6 +4,9 @@ import { ref } from 'vue';
 export type ListDescriptionAs = 'p' | 'div';
 
 type ListDescription = {
+  /**
+   * Render the description as another HTML tag.
+   */
   as?: ListDescriptionAs;
 };
 

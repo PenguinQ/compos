@@ -1,6 +1,3 @@
-<script lang="ts">
-export default { inheritAttrs: false };
-</script>
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
 import { RouterLink } from 'vue-router';
@@ -8,22 +5,52 @@ import type { AnchorHTMLAttributes } from 'vue';
 import type { RouterLinkProps, RouteLocationRaw } from 'vue-router';
 import type * as CSS from 'csstype';
 
-// import CardHeader from './CardHeader.vue';
-// import CardTitle from './CardTitle.vue';
-// import CardSubtitle from './CardSubtitle.vue';
 import CardBody from './CardBody.vue';
 
 interface CardProps extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLinkProps, 'to'> {
+  /**
+   * Set the Card title.
+   */
   title?: string;
+  /**
+   * Set the Card subtitle
+   */
   subtitle?: string;
+  /**
+   * Set the Card content.
+   */
   content?: string;
+  /**
+   * Set the Card as clickable.
+   */
   clickable?: boolean;
+  /**
+   * Set the CSS margin value of the Card.
+   */
   margin?: CSS.Property.Margin;
+  /**
+   * Set the CSS padding value of the Card.
+   */
   padding?: CSS.Property.Padding;
+  /**
+   * Set the CSS border-radius value of the Card.
+   */
+  radius?: CSS.Property.BorderRadius;
+  /**
+   * Set the target property if the `to` property is provided.
+   */
   target?: '_self' | '_blank';
+  /**
+   * Set the href property sot the Card can act as a link.
+   */
   to?: RouteLocationRaw;
+  /**
+   * Set the Card variant.
+   */
   variant?: 'outline' | 'flat';
 }
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<CardProps>(), {
   clickable: false,
@@ -52,7 +79,7 @@ const cardClass  = computed(() => ({
       :class="cardClass"
       :href="(to as string)"
       :target="target"
-      :style="{ padding, margin }"
+      :style="{ padding, margin, borderRadius: radius }"
       rel="noopener"
     >
       <slot v-if="$slots.default" />
@@ -86,7 +113,7 @@ const cardClass  = computed(() => ({
       </a>
     </RouterLink>
   </template>
-  <div v-else v-bind="$attrs" :class="cardClass" :style="{ padding, margin }">
+  <div v-else v-bind="$attrs" :class="cardClass" :style="{ padding, margin, borderRadius: radius }">
     <slot v-if="$slots.default" />
     <template v-else>
       <CardHeader v-if="title">

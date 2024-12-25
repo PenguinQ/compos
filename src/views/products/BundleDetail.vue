@@ -21,6 +21,7 @@ import {
   Dialog,
   EmptyState,
   Label,
+  PullToRefresh,
   Separator,
   Text,
   Ticker,
@@ -54,6 +55,7 @@ const {
   deleteBundle,
   deleteBundleLoading,
   refetch,
+  handleRefresh,
 } = useBundleDetail();
 
 watch(
@@ -93,6 +95,9 @@ watch(
     </Toolbar>
   </Header>
   <Content>
+    <template #fixed>
+      <PullToRefresh @refresh="handleRefresh" />
+    </template>
     <EmptyState
       v-if="isError"
       :emoji="GLOBAL.ERROR_EMPTY_EMOJI"

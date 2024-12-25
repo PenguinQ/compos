@@ -17,6 +17,7 @@ import {
   Checkbox,
   Dialog,
   EmptyState,
+  PullToRefresh,
   Textarea,
   Textfield,
   Toolbar,
@@ -72,6 +73,8 @@ const {
   handleSelectProduct,
   handleSelectVariant,
   handleRemoveProduct,
+  handleRefresh,
+  handleRefreshList,
 } = useBundleForm();
 
 watch(
@@ -90,7 +93,7 @@ watch(
       <ToolbarAction icon @click="router.push('/product')">
         <ComposIcon :icon="ArrowLeftShort" :size="40" />
       </ToolbarAction>
-      <ToolbarTitle>{{ bundleId ? `Edit ${bundleDetail?.name}` : 'Add Bundle' }}</ToolbarTitle>
+      <ToolbarTitle>{{ bundleId ? `Edit ${bundleDetail ? bundleDetail.name : 'Bundle'}` : 'Add Bundle' }}</ToolbarTitle>
       <ToolbarSpacer />
       <template v-if="!bundleDetailError && !bundleDetailLoading">
         <ToolbarAction v-if="mutateAddLoading || mutateEditLoading" backgroundColor="var(--color-blue-4)" icon>
@@ -103,6 +106,9 @@ watch(
     </Toolbar>
   </Header>
   <Content>
+    <template v-if="bundleId" #fixed>
+      <PullToRefresh @refresh="handleRefresh" />
+    </template>
     <Container class="page-container">
       <EmptyState
         v-if="bundleDetailError"
@@ -221,6 +227,9 @@ watch(
             </Toolbar>
           </Header>
           <Content>
+            <template #fixed>
+              <PullToRefresh @refresh="handleRefreshList" />
+            </template>
             <EmptyState
               v-if="productListError"
               :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
@@ -233,7 +242,7 @@ watch(
               </template>
             </EmptyState>
             <template v-else>
-              <Bar v-if="productListLoading" margin="56px 0" />
+              <Bar v-if="productListLoading" />
               <template v-else>
                 <EmptyState
                   v-if="!product_list?.products.length && searchQuery === ''"

@@ -75,6 +75,11 @@ export const useSaleDetail = () => {
     },
   });
 
+  const handleRefresh = async (e: any) => {
+    await refetch();
+    e.complete();
+  };
+
   return {
     saleId: params.id,
     data  : data as Ref<DetailNormalizerReturn>,
@@ -82,10 +87,11 @@ export const useSaleDetail = () => {
     dialogFinish,
     isError,
     isLoading,
+    isMutateDeleteLoading,
+    isMutateFinishLoading,
     refetch,
     mutateDelete,
     mutateFinish,
-    isMutateDeleteLoading,
-    isMutateFinishLoading,
+    handleRefresh,
   };
 };

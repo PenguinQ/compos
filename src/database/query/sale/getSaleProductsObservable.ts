@@ -82,8 +82,6 @@ export default async ({ products, normalizer }: GetSaleProductsQuery) => {
       const filtered_products = (data as RxDocument<ProductData>[]).filter(Boolean);
       const products_data     = <ObserveableData[]>[];
 
-      console.log(filtered_products);
-
       /**
        * ------------------------------
        * 1. Loop through sale products.
