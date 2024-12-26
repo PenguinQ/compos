@@ -1,5 +1,5 @@
 import { monotonicFactory } from 'ulidx';
-import { sanitize } from 'isomorphic-dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 import type { RxDocument } from 'rxdb';
 
 // Databases
@@ -28,6 +28,7 @@ type MutateAddProductQuery = {
 
 export default async (data: MutateAddProductQuery) => {
   try {
+    const { sanitize } = DOMPurify;
     const ulid       = monotonicFactory();
     const product_id = PRODUCT_ID_PREFIX + ulid();
     const {

@@ -1,5 +1,5 @@
 import { monotonicFactory } from 'ulidx';
-import { sanitize } from 'isomorphic-dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 import Big from 'big.js';
 import type { RxDocument } from 'rxdb';
 
@@ -136,6 +136,7 @@ const updateBundlesStatus = async ({ id, active }: { id: string; active: boolean
 
 export default async ({ id, data }: MutateEditProductQuery) => {
   try {
+    const { sanitize } = DOMPurify;
     const {
       name,
       by,

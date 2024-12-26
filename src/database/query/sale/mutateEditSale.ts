@@ -1,4 +1,4 @@
-import { sanitize } from 'isomorphic-dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 import Big from 'big.js';
 
 import { db } from '@/database';
@@ -19,6 +19,7 @@ type MutateEditSaleQuery = {
 
 export default async ({ id, data }: MutateEditSaleQuery) => {
   try {
+    const { sanitize } = DOMPurify;
     const _queryConstruct = db.sale.findOne(id);
     const _querySale      = await _queryConstruct.exec();
 

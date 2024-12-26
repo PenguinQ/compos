@@ -1,4 +1,4 @@
-import { sanitize } from 'isomorphic-dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 import { db } from '@/database';
 import type { BundleDocProduct } from '@/database/types';
@@ -17,6 +17,7 @@ type MutateEditBundleQuery = {
 
 export default async (data: MutateEditBundleQuery) => {
   try {
+    const { sanitize } = DOMPurify;
     const {
       name        = '',
       description = '',
