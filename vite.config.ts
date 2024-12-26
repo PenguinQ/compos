@@ -17,7 +17,7 @@ export default defineConfig({
         description: 'Simple Web POS',
         background_color: '#FFFFFF',
         theme_color: '#FFFFFF',
-        start_url: '/',
+        start_url: './?source=pwa',
         scope: '/',
         icons: [
           {
