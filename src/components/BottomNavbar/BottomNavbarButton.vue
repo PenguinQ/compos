@@ -14,7 +14,7 @@ defineProps<Props>()
   <button class="cp-bottom-navbar-button" type="button" :data-cp-active="active ? true : undefined">
     <div class="cp-bottom-navbar-button__wrapper">
       <ComposIcon :icon="icon" :size="20" />
-      {{ title }}
+      <label>{{ title }}</label>
     </div>
   </button>
 </template>
@@ -33,6 +33,7 @@ defineProps<Props>()
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 
   &:focus {
     outline: 2px dashed var(--color-blue);
@@ -50,12 +51,20 @@ defineProps<Props>()
   }
 
   &__wrapper {
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 8px;
     position: relative;
+
+    label {
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 
   compos-icon {

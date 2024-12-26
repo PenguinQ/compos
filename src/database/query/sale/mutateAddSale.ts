@@ -1,5 +1,5 @@
 import { monotonicFactory } from 'ulidx';
-import { sanitize } from 'isomorphic-dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 import { db } from '@/database';
 import { SALE_ID_PREFIX } from '@/database/constants';
@@ -19,6 +19,7 @@ type MutateAddSaleQuery = {
 
 export default async ({ data }: MutateAddSaleQuery) => {
   try {
+    const { sanitize } = DOMPurify;
     const ulid    = monotonicFactory();
     const sale_id = SALE_ID_PREFIX + ulid();
     const { name, balance, products = [] } = data;

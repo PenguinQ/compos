@@ -1,5 +1,5 @@
 import { monotonicFactory } from 'ulidx';
-import { sanitize } from 'isomorphic-dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 import { db } from '@/database';
 import { BUNDLE_ID_PREFIX } from '@/database/constants';
@@ -18,6 +18,7 @@ type MutateAddBundleQuery = {
 
 export default async (data: MutateAddBundleQuery) => {
   try {
+    const { sanitize } = DOMPurify;
     const ulid       = monotonicFactory();
     const bundle_id  = BUNDLE_ID_PREFIX + ulid();
     const {

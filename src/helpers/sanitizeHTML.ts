@@ -1,3 +1,3 @@
-import { sanitize } from 'isomorphic-dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
-export default sanitize;
+export default DOMPurify.sanitize;

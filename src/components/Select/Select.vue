@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { Slot, OptionHTMLAttributes } from 'vue';
 import type * as CSS from 'csstype'
 
@@ -79,7 +79,7 @@ type SelectSlots = {
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<Select>(), {
+withDefaults(defineProps<Select>(), {
   disabled: false,
   error: false,
   success: false,
