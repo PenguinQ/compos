@@ -22,22 +22,26 @@ export default defineConfig({
         icons: [
           {
             src: 'pwa-64.png',
-            sizes: '192x192',
+            sizes: '64x64',
             type: 'image/png',
+            purpose: 'any',
           },
           {
             src: 'pwa-192.png',
             sizes: '192x192',
             type: 'image/png',
+            purpose: 'any',
           },
           {
             src: 'pwa-512.png',
             sizes: '512x512',
             type: 'image/png',
+            purpose: 'any maskable',
           },
         ]
       },
       workbox: {
+        navigateFallback: 'index.html',
         cleanupOutdatedCaches: false,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [

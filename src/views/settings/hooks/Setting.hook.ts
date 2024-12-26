@@ -26,7 +26,7 @@ export const useSetting = () => {
       toast.add({ message: 'Error creating backup file.', type: 'error' });
       console.log(error);
     },
-    onSuccess: response => {
+    onSuccess: () => {
       // @ts-ignore
       toast.add({ message: 'Backup file created.', type: 'success' });
 
@@ -48,7 +48,7 @@ export const useSetting = () => {
       toast.add({ message: 'Error restoring from backup file.', type: 'error' });
       console.log(error);
     },
-    onSuccess: response => {
+    onSuccess: () => {
       // @ts-ignore
       toast.add({ message: 'Restore completed.', type: 'success' });
 

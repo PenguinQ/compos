@@ -101,6 +101,7 @@ const handleSelect = (wrapper: UnwrapRef<HTMLDivElement>) => {
     select?.focus();
 
     if ('showPicker' in HTMLSelectElement.prototype) {
+      // @ts-ignore
       select?.showPicker();
     } else {
       select?.dispatchEvent(new MouseEvent('mousedown'));
@@ -156,7 +157,7 @@ onMounted(() => {
     :data-cp-disabled="hasDisabledInput ? hasDisabledInput : undefined"
     @keydown="handleKeydown"
   >
-    <div ref="prependRef" v-if="$slots.prepend || prepend" class="cp-list-item__prepend">
+    <div ref="prependRef" v-if="$slots.prepend?.() || prepend" class="cp-list-item__prepend">
       <slot name="prepend" />
       <template v-if="prepend">{{ prepend }}</template>
     </div>
@@ -165,7 +166,7 @@ onMounted(() => {
       <ListDescription v-if="description" :as="descriptionAs" v-html="description" />
       <slot />
     </div>
-    <div ref="appendRef" v-if="$slots.append || append" class="cp-list-item__append">
+    <div ref="appendRef" v-if="$slots.append?.() || append" class="cp-list-item__append">
       <slot name="append" />
       <template v-if="append">{{ append }}</template>
     </div>
