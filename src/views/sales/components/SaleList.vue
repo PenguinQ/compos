@@ -109,7 +109,13 @@ const {
     </template>
   </template>
   <FloatingActions sticky=".cp-content">
-    <FloatingActionButton v-if="status === 'running'" align="flex-end" @click="$router.push('/sale/add')" />
+    <FloatingActionButton
+      v-if="status === 'running'"
+      align="flex-end"
+      @click="$router.push('/sale/add')"
+    >
+      Add Sale
+    </FloatingActionButton>
     <Pagination
       v-if="!isListEmpty"
       frame
