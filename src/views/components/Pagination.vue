@@ -59,8 +59,8 @@ const classes = computed(() => ({
     <div class="vc-pagination__detail">
       <Bar v-if="is_loading" size="24px" margin="0" />
       <template v-else>
-        <Text as="span" v-if="disabled || (!page && !total_page)">-</Text>
-        <Text as="span" v-else>Page {{ page }} of {{ total_page }}</Text>
+        <Text v-if="disabled || (!page && !total_page)" as="span" truncate>-</Text>
+        <Text v-else as="span" truncate>{{ page }} of {{ total_page }}</Text>
       </template>
     </div>
     <ButtonBlock @click="!is_loading && $emit('clickNext')" :disabled="next_disabled">
@@ -76,14 +76,16 @@ const classes = computed(() => ({
 .vc-pagination {
   $root: &;
 
+  max-width: 100%;
   display: inline-flex;
   align-items: center;
   background-color: var(--color-white);
 
   > .vc-button-block {
-    width: 46px;
-    height: 46px;
+    width: 42px;
+    height: 42px;
     border-radius: 0;
+    flex-shrink: 0;
 
     compos-icon {
       width: 18px;
@@ -106,12 +108,12 @@ const classes = computed(() => ({
   }
 
   &__detail {
-    width: 100px;
+    min-width: 72px;
     display: flex;
+    flex-shrink: 1;
     align-self: stretch;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
     border: 1px solid var(--color-black);
     padding: 0 8px;
 

@@ -125,7 +125,12 @@ const {
     </template>
   </template>
   <FloatingActions sticky=".cp-content">
-    <FloatingActionButton align="flex-end" @click="$router.push(`${type === 'product' ? '/product/add' : '/bundle/add'}`)" />
+    <FloatingActionButton
+      align="flex-end"
+      @click="$router.push(`${type === 'product' ? '/product/add' : '/bundle/add'}`)"
+    >
+      {{ type === 'product' ? 'Add Product' : 'Add Bundle' }}
+    </FloatingActionButton>
     <Pagination
       v-if="!isListEmpty"
       frame
