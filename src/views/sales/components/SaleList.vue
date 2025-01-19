@@ -98,6 +98,7 @@ const {
               width="76px"
               height="76px"
               backgroundColor="var(--color-blue-4)"
+              icon
               :aria-label="`Go to ${sales.name}`"
               @click="$router.push(`/sale/dashboard/${sales.id}`)"
             >
