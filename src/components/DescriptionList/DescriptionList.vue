@@ -3,7 +3,7 @@ export default { inheritAttrs: false };
 </script>
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
-import { useScopeId } from '@hooks';
+import { useScopeId } from '@/hooks';
 
 type DescriptionListItem = {
   title: string;
@@ -32,12 +32,12 @@ type DescriptionListProps = {
 
 const props = defineProps<DescriptionListProps>();
 
-const scope_id = useScopeId();
+const scope_id  = useScopeId();
 const listClass = computed(() => ({
-  'cp-description-list': true,
+  'cp-description-list'            : true,
   'cp-description-list--horizontal': props.alignment === 'horizontal',
-  'cp-description-list--rtl': props.direction === 'rtl',
-  'cp-description-list--compact': props.density === 'compact',
+  'cp-description-list--rtl'       : props.direction === 'rtl',
+  'cp-description-list--compact'   : props.density === 'compact',
 }));
 
 const DescriptionListItem = defineAsyncComponent(() => import('./DescriptionListItem.vue'));
@@ -48,7 +48,7 @@ const DescriptionListItem = defineAsyncComponent(() => import('./DescriptionList
     <dl :class="listClass" v-bind="$attrs">
       <component
         :is="DescriptionListItem"
-        :[scope_id]="''"
+        :[`${scope_id}`]="''"
         :key="item.title"
         v-for="item in items"
         v-bind="{ ...item.props, ...{ scope_id: scope_id ? scope_id : '' } }"
