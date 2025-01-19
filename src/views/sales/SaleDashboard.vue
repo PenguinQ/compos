@@ -755,7 +755,7 @@ onUnmounted(() => {
   &__name {
     @include text-body-lg;
     font-family: var(--text-heading-family);
-    font-weight: 700;
+    font-weight: 600;
     margin-bottom: 4px;
   }
 }

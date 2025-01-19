@@ -29,12 +29,13 @@ const setHeight = () => {
 
 const handleVisibility = () => {
   if (container.value) {
-    const refDOM  = container.value.closest(props.sticky!);
-    const refRect = refDOM?.getBoundingClientRect();
+    const refDOM   = container.value.closest(props.sticky!);
+    const refRect  = refDOM?.getBoundingClientRect();
+    const bodyRect = document.body.getBoundingClientRect();
 
     if (refRect) {
-      const bottom      = window.innerHeight - Math.floor(refRect.bottom);
-      const bottomStyle = window.innerHeight <= Math.floor(refRect.bottom) ? `calc(var(--safe-area-bottom) + ${bottom}px)` : `${bottom}px`;
+      const bottom      = bodyRect.height - Math.floor(refRect.bottom);
+      const bottomStyle = bodyRect.height <= Math.floor(refRect.bottom) ? `calc(var(--safe-area-bottom) + ${bottom}px)` : `${bottom}px`;
 
       container.value.style.bottom  = bottomStyle;
       container.value.style.opacity = '1';

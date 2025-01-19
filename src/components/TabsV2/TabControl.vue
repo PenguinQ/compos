@@ -21,7 +21,8 @@ $parent: '.cp-tab-controls';
   @include text-body-md;
   height: var(--tab-height);
   color: var(--color-white);
-  font-weight: 600;
+  font-family: var(--text-heading-family);
+  font-weight: 400;
   background-color: var(--color-black);
   flex: 0 0 auto;
   border: none;
@@ -48,9 +49,9 @@ $parent: '.cp-tab-controls';
   }
 
   &::before {
-    content: '';
+    content: "";
     width: 0;
-    height: 2px;
+    height: 3px;
     position: absolute;
     bottom: 0;
     left: 50%;
@@ -60,6 +61,8 @@ $parent: '.cp-tab-controls';
   }
 
   &[data-cp-active] {
+    font-weight: 600;
+
     &:before {
       width: 100%;
     }

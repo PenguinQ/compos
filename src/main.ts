@@ -14,7 +14,6 @@ initDB().then(() => {
 
   app.use(router);
   app.use(toast);
-
   registerPWA();
 
   app.mount('#app');
