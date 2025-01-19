@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue';
 
-import { isVisible } from '@helpers';
-import { useScopeId } from '@hooks';
+import { useScopeId } from '@/hooks';
+import { isVisible } from '@/helpers';
 
 type TabControlsProps = {
   grow?: boolean;
@@ -18,13 +18,13 @@ const props = withDefaults(defineProps<TabControlsProps>(), {
 });
 const emit = defineEmits(['update:modelValue']);
 
-const scope_id = useScopeId();
+const scope_id  = useScopeId();
 const container = ref();
-const scroller = ref();
-const active = ref(props.modelValue ? props.modelValue : 0);
-const tabs_class = computed(() => ({
-  'cp-tab-controls': true,
-  'cp-tab-controls--grow': props.grow,
+const scroller  = ref();
+const active    = ref(props.modelValue ? props.modelValue : 0);
+const tabControlClass = computed(() => ({
+  'cp-tab-controls'           : true,
+  'cp-tab-controls--grow'     : props.grow,
   'cp-tab-controls--alternate': props.variant === 'alternate',
 }));
 
@@ -61,8 +61,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="$slots.default" ref="container" :class="tabs_class">
-    <div :[scope_id]="''" ref="scroller" class="cp-tab-controls-container">
+  <div v-if="$slots.default" ref="container" :class="tabControlClass">
+    <div :[`${scope_id}`]="''" ref="scroller" class="cp-tab-controls-container">
       <component
         v-for="(tab, index) in $slots.default()"
         :is="tab"
