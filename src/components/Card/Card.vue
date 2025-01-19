@@ -84,7 +84,7 @@ const cardClass  = computed(() => ({
       :target="target"
       :style="{ padding, margin, borderRadius: radius }"
       rel="noopener"
-      :[scope_id]="''"
+      :[`${scope_id}`]="''"
     >
       <slot v-if="$slots.default" />
       <template v-else>
@@ -104,7 +104,7 @@ const cardClass  = computed(() => ({
         :target="target"
         :style="{ padding, margin }"
         rel="noopener"
-        :[scope_id]="''"
+        :[`${scope_id}`]="''"
         @click="navigate"
       >
       <slot v-if="$slots.default" />
@@ -123,7 +123,7 @@ const cardClass  = computed(() => ({
     v-bind="$attrs"
     :class="cardClass"
     :style="{ padding, margin, borderRadius: radius }"
-    :[scope_id]="''"
+    :[`${scope_id}`]="''"
   >
     <slot v-if="$slots.default" />
     <template v-else>
