@@ -87,7 +87,7 @@ const {
       <template v-else>
         <div class="products-list">
           <template v-if="type === 'product'">
-            <Card class="product" :key="product.id" v-for="product in list.products" :to="`/product/${product.id}`" data-berak>
+            <Card class="product" :key="product.id" v-for="product in list.products" :to="`/product/${product.id}`">
               <ProductImage class="product__image">
                 <img :src="product.image ? product.image : no_image" :alt="`${product.name} image`" />
               </ProductImage>
