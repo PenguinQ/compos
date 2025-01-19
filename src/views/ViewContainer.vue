@@ -11,7 +11,7 @@ import { Archive, ArchiveFill, Basket, BasketFill, Gear, GearFill } from '@/comp
     <RouterView />
     <BottomNavbar ref="nav">
       <BottomNavbarButton
-        title="Sale Management"
+        title="Sales Management"
         :icon="($route.name as string).startsWith('sale') ? BasketFill : Basket"
         :active="($route.name as string).startsWith('sale')"
         @click="$router.push('/sale')"

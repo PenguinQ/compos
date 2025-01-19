@@ -117,11 +117,11 @@ provide('TabData', { tabData, updateTabData });
 <template>
   <Header>
     <Toolbar ref="toolbarRef">
-      <ToolbarTitle>Product List</ToolbarTitle>
+      <ToolbarTitle>Products Management</ToolbarTitle>
       <template #extension>
         <TabControls v-model="tab" grow>
-          <TabControl title="Product" @click="handleClickTab(0)" />
-          <TabControl title="Bundle" @click="handleClickTab(1)" />
+          <TabControl title="Products" @click="handleClickTab(0)" />
+          <TabControl title="Bundles" @click="handleClickTab(1)" />
         </TabControls>
       </template>
     </Toolbar>

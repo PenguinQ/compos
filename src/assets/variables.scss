@@ -66,8 +66,8 @@ $baseApple: 17; // In apple mobile devices default dynamic font size are 17, whi
 
   // Typography
   --text-dynamic-font: -apple-system-body;
-  --text-heading-family: "Nunito", sans-serif;
-  --text-body-family: "DM Sans", sans-serif;
+  --text-heading-family: "Sora", sans-serif;
+  --text-body-family: "Inter", sans-serif;
   --text-heading-size-1: calc((26 / #{$baseOther}) * 1rem);
   --text-heading-size-2: calc((24 / #{$baseOther}) * 1rem);
   --text-heading-size-3: calc((22 / #{$baseOther}) * 1rem);
@@ -145,11 +145,11 @@ $baseApple: 17; // In apple mobile devices default dynamic font size are 17, whi
 
 @supports (-webkit-touch-callout: none) and (font: -apple-system-body) {
   :root {
-    --text-heading-size-1: calc((36 / #{$baseApple}) * 1rem);
-    --text-heading-size-2: calc((32 / #{$baseApple}) * 1rem);
-    --text-heading-size-3: calc((28 / #{$baseApple}) * 1rem);
-    --text-heading-size-4: calc((24 / #{$baseApple}) * 1rem);
-    --text-heading-size-5: calc((20 / #{$baseApple}) * 1rem);
+    --text-heading-size-1: calc((26 / #{$baseApple}) * 1rem);
+    --text-heading-size-2: calc((24 / #{$baseApple}) * 1rem);
+    --text-heading-size-3: calc((22 / #{$baseApple}) * 1rem);
+    --text-heading-size-4: calc((20 / #{$baseApple}) * 1rem);
+    --text-heading-size-5: calc((18 / #{$baseApple}) * 1rem);
     --text-heading-size-6: calc((16 / #{$baseApple}) * 1rem);
     --text-body-size-lg: calc((16 / #{$baseApple}) * 1rem);
     --text-body-size-md: calc((14 / #{$baseApple}) * 1rem);
@@ -157,11 +157,11 @@ $baseApple: 17; // In apple mobile devices default dynamic font size are 17, whi
     --text-body-size-xs: calc((10 / #{$baseApple}) * 1rem);
 
     @include screen-md {
-      --text-heading-size-1: calc((26 / #{$baseApple}) * 1rem);
-      --text-heading-size-2: calc((24 / #{$baseApple}) * 1rem);
-      --text-heading-size-3: calc((22 / #{$baseApple}) * 1rem);
-      --text-heading-size-4: calc((20 / #{$baseApple}) * 1rem);
-      --text-heading-size-5: calc((18 / #{$baseApple}) * 1rem);
+      --text-heading-size-1: calc((36 / #{$baseApple}) * 1rem);
+      --text-heading-size-2: calc((32 / #{$baseApple}) * 1rem);
+      --text-heading-size-3: calc((28 / #{$baseApple}) * 1rem);
+      --text-heading-size-4: calc((24 / #{$baseApple}) * 1rem);
+      --text-heading-size-5: calc((20 / #{$baseApple}) * 1rem);
       --text-heading-size-6: calc((16 / #{$baseApple}) * 1rem);
     }
   }

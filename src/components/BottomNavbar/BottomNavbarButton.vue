@@ -24,6 +24,7 @@ defineProps<Props>()
   @include text-body-sm;
   flex: 1;
   color: var(--color-white);
+  font-family: var(--text-heading-family);
   font-weight: 400;
   background-color: transparent;
   border: none;
@@ -43,7 +44,7 @@ defineProps<Props>()
   &::before {
     content: "";
     width: 0;
-    height: 2px;
+    height: 3px;
     position: absolute;
     top: 0;
     background-color: var(--color-white);
@@ -72,6 +73,8 @@ defineProps<Props>()
   }
 
   &[data-cp-active] {
+    font-weight: 600;
+
     &::before {
       width: 100%;
     }

@@ -117,7 +117,7 @@ provide('TabData', { tabData, updateTabData });
 <template>
   <Header>
     <Toolbar ref="toolbarRef">
-      <ToolbarTitle>Sale List</ToolbarTitle>
+      <ToolbarTitle>Sales Management</ToolbarTitle>
       <template #extension>
         <TabControls v-model="tab" grow>
           <TabControl title="Running" @click="handleClickTab(0)" />

@@ -202,9 +202,7 @@ export default async (data: MutateAddProductQuery) => {
       }
     }
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof Error) throw error;
 
     throw new Error(String(error));
   }
