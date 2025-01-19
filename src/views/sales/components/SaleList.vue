@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Common Components
 import { Bar, Button, EmptyState } from '@/components';
-import ComposIcon, { ChevronRight } from '@/components/Icons';
+import ComposIcon, { LayoutSidebarReverse } from '@/components/Icons';
 
 // View Components
 import {
@@ -93,15 +93,15 @@ const {
               <div class="sale__count">{{ sales.product_count }} Products</div>
             </div>
             <ButtonBlock
+              v-if="status === 'running'"
               class="sale__action"
               width="76px"
               height="76px"
               backgroundColor="var(--color-blue-4)"
-              icon
               :aria-label="`Go to ${sales.name}`"
               @click="$router.push(`/sale/dashboard/${sales.id}`)"
             >
-              <ComposIcon :icon="ChevronRight" size="28" />
+              <ComposIcon :icon="LayoutSidebarReverse" size="28" />
             </ButtonBlock>
           </div>
         </div>
@@ -156,6 +156,7 @@ const {
     align-self: stretch;
     flex-grow: 1;
     cursor: pointer;
+    user-select: none;
     padding: 12px 16px;
     transition-property: background-color transform;
     transition-duration: var(--transition-duration-very-fast);
