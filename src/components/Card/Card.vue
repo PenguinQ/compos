@@ -7,6 +7,8 @@ import type * as CSS from 'csstype';
 
 import CardBody from './CardBody.vue';
 
+import { useScopeId } from '@/hooks';
+
 interface CardProps extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLinkProps, 'to'> {
   /**
    * Set the Card title.
@@ -61,6 +63,7 @@ const CardHeader   = defineAsyncComponent(() => import('./CardHeader.vue'));
 const CardTitle    = defineAsyncComponent(() => import('./CardTitle.vue'));
 const CardSubtitle = defineAsyncComponent(() => import('./CardSubtitle.vue'));
 
+const scope_id   = useScopeId();
 const isExternal = computed(() => typeof props.to === 'string' && props.to.startsWith('http'));
 const cardClass  = computed(() => ({
   'cp-card'           : true,
@@ -81,6 +84,7 @@ const cardClass  = computed(() => ({
       :target="target"
       :style="{ padding, margin, borderRadius: radius }"
       rel="noopener"
+      :[scope_id]="''"
     >
       <slot v-if="$slots.default" />
       <template v-else>
@@ -100,6 +104,7 @@ const cardClass  = computed(() => ({
         :target="target"
         :style="{ padding, margin }"
         rel="noopener"
+        :[scope_id]="''"
         @click="navigate"
       >
       <slot v-if="$slots.default" />
@@ -113,7 +118,13 @@ const cardClass  = computed(() => ({
       </a>
     </RouterLink>
   </template>
-  <div v-else v-bind="$attrs" :class="cardClass" :style="{ padding, margin, borderRadius: radius }">
+  <div
+    v-else
+    v-bind="$attrs"
+    :class="cardClass"
+    :style="{ padding, margin, borderRadius: radius }"
+    :[scope_id]="''"
+  >
     <slot v-if="$slots.default" />
     <template v-else>
       <CardHeader v-if="title">
