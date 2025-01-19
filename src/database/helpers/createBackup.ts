@@ -4,6 +4,8 @@ import type { RxDumpCollection } from 'rxdb';
 import { db } from '@/database';
 import type { DatabaseCollection} from '@/database/types';
 
+import { backupStore } from '@/stores';
+
 export type BackupData = {
   collections: RxDumpCollection<unknown>[];
   attachments: {
@@ -67,6 +69,7 @@ export default async (backupAttachments = false) => {
     const backupName   = `COMPOS_BACKUP_${new Date().toISOString()}.json`;
     const backupBlob   = new Blob([backupString], { type: 'application/json' });
 
+    backupStore.set();
     saveAs(backupBlob, backupName);
 
     return { result: true };

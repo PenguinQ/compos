@@ -28,7 +28,7 @@ $root: '.cp-description-list';
 
   dt {
     color: var(--color-black);
-    font-family: 'Nunito', sans-serif;
+    font-family: var(--text-heading-family);
     font-weight: 600;
     font-size: 16px;
     line-height: 24px;

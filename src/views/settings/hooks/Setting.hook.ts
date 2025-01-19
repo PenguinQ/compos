@@ -23,12 +23,12 @@ export const useSetting = () => {
     queryFn: () => createBackup(backupImages.value) as any,
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Error creating backup file.', type: 'error' });
+      toast.add({ message: 'Error creating backup file', type: 'error' });
       console.log(error);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // @ts-ignore
-      toast.add({ message: 'Backup file created.', type: 'success' });
+      toast.add({ message: 'Backup file created', type: 'success' });
 
       backupImages.value = false;
       dialogBackup.value = false;
@@ -50,7 +50,7 @@ export const useSetting = () => {
     },
     onSuccess: () => {
       // @ts-ignore
-      toast.add({ message: 'Restore completed.', type: 'success' });
+      toast.add({ message: 'Restore completed', type: 'success' });
 
       dialogRestore.value = false;
     },
@@ -62,13 +62,13 @@ export const useSetting = () => {
 
     if (!file) {
       // @ts-ignore
-      toast.add({ message: 'No backup file added yet.', type: 'error' });
+      toast.add({ message: 'No backup file added yet', type: 'error' });
       return false;
     }
 
     if (file.type !== 'application/json') {
       // @ts-ignore
-      toast.add({ message: 'Invalid backup file.', type: 'error' });
+      toast.add({ message: 'Invalid backup file', type: 'error' });
 
       target.value = '';
 
@@ -77,7 +77,7 @@ export const useSetting = () => {
 
     if (!file.name.endsWith('.json')) {
       // @ts-ignore
-      toast.add({ message: 'Invalid backup file.', type: 'error' });
+      toast.add({ message: 'Invalid backup file', type: 'error' });
 
       target.value = '';
 

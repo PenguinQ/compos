@@ -144,6 +144,10 @@ const {
   &__detail {
     min-width: 0;
     background-color: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-self: stretch;
     flex-grow: 1;
     cursor: pointer;
     padding: 12px 16px;
@@ -158,13 +162,16 @@ const {
   }
 
   &__title {
+    font-family: var(--text-heading-family);
     font-size: 20px;
+    font-weight: 600;
     line-height: 24px;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
 
   &__count {
-    font-size: 14px;
+    @include text-body-sm;
+    // font-size: var(--text-body-size-sm);
   }
 
   &__action {

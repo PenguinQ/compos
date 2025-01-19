@@ -13,11 +13,12 @@ export default defineConfig({
       manifest: {
         name: 'ComPOS',
         short_name: 'ComPOS',
-        display: 'standalone',
         description: 'Simple Web POS',
         background_color: '#FFFFFF',
         theme_color: '#FFFFFF',
-        start_url: './?source=pwa',
+        id: '/?source=pwa',
+        start_url: '/?source=pwa',
+        display: 'standalone',
         scope: '/',
         icons: [
           {
@@ -42,9 +43,47 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: 'index.html',
-        cleanupOutdatedCaches: false,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
+          {
+            urlPattern: /^https?:\/\/.*/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'html-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 365 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'gstatic-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 365 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              },
+            }
+          },
           {
             urlPattern: /\.(?:png|gif|jpg|jpeg|svg|ico)$/,
             handler: 'CacheFirst',

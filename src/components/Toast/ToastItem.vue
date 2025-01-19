@@ -33,6 +33,10 @@ export type ToastItemProps = {
    */
   show?: boolean;
   /**
+   * Hide the Toaster close button.
+   */
+  noClose?: boolean;
+  /**
    * Set the display for the toast.
    */
   type?: 'error' | 'success';
@@ -41,6 +45,7 @@ export type ToastItemProps = {
 const props = withDefaults(defineProps<ToastItemProps>(), {
   duration: 5000,
   html: false,
+  noClose: false,
   persist: false,
   persistOnHover: false,
 });
@@ -144,7 +149,7 @@ watch(
         <div v-if="html" class="cp-toast__content" v-html="message" />
         <div v-else class="cp-toast__content">{{ message }}</div>
       </template>
-      <button class="cp-toast__close" @click="handleClose">
+      <button v-if="!noClose" class="cp-toast__close" @click="handleClose">
         <ComposIcon :icon="X" :size="24" color="var(--color-white)" />
       </button>
     </div>

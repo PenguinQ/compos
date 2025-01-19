@@ -35,6 +35,7 @@ if (!plugin) provide('ToastProvider', { items, add });
       :message="item.message"
       :persist="item.persist"
       :persistOnHover="item.persistOnHover"
+      :noClose="item.noClose"
       :type="item.type"
       show
       @after-leave="remove"

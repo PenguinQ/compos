@@ -1,7 +1,6 @@
 import { addRxPlugin, createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
-// import { RxDBCleanupPlugin } from 'rxdb/plugins/cleanup';
 import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
 import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
 import { wrappedAttachmentsCompressionStorage } from 'rxdb/plugins/attachments-compression';
@@ -24,10 +23,27 @@ const createDB = async () => {
   });
 
   db = await createRxDatabase<DatabaseCollection>({
-    name       : dbName,
-    storage    : compressedStorage,
-    eventReduce: true,
+    name         : dbName,
+    storage      : compressedStorage,
+    eventReduce  : true,
+    cleanupPolicy: {
+      minimumDeletedTime     : 1000 * 60 * 60 * 24 * 7, // 7 days
+      minimumCollectionAge   : 1000 * 60 * 60 * 24 * 7, // 7 days
+      runEach                : 1000 * 60 * 60 * 24,     // once a day
+      awaitReplicationsInSync: true,
+      waitForLeadership      : true,
+    },
   });
+};
+
+export const recreateDB = () => {
+  /**
+   * Yeah this is somehow stupid, but rxStorageDexie doesn't expose Dexie .open() method that allows me to reopen connection to the existing db,
+   * that closed when url changes in some specific cases. (eg: blob url).
+   *
+   * For now this is the only surefire way to recreate the lost connection. (Since the db are actually recreated).
+   */
+  window.location.reload();
 };
 
 export const createCollections = async () => {
@@ -109,7 +125,6 @@ export const initDB = async () => {
   addRxPlugin(RxDBUpdatePlugin);
   addRxPlugin(RxDBAttachmentsPlugin);
   addRxPlugin(RxDBJsonDumpPlugin);
-  // addRxPlugin(RxDBCleanupPlugin); // Somehow create promises error.
 
   if (!db) await createDB();
 
