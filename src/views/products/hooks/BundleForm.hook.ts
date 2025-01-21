@@ -99,8 +99,8 @@ export const useBundleForm = () => {
     enabled: params.id ? true : false,
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error getting the bundle detail.`, type: 'error' });
-      console.error('Error getting the bundle detail.', error.message);
+      toast.add({ message: `Error getting the bundle detail`, type: 'error' });
+      console.error('Error getting the bundle detail,', error.message);
     },
     onSuccess: (response: unknown) => {
       const resp = response as FormDetailNormalizerReturn;
@@ -149,8 +149,8 @@ export const useBundleForm = () => {
     enabled: loadProducts,
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error getting product list.`, type: 'error' });
-      console.error('Error getting product list.', error.message);
+      toast.add({ message: `Error getting product list`, type: 'error' });
+      console.error('Error getting product list,', error.message);
     },
     onSuccess: (response: unknown) => {
       if (response) {
@@ -186,12 +186,12 @@ export const useBundleForm = () => {
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error adding new bundle.`, type: 'error' });
-      console.error('Error adding new bundle.', error.message);
+      toast.add({ message: `Error adding new bundle`, type: 'error' });
+      console.error('Error adding new bundle,', error.message);
     },
     onSuccess: () => {
       // @ts-ignore
-      toast.add({ message: 'Bundle added.', type: 'success', duration: 2000 });
+      toast.add({ message: 'Bundle added', type: 'success', duration: 2000 });
       router.back();
     },
   });
@@ -220,12 +220,12 @@ export const useBundleForm = () => {
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error updating the bundle.`, type: 'error' });
-      console.error('Error updating the bundle.', error.message);
+      toast.add({ message: `Error updating the bundle`, type: 'error' });
+      console.error('Error updating the bundle,', error.message);
     },
     onSuccess: () => {
       // @ts-ignore
-      toast.add({ message: 'Bundle detail updated.', type: 'success', duration: 2000 });
+      toast.add({ message: 'Bundle detail updated', type: 'success', duration: 2000 });
       router.back();
     },
   });
@@ -269,7 +269,7 @@ export const useBundleForm = () => {
       params.id ? mutateEdit() : mutateAdd();
     } else {
       // @ts-ignore
-      toast.add({ message: 'There is an error in some form input; please check again.', type: 'error' });
+      toast.add({ message: 'There is an error in some form input; please check again', type: 'error' });
     }
   };
 

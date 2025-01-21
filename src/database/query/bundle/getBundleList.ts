@@ -115,6 +115,7 @@ export default async ({
         const bundles_count = await getBundlesCount();
         const total_page    = Math.ceil(bundles_count / query_limit);
         const { first_page, last_page } = await getPageStatus({
+          db,
           collection: 'bundle',
           data      : data as RxDocument<BundleDoc>[],
           sortBy    : [{ id: sort }],
@@ -154,6 +155,7 @@ export default async ({
     const bundles_count = await getBundlesCount();
     const total_page    = Math.ceil(bundles_count / query_limit);
     const { first_page, last_page } = await getPageStatus({
+      db,
       collection: 'bundle',
       data      : _queryBundle as RxDocument<BundleDoc>[],
       sortBy    : [{ id: sort }],
