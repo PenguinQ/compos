@@ -24,7 +24,7 @@ export const useSetting = () => {
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Error creating backup file', type: 'error' });
-      console.log(error);
+      console.log(`Error creating backup file,`, error.message);
     },
     onSuccess: async () => {
       // @ts-ignore
@@ -45,8 +45,8 @@ export const useSetting = () => {
     queryFn: () => restoreBackup(restoreFile.value!, restoreImages.value) as any,
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Error restoring from backup file.', type: 'error' });
-      console.log(error);
+      toast.add({ message: 'Error restoring from backup file', type: 'error' });
+      console.log(`Error restoring from backup file,`, error.message);
     },
     onSuccess: () => {
       // @ts-ignore

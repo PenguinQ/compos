@@ -35,8 +35,8 @@ export const useSaleDetail = () => {
     }),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Error getting sale detail.', type: 'error' });
-      console.error('Error getting sale detail.', error.message);
+      toast.add({ message: 'Error getting sale detail', type: 'error' });
+      console.error('Error getting sale detail,', error.message);
     },
   });
 
@@ -47,8 +47,8 @@ export const useSaleDetail = () => {
     mutateFn: () => mutateDeleteSale(params.id as string),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to delete the sale.', type: 'error', duration: 2000 });
-      console.error('Failed to delete the sale.', error.message);
+      toast.add({ message: 'Failed to delete the sale', type: 'error', duration: 2000 });
+      console.error('Failed to delete the sale,', error.message);
     },
     onSuccess: (response) => {
       // @ts-ignore
@@ -64,12 +64,12 @@ export const useSaleDetail = () => {
     mutateFn: () => mutateFinishSale(params.id as string),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to finish the sale.', type: 'error', duration: 2000 });
-      console.error('Failed to delete the sale.', error.message);
+      toast.add({ message: 'Failed to finish the sale', type: 'error', duration: 2000 });
+      console.error('Failed to delete the sale,', error.message);
     },
     onSuccess: (response) => {
       // @ts-ignore
-      toast.add({ message: `Sale ${response} finished.`, type: 'success', duration: 2000 });
+      toast.add({ message: `Sale ${response} finished`, type: 'success', duration: 2000 });
       dialogFinish.value = false;
       refetch();
     },
