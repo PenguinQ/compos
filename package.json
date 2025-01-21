@@ -2,6 +2,7 @@
   "name": "compos",
   "private": true,
   "version": "0.2.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "icons:build": "pnpm run icons:clean && ts-node --esm src/scripts/icons-generator/icons-build.ts",
