@@ -31,8 +31,8 @@ export const useBundleDetail = () => {
     }),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to get the bundle detail.', type: 'error', duration: 2000 });
-      console.error('Failed to get the bundle detail.', error.message);
+      toast.add({ message: 'Failed to get the bundle detail', type: 'error', duration: 2000 });
+      console.error('Failed to get the bundle detail,', error.message);
     },
   });
 
@@ -43,12 +43,12 @@ export const useBundleDetail = () => {
     mutateFn: () => mutateDeleteBundle(params.id as string),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to delete the bundle.', type: 'error', duration: 2000 });
-      console.error('Failed to delete the bundle.', error.message);
+      toast.add({ message: 'Failed to delete the bundle', type: 'error', duration: 2000 });
+      console.error('Failed to delete the bundle,', error.message);
     },
     onSuccess: () => {
       // @ts-ignore
-      toast.add({ message: 'Bundle deleted.', type: 'success', duration: 2000 });
+      toast.add({ message: 'Bundle deleted', type: 'success', duration: 2000 });
       router.back();
     },
   });

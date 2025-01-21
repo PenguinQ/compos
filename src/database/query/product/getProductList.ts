@@ -141,6 +141,7 @@ export default async ({
         const products_count = await getProductsCount();
         const total_page     = Math.ceil(products_count / query_limit);
         const { first_page, last_page } = await getPageStatus({
+          db,
           collection: 'product',
           sortBy    : [{ id: sort }],
           query     : {
@@ -180,6 +181,7 @@ export default async ({
     const products_count = await getProductsCount();
     const total_page     = Math.ceil(products_count / query_limit);
     const { first_page, last_page } = await getPageStatus({
+      db,
       collection: 'product',
       data      : _queryProduct as RxDocument<ProductDoc>[],
       sortBy    : [{ id: sort }],

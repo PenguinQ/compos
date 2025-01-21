@@ -94,8 +94,8 @@ export const useSaleForm = () => {
     }),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Error getting sale detail.', type: 'error' });
-      console.error('Error getting sale detail.', error.message);
+      toast.add({ message: 'Error getting sale detail', type: 'error' });
+      console.error('Error getting sale detail,', error.message);
     },
     onSuccess: response => {
       const { name, balance, products } = response as DetailNormalizerReturn;
@@ -125,8 +125,8 @@ export const useSaleForm = () => {
     }),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Error getting product list.', type: 'error' });
-      console.error('Error getting product list.', error.message);
+      toast.add({ message: 'Error getting product list', type: 'error' });
+      console.error('Error getting product list,', error.message);
     },
     onSuccess: response => {
       if (response) {
@@ -157,8 +157,8 @@ export const useSaleForm = () => {
     }),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Error getting product list.', type: 'error' });
-      console.error('Error getting product list.', error.message);
+      toast.add({ message: 'Error getting product list', type: 'error' });
+      console.error('Error getting product list,', error.message);
     },
     onSuccess: response => {
       if (response) {
@@ -192,8 +192,8 @@ export const useSaleForm = () => {
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Error adding new sale.', type: 'error' });
-      console.error('Error adding new sale.', error.message);
+      toast.add({ message: 'Error adding new sale', type: 'error' });
+      console.error('Error adding new sale,', error.message);
     },
     onSuccess: () => {
       // @ts-ignore
@@ -224,8 +224,8 @@ export const useSaleForm = () => {
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Error updating sale.', type: 'error' });
-      console.error('Error updating sale.', error.message);
+      toast.add({ message: 'Error updating sale', type: 'error' });
+      console.error('Error updating sale,', error.message);
     },
     onSuccess: (response) => {
       // @ts-ignore
@@ -432,7 +432,7 @@ export const useSaleForm = () => {
       params.id ? mutateEdit() : mutateAdd();
     } else {
       // @ts-ignore
-      toast.add({ message: 'There\'s some error on some form input, please check again.', type: 'error' });
+      toast.add({ message: 'There\'s some error on some form input, please check again', type: 'error' });
     }
   };
 

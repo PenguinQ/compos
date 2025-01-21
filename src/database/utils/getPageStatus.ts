@@ -1,9 +1,10 @@
 import type { RxDocument } from 'rxdb';
 
-import { db } from '@/database';
+import type { Database } from '@/database/types';
 
 type GetPageStatusParams = {
-  collection: keyof typeof db;
+  db: Database;
+  collection: keyof Database;
   data: RxDocument<any>[];
   sort: 'asc' | 'desc';
   sortBy: object[];
@@ -15,7 +16,7 @@ type GetPageStatusReturn = {
   last_page: boolean;
 };
 
-export default async ({ collection, data, sort = 'desc', sortBy, query }: GetPageStatusParams): Promise<GetPageStatusReturn> => {
+export default async ({ db, collection, data, sort = 'desc', sortBy, query }: GetPageStatusParams): Promise<GetPageStatusReturn> => {
   try {
     const first_id = data[0]?.id || '';
     const last_id = data[data.length - 1]?.id || '';

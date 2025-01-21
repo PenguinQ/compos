@@ -32,8 +32,8 @@ export const useProductDetail = () => {
     }),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to get the product detail.', type: 'error', duration: 2000 });
-      console.error('Failed to get the product detail.', error.message);
+      toast.add({ message: 'Failed to get the product detail', type: 'error', duration: 2000 });
+      console.error('Failed to get the product detail,', error.message);
     },
   });
 
@@ -44,12 +44,12 @@ export const useProductDetail = () => {
     mutateFn: () => mutateDeleteProduct(params.id as string),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to delete the product.', type: 'error', duration: 2000 });
-      console.error('Failed to delete the product.', error.message);
+      toast.add({ message: 'Failed to delete the product', type: 'error', duration: 2000 });
+      console.error('Failed to delete the product,', error.message);
     },
     onSuccess: () => {
       // @ts-ignore
-      toast.add({ message: 'Product deleted.', type: 'success', duration: 2000 });
+      toast.add({ message: 'Product deleted', type: 'success', duration: 2000 });
       router.push('/product');
     }
   });

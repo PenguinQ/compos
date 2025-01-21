@@ -90,8 +90,8 @@ export const useSaleDashboard = () => {
     }),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to get the sale detail.', type: 'error', duration: 2000 });
-      console.error('Failed to get the sale detail.', error.message);
+      toast.add({ message: 'Failed to get the sale detail', type: 'error', duration: 2000 });
+      console.error('Failed to get the sale detail,', error.message);
 
       router.push('/sale');
     },
@@ -128,8 +128,8 @@ export const useSaleDashboard = () => {
     enabled: loadProducts,
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to get the sale products.', type: 'error', duration: 2000 });
-      console.error('Failed to get the sale products.', error.message);
+      toast.add({ message: 'Failed to get the sale products', type: 'error', duration: 2000 });
+      console.error('Failed to get the sale products,', error.message);
     },
   });
 
@@ -147,8 +147,8 @@ export const useSaleDashboard = () => {
     enabled: loadOrders,
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to get the sale orders.', type: 'error', duration: 2000 });
-      console.error('Failed to get the sale orders.', error.message);
+      toast.add({ message: 'Failed to get the sale orders', type: 'error', duration: 2000 });
+      console.error('Failed to get the sale orders,', error.message);
     },
     onSuccess: response => {
       const { ordersTotalChange } = response as OrdersNormalizerReturn;
@@ -211,8 +211,8 @@ export const useSaleDashboard = () => {
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Failed to add order. ${error.message}`, type: 'error', duration: 2000 });
-      console.error('[ERROR] Failed to add order.', error.message);
+      toast.add({ message: `Failed to add order, ${error.message}`, type: 'error', duration: 2000 });
+      console.error('Failed to add order,', error.message);
     },
     onSuccess: () => {
       orderedProducts.value = [];
@@ -225,7 +225,7 @@ export const useSaleDashboard = () => {
       productsRefetch();
 
       // @ts-ignore
-      toast.add({ message: 'Order added.', type: 'success', duration: 2000 });
+      toast.add({ message: 'Order added', type: 'success', duration: 2000 });
     },
   });
 
@@ -236,12 +236,12 @@ export const useSaleDashboard = () => {
     mutateFn: () => mutateFinishSale(params.id as string),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Failed to finish the sale. ${error.message}`, type: 'error', duration: 2000 });
-      console.error('Failed to finish the sale.', error.message);
+      toast.add({ message: `Failed to finish the sale, ${error.message}`, type: 'error', duration: 2000 });
+      console.error('Failed to finish the sale,', error.message);
     },
     onSuccess: response => {
       // @ts-ignore
-      toast.add({ message: `Sale ${response} finished.`, type: 'success', duration: 2000 });
+      toast.add({ message: `Sale ${response} finished`, type: 'success', duration: 2000 });
       router.push(`/sale/detail/${params.id}`);
     },
   });
@@ -264,7 +264,7 @@ export const useSaleDashboard = () => {
 
       if (orderAmount > stock!) {
         // @ts-ignore
-        toast.add({ message: `Insufficient stock for ${name}, only ${stock} remaining. You ordered ${orderAmount}.`, type: 'error', duration: 2000 });
+        toast.add({ message: `Insufficient stock for ${name}, only ${stock} remaining. You ordered ${orderAmount}`, type: 'error', duration: 2000 });
       } else {
         order.amount += quantity!;
       }
@@ -414,7 +414,7 @@ export const useSaleDashboard = () => {
 
           if (amount > stock) {
             // @ts-ignore
-            toast.add({ message: `Insufficient stock for ${name}, only ${stock} remaining. You ordered ${amount}.`, type: 'error', duration: 5000 });
+            toast.add({ message: `Insufficient stock for ${name}, only ${stock} remaining. You ordered ${amount}`, type: 'error', duration: 5000 });
 
             return false;
           }
@@ -431,7 +431,7 @@ export const useSaleDashboard = () => {
 
           if (bigChange.gt(bigBalance)) {
             // @ts-ignore
-            toast.add({ message: 'Low amount of balance.', type: 'error', duration: 2000 });
+            toast.add({ message: 'Low amount of balance', type: 'error', duration: 2000 });
 
             return false;
           }
@@ -439,17 +439,17 @@ export const useSaleDashboard = () => {
 
         if (totalProductsPrice.value.gt(paymentTendered.value)) {
           // @ts-ignore
-          toast.add({ message: 'Payment amount is less than total price.', type: 'error', duration: 2000 });
+          toast.add({ message: 'Payment amount is less than total price', type: 'error', duration: 2000 });
         } else {
           mutateAddOrderFn();
         }
       } else {
         // @ts-ignore
-        toast.add({ message: 'No paymount amount inputted yet.', type: 'error', duration: 2000 });
+        toast.add({ message: 'No paymount amount inputted yet', type: 'error', duration: 2000 });
       }
     } else {
       // @ts-ignore
-      toast.add({ message: 'No item ordered yet.', type: 'error', duration: 2000 });
+      toast.add({ message: 'No item ordered yet', type: 'error', duration: 2000 });
     }
   };
 

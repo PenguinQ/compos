@@ -82,6 +82,7 @@ export default async ({
         const sales_count = await getSalesCount();
         const total_page  = Math.ceil(sales_count / query_limit);
         const { first_page, last_page } = await getPageStatus({
+          db,
           collection: 'sale',
           data: data as RxDocument<SaleDoc>[],
           sort,
@@ -121,6 +122,7 @@ export default async ({
     const sales_count = await getSalesCount();
     const total_page = Math.ceil(sales_count / query_limit);
     const { first_page, last_page } = await getPageStatus({
+      db,
       collection: 'sale',
       data: _querySales as RxDocument<SaleDoc>[],
       sort,

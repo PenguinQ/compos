@@ -54,8 +54,8 @@ export const useSaleList = (status: 'running' | 'finished' = 'running') => {
     }),
     onError: (error: Error) => {
       // @ts-ignore
-      toast.add({ message: 'Failed to get sale list.', type: 'error', duration: 2000 });
-      console.error('Failed to get sale list.', error);
+      toast.add({ message: 'Failed to get sale list', type: 'error', duration: 2000 });
+      console.error('Failed to get sale list,', error);
     },
     onSuccess: (response: unknown) => {
       if (response) {

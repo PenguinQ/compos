@@ -67,7 +67,7 @@ export const useProductList = (type: 'product' | 'bundle') => {
     }),
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to get product list,', type: 'error', duration: 2000 });
+      toast.add({ message: 'Failed to get product list', type: 'error', duration: 2000 });
       console.error('Failed to get product list,', error.message);
     },
     onSuccess: (response: unknown) => {

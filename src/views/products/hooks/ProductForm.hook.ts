@@ -105,8 +105,8 @@ export const useProductForm = () => {
     enabled: params.id ? true : false,
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Failed to get the product detail.', type: 'error' });
-      console.error('Failed to get the product detail.', error.message);
+      toast.add({ message: 'Failed to get the product detail', type: 'error' });
+      console.error('Failed to get the product detail,', error.message);
     },
     onSuccess: (response: unknown) => {
       const resp = response as ProductFormNormalizerReturn;
@@ -192,12 +192,12 @@ export const useProductForm = () => {
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: `Error updating product detail. ${error.message}`, type: 'error' });
-      console.error('Error updating product detail.', error.message);
+      toast.add({ message: `Error updating product detail, ${error.message}`, type: 'error' });
+      console.error('Error updating product detail,', error.message);
     },
     onSuccess: () => {
       // @ts-ignore
-      toast.add({ message: 'Product detail updated.', type: 'success', duration: 2000 });
+      toast.add({ message: 'Product detail updated', type: 'success', duration: 2000 });
       router.back();
     },
   });
@@ -231,12 +231,12 @@ export const useProductForm = () => {
     },
     onError: error => {
       // @ts-ignore
-      toast.add({ message: 'Error adding new product.', type: 'error' });
-      console.error('Error adding new product.', error.message);
+      toast.add({ message: 'Error adding new product', type: 'error' });
+      console.error('Error adding new product,', error.message);
     },
     onSuccess: () => {
       // @ts-ignore
-      toast.add({ message: 'Product added.', type: 'success', duration: 2000 });
+      toast.add({ message: 'Product added', type: 'success', duration: 2000 });
       router.back();
     },
   });
@@ -260,7 +260,7 @@ export const useProductForm = () => {
       }
     } else {
       // @ts-ignore
-      toast.add({ message: 'Invalid file type, please use image file only.', type: 'error' });
+      toast.add({ message: 'Invalid file type, please use image file only', type: 'error' });
     }
   };
 
@@ -283,7 +283,7 @@ export const useProductForm = () => {
       }
     } else {
       // @ts-ignore
-      toast.add({ message: 'Invalid file type, please use image file only.', type: 'error' });
+      toast.add({ message: 'Invalid file type, please use image file only', type: 'error' });
     }
   };
 
@@ -399,7 +399,7 @@ export const useProductForm = () => {
       params.id ? mutateEdit() : mutateAdd();
     } else {
       // @ts-ignore
-      toast.add({ message: `There's error in some of the fields, please check again.`, type: 'error' });
+      toast.add({ message: `There's error in some of the fields, please check again`, type: 'error' });
     }
   };
 
