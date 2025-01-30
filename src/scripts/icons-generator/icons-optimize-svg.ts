@@ -1,107 +1,152 @@
+// @ts-nocheck
 import path from 'node:path';
 import fs from 'fs-extra';
 import * as glob from 'glob';
 import { optimize } from 'svgo';
+import { DOMParser, XMLSerializer } from 'xmldom';
 import chalk from 'chalk';
 import ora from 'ora';
 
 // Types
+import type { XastElement } from 'svgo/lib/types';
 import type { ContentType } from './types';
 
 const getName = (filePath: string) => path.basename(filePath, path.extname(filePath));
 
-const optimizeSVG = (pattern: string, callback: (glyphs: ContentType[]) => void) => {
-  const svgList: ContentType[] = [];
-  const filePath = glob.sync(pattern);
-  const log = chalk.hex('#70EAFA');
-  const bold = chalk.bold;
-  const oraSpinner = ora(`${bold('Optimizing SVGs...')}`);
+const updateShapes = (svgString: string) => {
+  const parser    = new DOMParser();
+  const svgDoc    = parser.parseFromString(svgString, 'image/svg+xml');
+  const svgShapes = svgDoc.getElementsByTagName('*');
+  const shapeMap = [
+    'circle',
+    'ellipse',
+    'image',
+    'line',
+    'path',
+    'polygon',
+    'polyline',
+    'rect',
+    'text',
+  ];
 
-  const addXMLNS = (content: string): string => {
-    const xmlns = 'xmlns="http://www.w3.org/2000/svg"';
-    const svg = '<svg';
-    const svgIndex = content.indexOf(svg);
-    const contentStart = content.substring(0, svgIndex + svg.length).trim();
-    const contentEnd = content.substring(svgIndex + svg.length).trim();
+  let validFormat  = true;
+  let shapeFills   = <string[]>[];
+  let shapeStrokes = <string[]>[];
 
-    return [contentStart, xmlns, contentEnd].join(' ');
-  };
+  for (const shape of Array.from(svgShapes)) {
+    if (shapeMap.includes(shape.tagName.toLocaleLowerCase())) {
+      let inDefs = false;
+      let parent = shape.parentNode as Element;
 
-  const cleanClipPaths = (svgContent: string) => {
-    let cleaned = svgContent;
-
-    cleaned = cleaned.replace(/<clipPath[^>]*>.*?<\/clipPath>/gs, '');
-    cleaned = cleaned.replace(/<defs>.*?<\/defs>/gs, '');
-    cleaned = cleaned.replace(/<g\s+clip-path="[^"]*">(.*?)<\/g>/gs, '$1');
-    cleaned = cleaned.replace(/<g>\s*<\/g>/g, '');
-    cleaned = cleaned.replace(/^\s*[\r\n]/gm, '');
-
-    return cleaned;
-  };
-
-  const updatePaths = (svgString: string): string => {
-    const pathRegex = /<path\s[^>]*?(?:\/?>|>.*?<\/path>)/gs;
-    const paths = svgString.match(pathRegex) || [];
-
-    /**
-     * --------------------------------------
-     * 1. If there's only one path in the svg
-     * --------------------------------------
-     */
-    if (paths.length === 1) {
-      const path = paths[0];
-      let newPath: string;
-
-      // 1.1. If path have fill attribute, change it's value with currentColor
-      if (path.includes('fill="')) {
-        newPath = path.replace(/fill="[^"]*"/, 'fill="currentColor"');
-      }
-      // 1.2. If path has doesn't have fill attribute, set fill attribute and set the value to currentColor
-      else {
-        newPath = path.replace(/^<path/, '<path fill="currentColor"');
-      }
-
-      return svgString.replace(path, newPath);
-    }
-    /**
-     * --------------------------------------
-     * 2. If there's multiple path in the svg
-     * --------------------------------------
-     */
-    else if (paths.length > 1) {
-      const fillValues = new Set();
-      let pathsWithFill = 0;
-
-      paths.forEach(path => {
-        const fillMatch = path.match(/fill="([^"]*)"/);
-        if (fillMatch) {
-          fillValues.add(fillMatch[1]);
-          pathsWithFill++;
+      /**
+       * Lookup to check if shape are inside a <defs /> which is should not be included.
+       */
+      while (parent && parent.nodeType === 1) {
+        if (parent.tagName.toLowerCase() === 'defs') {
+          inDefs = true;
+          break;
         }
-      });
 
-      // 2.1. If all of the paths doesn't have fill attribute, do nothing
-      if (pathsWithFill === 0) return svgString;
-
-      // 2.2. If all of the paths have fill attribute and has the same value, set the value to currentColor
-      if (fillValues.size === 1 && pathsWithFill === paths.length) {
-        return (paths as []).reduce((acc, path) => {
-          const newPath = (path as string).replace(/fill="[^"]*"/, 'fill="currentColor"');
-          return acc.replace(path, newPath);
-        }, svgString);
+        parent = parent?.parentNode as Element;
       }
 
-      // 2.3. If some of the paths has different fills value or some of the path doesn't have fill attribute, do nothing
-      return svgString;
+      /**
+       * If the shape are not inside a <defs />, get the value of fill and stroke. If the shape has fill and stroke, do comparison between them and
+       * if the stroke value and fill value are different, break the operation immediately and set the validFormat value as false.
+       *
+       * Notes:
+       * 1. fill="none" are assumed as valid fill value, this means if a shape has a stroke and fill like:
+       *
+       *      <path d="..." stroke="black" fill="none" />
+       *
+       *    Will be resulted in validFormat = false, because "black" !== "none". This is because "none" value in a fill are valid value,
+       *    see the explanation below:
+       *
+       *      <path d="..." stroke="black" />
+       *
+       *    In the example path above, it will resulted in a shape with a black stroke with black color as it's fill, it's happened because
+       *    if fill is not defined, the fill value will be set to black by default.
+       *
+       *    Based on these conditions, I've decided to set any shape with stroke and fill="none" will be resulted in invalid format (validFormat = false)
+       */
+      if (!inDefs) {
+        const shapeFill   = shape.getAttribute('fill');
+        const shapeStroke = shape.getAttribute('stroke');
+
+        if ((shapeFill && shapeStroke) && (shapeFill !== shapeStroke)) {
+          validFormat = false;
+          break;
+        }
+
+        if (shapeFill)   shapeFills.push(shapeFill);
+        if (shapeStroke) shapeStrokes.push(shapeStroke);
+      }
+    }
+  }
+
+  if (validFormat) {
+    let isFillsSame   = false;
+    let isStrokesSame = false;
+    let isBothSame    = false;
+
+    if (shapeFills.length && shapeStrokes.length) {
+      isFillsSame   = shapeFills.every(color => shapeFills[0] === color);
+      isStrokesSame = shapeStrokes.every(color => shapeStrokes[0] === color);
+    } else if (shapeFills.length && !shapeStrokes.length) {
+      isFillsSame = shapeFills.every(color => shapeFills[0] === color);
+    } else if (!shapeFills.length && shapeStrokes.length) {
+      isStrokesSame = shapeStrokes.every(color => shapeStrokes[0] === color);
     }
 
-    return svgString;
-  };
+    if (isFillsSame && isStrokesSame) {
+      isBothSame = shapeFills[0] === shapeStrokes[0] ? true : false;
+    }
 
-  oraSpinner.start();
+    if (
+      isBothSame ||
+      !isBothSame && (isFillsSame && !isStrokesSame) ||
+      !isBothSame && (!isFillsSame && isStrokesSame)
+    ) {
+      for (const shape of Array.from(svgShapes)) {
+        if (shapeMap.includes(shape.tagName.toLocaleLowerCase())) {
+          let inDefs = false;
+          let parent = shape.parentNode as Element;
+
+          while (parent && parent.nodeType === 1) {
+            if (parent.tagName.toLowerCase() === 'defs') {
+              inDefs = true;
+              break;
+            }
+
+            parent = parent?.parentNode as Element;
+          }
+
+          if (!inDefs) {
+            const shapeFill   = shape.getAttribute('fill');
+            const shapeStroke = shape.getAttribute('stroke');
+
+            if (shapeFill)   shape.setAttribute('fill', 'currentColor');
+            if (shapeStroke) shape.setAttribute('stroke', 'currentColor');
+          }
+        }
+      }
+    }
+  }
+
+  return new XMLSerializer().serializeToString(svgDoc);
+};
+
+const optimizeSVG = (pattern: string, callback: (glyphs: ContentType[]) => void) => {
+  const svgList  = <ContentType[]>[];
+  const filePath = glob.sync(pattern);
+  const log      = chalk.hex('#70EAFA');
+  const bold     = chalk.bold;
+  const spinner  = ora(`${bold('Optimizing SVGs...')}`);
+
+  spinner.start();
 
   filePath.forEach((path, _, paths) => {
-    const name = getName(path);
+    const name  = getName(path);
     const total = paths.length;
 
     fs.readFile(path, 'utf-8', (error, data) => {
@@ -110,65 +155,78 @@ const optimizeSVG = (pattern: string, callback: (glyphs: ContentType[]) => void)
       const result = optimize(data, {
         path,
         multipass: true,
-        plugins: [
-          'removeXMLNS',
+        plugins  : [
+          'cleanupAttrs',
+          'cleanupIds',
           'removeComments',
-          'removeXMLProcInst',
           'removeUselessDefs',
-          // 'cleanupAttrs',
-          // 'removeDoctype',
-          // 'removeXMLProcInst',
-          // 'removeMetadata',
-          // 'removeEditorsNSData',
-          // 'mergeStyles',
-          // 'inlineStyles',
-          // 'minifyStyles',
-          // 'cleanupIds',
-          // 'cleanupNumericValues',
-          // 'convertColors',
-          // 'mergePaths',
-          // 'removeHiddenElems',
-          // 'removeUselessStrokeAndFill',
-          // 'removeUnknownsAndDefaults',
-          // 'removeNonInheritableGroupAttrs',
+          'removeDesc',
+          'removeEmptyAttrs',
+          'removeEmptyText',
+          'removeHiddenElems',
+          'removeTitle',
+          'removeXMLProcInst',
+          {
+            name: 'sortXMLNS',
+            fn  : () => {
+              return {
+                root: {
+                  enter: (node) => {
+                    node.children.map(child => {
+                      const { _xmlns, ...rest } = (child as XastElement).attributes;
+
+                      (child as XastElement).attributes = { xmlns: 'http://www.w3.org/2000/svg', ...rest };
+                    });
+                  },
+                },
+              };
+            },
+          },
           // 'cleanupEnableBackground',
-          // 'removeEmptyText',
-          // 'convertShapeToPath',
+          // 'cleanupListOfValues',
+          // 'cleanupNumericValues',
+          // 'collapseGroups',
+          // 'convertColors',
           // 'convertEllipseToCircle',
+          // 'convertOneStopGradients',
+          // 'convertPathData',
+          // 'convertShapeToPath',
+          // 'convertStyleToAttrs',
+          // 'convertTransform',
+          // 'inlineStyles',
+          // 'mergePaths',
+          // 'mergeStyles',
+          // 'minifyStyles',
           // 'moveElemsAttrsToGroup',
           // 'moveGroupAttrsToElems',
-          // 'convertPathData',
-          // 'convertTransform',
-          // 'removeEmptyAttrs',
-          // 'removeEmptyContainers',
-          // 'removeUnusedNS',
-          // 'sortDefsChildren',
-          // 'removeTitle',
-          // 'removeDesc',
-          // 'collapseGroups',
-          // 'removeViewBox',
-          // -- Disabled Plugins --
-          // 'removeXMLNS',
-          // 'convertStyleToAttrs',
           // 'prefixIds',
-          // 'cleanupListOfValues',
-          // 'removeRasterImages',
+          // 'preset-default',
           // 'removeDimensions',
-          // 'removeAttrs',
-          // 'removeAttributesBySelector',
-          // 'removeElementsByAttr',
-          // 'addClassesToSVGElement',
+          // 'removeDoctype',
+          // 'removeEditorsNSData',
+          // 'removeEmptyContainers',
+          // 'removeMetadata',
+          // 'removeNonInheritableGroupAttrs',
           // 'removeOffCanvasPaths',
-          // 'removeStyleElement',
+          // 'removeRasterImages',
           // 'removeScriptElement',
+          // 'removeStyleElement',
+          // 'removeUnknownsAndDefaults',
+          // 'removeUnusedNS',
+          // 'removeUselessStrokeAndFill',
+          // 'removeViewBox',
+          // 'removeXlink',
+          // 'removeXMLNS',
           // 'reusePaths',
+          // 'sortAttrs',
+          // 'sortDefsChildren',
         ],
       });
 
-      svgList.push({ name: name, source: cleanClipPaths(updatePaths(addXMLNS(result.data))) });
+      svgList.push({ name: name, source: updateShapes(result.data) });
 
       if (svgList.length === filePath.length) {
-        oraSpinner.stopAndPersist({ symbol: '✅', text: `${log(`(${svgList.length}/${total})`)} ${bold(`SVGs optimized`)}` });
+        spinner.stopAndPersist({ symbol: '✅', text: `${log(`(${svgList.length}/${total})`)} ${bold(`SVGs optimized`)}` });
         callback(svgList);
       }
     });

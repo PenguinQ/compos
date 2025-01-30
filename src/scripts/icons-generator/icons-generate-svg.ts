@@ -38,7 +38,7 @@ export default async (svgs: ContentType[]) => {
       // Generate icon-map
       await fs.outputFile(path.join(__dirname, `../../components/${__foldername}/icons.ts`), mapString);
 
-      spinner.stopAndPersist({ symbol: '✅', text: `${log(`(${svgCount}/${svgs.length})`)} ${bold(`Icon components generated\n\nIcon components are located in /src/components/icons`)}` });
+      spinner.stopAndPersist({ symbol: '✅', text: `${log(`(${svgCount}/${svgs.length})`)} ${bold(`SVGs generated`)}` });
     }
   } catch (error) {
     console.error(`[ERROR - icons-generate-svg]: ${error}`);
