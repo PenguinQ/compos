@@ -1,6 +1,8 @@
 import path, { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'fs-extra';
+import chalk from 'chalk';
+import ora from 'ora';
 
 import { __foldername } from './icons-build.ts';
 
@@ -8,6 +10,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default async () => {
+  const bold    = chalk.bold;
+  const spinner = ora(`${bold('Generating component...')}`);
+
+  spinner.start();
+
   const componentTemplate = `const composIconRegistry = new Map<string, string>();
 
 export function addIcons(icons: Record<string, string>) {
@@ -131,7 +138,10 @@ export default 'compos-icon';
 
   try {
     await fs.outputFile(path.join(__dirname, `../../components/${__foldername}/component.ts`), componentTemplate);
+
+    spinner.stopAndPersist({ symbol: '📃', text: bold('Component generated') });
   } catch (error) {
     console.error(`[ERROR - icons-generate-component]: ${error}`);
+    spinner.stop();
   }
 };

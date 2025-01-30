@@ -14,14 +14,14 @@ dist-ssr
 *.local
 
 # Environment files
-# .env.production
-# .env.development
+.env.production
+.env.development
 
 # PWA files
 dev-dist
 
 # Directories
-# src/components/Icons
+src/components/Icons
 
 # Editor directories and files
 .zed/*
