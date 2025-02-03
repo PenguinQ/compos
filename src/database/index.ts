@@ -1,25 +1,34 @@
 import { addRxPlugin, createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
-import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
 import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
 import { wrappedAttachmentsCompressionStorage } from 'rxdb/plugins/attachments-compression';
-import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
+import type { DexieSettings } from 'rxdb';
+import type { RxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import type { RxStorageMemory, RxStorageMemorySettings } from 'rxdb/plugins/storage-memory';
 
 import { sale, order, product, variant, bundle } from './schema';
 import { productORMs, variantORMs, bundleORMs, saleORMs } from './orms';
-import { createSamples } from './helpers';
+
 import type { Database, DatabaseCollection } from './types';
+
+type Storage = ((settings?: DexieSettings) => RxStorageDexie) | ((settings?: RxStorageMemorySettings) => RxStorageMemory);
 
 export let db: Database;
 
 const createDB = async () => {
-  const dbName    = import.meta.env.VITE_DB_NAME;
-  const dbStorage = import.meta.env.MODE === 'production' ? getRxStorageDexie : getRxStorageMemory;
+  const dbName  = import.meta.env.VITE_DB_NAME;
+  let dbStorage: Storage = getRxStorageDexie;
+
+  if (import.meta.env.MODE === 'development') {
+    await import('rxdb/plugins/storage-memory').then(module => {
+      dbStorage = module.getRxStorageMemory;
+    });
+  }
 
   const compressedStorage = wrappedAttachmentsCompressionStorage({
-    storage: dbStorage() as any,
+    storage: dbStorage(),
   });
 
   db = await createRxDatabase<DatabaseCollection>({
@@ -38,10 +47,10 @@ const createDB = async () => {
 
 export const recreateDB = () => {
   /**
-   * Yeah this is somehow stupid, but rxStorageDexie doesn't expose Dexie .open() method that allows me to reopen connection to the existing db,
-   * that closed when url changes in some specific cases. (eg: blob url).
+   * Yeah this is somehow stupid, but rxStorageDexie doesn't expose Dexie .open() method that allows me to re-open connection to the current db instance
+   * that are closed when url change in some specific cases. (eg: blob url).
    *
-   * For now this is the only surefire way to recreate the lost connection. (Since the db are actually recreated).
+   * For now this is the only way I found to recreate the lost connection. (Since the db are actually recreated).
    */
   window.location.reload();
 };
@@ -121,7 +130,10 @@ export const createCollections = async () => {
 };
 
 export const initDB = async () => {
-  if (import.meta.env.MODE === 'development') addRxPlugin(RxDBDevModePlugin);
+  if (import.meta.env.MODE === 'development') {
+    await import('rxdb/plugins/dev-mode').then(module => addRxPlugin(module.RxDBDevModePlugin));
+  }
+
   addRxPlugin(RxDBUpdatePlugin);
   addRxPlugin(RxDBAttachmentsPlugin);
   addRxPlugin(RxDBJsonDumpPlugin);
@@ -130,5 +142,7 @@ export const initDB = async () => {
 
   await createCollections();
 
-  if (import.meta.env.MODE === 'development') await createSamples();
+  if (import.meta.env.MODE === 'development') {
+    await import ('./helpers/createSamples').then(module => module.default());
+  }
 };
