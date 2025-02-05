@@ -26,7 +26,7 @@ import GLOBAL from '@/views/constants';
 import { PRODUCT_LIST } from '../constants';
 
 // Assets
-import no_image from '@assets/illustration/no_image.svg';
+import no_image from '@/assets/illustration/no_image.svg';
 
 type ProductListProps = {
   type: 'product' | 'bundle';

@@ -4,7 +4,8 @@ import { db } from '@/database';
 import type { BundleDocProduct } from '@/database/types';
 
 // Helpers
-import { isNumeric, sanitizeNumeric } from '@/helpers';
+import { createError, isNumeric, sanitizeNumeric } from '@/helpers';
+import { ComPOSError } from '@/helpers/createError';
 
 type MutateEditBundleQuery = {
   id: string;
@@ -40,7 +41,7 @@ export default async (data: MutateEditBundleQuery) => {
       },
     }).exec();
 
-    if (!_queryBundle) throw `Cannot edit the current bundle, there's no bundle with id ${id}.`;
+    if (!_queryBundle) throw createError('Bundle not found', { status: 404 });
 
     /**
      * -------------------------------
@@ -50,9 +51,9 @@ export default async (data: MutateEditBundleQuery) => {
     const clean_name        = sanitize(name);
     const clean_description = sanitize(description);
 
-    if (clean_name.trim() === '') throw 'Bundle name cannot be empty.';
-    if (!isNumeric(price))        throw 'Price must be a number.';
-    if (!products.length)         throw 'Bundle must have at least one product.';
+    if (clean_name.trim() === '') throw new Error('Bundle name cannot be empty');
+    if (!isNumeric(price))        throw new Error('Price must be a number');
+    if (!products.length)         throw new Error('Bundle must have at least one product');
 
     const clean_price = sanitizeNumeric(price) as string;
 
@@ -62,8 +63,8 @@ export default async (data: MutateEditBundleQuery) => {
     for (const product of products) {
       const { id, product_id, active, quantity } = product;
 
-      if (!isNumeric(quantity)) throw 'Product quantity must be a number.';
-      if (!quantity)            throw 'Product quantity cannot be zero.';
+      if (!isNumeric(quantity)) throw new Error('Product quantity must be a number');
+      if (!quantity)            throw new Error('Product quantity cannot be zero');
 
       const clean_quantity = sanitizeNumeric(quantity) as number;
 
@@ -94,9 +95,7 @@ export default async (data: MutateEditBundleQuery) => {
       },
     });
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

@@ -1,9 +1,14 @@
 import { blobToBase64String } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
 import { isBundle, isProduct, isVariant } from '@/database/utils';
 import type { QueryParams } from '@/database/types';
+
+// Helpers
+import createError from '@/helpers/createError';
+import { ComPOSError } from '@/helpers/createError';
 
 export type SaleFormDetailProduct = {
   id: string;
@@ -27,7 +32,7 @@ export default async ({ id, normalizer }: SaleFormDetailQuery) => {
   try {
     const _querySale = await db.sale.findOne({ selector: { id } }).exec();
 
-    if (!_querySale) throw `Cannot find sale with id ${id}.`;
+    if (!_querySale) throw createError('Sale not found', { status: 404 });
 
     const { name, initial_balance, products } = _querySale;
     const product_list = [];
@@ -41,7 +46,7 @@ export default async ({ id, normalizer }: SaleFormDetailQuery) => {
       if (is_product) {
         const _queryProduct = await db.product.findOne(id).exec();
 
-        if (!_queryProduct) throw `The product with id ${id} does not exist.`;
+        if (!_queryProduct) throw new Error(`Product ${id} not found`);
 
         const { name } = _queryProduct;
         const attachments = _queryProduct.allAttachments();
@@ -65,11 +70,11 @@ export default async ({ id, normalizer }: SaleFormDetailQuery) => {
       } else if (is_variant) {
         const _queryVariant = await db.variant.findOne(id).exec();
 
-        if (!_queryVariant) throw `The product with id ${id} does not exist.`;
+        if (!_queryVariant) throw new Error(`Product ${id} not found`);
 
         const _queryProduct = await _queryVariant.populate('product_id');
 
-        if (!_queryProduct) throw `The product with id ${id} does not exist.`;
+        if (!_queryProduct) throw new Error(`Product ${id} not found`);
 
         const { name: product_name } = _queryProduct;
         const { name: variant_name } = _queryVariant;
@@ -94,7 +99,7 @@ export default async ({ id, normalizer }: SaleFormDetailQuery) => {
       } else if (is_bundle) {
         const _queryBundle = await db.bundle.findOne(id).exec();
 
-        if (!_queryBundle) throw `The product with id ${id} does not exist.`;
+        if (!_queryBundle) throw new Error(`Product ${id} not found`);
 
         const { name, products } = _queryBundle;
         const data = {
@@ -110,7 +115,7 @@ export default async ({ id, normalizer }: SaleFormDetailQuery) => {
           if (isProduct(id)) {
             const _queryProduct = await db.product.findOne(id).exec();
 
-            if (!_queryProduct) throw `The product with id ${id} does not exist.`;
+            if (!_queryProduct) throw new Error(`Product ${id} not found`);
 
             const attachments = _queryProduct.allAttachments();
             const images      = attachments.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
@@ -125,7 +130,7 @@ export default async ({ id, normalizer }: SaleFormDetailQuery) => {
           } else if (isVariant(id)) {
             const _queryVariant = await db.variant.findOne(id).exec();
 
-            if (!_queryVariant) throw `The product with id ${id} does not exist.`;
+            if (!_queryVariant) throw new Error(`Product ${id} not found`);
 
             const attachments = _queryVariant.allAttachments();
             const images      = attachments.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
@@ -158,9 +163,7 @@ export default async ({ id, normalizer }: SaleFormDetailQuery) => {
       },
     }
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }
