@@ -1,10 +1,13 @@
 import type { RxDocument } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import { getPageStatus } from '@/database/utils';
 import type { QueryParams } from '@/database/types';
-
 import type { SaleDoc } from '@/database/types';
+
+// Helpers
+import { ComPOSError } from '@/helpers/createError';
 
 interface GetSaleListParams extends Omit<QueryParams, 'page' | 'limit'> {
   status: string;
@@ -149,10 +152,8 @@ export default async ({
       result: normalizer ? normalizer(raw_data) : raw_data,
     }
   } catch (error) {
-    if (error instanceof Error) {
-      throw error.message;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
-    throw error;
+    throw new Error(String(error));
   }
 };

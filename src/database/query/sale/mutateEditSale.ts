@@ -4,7 +4,9 @@ import Big from 'big.js';
 import { db } from '@/database';
 import type { SaleDocProduct } from '@/database/types';
 
-import { isNumeric } from '@/helpers';
+// Helpers
+import { createError, isNumeric } from '@/helpers';
+import { ComPOSError } from '@/helpers/createError';
 
 type MutateEditSaleQueryData = {
   name: string;
@@ -23,17 +25,17 @@ export default async ({ id, data }: MutateEditSaleQuery) => {
     const _queryConstruct = db.sale.findOne(id);
     const _querySale      = await _queryConstruct.exec();
 
-    if (!_querySale) throw `Cannot find sale with id ${id}.`;
+    if (!_querySale) throw createError('Sale not found', { status: 404 });
 
     const { finished } = _querySale;
     const { name, balance, products } = data;
     const clean_name      = sanitize(name);
     let initial_balance   = balance;
 
-    if (finished)                 throw 'You cannot edit a finished sale.';
-    if (clean_name.trim() === '') throw 'Name cannot be empty.';
-    if (!products.length)         throw 'Product cannot be empty.';
-    if (initial_balance && !isNumeric(initial_balance)) throw 'Balance must be a number';
+    if (finished)                 throw new Error('You cannot edit a finished sale');
+    if (clean_name.trim() === '') throw new Error('Name cannot be empty');
+    if (!products.length)         throw new Error('Product cannot be empty');
+    if (initial_balance && !isNumeric(initial_balance)) throw new Error('Balance must be a number');
 
     /**
      * -----------------------------------------------------------------------------------------------------
@@ -58,7 +60,7 @@ export default async ({ id, data }: MutateEditSaleQuery) => {
         change_total = change_total.plus(Big(change));
       }
 
-      if (change_total.gt(Big(initial_balance))) throw `New balance are lower than the sum of change of every order, please check it again.`;
+      if (change_total.gt(Big(initial_balance))) throw new Error(`New balance are lower than the sum of change of every order, please check it again`);
     }
 
     await _queryConstruct.update({
@@ -90,9 +92,7 @@ export default async ({ id, data }: MutateEditSaleQuery) => {
 
     return clean_name;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

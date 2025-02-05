@@ -1,20 +1,15 @@
 // Databases
 import { db } from '@/database';
+import type { DatabaseCollection } from '@/database/types';
 
 // Helpers
 import { ComPOSError } from '@/helpers/createError';
 
-export default async (id: string) => {
+export default async (collection: keyof DatabaseCollection, id: string) => {
   try {
-    const _queryBundle = await db.bundle.findOne(id).exec();
+    const doc = await db[collection].findOne({ selector: { id } }).exec();
 
-    if (!_queryBundle) throw new Error('Bundle not found');
-
-    const { name } = _queryBundle.toJSON();
-
-    await _queryBundle.remove();
-
-    return name;
+    return doc ? true : false;
   } catch (error) {
     if (error instanceof ComPOSError || error instanceof Error) throw error;
 

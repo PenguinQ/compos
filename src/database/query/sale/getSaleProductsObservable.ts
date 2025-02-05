@@ -2,10 +2,14 @@ import { combineLatest } from 'rxjs';
 import { blobToBase64String } from 'rxdb';
 import type { RxDocument } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import { isVariant, isBundle, isProduct } from '@/database/utils';
 import { IMAGE_ID_PREFIX, THUMBNAIL_ID_PREFIX } from '@/database/constants';
 import type { BundleDocProduct, QueryParams } from '@/database/types';
+
+// Helpers
+import { ComPOSError } from '@/helpers/createError';
 
 type GetSaleProductsProduct = {
   id: string;
@@ -115,11 +119,11 @@ export default async ({ products, normalizer }: GetSaleProductsQuery) => {
             if (isVariant(id)) {
               const _queryVariant = await db.variant.findOne(id).exec();
 
-              if (!_queryVariant) throw 'Variant in the bundle not found.';
+              if (!_queryVariant) throw new Error('Variant in the bundle not found');
 
               const _queryProduct = await _queryVariant.populate('product_id');
 
-              if (!_queryProduct) throw 'Main product of the variant in the bundle not found';
+              if (!_queryProduct) throw new Error('Main product of the variant in the bundle not found');
 
               const { name: product_name } = _queryProduct.toJSON();
               const { name: variant_name, price, stock, sku } = _queryVariant.toJSON();
@@ -151,7 +155,7 @@ export default async ({ products, normalizer }: GetSaleProductsQuery) => {
             else {
               const _queryProduct = await db.product.findOne(id).exec();
 
-              if (!_queryProduct) throw 'Product in the bundle not found';
+              if (!_queryProduct) throw new Error('Product in the bundle not found');
 
               const { name, price, stock, sku } = _queryProduct.toJSON();
               const product_attachments = _queryProduct.allAttachments();
@@ -244,10 +248,8 @@ export default async ({ products, normalizer }: GetSaleProductsQuery) => {
       normalizer,
     };
   } catch (error) {
-    if (error instanceof Error) {
-      throw error.message;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
-    throw error;
+    throw new Error(String(error));
   }
 };

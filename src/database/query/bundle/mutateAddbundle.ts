@@ -7,6 +7,7 @@ import type { BundleDocProduct } from '@/database/types';
 
 // Helpers
 import { isNumeric, sanitizeNumeric } from '@/helpers';
+import { ComPOSError } from '@/helpers/createError';
 
 type MutateAddBundleQuery = {
   name: string;
@@ -30,9 +31,9 @@ export default async (data: MutateAddBundleQuery) => {
     } = data;
     const clean_name = sanitize(name);
 
-    if (clean_name.trim() === '') throw 'Bundle name cannot be empty.';
-    if (!isNumeric(price))        throw 'Bundle price must be a number.';
-    if (!products.length)         throw 'Bundle must have at least one product.';
+    if (clean_name.trim() === '') throw new Error('Bundle name cannot be empty');
+    if (!isNumeric(price))        throw new Error('Bundle price must be a number');
+    if (!products.length)         throw new Error('Bundle must have at least one product');
 
     const clean_price = sanitizeNumeric(price) as string;
 
@@ -42,8 +43,8 @@ export default async (data: MutateAddBundleQuery) => {
     for (const product of products) {
       const { id, product_id, active, quantity } = product;
 
-      if (!isNumeric(quantity)) throw 'Product quantity must be a number.';
-      if (!quantity)            throw 'Product quantity cannot be zero.';
+      if (!isNumeric(quantity)) throw new Error('Product quantity must be a number');
+      if (!quantity)            throw new Error('Product quantity cannot be zero');
 
       const clean_quantity = sanitizeNumeric(quantity) as number;
 
@@ -69,9 +70,7 @@ export default async (data: MutateAddBundleQuery) => {
       ...(description ? { description: sanitize(description) } : {}),
     });
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

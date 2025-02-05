@@ -1,7 +1,11 @@
 import type { RxDocument } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import type { QueryParams, SaleDoc } from '@/database/types';
+
+// Helpers
+import { ComPOSError } from '@/helpers/createError';
 
 type GetSaleBalanceReturnData = {
   initial_balance?: string;
@@ -41,7 +45,7 @@ export default async ({ id, observe, normalizer }: GetSaleBalance) => {
       };
     }
 
-    if (!_querySale) throw `There's no sale with id ${id}.`;
+    if (!_querySale) throw new Error('Sale not found');
 
     const { initial_balance, final_balance } = _querySale as RxDocument<SaleDoc>;
 
@@ -56,9 +60,7 @@ export default async ({ id, observe, normalizer }: GetSaleBalance) => {
       result: normalizer ? normalizer(raw_data) : raw_data,
     };
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

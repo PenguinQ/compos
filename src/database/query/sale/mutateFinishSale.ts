@@ -1,13 +1,18 @@
 import Big from 'big.js';
 
+// Databases
 import { db } from '@/database';
+
+// Helpers
+import createError from '@/helpers/createError';
+import { ComPOSError } from '@/helpers/createError';
 
 export default async (id: string): Promise<string> => {
   try {
     const _querySaleConstruct = db.sale.findOne(id);
     const _querySale          = await _querySaleConstruct.exec();
 
-    if (!_querySale) throw `Cannot find sale with id ${id}.`;
+    if (!_querySale) throw createError('Sale not found', { status: 404 });
 
     const { name, initial_balance } = _querySale;
 
@@ -87,7 +92,7 @@ export default async (id: string): Promise<string> => {
     }
 
     if (initial_balance) {
-      if (orders_total_change.gt(Big(initial_balance))) throw `Cannot finish sale since the total change are greater than the remaining balance.`;
+      if (orders_total_change.gt(Big(initial_balance))) throw new Error(`Cannot finish sale since the total change are greater than the remaining balance`);
     }
 
     await _querySaleConstruct.update({
@@ -102,9 +107,7 @@ export default async (id: string): Promise<string> => {
 
     return name;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

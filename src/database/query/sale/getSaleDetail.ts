@@ -1,10 +1,15 @@
 import { blobToBase64String } from 'rxdb';
 import type { RxDocument } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
 import { isBundle, isProduct, isVariant } from '@/database/utils';
 import type { QueryParams, OrderDocProduct, ProductDoc } from '@/database/types';
+
+// Helpers
+import createError from '@/helpers/createError';
+import { ComPOSError } from '@/helpers/createError';
 
 type SaleDetailBundleItem = {
   id: string;
@@ -72,7 +77,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
   try {
     const _querySale = await db.sale.findOne({ selector: { id } }).exec();
 
-    if (!_querySale) throw `Cannot find sale with id ${id}.`;
+    if (!_querySale) throw createError('Sale not found', { status: 404 });
 
     const {
       name,
@@ -103,7 +108,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
       if (is_product) {
         const _queryProduct = await db.product.findOne({ selector: { id: product.id } }).exec();
 
-        if (!_queryProduct) throw 'Product not found.';
+        if (!_queryProduct) throw new Error('Product not found');
 
         const { name, price, sku } = _queryProduct.toJSON();
         const product_attachments  = _queryProduct.allAttachments();
@@ -130,11 +135,11 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
       } else if (is_variant) {
         const _queryVariant = await db.variant.findOne({ selector: { id: product.id } }).exec();
 
-        if (!_queryVariant) throw 'Variant not found.';
+        if (!_queryVariant) throw new Error('Variant not found');
 
         const _queryProduct: RxDocument<ProductDoc> = await _queryVariant.populate('product_id');
 
-        if (!_queryProduct) throw 'Variant main product not found.';
+        if (!_queryProduct) throw new Error('Variant main product not found');
 
         const { id: variant_product_id, name: variant_product_name } = _queryProduct.toJSON();
         const { name, price, sku } = _queryVariant.toJSON();
@@ -162,7 +167,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
       } else if (is_bundle) {
         const _queryBundle = await db.bundle.findOne({ selector: { id: product.id } }).exec();
 
-        if (!_queryBundle) throw 'Bundle not found.';
+        if (!_queryBundle) throw new Error('Bundle not found');
 
         const { name, price, products } = _queryBundle.toJSON();
         const bundle_images = [];
@@ -174,7 +179,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
           if (isProduct(id)) {
             const _queryProduct = await db.product.findOne(id).exec();
 
-            if (!_queryProduct) throw 'Bundle product not found.'
+            if (!_queryProduct) throw new Error('Bundle product not found');
 
             const { name, sku } = _queryProduct.toJSON();
             const product_attachments = _queryProduct.allAttachments();
@@ -197,7 +202,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
           } else if (isVariant(id)) {
             const _queryVariant = await db.variant.findOne(id).exec();
 
-            if (!_queryVariant) throw 'Bundle variant not found.'
+            if (!_queryVariant) throw new Error('Bundle variant not found')
 
             const _queryProduct: RxDocument<ProductDoc> = await _queryVariant.populate('product_id');
 
@@ -406,9 +411,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
       },
     }
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

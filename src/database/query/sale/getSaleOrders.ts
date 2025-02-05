@@ -1,12 +1,16 @@
 import Big from 'big.js';
 import type { RxDocument } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import type {
   OrderDoc,
   OrderDocProduct,
   QueryParams,
 } from '@/database/types';
+
+// Helpers
+import { ComPOSError } from '@/helpers/createError';
 
 type ObserveableDataProduct = OrderDocProduct;
 
@@ -102,10 +106,8 @@ export default async ({ id, sort, normalizer }: GetSaleOrdersQuery) => {
       normalizer,
     };
   } catch (error) {
-    if (error instanceof Error) {
-      throw error.message;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
-    throw error;
+    throw new Error(String(error));
   }
 };
