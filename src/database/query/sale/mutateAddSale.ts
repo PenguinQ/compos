@@ -5,7 +5,9 @@ import { db } from '@/database';
 import { SALE_ID_PREFIX } from '@/database/constants';
 import type { SaleDocProduct } from '@/database/types';
 
+// Helpers
 import { isNumeric } from '@/helpers';
+import { ComPOSError } from '@/helpers/createError';
 
 type MutateAddSaleQueryData = {
   name: string;
@@ -25,9 +27,9 @@ export default async ({ data }: MutateAddSaleQuery) => {
     const { name, balance, products = [] } = data;
     const clean_name = sanitize(name);
 
-    if (clean_name.trim() === '')       throw 'Name cannot be empty.';
-    if (balance && !isNumeric(balance)) throw 'Balance must be a number';
-    if (!products.length)               throw 'Product cannot be empty.';
+    if (clean_name.trim() === '')       throw new Error('Name cannot be empty');
+    if (balance && !isNumeric(balance)) throw new Error('Balance must be a number');
+    if (!products.length)               throw new Error('Product cannot be empty');
 
     await db.sale.insert({
       id           : sale_id,
@@ -42,9 +44,7 @@ export default async ({ data }: MutateAddSaleQuery) => {
       ...(balance ? { initial_balance: balance } : {}),
     });
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

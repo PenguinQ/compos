@@ -1,4 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import type { RouteLocationNormalized } from 'vue-router';
+
+// Databases
+import { isDocumentExist } from '@/database/helpers';
+
+const redirect404 = (to: RouteLocationNormalized) => ({
+  name: 'not-found',
+  params: { pathMatch: to.path.substring(1).split('/') },
+  replace: true,
+});
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +44,11 @@ const router = createRouter({
               name: 'sale-detail',
               meta: { title: 'Sale Detail - ComPOS' },
               component: () => import('../views/sales/SaleDetail.vue'),
+              beforeEnter: async (to) => {
+                const sale = await isDocumentExist('sale', to.params.id as string);
+
+                if (!sale) return redirect404(to);
+              },
             },
             {
               path: '/sale/add',
@@ -46,6 +61,11 @@ const router = createRouter({
               name: 'sale-edit',
               meta: { title: 'Edit Sale - ComPOS' },
               component: () => import('../views/sales/SaleForm.vue'),
+              beforeEnter: async (to) => {
+                const sale = await isDocumentExist('sale', to.params.id as string);
+
+                if (!sale) return redirect404(to);
+              },
             },
           ],
         },
@@ -73,12 +93,22 @@ const router = createRouter({
               name: 'product-detail',
               meta: { title: 'Product Detail - ComPOS' },
               component: () => import('../views/products/ProductDetail.vue'),
+              beforeEnter: async (to) => {
+                const product = await isDocumentExist('product', to.params.id as string);
+
+                if (!product) return redirect404(to);
+              },
             },
             {
               path: '/product/edit/:id',
               name: 'product-edit',
               meta: { title : 'Edit Product - ComPOS' },
               component: () => import('../views/products/ProductForm.vue'),
+              beforeEnter: async (to) => {
+                const product = await isDocumentExist('product', to.params.id as string);
+
+                if (!product) return redirect404(to);
+              },
             },
             {
               path: '/product/add',
@@ -91,12 +121,22 @@ const router = createRouter({
               name: 'bundle-detail',
               meta: { title: 'Bundle Detail - ComPOS' },
               component: () => import('../views/products/BundleDetail.vue'),
+              beforeEnter: async (to) => {
+                const bundle = await isDocumentExist('bundle', to.params.id as string);
+
+                if (!bundle) return redirect404(to);
+              },
             },
             {
               path: '/bundle/edit/:id',
               name: 'bundle-edit',
               meta: { title: 'Edit Bundle - ComPOS' },
               component: () => import('../views/products/BundleForm.vue'),
+              beforeEnter: async (to) => {
+                const bundle = await isDocumentExist('bundle', to.params.id as string);
+
+                if (!bundle) return redirect404(to);
+              },
             },
             {
               path: '/bundle/add',
@@ -119,6 +159,16 @@ const router = createRouter({
       name: 'sale-dashboard',
       meta: { title: 'Sale Dashboard - ComPOS' },
       component: () => import('../views/sales/SaleDashboard.vue'),
+      beforeEnter: async (to) => {
+        const bundle = await isDocumentExist('sale', to.params.id as string);
+
+        if (!bundle) return redirect404(to);
+      },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('../views/404.vue'),
     },
   ],
 });

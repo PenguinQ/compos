@@ -2,10 +2,14 @@ import { monotonicFactory } from 'ulidx';
 import Big from 'big.js';
 import type { RxDocument } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import { isBundle, isProduct, isVariant } from '@/database/utils';
 import { ORDER_ID_PREFIX } from '@/database/constants';
 import type { ProductDoc, VariantDoc } from '@/database/types';
+
+// Helpers
+import { ComPOSError } from '@/helpers/createError';
 
 type MutateAddOrderDataBundleItem = {
   id: string;
@@ -61,7 +65,7 @@ export default async ({ id, data }: MutateAddOrder) => {
           return oldData;
         });
       } else {
-        throw `Cannot update ${name} stock since the stock is 0.`;
+        throw new Error(`Cannot update ${name} stock since the stock is 0`);
       }
 
       const latest_document = document.getLatest();
@@ -126,7 +130,7 @@ export default async ({ id, data }: MutateAddOrder) => {
           } else {
             const _queryItem = await db[`${isVariant(item_id) ? 'variant' : 'product'}`].findOne({ selector: { id: item_id } }).exec() as RxDocument<ProductDoc | VariantDoc>;
 
-            if (!_queryItem) `Cannot find product or variant with id of ${id}`;
+            if (!_queryItem) throw new Error(`Cannot find product or variant with id of ${id}`);
 
             const { stock } = _queryItem;
 
@@ -148,7 +152,7 @@ export default async ({ id, data }: MutateAddOrder) => {
         } else {
           const _queryProduct = await db[`${isVariant(id) ? 'variant' : 'product'}`].findOne(id).exec() as RxDocument<ProductDoc | VariantDoc>;
 
-          if (!_queryProduct) `Cannot find product or variant with id of ${id}`;
+          if (!_queryProduct) throw new Error(`Cannot find product or variant with id of ${id}`);
 
           const { stock } = _queryProduct;
 
@@ -159,7 +163,7 @@ export default async ({ id, data }: MutateAddOrder) => {
 
     const order_valid = temp_list.every(product => product.amount <= product.stock);
 
-    if (!order_valid) throw `Some of the products amount in the order are greater than the stock, please update it.`
+    if (!order_valid) throw new Error(`Some of the products amount in the order are greater than the stock, please update it`);
 
     /**
      * ---------------------------
@@ -197,7 +201,6 @@ export default async ({ id, data }: MutateAddOrder) => {
         total: Big(price).times(amount).toString(),
         ...(sku ? { sku } : {}),
         ...(items ? { items: item_list } : {}),
-        // items: item_list,
       });
 
       order_total = Big(order_total).plus(Big(price).times(amount)).toString();
@@ -221,7 +224,7 @@ export default async ({ id, data }: MutateAddOrder) => {
 
         if (_queryProduct) await updateStock(_queryProduct, name, amount);
       } else if (isBundle(id)) {
-        if (!items) throw `Bundle ${id} has no product on it.`;
+        if (!items) throw new Error(`Bundle ${id} has no product on it`);
 
         for (const item of items) {
           const { id, quantity } = item;
@@ -250,9 +253,7 @@ export default async ({ id, data }: MutateAddOrder) => {
       updated_at: new Date().toISOString(),
     });
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

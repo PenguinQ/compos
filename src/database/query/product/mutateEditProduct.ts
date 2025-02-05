@@ -3,13 +3,15 @@ import DOMPurify from 'isomorphic-dompurify';
 import Big from 'big.js';
 import type { RxDocument } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import { addImages, compressProductImage, isImagesValid } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
 import type { ProductDoc, VariantDoc } from '@/database/types';
 
-// Common Helpers
+// Helpers
 import { isNumeric, sanitizeNumeric } from '@/helpers';
+import { ComPOSError } from '@/helpers/createError';
 
 type MutateEditProductQueryVariant = {
   id?: string;
@@ -151,7 +153,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
     } = data;
     const clean_name = sanitize(name);
 
-    if (!clean_name.trim()) throw 'Product name cannot be empty.';
+    if (!clean_name.trim()) throw new Error('Product name cannot be empty');
 
     const _queryProductConstruct = db.product.findOne({
       selector: {
@@ -163,7 +165,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
 
     const _queryProduct = await _queryProductConstruct.exec();
 
-    if (!_queryProduct) throw `Cannot find product with id ${id}.`;
+    if (!_queryProduct) throw new Error('Product not found');
 
     /**
      * ---------------------------------------
@@ -188,7 +190,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
         },
       }).exec();
 
-      if (_queryBundles.length) throw `Cannot add new variant into this product since this product already included in some bundle, please remove it from the bundle first.`;
+      if (_queryBundles.length) throw new Error(`Cannot add new variant into this product since this product already included in some bundle, please remove it from the bundle first.`);
 
       /**
        * -------------------------------
@@ -228,7 +230,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       if (deleted_images.length) await removeImages(deleted_images, _queryProduct);
 
       if (new_images.length) {
-        if (!isImagesValid(new_images)) throw 'Invalid file types.';
+        if (!isImagesValid(new_images)) throw new Error('Invalid file type');
 
         const { thumbnails, images } = await compressProductImage(new_images);
         const product_attachments    = _queryProduct.allAttachments();
@@ -264,9 +266,9 @@ export default async ({ id, data }: MutateEditProductQuery) => {
         } = variant;
         const clean_v_name = sanitize(v_name);
 
-        if (!clean_v_name.trim()) throw 'Variant name cannot be empty.';
-        if (!isNumeric(v_price))  throw `${v_name} price cannot be empty and must be a number.`;
-        if (!isNumeric(v_stock))  throw `${v_name} stock cannot be empty and must be a number.`;
+        if (!clean_v_name.trim()) throw new Error('Variant name cannot be empty');
+        if (!isNumeric(v_price))  throw new Error(`${v_name} price cannot be empty and must be a number`);
+        if (!isNumeric(v_stock))  throw new Error(`${v_name} stock cannot be empty and must be a number`);
 
         const clean_v_price = sanitizeNumeric(v_price) as string;
         const clean_v_stock = sanitizeNumeric(v_stock) as number;
@@ -289,7 +291,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
 
           const _queryVariant = await _queryConstructVariant.exec();
 
-          if (!_queryVariant) throw `Cannot find product variant with id ${id}.`;
+          if (!_queryVariant) throw new Error(`Cannot find product variant with id ${id}`);
 
           /**
            * ---------------------------------------------------
@@ -330,7 +332,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
           if (v_deleted_images.length) await removeImages(v_deleted_images, _queryVariant);
 
           if (v_new_images.length) {
-            if (!isImagesValid(v_new_images)) throw 'Invalid file types.';
+            if (!isImagesValid(v_new_images)) throw new Error('Invalid file type');
 
             const { thumbnails, images } = await compressProductImage(v_new_images);
             const variant_attachments    = _queryVariant.allAttachments();
@@ -403,7 +405,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
            * ---------------------------------------------
            */
           if (v_new_images.length) {
-            if (!isImagesValid(v_new_images)) throw 'Invalid file types.';
+            if (!isImagesValid(v_new_images)) throw new Error('Invalid file types');
 
             const { thumbnails, images } = await compressProductImage(v_new_images);
 
@@ -436,8 +438,8 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        * 2.1. Update the product detail.
        * -------------------------------
        */
-      if (!price || !isNumeric(price)) throw 'Product without variants price cannot be empty and must be a number.';
-      if (!stock || !isNumeric(stock)) throw 'Product without variants stock cannot be empty and must be a number.';
+      if (!price || !isNumeric(price)) throw new Error('Product without variants price cannot be empty and must be a number');
+      if (!stock || !isNumeric(stock)) throw new Error('Product without variants stock cannot be empty and must be a number');
 
       const clean_price = sanitizeNumeric(price) as string;
       const clean_stock = sanitizeNumeric(stock) as number;
@@ -487,7 +489,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       if (deleted_images.length) await removeImages(deleted_images, _queryProduct);
 
       if (new_images.length) {
-        if (!isImagesValid(new_images)) throw 'Invalid file types.';
+        if (!isImagesValid(new_images)) throw new Error('Invalid file types');
 
         const { thumbnails, images } = await compressProductImage(new_images);
         const product_attachments    = _queryProduct.allAttachments();
@@ -537,9 +539,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       }
     }
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

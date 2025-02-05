@@ -10,6 +10,7 @@ import type { VariantDoc } from '@/database/types';
 
 // Helpers
 import { isNumeric, sanitizeNumeric } from '@/helpers';
+import { ComPOSError } from '@/helpers/createError';
 
 type MutateAddProductVariant = Partial<VariantDoc> & {
   new_images?: File[];
@@ -43,9 +44,9 @@ export default async (data: MutateAddProductQuery) => {
     } = data;
     const clean_name = sanitize(name);
 
-    if (clean_name.trim() === '')   throw 'Product name cannot be empty.';
-    if (price && !isNumeric(price)) throw 'Product price must be a number.';
-    if (stock && !isNumeric(stock)) throw 'Product stock must be a number.';
+    if (clean_name.trim() === '')   throw new Error('Product name cannot be empty');
+    if (price && !isNumeric(price)) throw new Error('Product price must be a number');
+    if (stock && !isNumeric(stock)) throw new Error('Product stock must be a number');
 
     /**
      * ----------------------
@@ -69,9 +70,9 @@ export default async (data: MutateAddProductQuery) => {
         } = variant;
         const clean_v_name = sanitize(v_name);
 
-        if (clean_v_name.trim() === '') throw 'Variant name cannot be empty.';
-        if (!isNumeric(v_price))        throw 'Price must be a number.';
-        if (!isNumeric(v_stock))        throw 'Stock must be a number.';
+        if (clean_v_name.trim() === '') throw new Error('Variant name cannot be empty');
+        if (!isNumeric(v_price))        throw new Error('Price must be a number');
+        if (!isNumeric(v_stock))        throw new Error('Stock must be a number');
 
         const clean_v_price = sanitizeNumeric(v_price) as string;
         const clean_v_stock = sanitizeNumeric(v_stock) as number;
@@ -122,7 +123,7 @@ export default async (data: MutateAddProductQuery) => {
        * -----------------------------
        */
       if (new_images && new_images.length) {
-        if (!isImagesValid(new_images)) throw 'Invalid file types.';
+        if (!isImagesValid(new_images)) throw new Error('Invalid file types');
 
         const { thumbnails, images } = await compressProductImage(new_images);
 
@@ -146,7 +147,7 @@ export default async (data: MutateAddProductQuery) => {
       if (variantQuerySuccess.length) {
         for (const [index, variant] of variantQuerySuccess.entries()) {
           if (variant_attachments[index].length) {
-            if (!isImagesValid(variant_attachments[index])) throw 'Invalid file types.';
+            if (!isImagesValid(variant_attachments[index])) throw new Error('Invalid file type');
 
             const { thumbnails, images } = await compressProductImage(variant_attachments[index]);
 
@@ -193,7 +194,7 @@ export default async (data: MutateAddProductQuery) => {
        * -----------------------------
        */
       if (new_images &&new_images.length) {
-        if (!isImagesValid(new_images)) throw 'Invalid file types.';
+        if (!isImagesValid(new_images)) throw new Error('Invalid file type');
 
         const { thumbnails, images } = await compressProductImage(new_images);
 
@@ -202,7 +203,7 @@ export default async (data: MutateAddProductQuery) => {
       }
     }
   } catch (error) {
-    if (error instanceof Error) throw error;
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

@@ -1,9 +1,13 @@
 import { blobToBase64String } from 'rxdb';
 import type { RxDocument, RxAttachment } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import { IMAGE_ID_PREFIX } from '@/database/constants';
 import type { ProductDoc, VariantDoc } from '@/database/types';
+
+// Helpers
+import createError, { ComPOSError } from '@/helpers/createError';
 
 type ImageData = {
   id: string;
@@ -31,7 +35,7 @@ export default async ({ id, normalizer }: ProductDetailQuery) => {
   try {
     const _queryProduct = await db.product.findOne({ selector: { id } }).exec();
 
-    if (!_queryProduct) throw 'Product not found.';
+    if (!_queryProduct) throw createError('Product not found', { status: 404 });
 
     /**
      * ---------------------------
@@ -89,9 +93,7 @@ export default async ({ id, normalizer }: ProductDetailQuery) => {
       },
     };
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

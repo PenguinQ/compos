@@ -1,10 +1,14 @@
 import { blobToBase64String } from 'rxdb';
 import type { RxAttachment, RxDocument } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import { getPageStatus, isVariant } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
 import type { BundleDoc, QueryPage } from '@/database/types';
+
+// Helpers
+import { ComPOSError } from '@/helpers/createError';
 
 export type BundlesData = BundleDoc & {
   images: string[];
@@ -182,9 +186,7 @@ export default async ({
       result: normalizer ? normalizer(raw_data) : raw_data,
     };
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

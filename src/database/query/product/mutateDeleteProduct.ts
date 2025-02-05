@@ -1,10 +1,14 @@
+// Databases
 import { db } from '@/database';
+
+// Helpers
+import { ComPOSError } from '@/helpers/createError';
 
 export default async (id: string) => {
   try {
     const _queryProduct = await db.product.findOne(id).exec();
 
-    if (!_queryProduct) throw `No product found with id: ${id}.`;
+    if (!_queryProduct) throw new Error(`Product not found`);
 
     const { name } = _queryProduct.toJSON();
 
@@ -12,7 +16,7 @@ export default async (id: string) => {
 
     return name;
   } catch (error) {
-    if (error instanceof Error) throw error;
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }

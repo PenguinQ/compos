@@ -1,10 +1,15 @@
 import { blobToBase64String } from 'rxdb';
 import type { RxDocument, RxAttachment } from 'rxdb';
 
+// Databases
 import { db } from '@/database';
 import { isVariant } from '@/database/utils';
 import { IMAGE_ID_PREFIX } from '@/database/constants';
 import type { BundleDoc, ProductDoc, VariantDoc } from '@/database/types';
+
+// Helpers
+import createError from '@/helpers/createError';
+import { ComPOSError } from '@/helpers/createError';
 
 export type BundleDetailProductImage = {
   id: string;
@@ -30,7 +35,7 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
   try {
     const _queryBundle = await db.bundle.findOne({ selector: { id } }).exec();
 
-    if (!_queryBundle) throw 'Bundle not found.';
+    if (!_queryBundle) throw createError('Bundle not found', { status: 404 });
 
     const { products, ...bundleData } = _queryBundle.toJSON();
     const products_list: BundleDetailProduct[] = [];
@@ -119,9 +124,7 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
       },
     };
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }
