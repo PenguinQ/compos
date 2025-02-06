@@ -99,7 +99,7 @@ $screen-xxl: 1400px;
   }
 }
 
-@mixin screen-landscape-sm {
+@mixin screen-sm-landscape {
   @media screen and (min-width: $screen-sm) and (orientation: landscape) {
     @content;
   }
@@ -111,7 +111,7 @@ $screen-xxl: 1400px;
   }
 }
 
-@mixin screen-landscape-md {
+@mixin screen-md-landscape {
   @media screen and (min-width: $screen-md) and (orientation: landscape) {
     @content;
   }
@@ -123,7 +123,7 @@ $screen-xxl: 1400px;
   }
 }
 
-@mixin screen-landscape-lg {
+@mixin screen-lg-landscape {
   @media screen and (min-width: $screen-lg) and (orientation: landscape) {
     @content;
   }
@@ -135,7 +135,7 @@ $screen-xxl: 1400px;
   }
 }
 
-@mixin screen-landscape-xl {
+@mixin screen-xl-landscape {
   @media screen and (min-width: $screen-xl) and (orientation: landscape) {
     @content;
   }
@@ -147,7 +147,7 @@ $screen-xxl: 1400px;
   }
 }
 
-@mixin screen-landscape-xxl {
+@mixin screen-xxl-landscape {
   @media screen and (min-width: $screen-xxl) and (orientation: landscape) {
     @content;
   }
@@ -159,7 +159,7 @@ $screen-xxl: 1400px;
   }
 }
 
-@mixin screen-landscape-rwd($screen) {
+@mixin screen-rwd-landscape($screen) {
   @media screen and (min-width: $screen + 'px') and (orientation: landscape) {
     @content;
   }
