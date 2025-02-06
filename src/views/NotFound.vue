@@ -191,7 +191,7 @@ onUnmounted(() => {
   }
 }
 
-@include screen-sm {
+@include screen-md {
   .not-found {
     &__emoji {
       font-size: 5rem;
@@ -200,20 +200,6 @@ onUnmounted(() => {
     &-status {
       &__code {
         font-size: calc((78 / var(--text-base-size)) * 1rem);
-      }
-    }
-  }
-}
-
-@include screen-sm-landscape {
-  .not-found {
-    &__emoji {
-      font-size: 3.5rem;
-    }
-
-    &-status {
-      &__code {
-        font-size: calc((56 / var(--text-base-size)) * 1rem);
       }
     }
   }
