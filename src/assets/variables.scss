@@ -1,5 +1,5 @@
 $baseOther: 14;
-$baseApple: 17; // In apple mobile devices default dynamic font size are 17, while in others is 16.
+$baseApple: 17; // In iOS default dynamic font size are 17, while MacOS or other apple devices is 16
 
 :root {
   // Monochromatic Color
@@ -65,6 +65,8 @@ $baseApple: 17; // In apple mobile devices default dynamic font size are 17, whi
   --color-focus-outline: var(--color-blue-5);
 
   // Typography
+  --text-size-other: 14;
+  --text-size-apple: 17; // In iOS default dynamic font size are 17, while MacOS or other apple devices is 16
   --text-dynamic-font: -apple-system-body;
   --text-heading-family: "Sora", sans-serif;
   --text-body-family: "Inter", sans-serif;

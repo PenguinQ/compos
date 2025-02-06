@@ -73,7 +73,11 @@ const updateShapes = (svgString: string) => {
         const shapeFill   = shape.getAttribute('fill');
         const shapeStroke = shape.getAttribute('stroke');
 
-        if ((shapeFill && shapeStroke) && (shapeFill !== shapeStroke)) {
+        if (
+          (shapeFill && shapeStroke) && (shapeFill !== shapeStroke) ||
+          shapeFill?.startsWith('url') ||
+          shapeStroke?.startsWith('url')
+        ) {
           validFormat = false;
           break;
         }

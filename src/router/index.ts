@@ -4,10 +4,11 @@ import type { RouteLocationNormalized } from 'vue-router';
 // Databases
 import { isDocumentExist } from '@/database/helpers';
 
-const redirect404 = (to: RouteLocationNormalized) => ({
-  name: 'not-found',
+const redirectNotFound = (to: RouteLocationNormalized) => ({
+  name  : 'not-found',
   params: { pathMatch: to.path.substring(1).split('/') },
-  replace: true,
+  query : to.query,
+  hash  : to.hash,
 });
 
 const router = createRouter({
@@ -47,7 +48,7 @@ const router = createRouter({
               beforeEnter: async (to) => {
                 const sale = await isDocumentExist('sale', to.params.id as string);
 
-                if (!sale) return redirect404(to);
+                if (!sale) return redirectNotFound(to);
               },
             },
             {
@@ -64,7 +65,7 @@ const router = createRouter({
               beforeEnter: async (to) => {
                 const sale = await isDocumentExist('sale', to.params.id as string);
 
-                if (!sale) return redirect404(to);
+                if (!sale) return redirectNotFound(to);
               },
             },
           ],
@@ -96,7 +97,7 @@ const router = createRouter({
               beforeEnter: async (to) => {
                 const product = await isDocumentExist('product', to.params.id as string);
 
-                if (!product) return redirect404(to);
+                if (!product) return redirectNotFound(to);
               },
             },
             {
@@ -107,7 +108,7 @@ const router = createRouter({
               beforeEnter: async (to) => {
                 const product = await isDocumentExist('product', to.params.id as string);
 
-                if (!product) return redirect404(to);
+                if (!product) return redirectNotFound(to);
               },
             },
             {
@@ -124,7 +125,7 @@ const router = createRouter({
               beforeEnter: async (to) => {
                 const bundle = await isDocumentExist('bundle', to.params.id as string);
 
-                if (!bundle) return redirect404(to);
+                if (!bundle) return redirectNotFound(to);
               },
             },
             {
@@ -135,7 +136,7 @@ const router = createRouter({
               beforeEnter: async (to) => {
                 const bundle = await isDocumentExist('bundle', to.params.id as string);
 
-                if (!bundle) return redirect404(to);
+                if (!bundle) return redirectNotFound(to);
               },
             },
             {
@@ -162,13 +163,13 @@ const router = createRouter({
       beforeEnter: async (to) => {
         const bundle = await isDocumentExist('sale', to.params.id as string);
 
-        if (!bundle) return redirect404(to);
+        if (!bundle) return redirectNotFound(to);
       },
     },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
-      component: () => import('../views/404.vue'),
+      component: () => import('../views/NotFound.vue'),
     },
   ],
 });
