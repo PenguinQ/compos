@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+
 import { Bar } from '@/components';
+
+import { hasClass } from '@/helpers';
 
 type PullToRefresh = {
   minPullDistance?: number;
@@ -103,7 +106,7 @@ const handleEnd = (e: MouseEvent | TouchEvent) => {
     emits('refresh', { cancel, complete });
   }
 
-  reference.value?.style.setProperty('--overflow', 'auto');
+  reference.value?.style.removeProperty('--overflow');
 
   slideUp({
     element: pulley.value,
@@ -120,13 +123,27 @@ const handleStart = (e: MouseEvent | TouchEvent) => {
   const clientY   = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
   const eventEnd  = e instanceof MouseEvent ? 'mouseup' : 'touchend';
   const eventMove = e instanceof MouseEvent ? 'mousemove' : 'touchmove';
+  const target    = e.target as HTMLElement;
+  let   parent    = target.parentElement;
 
   startPosition = clientY;
   lastPosition  = clientY - startPosition;
 
   if (reference.value?.scrollTop === 0 && !isRefreshing.value) {
-    reference.value.addEventListener(eventEnd, handleEnd);
-    reference.value.addEventListener(eventMove, handleMove);
+    if (target !== reference.value) {
+      while (parent) {
+        if (hasClass('cp-content__inner', parent)) break;
+
+        if (parent.clientHeight < parent.scrollHeight) break;
+
+        parent = parent.parentElement;
+      }
+    }
+
+    if (target === reference.value || parent === reference.value) {
+      reference.value.addEventListener(eventEnd, handleEnd);
+      reference.value.addEventListener(eventMove, handleMove);
+    }
   }
 };
 
@@ -137,6 +154,11 @@ onMounted(() => {
     reference.value?.addEventListener('mousedown', handleStart);
     reference.value?.addEventListener('touchstart', handleStart);
   }
+});
+
+onUnmounted(() => {
+  reference.value?.removeEventListener('mousedown', handleStart);
+  reference.value?.removeEventListener('touchstart', handleStart);
 });
 
 watch(isRefreshing, (refreshing) => {
