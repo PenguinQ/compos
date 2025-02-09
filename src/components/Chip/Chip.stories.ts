@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Chips from './Chips.vue';
+import Chip from './Chip.vue';
 
-const meta: Meta<typeof Chips> = {
-  component: Chips,
+const meta: Meta<typeof Chip> = {
+  component: Chip,
   argTypes: {
     default: {
       control: 'text',
@@ -18,20 +18,20 @@ const meta: Meta<typeof Chips> = {
     },
   },
   args: {
-    default: 'Chips',
+    default: 'Remembrance',
   },
 };
 
 export default meta;
 
-type Story = StoryObj<typeof Chips>;
+type Story = StoryObj<typeof Chip>;
 
-export const Default: Story = {
+export const Playground: Story = {
   render: (args) => ({
-    components: { Chips },
+    components: { Chip },
     setup() {
       return { args };
     },
-    template: `<Chips v-bind="args">{{ args.default }}</Chips>`,
+    template: `<Chip v-bind="args">{{ args.default }}</Chip>`,
   }),
 };

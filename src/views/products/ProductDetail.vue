@@ -247,4 +247,4 @@ watch(
   </Dialog>
 </template>
 
-<style lang="scss" src="@assets/page-detail.scss" />
+<style lang="scss" src="@/assets/page-detail.scss" />

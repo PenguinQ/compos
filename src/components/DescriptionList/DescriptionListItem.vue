@@ -12,9 +12,11 @@ defineProps<DescriptionListItemProps>();
 
 <template>
   <div class="cp-description-list__item" :style="{ alignItems }">
-    <dt :[`${$attrs.scope_id}`]="''" v-if="title">{{ title }}</dt>
-    <dd :[`${$attrs.scope_id}`]="''" v-if="description">{{ description }}</dd>
-    <slot />
+    <slot v-if="$slots.default" />
+    <template v-else>
+      <dt v-if="title">{{ title }}</dt>
+      <dd v-if="description">{{ description }}</dd>
+    </template>
   </div>
 </template>
 
