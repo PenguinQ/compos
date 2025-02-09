@@ -1,9 +1,5 @@
-<script lang="ts">
-export default { inheritAttrs: false };
-</script>
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
-import { useScopeId } from '@/hooks';
 
 type DescriptionListItem = {
   title: string;
@@ -30,10 +26,11 @@ type DescriptionListProps = {
   items?: DescriptionListItem[];
 };
 
+defineOptions({ inheritAttrs: false });
+
 const props = defineProps<DescriptionListProps>();
 
-const scope_id  = useScopeId();
-const listClass = computed(() => ({
+const classes  = computed(() => ({
   'cp-description-list'            : true,
   'cp-description-list--horizontal': props.alignment === 'horizontal',
   'cp-description-list--rtl'       : props.direction === 'rtl',
@@ -44,20 +41,17 @@ const DescriptionListItem = defineAsyncComponent(() => import('./DescriptionList
 </script>
 
 <template>
-  <template v-if="items">
-    <dl :class="listClass" v-bind="$attrs">
-      <component
-        :is="DescriptionListItem"
-        :[`${scope_id}`]="''"
-        :key="item.title"
-        v-for="item in items"
-        v-bind="{ ...item.props, ...{ scope_id: scope_id ? scope_id : '' } }"
-        :title="item.title"
-        :description="item.description"
-      />
-    </dl>
-  </template>
-  <dl v-else :class="listClass" v-bind="$attrs">
+  <dl v-if="items" :class="classes" v-bind="$attrs">
+    <component
+      :is="DescriptionListItem"
+      :key="item.title"
+      v-for="item in items"
+      v-bind="item.props"
+      :title="item.title"
+      :description="item.description"
+    />
+  </dl>
+  <dl v-else :class="classes" v-bind="$attrs">
     <slot />
   </dl>
 </template>

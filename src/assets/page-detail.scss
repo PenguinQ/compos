@@ -5,23 +5,25 @@
   }
 
   &-list {
-    > div {
-      padding-left: 0;
-      padding-right: 0;
-      padding: 8px 0;
+    &.cp-description-list--horizontal {
+      > div {
+        padding-left: 0;
+        padding-right: 0;
+        padding: 8px 0;
 
-      &:first-child {
-        padding-top: 0;
+        &:first-child {
+          padding-top: 0;
+        }
+
+        &:last-child {
+          padding-bottom: 0;
+        }
       }
 
-      &:last-child {
-        padding-bottom: 0;
+      dt {
+        width: 50px;
+        flex-shrink: 1;
       }
-    }
-
-    dt {
-      width: 50px;
-      flex-shrink: 1;
     }
   }
 

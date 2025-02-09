@@ -21,7 +21,7 @@ export { default as CardBody } from './Card/CardBody.vue';
 export { default as CardHeader } from './Card/CardHeader.vue';
 export { default as CardSubtitle } from './Card/CardSubtitle.vue';
 export { default as CardTitle } from './Card/CardTitle.vue';
-export { default as Chips } from './Chips/Chips.vue';
+export { default as Chip } from './Chip/Chip.vue';
 export { default as DescriptionList } from './DescriptionList/DescriptionList.vue';
 export { default as DescriptionListItem } from './DescriptionList/DescriptionListItem.vue';
 export { default as Dialog } from './Dialog/Dialog.vue';
