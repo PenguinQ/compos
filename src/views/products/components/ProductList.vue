@@ -71,6 +71,7 @@ const {
     <Bar v-if="listLoading" margin="56px 0" />
     <template v-else>
       <EmptyState
+        class="berak"
         v-if="isListEmpty && searchQuery === ''"
         emoji="🍃"
         :title="type === 'product' ? PRODUCT_LIST.PRODUCT_EMPTY_TITLE : PRODUCT_LIST.BUNDLE_EMPTY_TITLE"

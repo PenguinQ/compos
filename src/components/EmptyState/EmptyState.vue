@@ -75,7 +75,7 @@ const empty_state_class = computed(() => ({
       <picture v-if="image">
         <img :src="image" :alt="imageAlt ? imageAlt : 'Empty state image'" :style="{ width: imageWidth, height: imageHeight }" />
       </picture>
-      <div class="cp-empty-state__emoji">{{ emoji }}</div>
+      <div v-if="emoji" class="cp-empty-state__emoji">{{ emoji }}</div>
       <div class="cp-empty-state__body">
         <Text v-if="!$slots.title" class="cp-empty-state__title" heading="2">
           {{ title }}

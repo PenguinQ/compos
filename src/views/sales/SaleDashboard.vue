@@ -899,14 +899,14 @@ onUnmounted(() => {
 }
 
 .dialog-payment {
-  .cp-dialog-body {
+  :deep(.cp-dialog-body) {
     flex-grow: 1;
     padding: 0;
   }
 }
 
 .dialog-history {
-  .cp-dialog-body {
+  :deep(.cp-dialog-body) {
     flex-grow: 1;
     padding: 0;
   }
