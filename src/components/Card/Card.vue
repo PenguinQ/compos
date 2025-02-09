@@ -65,7 +65,7 @@ const CardSubtitle = defineAsyncComponent(() => import('./CardSubtitle.vue'));
 
 const scope_id   = useScopeId();
 const isExternal = computed(() => typeof props.to === 'string' && props.to.startsWith('http'));
-const cardClass  = computed(() => ({
+const classes    = computed(() => ({
   'cp-card'           : true,
   'cp-card--link'     : props.to,
   'cp-card--clickable': props.clickable,
@@ -79,7 +79,7 @@ const cardClass  = computed(() => ({
     <a
       v-if="isExternal"
       v-bind="$attrs"
-      :class="cardClass"
+      :class="classes"
       :href="(to as string)"
       :target="target"
       :style="{ padding, margin, borderRadius: radius }"
@@ -99,10 +99,10 @@ const cardClass  = computed(() => ({
     <RouterLink v-else v-bind="$props" v-slot="{ href, navigate }" custom>
       <a
         v-bind="$attrs"
-        :class="cardClass"
+        :class="classes"
         :href="href"
         :target="target"
-        :style="{ padding, margin }"
+        :style="{ padding, margin, borderRadius: radius }"
         rel="noopener"
         :[`${scope_id}`]="''"
         @click="navigate"
@@ -121,7 +121,7 @@ const cardClass  = computed(() => ({
   <div
     v-else
     v-bind="$attrs"
-    :class="cardClass"
+    :class="classes"
     :style="{ padding, margin, borderRadius: radius }"
     :[`${scope_id}`]="''"
   >
