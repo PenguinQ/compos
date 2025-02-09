@@ -61,10 +61,10 @@ const emits = defineEmits([
   'leave-cancelled',
 ]);
 
-const scopeId = useScopeId();
-const show = ref(props.modelValue !== undefined ? props.modelValue : false);
-const dialogClass = computed(() => ({
-  'cp-dialog': true,
+const scope_id = useScopeId();
+const show     = ref(props.modelValue !== undefined ? props.modelValue : false);
+const classes  = computed(() => ({
+  'cp-dialog'            : true,
   'cp-dialog--fullscreen': props.fullscreen,
 }));
 
@@ -111,18 +111,17 @@ watch(
     @onClickBackdrop="!persistent && closeDialog()"
   >
     <div
-      :[scopeId]="''"
       v-if="show"
       v-bind="$attrs"
-      :class="dialogClass"
+      :[scope_id]="''"
+      :class="classes"
       :style="{ maxWidth, minWidth, width }"
     >
-      <div v-if="!hideHeader" :[scopeId]="''" class="cp-dialog-header">
+      <div v-if="!hideHeader" class="cp-dialog-header">
         <slot name="header" v-bind="{ props: activator_props }" />
-        <div :[scopeId]="''" v-if="!$slots.header" class="cp-dialog-header__content">
-          <h3 :[scopeId]="''" v-if="title" class="cp-dialog__title">{{ title }}</h3>
+        <div v-if="!$slots.header" class="cp-dialog-header__content">
+          <h3 v-if="title" class="cp-dialog__title">{{ title }}</h3>
           <button
-            :[scopeId]="''"
             v-if="!noClose"
             class="cp-dialog__close"
             type="button"
@@ -133,12 +132,12 @@ watch(
           </button>
         </div>
       </div>
-      <div v-if="$slots.default" :[scopeId]="''" class="cp-dialog-body">
+      <div v-if="$slots.default" class="cp-dialog-body">
         <div class="cp-dialog-body__inner">
           <slot />
         </div>
       </div>
-      <div v-if="$slots.footer" :[scopeId]="''" class="cp-dialog-footer">
+      <div v-if="$slots.footer" class="cp-dialog-footer">
         <slot name="footer" v-bind="{ props: activator_props }" />
       </div>
     </div>
