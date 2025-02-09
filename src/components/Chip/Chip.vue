@@ -2,31 +2,35 @@
 import { computed } from 'vue';
 
 interface Props {
+  /**
+   * Set the color of the Chips.
+   */
   color?: 'red' | 'green' | 'blue';
+  /**
+   * Set the variant of the Chips.
+   */
   variant?: 'outline';
 };
 
 const props = defineProps<Props>();
 
-const chipsClass = computed(() => ({
-  'cp-chips': true,
+const classes = computed(() => ({
+  'cp-chips'         : true,
   'cp-chips--outline': props.variant === 'outline',
-  'cp-chips--red': props.color === 'red',
-  'cp-chips--green': props.color === 'green',
-  'cp-chips--blue': props.color === 'blue',
+  'cp-chips--red'    : props.color === 'red',
+  'cp-chips--green'  : props.color === 'green',
+  'cp-chips--blue'   : props.color === 'blue',
 }));
 </script>
 
 <template>
-  <div :class="chipsClass">
+  <div :class="classes">
     <slot />
   </div>
 </template>
 
 <style lang="scss">
 .cp-chips {
-  $parent: &;
-
   @include text-body-sm;
   color: var(--color-white);
   font-weight: 600;
@@ -60,15 +64,15 @@ const chipsClass = computed(() => ({
   &--outline {
     background-color: var(--color-white);
 
-    &#{$parent}--red {
+    &.cp-chips--red {
       color: var(--color-red-3);
     }
 
-    &#{$parent}--green {
+    &.cp-chips--green {
       color: var(--color-green-3);
     }
 
-    &#{$parent}--blue {
+    &.cp-chips--blue {
       color: var(--color-blue-3);
     }
   }
