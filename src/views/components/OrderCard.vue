@@ -48,7 +48,6 @@ defineProps<OrderCard>()
 
 <style lang="scss">
 .vc-order-card {
-
   &-details {
     border-top: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
