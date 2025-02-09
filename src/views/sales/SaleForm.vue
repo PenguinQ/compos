@@ -416,8 +416,10 @@ watch(
     margin: 0 16px;
   }
 
-  :deep(.cp-dialog-body) {
-    padding: 0;
+  :deep() {
+    .cp-dialog-body {
+      padding: 0;
+    }
   }
 
   &-list {
