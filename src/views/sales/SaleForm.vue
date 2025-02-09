@@ -402,10 +402,6 @@ watch(
 }
 
 .products-dialog {
-  .cp-dialog-body {
-    padding: 0;
-  }
-
   &__search {
     @include text-body-md;
     min-width: 100px;
@@ -418,6 +414,10 @@ watch(
     outline: none;
     padding: 0 16px;
     margin: 0 16px;
+  }
+
+  :deep(.cp-dialog-body) {
+    padding: 0;
   }
 
   &-list {
