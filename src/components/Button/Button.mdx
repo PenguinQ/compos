@@ -1,0 +1,87 @@
+import { Canvas, Meta, ArgTypes, Story, Markdown, Unstyled } from '@storybook/blocks';
+
+import * as ButtonStories from './Button.stories';
+import Button from './Button.vue';
+import ButtonGroup from './ButtonGroup.vue';
+
+<Meta title="Components/Button" />
+
+# Button
+Button is... well... a button to press? Click? IDK...
+
+## Usage
+To start using **Button**, see the example below:
+
+<div className="demo-block">
+  <Story of={ButtonStories.DocUsage} />
+
+  ```tsx
+  <script setup lang="ts">
+    import { Button } from '@/components';
+
+    const handleClick = () => {
+      console.log('Clicked!');
+    };
+  </script>
+
+  <template>
+    <Button @click="handleClick">Button</Button>
+  </template>
+  ```
+</div>
+
+
+## Props
+<ArgTypes of={Button} />
+
+## Subcomponents
+**Button** has subcomponent that handle grouping of multiple **Button** called **ButtonGroup**.
+To use it, see the example below:
+
+<div className="demo-block">
+  <Story of={ButtonStories.DocSubcomponent} />
+
+  ```tsx
+  <script setup lang="ts">
+    import { Button, ButtonGroup } from '@/components';
+
+    const handleClick = () => {
+      console.log('Clicked!');
+    };
+  </script>
+
+  <template>
+    <ButtonGroup>
+      <Button @click="handleClick">Button 1</Button>
+      <Button @click="handleClick">Button 2</Button>
+      <Button @click="handleClick">Button 3</Button>
+      <Button @click="handleClick">Button 4</Button>
+    </ButtonGroup>
+  </template>
+  ```
+</div>
+
+
+### ButtonGroup Props
+<ArgTypes of={ButtonGroup} />
+
+## Examples
+### Icon Button
+To show only an icon inside the **Button**, use `icon` property to set the **Button** as icon button, see the example below:
+
+<div className="demo-block">
+  <Story of={ButtonStories.DocIcon} />
+
+  ```tsx
+  <script setup lang="ts">
+    import { Button } from '@/components';
+    import ComposIcon, { Archive } from '@/components/Icons';
+  </script>
+
+  <template>
+    <Button icon>
+      <ComposIcon :icon="Archive" />
+    </Button>
+  </template>
+  ```
+</div>

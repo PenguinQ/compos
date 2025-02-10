@@ -17,23 +17,23 @@ const props = withDefaults(defineProps<ListSearch>(), {
   sticky: false,
 });
 
-const emit = defineEmits(['update:modelValue', 'clear']);
+const emits = defineEmits(['update:modelValue', 'clear']);
 
 const container = ref<HTMLDivElement>();
-const classes = computed(() => ({
-  'vc-list-search': true,
+const classes   = computed(() => ({
+  'vc-list-search'        : true,
   'vc-list-search--sticky': props.sticky,
 }));
 
 const handleInput = (e: Event) => {
   const input = e.target as HTMLInputElement;
 
-  emit('update:modelValue', input.value);
+  emits('update:modelValue', input.value);
 };
 
 const handleClear = () => {
-  emit('update:modelValue', '');
-  emit('clear');
+  emits('update:modelValue', '');
+  emits('clear');
 };
 </script>
 

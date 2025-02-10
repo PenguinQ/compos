@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type * as CSS from 'csstype';
 
-type SeparatorProps = {
+type Separator = {
   /**
    * Set the width of the separator.
    */
@@ -20,7 +20,7 @@ type SeparatorProps = {
   margin?: CSS.Property.Margin;
 };
 
-defineProps<SeparatorProps>();
+defineProps<Separator>();
 </script>
 
 <template>

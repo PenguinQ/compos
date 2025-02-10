@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type * as CSS from 'csstype';
 
-type BarProps = {
+type Bar = {
   color?: CSS.Property.BackgroundColor;
   height?: CSS.Property.Height;
   margin?: CSS.Property.Margin;
@@ -9,7 +9,7 @@ type BarProps = {
   width?: CSS.Property.Width;
 };
 
-withDefaults(defineProps<BarProps>(), {
+withDefaults(defineProps<Bar>(), {
   color: 'var(--color-black)',
 });
 </script>

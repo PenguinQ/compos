@@ -1,4 +1,3 @@
-// @ts-nocheck
 import path from 'node:path';
 import fs from 'fs-extra';
 import * as glob from 'glob';

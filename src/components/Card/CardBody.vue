@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type * as CSS from 'csstype';
 
-type Props = {
+type CardBody = {
+  /**
+   * Set the CSS padding value of the CardBody.
+   */
   padding?: CSS.Property.Padding;
 };
 
-defineProps<Props>();
+defineProps<CardBody>();
 </script>
 
 <template>

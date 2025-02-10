@@ -2,27 +2,25 @@
 import { ref, onBeforeMount, watch } from 'vue';
 import type * as CSS from 'csstype';
 
-type TabPanelProps = {
+type TabPanel = {
   active?: boolean; // Internal props
   lazy?: boolean;
   padding?: CSS.Property.Padding;
   margin?: CSS.Property.Margin;
 };
 
-defineOptions({
-  name: 'TabPanel',
-  inheritAttrs: false,
-});
-const props = withDefaults(defineProps<TabPanelProps>(), {
+defineOptions({ name: 'TabPanel', inheritAttrs: false });
+
+const props = withDefaults(defineProps<TabPanel>(), {
   lazy: false,
 });
 
-const tab = ref<HTMLDivElement>();
-const tab_lazy = ref(false);
+const tabRef  = ref<HTMLDivElement | null>(null);
+const tabLazy = ref(false);
 
 onBeforeMount(() => {
   if (props.lazy) {
-    if (props.active) tab_lazy.value = true;
+    if (props.active) tabLazy.value = true;
   }
 });
 
@@ -31,11 +29,11 @@ watch(
   (active) => {
     if (props.lazy) {
       if (active) {
-        tab_lazy.value = true;
+        tabLazy.value = true;
 
-        if (tab.value) tab.value.style.display = '';
+        if (tabRef.value) tabRef.value.style.display = '';
       } else {
-        if (tab.value) tab.value.style.display = 'none';
+        if (tabRef.value) tabRef.value.style.display = 'none';
       }
     }
   },
@@ -46,8 +44,8 @@ watch(
   <template v-if="lazy">
     <div
       v-bind="$attrs"
-      v-if="tab_lazy"
-      ref="tab"
+      v-if="tabLazy"
+      ref="tabRef"
       class="cp-tab-panel"
       role="tabpanel"
       :style="{ padding, margin }"
@@ -59,7 +57,7 @@ watch(
     <div
       v-bind="$attrs"
       v-show="active"
-      ref="tab"
+      ref="tabRef"
       class="cp-tab-panel"
       role="tabpanel"
       :style="{ padding, margin }"

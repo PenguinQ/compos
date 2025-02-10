@@ -3,23 +3,23 @@ import { computed } from 'vue';
 import type { ButtonHTMLAttributes } from 'vue';
 import type * as CSS from 'csstype';
 
-interface ToolbarActionProps extends /* @vue-ignore */ ButtonHTMLAttributes {
+interface ToolbarAction extends /* @vue-ignore */ ButtonHTMLAttributes {
   icon?: boolean;
   backgroundColor?: CSS.Property.BackgroundColor;
 }
 
-const props = withDefaults(defineProps<ToolbarActionProps>(), {
+const props = withDefaults(defineProps<ToolbarAction>(), {
   icon: false,
 });
 
-const button_class = computed(() => ({
-  'cp-toolbar-action': true,
+const classes = computed(() => ({
+  'cp-toolbar-action'      : true,
   'cp-toolbar-action--icon': props.icon,
 }));
 </script>
 
 <template>
-  <button :class="button_class" type="button" :style="{ backgroundColor }">
+  <button :class="classes" type="button" :style="{ backgroundColor }">
     <span class="cp-toolbar-action__wrapper">
       <slot />
     </span>

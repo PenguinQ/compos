@@ -1,28 +1,27 @@
-<script lang="ts">
-export default { name: 'TickerItem' };
-</script>
 <script setup lang="ts">
 import { Text } from '@/components';
 import ComposIcon, { InfoCircleFill, XCircleFill, WarningCircleFill } from '@/components/Icons';
 
-export type TickerItemProps = {
+export type TickerItem = {
   title?: string;
   description: string;
   type?: 'error' | 'info' | 'warning';
 };
 
-const props = withDefaults(defineProps<TickerItemProps>(), {
+defineOptions({ name: 'TickerItem' });
+
+const props = withDefaults(defineProps<TickerItem>(), {
   type: 'info',
 });
 
-let icon_type = InfoCircleFill;
+let icon = InfoCircleFill;
 
 switch (props.type) {
   case 'error':
-    icon_type = XCircleFill;
+    icon = XCircleFill;
     break;
   case 'warning':
-    icon_type = WarningCircleFill;
+    icon = WarningCircleFill;
     break;
   default:
     break;
@@ -31,7 +30,7 @@ switch (props.type) {
 
 <template>
   <div class="cp-ticker-item">
-    <ComposIcon class="cp-ticker-item__icon" :name="icon_type" size="72" />
+    <ComposIcon class="cp-ticker-item__icon" :name="icon" size="72" />
     <div class="cp-ticker-item__content">
       <div class="cp-ticker-item__title">
         <Text v-if="title" heading="6" as="h4" margin="0" v-html="title" />
