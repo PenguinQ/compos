@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
-import type { TextareaHTMLAttributes } from 'vue';
+import type { TextareaHTMLAttributes, Slot } from 'vue';
 import type * as CSSType from 'csstype'
 
-interface Props extends /* @vue-ignore */ TextareaHTMLAttributes {
+interface Textarea extends /* @vue-ignore */ TextareaHTMLAttributes {
   /**
    * Set additional properties for the textarea container.
    */
@@ -62,23 +62,23 @@ type TextareaSlots = {
   /**
    * Slot used to create custom label, since label property only accept string.
    */
-  label?: any;
+  label?: Slot;
   /**
    * Slot used to create custom message, since message property only accept string.
    */
-  message?: any;
+  message?: Slot;
 };
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Textarea>(), {
   disabled: false,
-  error: false,
-  success: false,
-  minRows: 4,
+  error   : false,
+  success : false,
+  minRows : 4,
 });
 
-const emit = defineEmits([
+const emits = defineEmits([
   /**
    * Slot used to create custom prepend, since message property only accept string.
    */
@@ -87,7 +87,7 @@ const emit = defineEmits([
 
 defineSlots<TextareaSlots>();
 
-const lineHeight = ref(24);
+const lineHeight = ref(24); // Initial start (--text-body-size-lg * --text-body-height-lg)
 const minHeight  = ref<number>(props.minRows ? props.minRows * lineHeight.value : lineHeight.value);
 const maxHeight  = ref<number>(props.maxRows ? props.maxRows * lineHeight.value : 0);
 const inputRef   = ref<HTMLTextAreaElement>();
@@ -112,7 +112,7 @@ const handleInput = (e: Event) => {
     if (minHeight.value! <= elScrollHeight) updateHeight(el);
   }
 
-  emit('update:modelValue', (e.target as HTMLTextAreaElement).value);
+  emits('update:modelValue', (e.target as HTMLTextAreaElement).value);
 };
 
 const handlePaste = (e: Event) => {
@@ -125,7 +125,7 @@ const handlePaste = (e: Event) => {
 
     if (maxHeight.value! <= elScrollHeight) updateHeight(el, maxHeight.value!);
 
-    emit('update:modelValue', (e.target as HTMLTextAreaElement).value);
+    emits('update:modelValue', (e.target as HTMLTextAreaElement).value);
   });
 };
 
@@ -181,7 +181,7 @@ watch(
     :data-cp-success="success ? true : undefined"
     :style="{ margin }"
   >
-    <label v-if="label || $slots['label']" v-bind="labelProps" class="cp-form-label">
+    <label v-if="label || $slots.label" v-bind="labelProps" class="cp-form-label">
       <slot name="label" />
       {{ label }}
     </label>
@@ -197,7 +197,7 @@ watch(
         @paste="maxRows && handlePaste($event)"
       />
     </div>
-    <div class="cp-form-message" v-if="message || $slots['message']">
+    <div class="cp-form-message" v-if="message || $slots.message">
       <slot name="message" />
       {{ message }}
     </div>

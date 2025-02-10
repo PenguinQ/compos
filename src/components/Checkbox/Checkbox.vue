@@ -61,17 +61,18 @@ type CheckboxSlots = {
   /**
    * Slot used to create custom label, since label property only accept string.
    */
-  label: Slot;
+  label?: Slot;
   /**
    * Slot used to create custom message, since message property only accept string.
    */
-  message: Slot;
+  message?: Slot;
 };
 
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<Checkbox>(), {
   disabled  : false,
+  error     : false,
   full      : false,
   tabindex  : 0,
   trueValue : undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
@@ -118,7 +119,6 @@ const isChecked = computed(() => {
 const containerRef = ref<HTMLLabelElement | null>(null);
 const inputRef     = ref<HTMLInputElement | null>(null);
 const inListItem   = ref(false);
-
 const classes = computed(() => ({
   'cp-form-checkbox'      : true,
   'cp-form-checkbox--full': props.full,
@@ -204,7 +204,7 @@ const handleKeydown = (e: KeyboardEvent) => {
         <slot name="label"></slot>
       </div>
     </label>
-    <div class="cp-form-message" v-if="message || $slots['message']">
+    <div class="cp-form-message" v-if="message || $slots.message">
       <template v-if="!$slots.message">{{ message }}</template>
       <slot name="message" />
     </div>

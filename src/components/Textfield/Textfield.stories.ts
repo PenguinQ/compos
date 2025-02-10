@@ -2,10 +2,10 @@ import { ref, watch } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 import type { ComponentProps } from 'vue-component-type-helpers';
 
+import { onlyShowArgs } from '@story/helpers';
+
 import { Text, Ticker, TickerItem } from '@components';
 import Textfield from './Textfield.vue';
-
-import { onlyShowArgs } from '@docs/helpers';
 
 type TextfieldProps = ComponentProps<typeof Textfield>;
 

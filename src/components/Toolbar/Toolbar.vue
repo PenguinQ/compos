@@ -1,46 +1,46 @@
 <script setup lang="ts">
 import { ref, defineAsyncComponent } from 'vue';
 
-type ToolbarProps = {
+type Toolbar = {
   title?: string;
   onBack?: () => void;
 };
 
-defineProps<ToolbarProps>();
+defineProps<Toolbar>();
 defineEmits(['back']);
 
 const ToolbarTitle = defineAsyncComponent(() => import('./ToolbarTitle.vue'));
 
-const outerContainer     = ref<HTMLDivElement | null>(null);
-const innerContainer     = ref<HTMLDivElement | null>(null);
-const extensionContainer = ref<HTMLDivElement | null>(null);
+const outerRef     = ref<HTMLDivElement | null>(null);
+const innerRef     = ref<HTMLDivElement | null>(null);
+const extensionRef = ref<HTMLDivElement | null>(null);
 
 const toggleToolbar = (toggle: boolean) => {
-  const outer = outerContainer.value;
-  const inner = innerContainer.value;
+  const outerContainer = outerRef.value;
+  const innerContainer = innerRef.value;
 
-  if (outer && inner) {
-    const innerHeight = inner.getBoundingClientRect().height;
+  if (outerContainer && innerContainer) {
+    const innerHeight = innerContainer.getBoundingClientRect().height;
 
-    outer.style.marginTop = toggle ? `-${innerHeight}px` : '';
+    outerContainer.style.marginTop = toggle ? `-${innerHeight}px` : '';
   }
 };
 
 defineExpose({
-  outer    : outerContainer,
-  inner    : innerContainer,
-  extension: extensionContainer,
+  outer    : outerRef,
+  inner    : innerRef,
+  extension: extensionRef,
   toggleToolbar,
 });
 </script>
 
 <template>
-  <div ref="outerContainer" class="cp-toolbar">
-    <div ref="innerContainer" class="cp-toolbar__main">
+  <div ref="outerRef" class="cp-toolbar">
+    <div ref="innerRef" class="cp-toolbar__main">
       <ToolbarTitle v-if="title" class="cp-toolbar-title">{{ title }}</ToolbarTitle>
       <slot />
     </div>
-    <div v-if="$slots.extension" ref="extensionContainer" class="cp-toolbar__extension">
+    <div v-if="$slots.extension" ref="extensionRef" class="cp-toolbar__extension">
       <slot name="extension"></slot>
     </div>
   </div>

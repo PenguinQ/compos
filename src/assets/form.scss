@@ -31,8 +31,7 @@
   &-field {
     width: 100%;
     color: var(--color-black);
-    font-size: var(--text-body-size-lg);
-    line-height: var(--text-body-height-lg);
+    @include text-body-lg;
     font-weight: 400;
     border: none;
     border-radius: inherit;

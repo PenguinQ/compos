@@ -40,15 +40,15 @@ type ListItemSlots = {
   /**
    * Slot used to create custom append, since append property only accept string.
    */
-  append: Slot;
+  append?: Slot;
   /**
    * Slot used to render `ListTitle`, `ListDescription` and other custom HTML or components.
    */
-  default: Slot;
+  default?: Slot;
   /**
    * Slot used to create custom prepend, since prepend property only accept string.
    */
-  prepend: Slot;
+  prepend?: Slot;
 };
 
 type ListInputs = {
@@ -60,6 +60,7 @@ type ListInputs = {
 const props = withDefaults(defineProps<ListItem>(), {
   clickable: false,
 });
+
 const slots = defineSlots<ListItemSlots>();
 
 const ListTitle       = defineAsyncComponent(() => import('./ListTitle.vue'));
@@ -70,7 +71,7 @@ const appendRef        = ref<HTMLDivElement | null>(null);
 const prependRef       = ref<HTMLDivElement | null>(null);
 const hasInput         = ref(false);
 const hasDisabledInput = ref(false);
-const appendedInputs   = reactive<ListInputs>({
+const appendedInputs = reactive<ListInputs>({
   checkbox : null,
   select   : null,
   textfield: null,
@@ -101,7 +102,6 @@ const handleSelect = (wrapper: UnwrapRef<HTMLDivElement>) => {
     select?.focus();
 
     if ('showPicker' in HTMLSelectElement.prototype) {
-      // @ts-ignore
       select?.showPicker();
     } else {
       select?.dispatchEvent(new MouseEvent('mousedown'));
@@ -128,9 +128,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 };
 
 onMounted(() => {
-  const container = containerRef.value;
-
-  if (container) {
+  if (containerRef.value) {
     if (slots.append !== undefined) {
       searchElements(appendedInputs, appendRef.value as HTMLDivElement);
 
@@ -157,8 +155,8 @@ onMounted(() => {
     :data-cp-disabled="hasDisabledInput ? hasDisabledInput : undefined"
     @keydown="handleKeydown"
   >
-    <div ref="prependRef" v-if="$slots.prepend?.() || prepend" class="cp-list-item__prepend">
-      <slot name="prepend" />
+    <div ref="prependRef" v-if="prepend || $slots.prepend" class="cp-list-item__prepend">
+      <slot v-if="$slots.prepend" name="prepend" />
       <template v-if="prepend">{{ prepend }}</template>
     </div>
     <div class="cp-list-item__content">
@@ -166,8 +164,8 @@ onMounted(() => {
       <ListDescription v-if="description" :as="descriptionAs" v-html="description" />
       <slot />
     </div>
-    <div ref="appendRef" v-if="$slots.append?.() || append" class="cp-list-item__append">
-      <slot name="append" />
+    <div ref="appendRef" v-if="append || $slots.append" class="cp-list-item__append">
+      <slot v-if="$slots.append" name="append" />
       <template v-if="append">{{ append }}</template>
     </div>
   </div>

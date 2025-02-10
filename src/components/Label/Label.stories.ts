@@ -18,7 +18,7 @@ const meta: Meta<typeof Label> = {
     },
   },
   args: {
-    default: 'Label',
+    default: 'Remembrance',
   },
 };
 
@@ -26,7 +26,7 @@ export default meta;
 
 type Story = StoryObj<typeof Label>;
 
-export const Default: Story = {
+export const Playground: Story = {
   render: (args) => ({
     components: { Label },
     setup() {

@@ -1,95 +1,77 @@
-import { Canvas, Meta, PureArgsTable, Story } from '@storybook/blocks';
+import { Canvas, Meta, ArgTypes, Story } from '@storybook/blocks';
 import * as CheckboxStories from './Checkbox.stories';
 import Checkbox from './Checkbox.vue';
 
 <Meta title="Components/Checkbox" component={Checkbox} />
 
 # Checkbox
-To start using Checkbox, you just need to import the components, see the example below:
+Checkbox is... well, a box... to be checked!
 
-<div class="demo-block">
-<Story of={CheckboxStories.Playground} />
+## Usage
+To start using **Checkbox**, see the example below:
 
-```tsx
-<script setup lang="ts">
-import { ref } from 'vue';
+<div className="demo-block">
+  <Story of={CheckboxStories.DocUsage} />
 
-import { Checkbox } from '@components';
+  ```tsx
+  <script setup lang="ts">
+  import { ref } from 'vue';
 
-const value = ref(false);
-</script>
+  import { Checkbox } from '@/components';
 
-<template>
-  <Checkbox v-model="value" />
-</template>
-```
+  const checked = ref(false);
+  </script>
+
+  <template>
+    <Checkbox v-model="checked" label="Insight Mode" />
+  </template>
+  ```
 </div>
 
-## Usages
-### Two-way Data Binding (v-model)
-This is the **recommended** way to use Checkbox by default, by utilizing Vue two-way data binding using v-model, see the example below:
+## Props
+<ArgTypes of={Checkbox} />
 
-<div class="demo-block">
-<Story of={CheckboxStories.UsingVModel} />
-
-```tsx
-<script setup lang="ts">
-import { ref } from 'vue';
-
-import { Checkbox } from '@components';
-
-const checkboxValue = ref(args.modelValue);
-...
-..
-.
-</script>
-
-<template>
-  <Text margin="0 0 4px">Checkbox value: {{ args.value }}</Text>
-  <Text margin="0 0 16px">Checkbox v-model: {{ checkboxValue }}</Text>
-  <Checkbox v-bind="args" v-model="checkboxValue" />
-</template>
-```
-</div>
-
+## Examples
 ### Non Two-way Data Binding
-Or, you can use `@change` callback to manage the checkbox state, see the example below:
+The recommended way to use **Checkbox** is using Vue two-way data binding (v-model). But, you can also go the other route
+using `value` and `@change`, see the example below:
 
-<div class="demo-block">
-<Story of={CheckboxStories.UsingValue} />
+<div className="demo-block">
+  <Story of={CheckboxStories.DocUsingValue} />
 
-```tsx
-<script setup lang="ts">
-import { ref } from 'vue';
+  ```tsx
+  <script setup lang="ts">
+  import { ref } from 'vue';
 
-import { Checkbox } from '@components';
+  import { Checkbox } from '@/components';
 
-const value = ref(false);
+  const checked = ref<boolean | string>(false);
 
-const handleChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  const checked = target.checked;
+  const handleChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const targetChecked = target.checked;
 
-  if (checked) {
-    checkboxValue.value = target.value;
-  } else {
-    checkboxValue.value = false;
-  }
-};
-</script>
+    if (targetChecked) {
+      checked.value = target.value;
+    } else {
+      checked.value = false;
+    }
+  };
+  </script>
 
-<template>
-  <Checkbox label="Label" v-model="value" />
-</template>
-```
+  <template>
+    <Text>Simulated Universe Insight Mode: {{ checked }}</Text>
+    <Checkbox :value="true" label="Insight Mode" @change="handleChange" />
+  </template>
+  ```
 </div>
 
 ### Multiple Selection
 You can also have multiple selection of Checkboxes in a single v-model value, just set the v-model value as an array and
 set the every Checkboxes v-model with the same v-model, see the example below:
 
-<div class="demo-block">
-<Story of={CheckboxStories.MultipleSelection} />
+<div className="demo-block">
+<Story of={CheckboxStories.DocMultiple} />
 
 ```tsx
 <script setup lang="ts">

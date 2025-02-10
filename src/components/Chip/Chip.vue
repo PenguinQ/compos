@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-interface Props {
+type Chip = {
   /**
-   * Set the color of the Chips.
+   * Set the Chip color.
    */
   color?: 'red' | 'green' | 'blue';
   /**
-   * Set the variant of the Chips.
+   * Set the Chip variant.
    */
   variant?: 'outline';
 };
 
-const props = defineProps<Props>();
+const props = defineProps<Chip>();
 
 const classes = computed(() => ({
   'cp-chips'         : true,

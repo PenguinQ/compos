@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import { CSS } from '@docs/constants';
+import { CSS } from '@story/constants';
+
 import Text from './Text.vue';
 
 const meta: Meta<typeof Text> = {

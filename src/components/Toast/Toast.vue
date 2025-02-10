@@ -2,14 +2,14 @@
 import ToastItem from './ToastItem.vue';
 import { useToast } from './hooks';
 
-type ToastProps = {
+type Toast = {
   /**
-   * Set where the toast should be rendered.
+   * Set where the Toast should be rendered.
    */
   to?: string;
 };
 
-withDefaults(defineProps<ToastProps>(), {
+withDefaults(defineProps<Toast>(), {
   to: 'body',
 });
 

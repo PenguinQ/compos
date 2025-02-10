@@ -41,8 +41,8 @@ const config: StorybookConfig = {
           '@components': path.resolve(__dirname, '../src/components'),
           '@helpers': path.resolve(__dirname, '../src/helpers'),
           '@hooks': path.resolve(__dirname, '../src/hooks'),
-          '@icons': path.resolve(__dirname, '../src/components/icons'),
-          '@docs': path.resolve(__dirname, '../.storybook'),
+          '@icons': path.resolve(__dirname, '../src/components/Icons'),
+          '@story': path.resolve(__dirname, '../.storybook'),
         },
       },
       css: {

@@ -2,7 +2,7 @@
 import { computed, reactive } from 'vue';
 import type * as CSS from 'csstype';
 
-type ShimmerProps = {
+type Shimmer = {
   animate?: boolean;
   block?: boolean;
   width?: CSS.Property.Width;
@@ -11,26 +11,26 @@ type ShimmerProps = {
   margin?: CSS.Property.Margin;
 }
 
-const props = withDefaults(defineProps<ShimmerProps>(), {
+const props = withDefaults(defineProps<Shimmer>(), {
   animate: false,
 });
 
-const shimmerClass = computed(() => ({
-  'cp-loader': true,
-  'cp-loader--shimmer': true,
+const classes = computed(() => ({
+  'cp-loader'                 : true,
+  'cp-loader--shimmer'        : true,
   'cp-loader--shimmer-animate': props.animate,
 }));
-const shimmerStyle = reactive({
-  display: props.block ? 'block' : undefined,
-  width: props.width,
-  height: props.height,
+const styles = reactive({
+  display     : props.block ? 'block' : undefined,
+  width       : props.width,
+  height      : props.height,
   borderRadius: props.radius,
-  margin: props.margin,
+  margin      : props.margin,
 });
 </script>
 
 <template>
-  <div :class="shimmerClass" :style="shimmerStyle" />
+  <div :class="classes" :style="styles" />
 </template>
 
 <style lang="scss">

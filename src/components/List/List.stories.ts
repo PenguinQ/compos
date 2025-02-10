@@ -1,21 +1,16 @@
 import { ref } from 'vue';
-
 import type { Meta, StoryObj } from '@storybook/vue3';
 import type { ComponentProps } from 'vue-component-type-helpers';
 
-import {
-  Text,
-  Select,
-  Checkbox,
-} from '@components';
+import { Text, Select, Checkbox } from '../';
 import List from './List.vue';
 import ListItem from './ListItem.vue';
 import ListTitle from './ListTitle.vue';
 import ListDescription from './ListDescription.vue';
 
-import { onlyShowArgs } from '@docs/helpers';
+import { onlyShowArgs } from '@story/helpers';
 
-type ListProps = ComponentProps<typeof List>;
+type ListProps     = ComponentProps<typeof List>;
 type ListItemProps = ComponentProps<typeof ListItem>;
 
 const defaultArgTypes = {

@@ -18,9 +18,9 @@ const props = withDefaults(defineProps<PullToRefresh>(), {
 const emits = defineEmits(['refresh']);
 
 const reference     = ref<HTMLElement | null>(null);
-const container     = ref<HTMLDivElement | null>(null);
-const pulley        = ref<HTMLDivElement | null>(null);
-const indicator     = ref<HTMLDivElement | null>(null);
+const containerRef  = ref<HTMLDivElement | null>(null);
+const pulleyRef     = ref<HTMLDivElement | null>(null);
+const indicatorRef  = ref<HTMLDivElement | null>(null);
 const isRefreshing  = ref(false);
 const isReached     = ref(false)
 let   startPosition = 0;
@@ -72,21 +72,21 @@ const handleMove = (e: MouseEvent | TouchEvent) => {
   const clientY = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
   const yPos    = -100 + (((clientY - startPosition) * 100) / props.maxPullDistance);
 
-  pulley.value?.style.setProperty('display', 'flex');
+  pulleyRef.value?.style.setProperty('display', 'flex');
 
   if (isPullingDown(clientY)) {
     reference.value?.style.setProperty('--overflow', 'hidden');
 
     if (isMinimumDistanceReached(clientY)) {
-      slideUp({ element: pulley.value, distance: '0%' });
+      slideUp({ element: pulleyRef.value, distance: '0%' });
 
       isReached.value = true;
     } else {
-      slideUp({ element: pulley.value, distance: `${yPos}%` });
+      slideUp({ element: pulleyRef.value, distance: `${yPos}%` });
     }
   } else if (isPullingUp(clientY)) {
     if (!isMinimumDistanceReached(clientY)) {
-      slideUp({ element: pulley.value, distance: `${yPos}%` });
+      slideUp({ element: pulleyRef.value, distance: `${yPos}%` });
 
       isReached.value = false;
     }
@@ -109,9 +109,9 @@ const handleEnd = (e: MouseEvent | TouchEvent) => {
   reference.value?.style.removeProperty('--overflow');
 
   slideUp({
-    element: pulley.value,
+    element: pulleyRef.value,
     onFinish: () => {
-      pulley.value?.style.removeProperty('display');
+      pulleyRef.value?.style.removeProperty('display');
     },
   });
 
@@ -148,8 +148,8 @@ const handleStart = (e: MouseEvent | TouchEvent) => {
 };
 
 onMounted(() => {
-  if (container.value) {
-    reference.value = container.value.parentElement?.querySelector('.cp-content__inner') as HTMLElement;
+  if (containerRef.value) {
+    reference.value = containerRef.value.parentElement?.querySelector('.cp-content__inner') as HTMLElement;
 
     reference.value?.addEventListener('mousedown', handleStart);
     reference.value?.addEventListener('touchstart', handleStart);
@@ -163,14 +163,14 @@ onUnmounted(() => {
 
 watch(isRefreshing, (refreshing) => {
   if (refreshing) {
-    indicator.value?.style.setProperty('display', 'flex');
+    indicatorRef.value?.style.setProperty('display', 'flex');
   } else {
     slideUp({
-      element: indicator.value,
+      element: indicatorRef.value,
       onFinish: () => {
-        indicator.value?.style.removeProperty('display');
+        indicatorRef.value?.style.removeProperty('display');
 
-        slideUp({ element: indicator.value, distance: '0%', duration: 0 });
+        slideUp({ element: indicatorRef.value, distance: '0%', duration: 0 });
       },
     });
   }
@@ -180,11 +180,11 @@ defineExpose({ cancel, complete });
 </script>
 
 <template>
-  <div ref="container" :class="classes">
-    <div ref="pulley" class="cp-refresh__pulley">
+  <div ref="containerRef" :class="classes">
+    <div ref="pulleyRef" class="cp-refresh__pulley">
       {{ isReached ? 'Release to Refresh' : 'Pull to Refresh' }}
     </div>
-    <div ref="indicator" class="cp-refresh__indicator">
+    <div ref="indicatorRef" class="cp-refresh__indicator">
       <Bar size="24px" color="var(--color-white)" />
     </div>
   </div>

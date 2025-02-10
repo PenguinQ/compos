@@ -2,10 +2,10 @@ import { ref, watch } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 import type { ComponentProps } from 'vue-component-type-helpers';
 
+import { onlyShowArgs } from '@story/helpers';
+
 import { Text } from '@components';
 import Textarea from './Textarea.vue';
-
-import { onlyShowArgs } from '@docs/helpers';
 
 type TextareaProps = ComponentProps<typeof Textarea>;
 

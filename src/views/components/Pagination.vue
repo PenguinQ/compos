@@ -23,23 +23,23 @@ type Pagination = {
 };
 
 const props = withDefaults(defineProps<Pagination>(), {
-  disabled: false,
+  disabled  : false,
   first_page: true,
-  frame: false,
-  grow: false,
-  last_page: true,
-  loading: false,
+  frame     : false,
+  grow      : false,
+  last_page : true,
+  loading   : false,
 });
 
 defineEmits(['clickFirst', 'clickPrev', 'clickNext', 'clickLast']);
 
-const is_loading = computed(() => props.loading);
+const isLoading     = computed(() => props.loading);
 const prev_disabled = computed(() => props.loading || props.disabled || props.first_page ? true : false);
 const next_disabled = computed(() => props.loading || props.disabled || props.last_page ? true : false);
-const classes = computed(() => ({
-  'vc-pagination': true,
+const classes       = computed(() => ({
+  'vc-pagination'       : true,
   'vc-pagination--frame': props.frame,
-  'vc-pagination--grow': props.grow,
+  'vc-pagination--grow' : props.grow,
   'vc-pagination--large': props.size === 'large',
 }));
 </script>
@@ -50,23 +50,23 @@ const classes = computed(() => ({
     :data-cp-disabled="disabled ? true : !page && !total_page ? true : undefined"
     :style="{ alignSelf: align }"
   >
-    <ButtonBlock @click="!is_loading && $emit('clickFirst')" :disabled="prev_disabled">
+    <ButtonBlock @click="!isLoading && $emit('clickFirst')" :disabled="prev_disabled">
       <ComposIcon :icon="ChevronDoubleLeft" color="var(--color-white)" />
     </ButtonBlock>
-    <ButtonBlock @click="!is_loading && $emit('clickPrev')" :disabled="prev_disabled">
+    <ButtonBlock @click="!isLoading && $emit('clickPrev')" :disabled="prev_disabled">
       <ComposIcon :icon="ChevronLeft" color="var(--color-white)" />
     </ButtonBlock>
     <div class="vc-pagination__detail">
-      <Bar v-if="is_loading" size="24px" margin="0" />
+      <Bar v-if="isLoading" size="24px" margin="0" />
       <template v-else>
         <Text v-if="disabled || (!page && !total_page)" as="span" truncate>-</Text>
         <Text v-else as="span" truncate>{{ page }} of {{ total_page }}</Text>
       </template>
     </div>
-    <ButtonBlock @click="!is_loading && $emit('clickNext')" :disabled="next_disabled">
+    <ButtonBlock @click="!isLoading && $emit('clickNext')" :disabled="next_disabled">
       <ComposIcon :icon="ChevronRight" color="var(--color-white)" />
     </ButtonBlock>
-    <ButtonBlock @click="!is_loading && $emit('clickLast')" :disabled="next_disabled">
+    <ButtonBlock @click="!isLoading && $emit('clickLast')" :disabled="next_disabled">
       <ComposIcon :icon="ChevronDoubleRight" color="var(--color-white)" />
     </ButtonBlock>
   </div>

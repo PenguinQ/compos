@@ -13,14 +13,14 @@ const props = withDefaults(defineProps<ButtonBlock>(), {
   icon: false,
 });
 
-const button_class = computed(() => ({
-  'vc-button-block': true,
+const classes = computed(() => ({
+  'vc-button-block'      : true,
   'vc-button-block--icon': props.icon,
 }));
 </script>
 
 <template>
-  <button :class="button_class" type="button" :style="{ width, height, backgroundColor }">
+  <button :class="classes" type="button" :style="{ width, height, backgroundColor }">
     <span>
       <slot />
     </span>

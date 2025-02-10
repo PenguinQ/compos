@@ -6,11 +6,12 @@
       "@/*": ["src/*"],
       "@assets/*": ["src/assets/*"],
       "@components/*": ["src/components/*"],
+      "@database/*": ["src/database/*"],
       "@helpers/*": ["src/helpers/*"],
       "@hooks/*": ["src/components/hooks/*"],
       "@plugins/*": ["src/components/plugins/*"],
-      "@icons/*": ["src/components/icons/*"],
-      "@docs/*": [".storybook/*"]
+      "@icons/*": ["src/components/Icons/*"],
+      "@story/*": [".storybook/*"]
     },
     "target": "ES2020",
     "useDefineForClassFields": true,

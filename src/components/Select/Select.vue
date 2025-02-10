@@ -66,23 +66,23 @@ type SelectSlots = {
   /**
    * Slot used to render `option` tag.
    */
-  default: Slot;
+  default?: Slot;
   /**
    * Slot used to create custom label, since label property only accept string.
    */
-  label: Slot;
+  label?: Slot;
   /**
    * Slot used to create custom message, since message property only accept string.
    */
-  message: Slot;
+  message?: Slot;
 };
 
 defineOptions({ inheritAttrs: false });
 
 withDefaults(defineProps<Select>(), {
   disabled: false,
-  error: false,
-  success: false,
+  error   : false,
+  success : false,
 });
 
 const emits = defineEmits([
@@ -134,7 +134,7 @@ const handleInput = (e: Event) => {
     :data-cp-success="success ? true : undefined"
     :style="{ margin }"
   >
-    <label v-if="label || $slots['label']" v-bind="labelProps" class="cp-form-label">
+    <label v-if="label || $slots.label" v-bind="labelProps" class="cp-form-label">
       <slot name="label" />
       {{ label }}
     </label>
@@ -155,7 +155,7 @@ const handleInput = (e: Event) => {
       </select>
       <ComposIcon :icon="inListItem ? ChevronExpand : ChevronDown" class="cp-form-select__icon" />
     </div>
-    <div class="cp-form-message" v-if="mode !== 'list' && (message || $slots['message'])">
+    <div class="cp-form-message" v-if="mode !== 'list' && (message || $slots.message)">
       <slot name="message" />
       {{ message }}
     </div>

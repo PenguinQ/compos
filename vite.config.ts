@@ -119,8 +119,8 @@ export default defineConfig({
       "@helpers": fileURLToPath(new URL("./src/helpers", import.meta.url)),
       "@hooks": fileURLToPath(new URL("./src/hooks", import.meta.url)),
       "@plugins": fileURLToPath(new URL("./src/plugins", import.meta.url)),
-      "@icons": fileURLToPath(new URL("./src/components/icons", import.meta.url)),
-      "@docs": fileURLToPath(new URL("./.storybook/", import.meta.url)),
+      "@icons": fileURLToPath(new URL("./src/components/Icons", import.meta.url)),
+      "@story": fileURLToPath(new URL("./.storybook/", import.meta.url)),
     },
   },
   css: {

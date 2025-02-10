@@ -1,48 +1,59 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue';
+import type { Slot } from 'vue';
 
 import { useScopeId } from '@/hooks';
 import { isVisible } from '@/helpers';
 
-type TabControlsProps = {
+type TabControls = {
   grow?: boolean;
   modelValue: number;
   sticky?: boolean;
   variant?: 'alternate';
 };
 
+type TabControlsSlots = {
+  default?: Slot;
+};
+
 defineOptions({ name: 'TabControls' });
-const props = withDefaults(defineProps<TabControlsProps>(), {
-  grow: false,
+
+const props = withDefaults(defineProps<TabControls>(), {
+  grow  : false,
   sticky: false,
 });
-const emit = defineEmits(['update:modelValue']);
 
-const scope_id  = useScopeId();
-const container = ref();
-const scroller  = ref();
-const active    = ref(props.modelValue ? props.modelValue : 0);
-const tabControlClass = computed(() => ({
+const emits = defineEmits(['update:modelValue']);
+
+defineSlots<TabControlsSlots>();
+
+const scope_id     = useScopeId();
+const containerRef = ref<HTMLDivElement | null>(null);
+const scrollerRef  = ref<HTMLDivElement | null>(null);
+const active       = ref(props.modelValue ? props.modelValue : 0);
+const classes = computed(() => ({
   'cp-tab-controls'           : true,
   'cp-tab-controls--grow'     : props.grow,
   'cp-tab-controls--alternate': props.variant === 'alternate',
 }));
 
 const scrollToView = (index: number) => {
-  const controls = scroller.value.children;
-  const control = controls[index];
+  if (scrollerRef.value) {
+    const controls = scrollerRef.value.children;
+    const control  = controls[index] as HTMLElement;
 
-  if (control) {
-    const visible = isVisible(control, container.value);
+    if (control) {
+      const visible = isVisible(control, containerRef.value as HTMLElement);
 
-    if (!visible) control.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      if (!visible) control.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
   }
 };
 
 const handleTab = (index: number) => {
   active.value = index;
 
-  if (props.modelValue !== undefined) emit('update:modelValue', index);
+  if (props.modelValue !== undefined) emits('update:modelValue', index);
 
   !props.grow && scrollToView(index);
 };
@@ -51,7 +62,7 @@ watch(
   () => props.modelValue,
   (newModel) => {
     active.value = newModel;
-    emit('update:modelValue', newModel);
+    emits('update:modelValue', newModel);
   },
 );
 
@@ -61,8 +72,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="$slots.default" ref="container" :class="tabControlClass">
-    <div :[`${scope_id}`]="''" ref="scroller" class="cp-tab-controls-container">
+  <div v-if="$slots.default" ref="containerRef" :class="classes">
+    <div :[`${scope_id}`]="''" ref="scrollerRef" class="cp-tab-controls-container">
       <component
         v-for="(tab, index) in $slots.default()"
         :is="tab"

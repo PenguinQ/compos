@@ -6,14 +6,14 @@ import ToastItem from './ToastItem.vue';
 import { useToast } from './hooks';
 import type { ToastReturn } from './hooks/useToast';
 
-type ToastProviderProps = {
+type ToastProvider = {
   /**
-   * Set where the toast should be rendered.
+   * Set where the Toast should be rendered.
    */
   to?: string;
 };
 
-withDefaults(defineProps<ToastProviderProps>(), {
+withDefaults(defineProps<ToastProvider>(), {
   to: 'body',
 });
 

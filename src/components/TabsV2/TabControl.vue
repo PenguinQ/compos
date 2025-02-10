@@ -1,10 +1,17 @@
 <script setup lang="ts">
-type TabControlprops = {
+import type { Slot } from 'vue';
+
+type TabControl = {
   title?: string;
 };
 
+type TabControlSlots = {
+  title?: Slot;
+};
+
 defineOptions({ name: 'TabControl' });
-defineProps<TabControlprops>();
+defineSlots<TabControlSlots>();
+defineProps<TabControl>();
 </script>
 
 <template>

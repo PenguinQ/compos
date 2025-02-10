@@ -9,33 +9,33 @@ import {
   onMounted,
   onUnmounted,
 } from 'vue';
-import type { VNode } from 'vue';
+import type { VNode, Slot } from 'vue';
 
 import TickerItem from './TickerItem.vue';
-import type { TickerItemProps } from './TickerItem.vue';
+import type { TickerItem as TickerItemProps } from './TickerItem.vue';
 import type * as CSS from 'csstype';
 
-type TickerItemObject = { props?: object } & TickerItemProps;
+type TickerItem = { props?: object } & TickerItemProps;
 
-type TickerProps = {
+type Ticker = {
   /**
    * Set the current or starting active slide.
    */
   activeIndex?: number;
   /**
-   * Set the ticker to autoplay.
+   * Set the Ticker to autoplay.
    */
   autoplay?: boolean;
   /**
-   * Set the ticker autoplay duration.
+   * Set the Ticker autoplay duration.
    */
   autoplayDuration?: number;
   /**
-   * Set the item for each ticker.
+   * Set the item for each Ticker.
    */
-  items?: TickerItemObject[];
+  items?: TickerItem[];
   /**
-   * Set the margin for the ticker.
+   * Set the margin for the Ticker.
    */
   margin?: CSS.Property.Margin;
 };
@@ -48,26 +48,32 @@ type TickerState = {
   types: string[];
 };
 
-const props = withDefaults(defineProps<TickerProps>(), {
+type TickerSlots = {
+  default?: Slot;
+};
+
+const props = withDefaults(defineProps<Ticker>(), {
   activeIndex: 0,
   autoplay: false,
   autoplayDuration: 5000,
 });
 
-const slots = useSlots();
-const ticker_slider = ref();
+defineSlots<TickerSlots>();
+
+const slots     = useSlots();
+const sliderRef = ref<HTMLDivElement | null>();
 const ticker = reactive<TickerState>({
   active_index: 0,
-  active_type: '',
-  items: [],
-  length: 0,
-  types: [],
+  active_type : '',
+  items       : [],
+  length      : 0,
+  types       : [],
 });
-const ticker_class = computed(() => ({
-  'cp-ticker': true,
-  'cp-ticker--info': ticker.active_type === 'info',
+const classes = computed(() => ({
+  'cp-ticker'         : true,
+  'cp-ticker--info'   : ticker.active_type === 'info',
   'cp-ticker--warning': ticker.active_type === 'warning',
-  'cp-ticker--error': ticker.active_type === 'error',
+  'cp-ticker--error'  : ticker.active_type === 'error',
 }));
 let autoplay_interval: ReturnType<typeof setInterval>;
 
@@ -98,8 +104,8 @@ const handleMouseLeave = () => {
   if (props.autoplay) startAutoplay();
 };
 
-const getItemTypes = (items: TickerItemObject[]) => {
-  return items.reduce((types: string[], item: TickerItemObject) => {
+const getItemTypes = (items: TickerItem[]) => {
+  return items.reduce((types: string[], item: TickerItem) => {
     types.push(item.type ? item.type : '');
 
     return types;
@@ -107,8 +113,8 @@ const getItemTypes = (items: TickerItemObject[]) => {
 };
 
 const getSlotDetail = (slots: VNode[]) => {
-  let slot_types: string[] = [];
-  let slot_children: VNode[] = [];
+  let slotTypes: string[]   = [];
+  let slotChildren: VNode[] = [];
 
   slots.forEach((slot: VNode) => {
     const { children, type, props } = slot;
@@ -116,20 +122,20 @@ const getSlotDetail = (slots: VNode[]) => {
     if (typeof type === 'symbol') {
       if (children && typeof children === 'object') {
         (children as []).forEach((child: VNode) => {
-          slot_types.push(child.props?.type ? child.props.type : null);
-          slot_children.push(child);
+          slotTypes.push(child.props?.type ? child.props.type : null);
+          slotChildren.push(child);
         });
       }
     } else {
-      slot_types.push(props?.type ? props.type : null);
-      slot_children.push(slot);
+      slotTypes.push(props?.type ? props.type : null);
+      slotChildren.push(slot);
     }
   });
 
   return {
-    length: slot_types.length,
-    types: slot_types,
-    children: slot_children,
+    length  : slotTypes.length,
+    types   : slotTypes,
+    children: slotChildren,
   };
 };
 
@@ -138,19 +144,19 @@ onBeforeMount(() => {
     const types = getItemTypes(props.items);
 
     ticker.active_index = props.activeIndex > props.items.length - 1 ? 0 : props.activeIndex;
-    ticker.active_type = types[props.activeIndex];
-    ticker.length = props.items.length;
-    ticker.types = types;
+    ticker.active_type  = types[props.activeIndex];
+    ticker.length       = props.items.length;
+    ticker.types        = types;
   }
 
   if (slots.default) {
     const { length, types, children } = getSlotDetail(slots.default());
 
     ticker.active_index = props.activeIndex > length - 1 ? 0 : props.activeIndex;
-    ticker.active_type = types[props.activeIndex];
-    ticker.items = children;
-    ticker.length = length;
-    ticker.types = types;
+    ticker.active_type  = types[props.activeIndex];
+    ticker.items        = children;
+    ticker.length       = length;
+    ticker.types        = types;
   }
 });
 
@@ -171,9 +177,9 @@ watch(
       const types = getItemTypes(items);
 
       ticker.active_index = props.activeIndex;
-      ticker.active_type = types[props.activeIndex];
-      ticker.types = types;
-      ticker.length = items.length;
+      ticker.active_type  = types[props.activeIndex];
+      ticker.types        = types;
+      ticker.length       = items.length;
 
       if (props.autoplay) items.length > 1 ? startAutoplay() : endAutoplay();
     }
@@ -218,10 +224,10 @@ if (slots.default) {
     const { length, types, children } = getSlotDetail(slot);
 
     ticker.active_index = props.activeIndex;
-    ticker.active_type = types[props.activeIndex];
-    ticker.items = children;
-    ticker.length = length;
-    ticker.types = types;
+    ticker.active_type  = types[props.activeIndex];
+    ticker.items        = children;
+    ticker.length       = length;
+    ticker.types        = types;
 
     if (props.autoplay) length > 1 ? startAutoplay() : endAutoplay();
   });
@@ -229,9 +235,9 @@ if (slots.default) {
 </script>
 
 <template>
-  <div :class="ticker_class" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" :style="{ margin }">
+  <div :class="classes" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" :style="{ margin }">
     <div
-      ref="ticker_slider"
+      ref="sliderRef"
       class="cp-ticker-items"
       :style="{ transform: `translate3d(-${100 * ticker.active_index}%, 0, 0)` }"
     >
@@ -270,14 +276,12 @@ if (slots.default) {
 </template>
 
 <style lang="scss">
-$root: '.cp-ticker';
-
 .cp-ticker {
   border: 1px solid var(--color-neutral-4);
   border-radius: 8px;
   background-color: var(--color-neutral-1);
   overflow: hidden;
-  transition: all 280ms ease;
+  transition: all var(--transition-duration-normal) var(--transition-timing-function);
 
   &--error {
     border-color: var(--color-red-4);
@@ -322,15 +326,15 @@ $root: '.cp-ticker';
     &[data-cp-active] {
       background-color: var(--color-neutral-7);
 
-      #{$root}--error & {
+      .cp-ticker--error & {
         background-color: var(--color-red-4);
       }
 
-      #{$root}--info & {
+      .cp-ticker--info & {
         background-color: var(--color-blue-4);
       }
 
-      #{$root}--warning & {
+      .cp-ticker--warning & {
         background-color: var(--color-yellow-4);
       }
     }

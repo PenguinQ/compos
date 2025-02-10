@@ -3,7 +3,7 @@ import { ref, Transition, onMounted, watch } from 'vue';
 
 import ComposIcon, { X } from '@/components/Icons';
 
-export type ToastItemProps = {
+export type ToastItem = {
   /**
    * Set the text message to be shown.
    */
@@ -21,73 +21,73 @@ export type ToastItemProps = {
    */
   modelValue?: boolean;
   /**
-   * Stop auto closing of the toast.
+   * Stop auto closing of the ToastItem.
    */
   persist?: boolean;
   /**
-   * Stop toast from auto closing when hovering the text.
+   * Stop ToastItem from auto closing when hovering the text.
    */
   persistOnHover?: boolean;
   /**
-   * Toggle the toast to show.
+   * Toggle the ToastItem to show.
    */
   show?: boolean;
   /**
-   * Hide the Toaster close button.
+   * Hide the ToastItem close button.
    */
   noClose?: boolean;
   /**
-   * Set the display for the toast.
+   * Set the display type for the ToastItem.
    */
   type?: 'error' | 'success';
 };
 
-const props = withDefaults(defineProps<ToastItemProps>(), {
-  duration: 5000,
-  html: false,
-  noClose: false,
-  persist: false,
+const props = withDefaults(defineProps<ToastItem>(), {
+  duration      : 5000,
+  html          : false,
+  noClose       : false,
+  persist       : false,
   persistOnHover: false,
 });
 
-const emit = defineEmits(['update:modelValue', 'enter', 'after-enter', 'leave', 'after-leave']);
+const emits = defineEmits(['update:modelValue', 'enter', 'after-enter', 'leave', 'after-leave']);
 
 const display = ref(props.modelValue ? props.modelValue : props.show);
 
-let toast_timeout: ReturnType<typeof setTimeout>;
+let toastTimeout: ReturnType<typeof setTimeout>;
 
 const handleClose = () => {
   if (props.modelValue) {
-    emit('update:modelValue', false);
+    emits('update:modelValue', false);
   } else {
     display.value = false;
   }
 };
 
 const handleMouseEnter = () => {
-  if (!props.persist || !props.persistOnHover) clearTimeout(toast_timeout);;
+  if (!props.persist || !props.persistOnHover) clearTimeout(toastTimeout);;
 };
 
 const handleMouseLeave = () => {
-  clearTimeout(toast_timeout);
+  clearTimeout(toastTimeout);
 
   if (!props.persist || !props.persistOnHover) {
     if (props.modelValue) {
-      toast_timeout = setTimeout(() => emit('update:modelValue', false), props.duration);
+      toastTimeout = setTimeout(() => emits('update:modelValue', false), props.duration);
     } else {
-      toast_timeout = setTimeout(() => (display.value = false), props.duration);
+      toastTimeout = setTimeout(() => (display.value = false), props.duration);
     }
   }
 };
 
 onMounted(() => {
-  clearTimeout(toast_timeout);
+  clearTimeout(toastTimeout);
 
   if (!props.persist) {
     if (props.modelValue) {
-      toast_timeout = setTimeout(() => emit('update:modelValue', false), props.duration);
+      toastTimeout = setTimeout(() => emits('update:modelValue', false), props.duration);
     } else {
-      toast_timeout = setTimeout(() => (display.value = false), props.duration);
+      toastTimeout = setTimeout(() => (display.value = false), props.duration);
     }
   }
 });
@@ -96,10 +96,10 @@ watch(
   () => props.modelValue,
   (modelValue) => {
     if (modelValue) {
-      clearTimeout(toast_timeout);
+      clearTimeout(toastTimeout);
 
       if (!props.persist) {
-        toast_timeout = setTimeout(() => emit('update:modelValue', false), props.duration);
+        toastTimeout = setTimeout(() => emits('update:modelValue', false), props.duration);
       }
     }
 
@@ -111,10 +111,10 @@ watch(
   () => props.show,
   (show) => {
     if (show) {
-      clearTimeout(toast_timeout);
+      clearTimeout(toastTimeout);
 
       if (!props.persist) {
-        toast_timeout = setTimeout(() => (display.value = false), props.duration);
+        toastTimeout = setTimeout(() => (display.value = false), props.duration);
       }
     }
 
