@@ -4,73 +4,73 @@ import type * as CSS from 'csstype';
 
 import { Text } from '@/components';
 
-type EmptyStateProps = {
+type EmptyState = {
   /**
-   * Set the empty state description text.
+   * Set the EmptyState description text.
    */
   description?: string;
   /**
-   * Set the empty state emoji that acts like an image.
+   * Set the EmptyState emoji that acts like an image.
    */
   emoji?: string;
   /**
-   * Set the empty state image.
+   * Set the EmptyState image.
    */
   image?: string;
   /**
-   * Set the empty state image alt text.
+   * Set the EmptyState image alt text.
    */
   imageAlt?: string;
   /**
-   * Set the empty state image height.
+   * Set the EmptyState image height.
    */
   imageHeight?: CSS.Property.Height;
   /**
-   * Set the empty state image width.
+   * Set the EmptyState image width.
    */
   imageWidth?: CSS.Property.Width;
   /**
-   * Set the empty state orientation.
+   * Set the EmptyState orientation.
    */
   orientation?: 'horizontal' | 'vertical';
   /**
-   * Set the empty state subtitle text.
+   * Set the EmptyState subtitle text.
    */
   subtitle?: string;
   /**
-   * Set the empty state title text.
+   * Set the EmptyState title text.
    */
   title: string;
   /**
-   * Set the empty state width.
+   * Set the EmptyState width.
    */
   width?: CSS.Property.Width;
   /**
-   * Set the empty state height.
+   * Set the EmptyState height.
    */
   height?: CSS.Property.Height;
   /**
-   * Set the empty state padding.
+   * Set the EmptyState padding.
    */
   padding?: CSS.Property.Padding;
   /**
-   * Set the empty state margin.
+   * Set the EmptyState margin.
    */
   margin?: CSS.Property.Margin;
 };
 
-const props = withDefaults(defineProps<EmptyStateProps>(), {
+const props = withDefaults(defineProps<EmptyState>(), {
   orientation: 'vertical',
 });
 
-const empty_state_class = computed(() => ({
-  'cp-empty-state': true,
+const classes = computed(() => ({
+  'cp-empty-state'            : true,
   'cp-empty-state--horizontal': props.orientation === 'horizontal',
 }));
 </script>
 
 <template>
-  <div :class="empty_state_class" :style="{ width, height, padding, margin }">
+  <div :class="classes" :style="{ width, height, padding, margin }">
     <div class="cp-empty-state__container" :style="{ width }">
       <picture v-if="image">
         <img :src="image" :alt="imageAlt ? imageAlt : 'Empty state image'" :style="{ width: imageWidth, height: imageHeight }" />
@@ -99,8 +99,6 @@ const empty_state_class = computed(() => ({
 
 <style lang="scss">
 .cp-empty-state {
-  $root: &;
-
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,12 +148,12 @@ const empty_state_class = computed(() => ({
   }
 
   &--horizontal {
-    #{$root}__container {
+    .cp-empty-state__container {
       flex-direction: row;
       gap: 16px;
     }
 
-    #{$root}__body {
+    .cp-empty-state__body {
       text-align: left;
     }
   }

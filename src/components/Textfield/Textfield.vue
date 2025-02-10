@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { InputHTMLAttributes } from 'vue';
+import type { InputHTMLAttributes, Slot } from 'vue';
 import type * as CSS from 'csstype'
 
 import ComposIcon, { Eye, EyeSlash } from '@/components/Icons';
 
-interface TextfieldProps extends /* @vue-ignore */ InputHTMLAttributes {
+interface Textfield extends /* @vue-ignore */ InputHTMLAttributes {
   /**
    * Append text to the textfield.
    */
@@ -66,48 +66,49 @@ interface TextfieldProps extends /* @vue-ignore */ InputHTMLAttributes {
 }
 
 export interface TextfieldExpose {
-  input: typeof input;
+  input: typeof inputRef;
 }
 
 type TextfieldSlots = {
   /**
    * Slot used to create custom append, since append property only accept string.
    */
-  append?: any;
+  append?: Slot;
   /**
    * Slot used to create custom label, since label property only accept string.
    */
-  label?: any;
+  label?: Slot;
   /**
    * Slot used to create custom message, since message property only accept string.
    */
-  message?: any;
+  message?: Slot;
   /**
    * Slot used to create custom prepend, since prepend property only accept string.
    */
-  prepend?: any;
+  prepend?: Slot;
 };
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<TextfieldProps>(), {
+const props = withDefaults(defineProps<Textfield>(), {
   disabled: false,
-  error: false,
-  success: false,
-  type: 'text',
+  error   : false,
+  success : false,
+  type    : 'text',
 });
+
 const emits = defineEmits([
   /**
    * Callback for v-model two-way data binding, **used internally**, Storybook shows by default.
    */
-  'update:modelValue'
+  'update:modelValue',
 ]);
 
 defineSlots<TextfieldSlots>();
 
-const isPassword = computed(() => props.type === 'password');
+const isPassword   = computed(() => props.type === 'password');
 const showPassword = ref(false);
-const input = ref<HTMLInputElement | null>(null);
+const inputRef     = ref<HTMLInputElement | null>(null);
 
 const handleInput = (e: Event) => {
   emits('update:modelValue', (e.target as HTMLInputElement).value);
@@ -117,8 +118,7 @@ const togglePassword = () => {
   showPassword.value = !showPassword.value;
 };
 
-// Expose
-defineExpose<TextfieldExpose>({ input });
+defineExpose<TextfieldExpose>({ input: inputRef });
 </script>
 
 <template>
@@ -130,18 +130,18 @@ defineExpose<TextfieldExpose>({ input });
     :data-cp-success="success ? true : undefined"
     :style="{ margin }"
   >
-    <label v-if="label || $slots['label']" v-bind="labelProps" class="cp-form-label">
+    <label v-if="label || $slots.message" v-bind="labelProps" class="cp-form-label">
       <slot name="label" />
       {{ label }}
     </label>
     <div class="cp-form-container">
-      <div v-if="prepend || $slots['prepend']" class="cp-form-affix">
+      <div v-if="prepend || $slots.prepend" class="cp-form-affix">
         <slot name="prepend" />
         {{ prepend }}
       </div>
       <input
         v-if="isPassword"
-        ref="input"
+        ref="inputRef"
         class="cp-form-field"
         v-bind="$attrs"
         :disabled="disabled"
@@ -152,7 +152,7 @@ defineExpose<TextfieldExpose>({ input });
       />
       <input
         v-else
-        ref="input"
+        ref="inputRef"
         class="cp-form-field"
         v-bind="$attrs"
         :disabled="disabled"
@@ -161,7 +161,7 @@ defineExpose<TextfieldExpose>({ input });
         :value="value || modelValue"
         @input="handleInput"
       />
-      <div v-if="append || $slots['append'] || isPassword" class="cp-form-affix">
+      <div v-if="append || $slots.append || isPassword" class="cp-form-affix">
         <button
           class="cp-form--textfield__password-toggle"
           v-if="isPassword"
@@ -175,7 +175,7 @@ defineExpose<TextfieldExpose>({ input });
         {{ append }}
       </div>
     </div>
-    <div class="cp-form-message" v-if="message || $slots['message']">
+    <div class="cp-form-message" v-if="message || $slots.message">
       <slot name="message" />
       {{ message }}
     </div>

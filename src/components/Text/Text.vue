@@ -2,24 +2,66 @@
 import { ref, computed, watchEffect } from 'vue';
 import type * as CSS from 'csstype';
 
-interface Props {
+interface Text {
+  /**
+   * Render Text another HTML tag, if you have `heading` or `body` property sets, it will override the rendered HTML tag.
+   */
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'span' | 'b' | 'strong' | 'p' | 'div' | 'label';
+  /**
+   * Render the Text as heading element between h1 to h6.
+   */
   heading?: '1' | '2' | '3' | '4' | '5' | '6' | number;
+  /**
+   * Render the Text as paragraph element with multiple sizes.
+   */
   body?: 'large' | 'medium' | 'small' | 'micro';
+  /**
+   * Set the Text CSS color.
+   */
   color?: CSS.Property.Color;
+  /**
+   * Set the Text CSS font-size.
+   */
   fontSize?: CSS.Property.FontSize;
+  /**
+   * Set the Text CSS font-style.
+   */
   fontStyle?: CSS.Property.FontStyle;
+  /**
+   * Set the Text CSS font-weight.
+   */
   fontWeight?: CSS.Property.FontWeight;
+  /**
+   * Set the Text CSS line-height.
+   */
   lineHeight?: CSS.Property.LineHeight;
+  /**
+   * Set the Text CSS text-align.
+   */
   textAlign?: CSS.Property.TextAlign;
+  /**
+   * Set the Text CSS text-decoration.
+   */
   textDecoration?: CSS.Property.TextDecoration;
+  /**
+   * Set the Text CSS text-transform.
+   */
   textTransform?: CSS.Property.TextTransform;
+  /**
+   * Truncate Text.
+   */
   truncate?: boolean;
+  /**
+   * Set the Text CSS margin.
+   */
   margin?: CSS.Property.Margin;
+  /**
+   * Set the Text CSS padding.
+   */
   padding?: CSS.Property.Padding;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Text>(), {
   truncate: false,
 });
 

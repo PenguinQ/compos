@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
-interface Props extends /* @vue-ignore */ InputHTMLAttributes {
+interface Radio extends /* @vue-ignore */ InputHTMLAttributes {
   class?: string;
   containerProps?: object;
   disabled?: boolean;
@@ -13,35 +13,35 @@ interface Props extends /* @vue-ignore */ InputHTMLAttributes {
   value?: string | number | boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Radio>(), {
   disabled: false,
-  full: false,
+  full    : false,
 });
 
-const container = ref<HTMLLabelElement>();
-const input = ref<HTMLInputElement>();
-const isChecked = computed(() => props.modelValue === props.value);
-const radioClass = computed(() => ({
+const containerRef = ref<HTMLLabelElement>();
+const inputRef     = ref<HTMLInputElement>();
+const isChecked    = computed(() => props.modelValue === props.value);
+const classes = computed(() => ({
   'cp-radio'      : true,
   'cp-radio--full': props.full,
 }));
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter') input.value?.click();
+  if (e.key === 'Enter') inputRef.value?.click();
 };
 </script>
 
 <template>
   <label
-    ref="container"
+    ref="containerRef"
     v-bind="containerProps"
-    :class="[radioClass, $props.class]"
+    :class="classes"
     :data-cp-disabled="disabled ? disabled : undefined"
     @keydown="handleKeydown"
   >
     <div class="cp-radio__container">
       <input
-        ref="input"
+        ref="inputRef"
         type="radio"
         v-bind="$attrs"
         :tabindex="tabindex"

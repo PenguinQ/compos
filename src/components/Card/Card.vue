@@ -9,7 +9,7 @@ import CardBody from './CardBody.vue';
 
 import { useScopeId } from '@/hooks';
 
-interface CardProps extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLinkProps, 'to'> {
+interface Card extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLinkProps, 'to'> {
   /**
    * Set the Card title.
    */
@@ -54,9 +54,9 @@ interface CardProps extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterL
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<CardProps>(), {
+const props = withDefaults(defineProps<Card>(), {
   clickable: false,
-  target: '_self',
+  target   : '_self',
 });
 
 const CardHeader   = defineAsyncComponent(() => import('./CardHeader.vue'));

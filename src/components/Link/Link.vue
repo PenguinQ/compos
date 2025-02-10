@@ -1,6 +1,3 @@
-<script lang="ts">
-export default { inheritAttrs: false };
-</script>
 <script setup lang="ts">
 import { computed, reactive } from 'vue';
 import { RouterLink } from 'vue-router';
@@ -8,13 +5,7 @@ import type { AnchorHTMLAttributes } from 'vue';
 import type { RouterLinkProps } from 'vue-router';
 import type * as CSS from 'csstype';
 
-/**
- * Vue only has limited Typescript support, that's why there's
- * @vue-ignore inline below to allow compiler ignore warning, see:
- *
- * https://github.com/vuejs/core/issues/8286
- */
-interface Props extends /* @vue-ignore */ AnchorHTMLAttributes, RouterLinkProps {
+interface Link extends /* @vue-ignore */ AnchorHTMLAttributes, RouterLinkProps {
   body?: 'large' | 'medium' | 'small' | 'micro';
   color?: CSS.Property.Color;
   fontSize?: CSS.Property.FontSize;
@@ -27,26 +18,29 @@ interface Props extends /* @vue-ignore */ AnchorHTMLAttributes, RouterLinkProps 
   textTransform?: CSS.Property.TextTransform;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(defineProps<Link>(), {
   target: '_self',
 });
+
 const isExternal = computed(() => typeof props.to === 'string' && props.to.startsWith('http'));
-const linkStyle = reactive({
-  color: props.color,
-  fontSize: props.fontSize,
-  fontStyle: props.fontStyle,
-  fontWeight: props.fontWeight,
-  lineHeight: props.lineHeight,
-  textAlign: props.textAlign,
+const styles = reactive({
+  color         : props.color,
+  fontSize      : props.fontSize,
+  fontStyle     : props.fontStyle,
+  fontWeight    : props.fontWeight,
+  lineHeight    : props.lineHeight,
+  textAlign     : props.textAlign,
   textDecoration: props.textDecoration,
-  textTransform: props.textTransform,
+  textTransform : props.textTransform,
 });
-const linkClass = computed(() => ({
-  'cp-link': true,
-  'cp-link--body-large': props.body === 'large',
+const classes = computed(() => ({
+  'cp-link'             : true,
+  'cp-link--body-large' : props.body === 'large',
   'cp-link--body-medium': props.body === 'medium',
-  'cp-link--body-small': props.body === 'small',
-  'cp-link--body-micro': props.body === 'micro',
+  'cp-link--body-small' : props.body === 'small',
+  'cp-link--body-micro' : props.body === 'micro',
 }));
 </script>
 
@@ -54,20 +48,20 @@ const linkClass = computed(() => ({
   <a
     v-if="isExternal"
     v-bind="$attrs"
-    :class="linkClass"
+    :class="classes"
     :href="(to as string)"
     :target="target"
-    :style="linkStyle"
+    :style="styles"
   >
     <slot />
   </a>
   <RouterLink v-else v-bind="$props" v-slot="{ href, navigate }" custom>
     <a
       v-bind="$attrs"
-      :class="linkClass"
+      :class="classes"
       :href="href"
       :target="target"
-      :style="linkStyle"
+      :style="styles"
       @click="navigate"
     >
       <slot />

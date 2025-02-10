@@ -4,7 +4,7 @@ import type { InputHTMLAttributes } from 'vue';
 
 import ComposIcon, { Plus, Dash } from '@/components/Icons';
 
-interface QuantityEditorProps extends /* @vue-ignore */ InputHTMLAttributes {
+interface QuantityEditor extends /* @vue-ignore */ InputHTMLAttributes {
   /**
    * Set the quantity editor into disabled state.
    */
@@ -55,46 +55,44 @@ interface QuantityEditorProps extends /* @vue-ignore */ InputHTMLAttributes {
   width?: number | string;
 }
 
-defineOptions({
-  inheritAttrs: false,
-});
+defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<QuantityEditorProps>(), {
+const props = withDefaults(defineProps<QuantityEditor>(), {
   disabled: false,
-  error: false,
-  min: 0,
-  small: false,
-  step: 1,
-  width: 2,
+  error   : false,
+  min     : 0,
+  small   : false,
+  step    : 1,
+  width   : 2,
 });
 
-const emit = defineEmits([
+const emits = defineEmits([
   'update:modelValue',
   'change',
   'clickDecrement',
   'clickIncrement',
 ]);
 
-let timeout: ReturnType<typeof setTimeout>;
-const input = ref<HTMLInputElement | null>(null);
-const quantityClass = computed(() => ({
-  'cp-form': true,
-  'cp-form-quantity': true,
+const inputRef = ref<HTMLInputElement | null>(null);
+const classes = computed(() => ({
+  'cp-form'                : true,
+  'cp-form-quantity'       : true,
   'cp-form-quantity--small': props.small,
 }));
+let timeout: ReturnType<typeof setTimeout>;
 
 const updateQuantity = (e: Event | undefined, increment: boolean = true) => {
   e?.preventDefault();
   clearTimeout(timeout);
 
-  const el = input.value;
+  const el = inputRef.value;
 
   increment ? el?.stepUp(props.step) : el?.stepDown(props.step);
 
   timeout = setTimeout(() => updateQuantity(e, increment), 200);
 
-  emit('update:modelValue', el?.value)
-  increment ? emit('clickIncrement', el?.value) : emit('clickDecrement', el?.value);
+  emits('update:modelValue', el?.value)
+  increment ? emits('clickIncrement', el?.value) : emits('clickDecrement', el?.value);
 };
 
 const stopQuantityUpdate = () => clearTimeout(timeout);
@@ -104,24 +102,24 @@ const handleKeyDown = (e: KeyboardEvent, increment: boolean = true) => {
 };
 
 const handleInput = (e: Event) => {
-  emit('update:modelValue', (e.target as HTMLInputElement).value);
+  emits('update:modelValue', (e.target as HTMLInputElement).value);
 };
 
 watch(
   () => props.modelValue,
   () => {
-    emit('change');
+    emits('change');
   },
 );
 </script>
 
 <template>
   <div
-    :class="quantityClass"
+    :class="classes"
     :data-cp-disabled="disabled ? disabled : undefined"
     :data-cp-error="error ? true : undefined"
   >
-    <label v-if="label || $slots['label']" v-bind="labelProps" class="cp-form-label">
+    <label v-if="label || $slots.label" v-bind="labelProps" class="cp-form-label">
       <slot name="label" />
       {{ label }}
     </label>
@@ -140,7 +138,7 @@ watch(
         <ComposIcon :icon="Dash" size="28" />
       </button>
       <input
-        ref="input"
+        ref="inputRef"
         v-bind="$attrs"
         type="number"
         inputmode="numeric"
@@ -166,7 +164,7 @@ watch(
         <ComposIcon :icon="Plus" size="28" />
       </button>
     </div>
-    <div class="cp-form-message" v-if="message || $slots['message']">
+    <div class="cp-form-message" v-if="message || $slots.message">
       <slot name="message" />
       {{ message }}
     </div>

@@ -3,7 +3,7 @@ type RadioGroup = {
   gap?: string | number;
   margin?: string | number;
   padding?: string | number;
-}
+};
 
 defineProps<RadioGroup>()
 </script>

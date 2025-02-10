@@ -1,22 +1,25 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-type Props = {
+type ButtonGroup = {
+  /**
+   * Set the ButtonGroup width to 100%.
+   */
   full?: boolean;
-}
+};
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<ButtonGroup>(), {
   full: false,
 });
 
-const groupClass = computed(() => ({
+const classes = computed(() => ({
   'cp-button-group'      : true,
   'cp-button-group--full': props.full,
 }));
 </script>
 
 <template>
-  <div :class="groupClass">
+  <div :class="classes">
     <slot />
   </div>
 </template>

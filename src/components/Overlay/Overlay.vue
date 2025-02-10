@@ -2,10 +2,9 @@
 import { computed, Teleport, Transition, onUnmounted } from 'vue';
 import type * as CSS from 'csstype';
 
-// Hooks
 import { useOverlayContainer } from '@/hooks';
 
-interface OverlayProps {
+interface Overlay {
   duration?: number;
   modelValue?: boolean;
   fullscreen?: boolean;
@@ -14,13 +13,13 @@ interface OverlayProps {
 
 defineOptions({ inheritAttrs: false });
 
-const props = withDefaults(defineProps<OverlayProps>(), {
-  duration: 300,
+const props = withDefaults(defineProps<Overlay>(), {
+  duration  : 300,
   modelValue: false,
   fullscreen: false,
 });
 
-const emit = defineEmits([
+const emits = defineEmits([
   'on-click-backdrop',
   'before-enter',
   'enter',
@@ -33,19 +32,19 @@ const emit = defineEmits([
 ]);
 
 const { overlayContainer } = useOverlayContainer();
-const overlay_class = computed(() => ({
-  'cp-overlay': true,
+const classes = computed(() => ({
+  'cp-overlay'            : true,
   'cp-overlay--fullscreen': props.fullscreen,
 }));
 
 const handleEnter = () => {
   document.body.style.overflow = 'hidden';
-  emit('enter');
+  emits('enter');
 };
 
 const handleLeave = () => {
   document.body.style.overflow = '';
-  emit('leave');
+  emits('leave');
 };
 
 onUnmounted(() => {
@@ -66,7 +65,7 @@ onUnmounted(() => {
       @after-leave="$emit('after-leave')"
       @leave-cancelled="$emit('leave-cancelled')"
     >
-      <div v-if="modelValue" v-bind="$attrs" :class="overlay_class">
+      <div v-if="modelValue" v-bind="$attrs" :class="classes">
         <div class="cp-overlay__wrapper" :style="{ padding }">
           <div class="cp-overlay__backdrop" @click="$emit('on-click-backdrop')" />
           <div class="cp-overlay__content">
@@ -79,8 +78,6 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss">
-$root: '.cp-overlay';
-
 .cp-overlay-container {
   contain: layout;
   display: contents;
@@ -128,7 +125,7 @@ $root: '.cp-overlay';
   &--fullscreen {
     overflow: hidden;
 
-    #{$root}__wrapper {
+    .cp-overlay__wrapper {
       height: 100%;
     }
   }

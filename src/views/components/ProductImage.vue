@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<ProductImage>(), {
 });
 
 const classes = computed(() => ({
-  'vc-product-image': true,
+  'vc-product-image'            : true,
   'vc-product-image--borderless': props.borderless,
 }));
 </script>

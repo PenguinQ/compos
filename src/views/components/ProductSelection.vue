@@ -30,11 +30,12 @@ type ProductSelection = {
 };
 
 const props = withDefaults(defineProps<ProductSelection>(), {
-  display: false,
-  images: () => [],
+  display : false,
+  images  : () => [],
   selected: false,
-  small: false,
+  small   : false,
 });
+
 defineEmits([
   'inputQuantity',
   'changeQuantity',
@@ -43,9 +44,10 @@ defineEmits([
 ]);
 
 const QuantityEditor = defineAsyncComponent(() => import('@/components/QuantityEditor/QuantityEditor.vue'));
+
 const classes = computed(() => ({
-  'vc-product-selection': true,
-  'vc-product-selection--small': props.small,
+  'vc-product-selection'         : true,
+  'vc-product-selection--small'  : props.small,
   'vc-product-selection--display': props.display,
   'vc-product-selection--variant': props.variant,
 }));
@@ -53,7 +55,8 @@ const classes = computed(() => ({
 
 <template>
   <div
-    :class="classes" :data-selected="selected ? true : undefined"
+    :class="classes"
+    :data-selected="selected ? true : undefined"
     role="checkbox"
     :aria-checked="selected"
     tabindex="0"

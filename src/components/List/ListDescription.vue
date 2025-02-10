@@ -5,7 +5,7 @@ export type ListDescriptionAs = 'p' | 'div';
 
 type ListDescription = {
   /**
-   * Render the description as another HTML tag.
+   * Render the ListDescription as another HTML tag.
    */
   as?: ListDescriptionAs;
 };

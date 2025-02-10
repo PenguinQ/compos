@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { Slot } from 'vue';
 
-type TabPanelsProps = {
+type TabPanels = {
   modelValue: string | number;
 };
 
+type TabPanelsSlots = {
+  default?: Slot;
+};
+
 defineOptions({ name: 'TabPanels' });
-const props = defineProps<TabPanelsProps>();
+
+const props = defineProps<TabPanels>();
+
+defineSlots<TabPanelsSlots>();
 
 const active = computed(() => props.modelValue);
 </script>

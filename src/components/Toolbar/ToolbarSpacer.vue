@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type * as CSS from 'csstype';
 
-type ToolbarSpacerProps = {
+type ToolbarSpacer = {
   width?: CSS.Property.Width;
 };
 
-defineProps<ToolbarSpacerProps>();
+defineProps<ToolbarSpacer>();
 </script>
 
 <template>

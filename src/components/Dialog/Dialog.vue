@@ -8,19 +8,19 @@ import ComposIcon, { X } from '@/components/Icons';
 
 type Dialog = {
   /**
-   * Set the dialog height to take 100% of the screen, preferred using it for mobile view.
+   * Set the Dialog height to take 100% of the screen, preferred using it for mobile view.
    */
   fullscreen?: boolean;
   /**
-   * Hide the dialog header.
+   * Hide the Dialog header.
    */
   hideHeader?: boolean;
   /**
-   * Set the maximum width of the dialog.
+   * Set the maximum width of the Dialog.
    */
   maxWidth?: CSS.Property.MaxWidth;
   /**
-   * Set the minimum width of the dialog.
+   * Set the minimum width of the Dialog.
    */
   minWidth?: CSS.Property.MinWidth;
   modelValue?: boolean;
@@ -29,26 +29,28 @@ type Dialog = {
    */
   noClose?: boolean;
   /**
-   * Turn the dialog persistent, disabled closing when clicking the overlay.
+   * Turn the Dialog persistent, disabled closing when clicking the overlay.
    */
   persistent?: boolean;
   /**
-   * Set the dialog header title.
+   * Set the Dialog header title.
    */
   title?: string;
   /**
-   * Set the width of the dialog.
+   * Set the width of the Dialog.
    */
   width?: CSS.Property.Width;
 };
 
 defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(defineProps<Dialog>(), {
   fullscreen: false,
   hideHeader: false,
-  noClose: false,
+  noClose   : false,
   persistent: false,
 });
+
 const emits = defineEmits([
   'update:modelValue',
   'before-enter',

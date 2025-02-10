@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import ComposIcon from '@/components/Icons';
 
-type Props = {
+type BottomNavbarButton = {
   active?: boolean;
   icon?: string;
   title: string;
 };
 
-defineProps<Props>()
+defineProps<BottomNavbarButton>()
 </script>
 
 <template>

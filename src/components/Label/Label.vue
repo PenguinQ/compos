@@ -1,24 +1,30 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-interface Props {
+type Label = {
+  /**
+   * Set the Label color.
+   */
   color?: 'red' | 'green' | 'blue';
+  /**
+   * Set the Chip variant.
+   */
   variant?: 'outline';
 };
 
-const props = defineProps<Props>();
+const props = defineProps<Label>();
 
-const labelClass = computed(() => ({
-  'cp-label': true,
+const classes = computed(() => ({
+  'cp-label'         : true,
   'cp-label--outline': props.variant === 'outline',
-  'cp-label--red': props.color === 'red',
-  'cp-label--green': props.color === 'green',
-  'cp-label--blue': props.color === 'blue',
+  'cp-label--red'    : props.color === 'red',
+  'cp-label--green'  : props.color === 'green',
+  'cp-label--blue'   : props.color === 'blue',
 }));
 </script>
 
 <template>
-  <div :class="labelClass">
+  <div :class="classes">
     <slot />
   </div>
 </template>

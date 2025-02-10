@@ -3,39 +3,35 @@ import { computed } from 'vue';
 import type { ButtonHTMLAttributes } from 'vue';
 import type * as CSS from 'csstype';
 
-/**
- * @vue-ignore inline below to allow compiler ignore warning.
- * Reference: https://github.com/vuejs/core/issues/8286
- */
-interface Props extends /* @vue-ignore */ ButtonHTMLAttributes {
+interface Button extends /* @vue-ignore */ ButtonHTMLAttributes {
   /**
-   * Set the color of the button.
+   * Set the color of the Button.
    */
   color?: 'red' | 'green' | 'blue';
   /**
-   * Set the button width to 100%.
+   * Set the Button width to 100%.
    */
   full?: boolean;
   /**
-   * Set the button to icon mode that has 50% border radius.
+   * Set the Button to icon mode that has 50% border radius.
    */
   icon?: boolean;
   /**
-   * Set the button padding.
+   * Set the Button padding.
    */
   padding?: CSS.Property.Padding;
   /**
-   * Set the button variant.
+   * Set the Button variant.
    */
   variant?: 'outline' | 'text';
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Button>(), {
   full: false,
   icon: false,
 });
 
-const buttonClass = computed(() => ({
+const classes = computed(() => ({
   'cp-button'         : true,
   'cp-button--full'   : props.full,
   'cp-button--icon'   : props.icon,
@@ -48,7 +44,7 @@ const buttonClass = computed(() => ({
 </script>
 
 <template>
-  <button :class="buttonClass" type="button" :style="{ padding }">
+  <button :class="classes" type="button" :style="{ padding }">
     <slot />
   </button>
 </template>
