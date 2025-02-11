@@ -5,39 +5,39 @@ import type * as CSSType from 'csstype'
 
 interface Textarea extends /* @vue-ignore */ TextareaHTMLAttributes {
   /**
-   * Set additional properties for the textarea container.
+   * Set additional properties for the Textarea container.
    */
   containerProps?: object;
   /**
-   * Set the textarea into disabled state.
+   * Set the Textarea into disabled state.
    */
   disabled?: boolean;
   /**
-   * Set the textarea into error state.
+   * Set the Textarea into error state.
    */
   error?: boolean;
   /**
-   * Set the textarea label.
+   * Set the Textarea label.
    */
   label?: string;
   /**
-   * Set the textarea label additional properties.
+   * Set the Textarea label additional properties.
    */
   labelProps?: object;
   /**
-   * Set the textarea CSS margin.
+   * Set the Textarea CSS margin.
    */
   margin?: CSSType.Property.Margin;
   /**
-   * Set the maximum rows for textarea.
+   * Set the maximum rows for Textarea.
    */
   maxRows?: number;
   /**
-   * Set the message for the textarea.
+   * Set the message for the Textarea.
    */
   message?: string;
   /**
-   * Set the minimum rows for textarea.
+   * Set the minimum rows for Textarea.
    */
   minRows?: number;
   /**
@@ -45,15 +45,15 @@ interface Textarea extends /* @vue-ignore */ TextareaHTMLAttributes {
    */
   modelValue?: string | number;
   /**
-   * Set the textarea placeholder.
+   * Set the Textarea placeholder.
    */
   placeholder?: string;
   /**
-   * Set the textarea into success state.
+   * Set the Textarea into success state.
    */
   success?: boolean;
   /**
-   * Set the value for the textarea without using v-model two way data binding.
+   * Set the value for the Textarea without using v-model two way data binding.
    */
   value?: string | number;
 }

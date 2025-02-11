@@ -1,31 +1,38 @@
 import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
+import type { ComponentProps } from 'vue-component-type-helpers';
 
+import { Text } from '@components';
 import Radio from './Radio.vue';
 import RadioGroup from './RadioGroup.vue';
 
-const meta: Meta<typeof Radio> = {
+type RadioProps = ComponentProps<typeof Radio>;
+
+const meta: Meta<RadioProps> = {
   component: Radio,
+  subcomponents: { RadioGroup },
   argTypes: {
+    containerProps: {
+      control: 'object',
+    },
     disabled: {
-      type: 'boolean',
+      control: 'boolean',
     },
     full: {
-      type: 'boolean',
+      control: 'boolean',
     },
     label: {
-      type: 'string',
+      control: 'text',
     },
-    value: {
-      type: 'string',
+    modelValue: {
+      name: 'v-model',
+      control: 'text',
     },
     tabindex: {
-      type: 'string',
+      control: 'text',
     },
-    ['modelValue']: {
-      table: {
-        disable: true,
-      },
+    value: {
+      control: 'text',
     },
   },
   args: {
@@ -36,36 +43,86 @@ const meta: Meta<typeof Radio> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Radio>;
 
-export const Default: Story = {
+type Story = StoryObj<RadioProps>;
+
+export const Playground: Story = {
   render: (args) => ({
     components: { Radio },
     setup() {
-      return { args };
+      const handleClick = (e) => {
+        console.log(e.target);
+      };
+
+      return { args, handleClick };
     },
     template: `
-      <Radio v-bind="args" />
+      <Radio v-bind="args" @click="handleClick" />
+    `,
+  }),
+  args: {
+    label: 'Energy Regeneration Rate',
+  },
+};
+
+export const DocUsage = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { Radio, RadioGroup, Text },
+    setup() {
+      const value = ref('');
+
+      return { value };
+    },
+    template: `
+      <Text>Enter Simulated Universe: {{ value ? value : '-' }}</Text>
+      <Radio v-model="value" value="Yes" label="Yes" />
+      <br />
+      <Radio v-model="value" value="No" label="No" />
     `,
   }),
 };
 
-export const Multiple: Story = {
-  render: (args) => ({
-    components: { Radio, RadioGroup },
-    setup() {
-      const selected = ref('');
 
-      return { args, selected };
+export const DocSubComponents = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { Radio, RadioGroup, Text },
+    setup() {
+      const value = ref('');
+
+      return { value };
     },
     template: `
-      <div>Selected: {{ selected }}</div>
-      <RadioGroup>
-        <Radio v-model="selected" value="Kafka" label="Kafka" />
-        <Radio v-model="selected" value="Himeko" label="Himeko" />
-        <Radio v-model="selected" value="Natasha" label="Natasha" />
-        <Radio v-model="selected" value="Ruan Mei" label="Ruan Mei" />
+      <Text>Selected Character: {{ value ? value : '-' }}</Text>
+      <RadioGroup v-model="value">
+        <Radio value="Kafka" label="Kafka" />
+        <Radio value="Himeko" label="Himeko" />
+        <Radio value="Natasha" label="Natasha" />
+        <Radio value="Ruan Mei" label="Ruan Mei" />
       </RadioGroup>
+    `,
+  }),
+};
+
+export const DocNonTWDB = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { Radio, RadioGroup, Text },
+    setup() {
+      const radioValue = ref('');
+
+      const handleClick = (e: Event) => {
+        radioValue.value = (e.target as HTMLInputElement).value;
+      };
+
+      return { radioValue, handleClick };
+    },
+    template: `
+      <Text>Enter Simulated Universe: {{ radioValue ? radioValue : '-' }}</Text>
+      <Radio name="radio1" value="Yes" label="Yes" @click="handleClick" />
+      <br />
+      <Radio name="radio1" value="No" label="No" @click="handleClick" />
     `,
   }),
 };

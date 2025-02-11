@@ -1,0 +1,37 @@
+import { Canvas, Source, Meta, ArgTypes } from '@storybook/blocks';
+
+import * as TickerStories from './Ticker.stories';
+import Ticker from './Ticker.vue';
+
+<Meta title="Components/Ticker" of={TickerStories} />
+
+# Ticker
+Ticker is a component show messages in a form of highlighted section.
+
+## Usage
+To start using **Ticker**, see the example below:
+
+<Canvas of={TickerStories.DocUsage} />
+
+## Props
+<ArgTypes of={Ticker} />
+
+## Subcomponents
+**Ticker** has subcomponents that can be used to create ticker item manually for better control, they are:
+
+1. TickerItem
+
+To use it, see the example below:
+
+<Canvas of={TickerStories.DocSubcomponents} />
+
+## Examples
+### Custom Layouting Using Provided Slot
+If you wanted to customize the content even further, you can use slots that provided by **ListItem**, they are:
+
+1. `title`
+2. `description`
+
+See the example below:
+
+<Canvas of={TickerStories.DocSlots} />
