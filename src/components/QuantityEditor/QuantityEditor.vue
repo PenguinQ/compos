@@ -67,9 +67,21 @@ const props = withDefaults(defineProps<QuantityEditor>(), {
 });
 
 const emits = defineEmits([
+  /**
+   * Callback for v-model two-way data binding, **used internally**, Storybook shows by default.
+   */
   'update:modelValue',
+  /**
+   * Callback when the input value changes, return event.
+   */
   'change',
+  /**
+   * Callback when - button is clicked, return value of the input with the type of **string**.
+   */
   'clickDecrement',
+  /**
+   * Callback when + button is clicked, return value of the input with the type of **string**.
+   */
   'clickIncrement',
 ]);
 
