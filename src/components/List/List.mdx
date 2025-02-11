@@ -1,0 +1,70 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+
+import * as ListStories from './List.stories';
+import List from './List.vue';
+import ListItem from './ListItem.vue';
+import ListTitle from './ListTitle.vue';
+import ListDescription from './ListDescription.vue';
+
+<Meta title="Components/List" of={ListStories} />
+
+# List
+List is a list of a list of a... huh? 🤨
+
+## Usage
+To start using **List**, see the example below:
+
+<Canvas of={ListStories.DocUsage} />
+
+## Props
+<ArgTypes of={List} />
+
+## Subcomponents
+**List** have subcomponents that handle layouting of the **List** if you wanted set the layout by yourself, they are:
+
+1. ListItem
+2. ListTitle
+3. ListDescription
+
+To use it, see the example below:
+
+<Canvas of={ListStories.DocSubcomponent} />
+
+### ListItem Props
+<ArgTypes of={ListItem} />
+
+### ListTitle Props
+<ArgTypes of={ListTitle} />
+
+### ListDescription Props
+<ArgTypes of={ListDescription} />
+
+## Examples
+### Append or Prepending Text or Element
+You can append or prepend either text or element using:
+
+1. `prepend` prop
+2. `append` prop
+3. `prepend` slot
+4. `append` slot
+
+See the example below:
+
+<Canvas of={ListStories.DocAppendPrepend} />
+
+You can have list items with a **Checkbox** or **Select** to do some action, see the example below:
+
+### ListItem as Clickable
+You can set list item as a clickable element using the `clickable` prop, see the example below:
+
+<Canvas of={ListStories.DocClickable} />
+
+### ListItem as Checkbox
+You can set list item as a **Checkbox** using the `prepend` or `append` slot, see the example below:
+
+<Canvas of={ListStories.DocCheckbox} />
+
+### ListItem as Select
+You can set list item as a **Select** using the `prepend` or `append` slot, see the example below:
+
+<Canvas of={ListStories.DocSelect} />

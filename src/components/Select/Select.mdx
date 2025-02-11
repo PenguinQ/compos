@@ -1,0 +1,27 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+
+import * as SelectStories from './Select.stories';
+import Select from './Select.vue';
+
+<Meta title="Components/Select" of={SelectStories} />
+
+# Select
+Select is, a type of input that allows you select from multiple options. 🤯
+
+## Usage
+To start using **Textfield**, see the example below:
+
+<Canvas of={SelectStories.DocUsage} />
+
+## Props
+<ArgTypes of={Select} />
+
+## Examples
+### Pass Options as Object
+
+<Canvas of={SelectStories.DocObject} />
+
+### Non Two-Way Data Binding
+You can also use **Select** without using v-model two-way data binding using `@change`, see the example below:
+
+<Canvas of={SelectStories.DocNonTWDB} />
