@@ -1,74 +1,61 @@
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 import type { ComponentProps } from 'vue-component-type-helpers';
-
-import { onlyShowArgs } from '@story/helpers';
 
 import { Text } from '@components';
 import Textarea from './Textarea.vue';
 
 type TextareaProps = ComponentProps<typeof Textarea>;
 
-const defaultArgs: any = {
-  containerProps: {
-    control: 'object',
-  },
-  disabled: {
-    control: 'boolean',
-  },
-  error: {
-    control: 'boolean',
-  },
-  label: {
-    control: 'text',
-  },
-  labelProps: {
-    control: 'object',
-  },
-  margin: {
-    control: 'text',
-  },
-  maxRows: {
-    control: 'number',
-  },
-  message: {
-    control: 'text',
-  },
-  minRows: {
-    control: 'number',
-  },
-  placeholder: {
-    control: 'text',
-  },
-  success: {
-    control: 'boolean',
-  },
-  value: {
-    control: 'text',
-  },
-  modelValue: {
-    name: 'v-model',
-    control: 'text',
-  },
-};
-
 const meta: Meta<TextareaProps> = {
   component: Textarea,
-  argTypes: defaultArgs,
+  argTypes: {
+    containerProps: {
+      control: 'object',
+    },
+    disabled: {
+      control: 'boolean',
+    },
+    error: {
+      control: 'boolean',
+    },
+    label: {
+      control: 'text',
+    },
+    labelProps: {
+      control: 'object',
+    },
+    margin: {
+      control: 'text',
+    },
+    maxRows: {
+      control: 'number',
+    },
+    message: {
+      control: 'text',
+    },
+    minRows: {
+      control: 'number',
+    },
+    placeholder: {
+      control: 'text',
+    },
+    success: {
+      control: 'boolean',
+    },
+    value: {
+      control: 'text',
+    },
+    modelValue: {
+      name: 'v-model',
+      control: 'text',
+    },
+  },
   args: {
-    containerProps: undefined,
-    disabled: undefined,
-    error: undefined,
-    label: '',
-    labelProps: undefined,
-    margin: '',
-    maxRows: undefined,
-    message: '',
-    minRows: undefined,
-    placeholder: '',
-    modelValue: '',
-    success: undefined,
-    value: '',
+    disabled: false,
+    error: false,
+    success: false,
+    minRows: 4,
   },
 };
 
@@ -86,54 +73,38 @@ export const Playground: Story = {
   }),
 };
 
-export const UsingVModel: Story = {
-  name: 'Using v-model (two-way data binding)',
-  render: (args) => ({
+export const DocUsage = {
+  tags: ['!dev'],
+  render: () => ({
     components: { Text, Textarea },
     setup() {
-      const textareaValue = ref(args.modelValue);
+      const value = ref('');
 
-      watch(
-        () => args.modelValue,
-        (newValue) => {
-          textareaValue.value = newValue;
-        },
-      );
-
-      return { textareaValue };
+      return { value };
     },
     template: `
-      <Text>v-model value: {{ textareaValue ? textareaValue : '-' }}</Text>
-      <Textarea v-model="textareaValue" />
+      <Text>Textarea value: {{ value ? value : '-' }}</Text>
+      <Textarea v-model="value" />
     `,
   }),
-  argTypes: onlyShowArgs(defaultArgs, ['modelValue']),
 };
 
-export const UsingValue: Story = {
-  name: 'Using value (non two-way data binding)',
-  render: (args) => ({
+export const DocNonTWDB = {
+  tags: ['!dev'],
+  render: () => ({
     components: { Text, Textarea },
     setup() {
-      const textareaValue = ref(args.value);
-
-      watch(
-        () => args.value,
-        (newValue) => {
-          textareaValue.value = newValue;
-        },
-      );
+      const value = ref('');
 
       const handleInput = (e: Event) => {
-        textareaValue.value = (e.target as HTMLInputElement).value;
+        value.value = (e.target as HTMLInputElement).value;
       };
 
-      return { textareaValue, handleInput }
+      return { value, handleInput };
     },
     template: `
-      <Text>Inputted value: {{ textareaValue ? textareaValue : '-' }}</Text>
-      <Textarea :value="textareaValue" @input="handleInput" />
+      <Text>Textarea value: {{ value ? value : '-' }}</Text>
+      <Textarea @input="handleInput" />
     `,
   }),
-  argTypes: onlyShowArgs(defaultArgs, ['value']),
 };
