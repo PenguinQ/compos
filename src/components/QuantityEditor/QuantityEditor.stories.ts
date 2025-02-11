@@ -1,13 +1,19 @@
 import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
+import type { ComponentProps } from 'vue-component-type-helpers';
 
 import { Text } from '@components';
 import QuantityEditor from './QuantityEditor.vue';
 
-const meta: Meta<typeof QuantityEditor> = {
+type QuantityEditorProps = ComponentProps<typeof QuantityEditor>;
+
+const meta: Meta<QuantityEditorProps> = {
   component: QuantityEditor,
   argTypes: {
     disabled: {
+      control: 'boolean',
+    },
+    error: {
       control: 'boolean',
     },
     label: {
@@ -16,8 +22,30 @@ const meta: Meta<typeof QuantityEditor> = {
     labelProps: {
       control: 'object',
     },
+    max: {
+      control: 'number',
+    },
+    min: {
+      control: 'number',
+    },
     message: {
       control: 'text',
+    },
+    modelValue: {
+      name: 'v-model',
+      control: 'text',
+    },
+    small: {
+      control: 'boolean',
+    },
+    step: {
+      control: 'number',
+    },
+    value: {
+      control: 'text',
+    },
+    width: {
+      control: 'number',
     },
   },
   args: {
@@ -32,7 +60,7 @@ const meta: Meta<typeof QuantityEditor> = {
 
 export default meta;
 
-type Story = StoryObj<typeof QuantityEditor>;
+type Story = StoryObj<QuantityEditorProps>;
 
 export const Playground: Story = {
   render: (args) => ({

@@ -1,0 +1,34 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+
+import * as RadioStories from './Radio.stories';
+import Radio from './Radio.vue';
+import RadioGroup from './RadioGroup.vue';
+
+<Meta title="Components/Radio" of={RadioStories} />
+
+# Radio 📻
+Radio is the technology of communicating using radio waves... No, I mean it's a input radio... 😅
+
+## Usage
+To start using **Radio**, see the example below:
+
+<Canvas of={RadioStories.DocUsage} />
+
+## Props
+<ArgTypes of={Radio} />
+
+## Subcomponents
+**Radio** has subcomponent that handle grouping, state management of a group of radio, and keyboard navigation. They are:
+
+1. RadioGroup
+
+To use it, see the example below:
+
+<Canvas of={RadioStories.DocSubComponents} />
+
+## Examples
+### Non Two-way Data Binding
+The recommended way to use **Radio** is using Vue two-way data binding (v-model). But, you can also go the other route
+using `value` and `@click`, see the example below:
+
+<Canvas of={RadioStories.DocNonTWDB} />

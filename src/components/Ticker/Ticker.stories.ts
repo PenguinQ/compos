@@ -1,12 +1,15 @@
-import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
+import type { ComponentProps } from 'vue-component-type-helpers';
 
-import { Card, Text } from '@components';
+import { Text } from '@components';
 import Ticker from './Ticker.vue';
 import TickerItem from './TickerItem.vue';
 
-const meta: Meta<typeof Ticker> = {
+type TickerProps = ComponentProps<typeof Ticker>;
+
+const meta: Meta<TickerProps> = {
   component: Ticker,
+  subcomponents: { TickerItem },
   argTypes: {
     activeIndex: {
       control: 'number',
@@ -16,6 +19,12 @@ const meta: Meta<typeof Ticker> = {
     },
     autoplayDuration: {
       control: 'number',
+    },
+    items: {
+      control: 'object',
+    },
+    margin: {
+      control: 'text',
     },
   },
   args: {
@@ -27,27 +36,16 @@ const meta: Meta<typeof Ticker> = {
 
 export default meta;
 
-type Story = StoryObj<typeof Ticker>;
+type Story = StoryObj<TickerProps>;
 
-export const Items: Story = {
+export const Playground: Story = {
   render: (args) => ({
-    components: { Ticker, TickerItem, Card, Text },
+    components: { Ticker },
     setup() {
-      const index = ref(0);
-      const autoplay = ref(false);
-      const autoplay_duration = ref(2000);
-
-      return { args, index, autoplay, autoplay_duration };
+      return { args };
     },
-    template: `
-      <Ticker v-bind="args" />
-    `,
+    template: `<Ticker v-bind="args" />`,
   }),
-  argTypes: {
-    items: {
-      control: 'object',
-    },
-  },
   args: {
     items: [
       {
@@ -73,11 +71,16 @@ export const Items: Story = {
   },
 };
 
-export const DefaultSlot: Story = {
-  render: (args) => ({
-    components: { Ticker, TickerItem, Card, Text },
+export const DocUsage = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { Ticker },
     setup() {
-      const slotObject = ref([
+      const items = [
+        {
+          title: 'Default Ticker',
+          description: 'Description for default ticker.',
+        },
         {
           title: 'Info Ticker',
           description: 'Description for info ticker.',
@@ -93,86 +96,78 @@ export const DefaultSlot: Story = {
           description: 'Description for error ticker.',
           type: 'error',
         },
-      ]);
+      ];
 
-      const addTicker = () => {
-        slotObject.value.push({
-          title: 'Dynamic Error Ticker',
-          description: 'Description for dynamic error ticker.',
-          type: 'error',
-        });
-      };
-
-      const tickerState = ref(false);
-
-      const toggleTicker = () => {
-        tickerState.value = !tickerState.value;
-      };
-
-      return { args, slotObject, addTicker, tickerState, toggleTicker };
+      return { items };
     },
     template: `
-      <Ticker v-bind="args">
-        <TickerItem title="Default Ticker" description="Description for default ticker" />
-        <TickerItem title="Info Ticker" description="Description for info ticker" type="info" />
-        <TickerItem title="Warning Ticker" description="Description for warning ticker" type="warning" />
-        <TickerItem title="Error Ticker" description="Description for error ticker" type="error" />
-      </Ticker>
+      <Ticker :items="items" />
     `,
   }),
 };
 
-DefaultSlot.storyName = 'Default Slot';
-
-export const DefaultSlotLoop: Story = {
-  render: (args) => ({
-    components: { Ticker, TickerItem, Card, Text },
+export const DocSubcomponents = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { Ticker, TickerItem },
     setup() {
-      return { args };
+      const items = [
+        {
+          title: 'Default Ticker',
+          description: 'Description for default ticker.',
+        },
+        {
+          title: 'Info Ticker',
+          description: 'Description for info ticker.',
+          type: 'info',
+        },
+        {
+          title: 'Warning Ticker',
+          description: 'Description for warning ticker.',
+          type: 'warning',
+        },
+        {
+          title: 'Error Ticker',
+          description: 'Description for error ticker.',
+          type: 'error',
+        },
+      ];
+
+      return { items };
     },
     template: `
-      <Ticker
-        :autoplay="args.autoplay"
-        :autoplayDuration="args.autoplayDuration"
-        :activeIndex="args.activeIndex"
-      >
+      <Ticker>
         <TickerItem
-          v-for="item in args.items"
+          :key="index"
+          v-for="(item, index) in items"
           :title="item.title"
-          :description="item.title"
-          :type="item.type"
+          :description="item.description"
         />
       </Ticker>
     `,
   }),
-  argTypes: {
-    items: {
-      control: 'object',
-    },
-  },
-  args: {
-    items: [
-      {
-        title: 'Default Ticker',
-        description: 'Description for default ticker.',
-      },
-      {
-        title: 'Info Ticker',
-        description: 'Description for info ticker.',
-        type: 'info',
-      },
-      {
-        title: 'Warning Ticker',
-        description: 'Description for warning ticker.',
-        type: 'warning',
-      },
-      {
-        title: 'Error Ticker',
-        description: 'Description for error ticker.',
-        type: 'error',
-      },
-    ],
-  },
 };
 
-DefaultSlotLoop.storyName = 'Default Slot (Looping)';
+export const DocSlots = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { Text, Ticker, TickerItem },
+    setup() {
+      return {};
+    },
+    template: `
+      <Ticker>
+        <TickerItem type="error">
+          <template #title>
+            <Text heading="1" color="var(--color-blue-4)" fontWeight="600">Warning!!!</Text>
+          </template>
+          <template #description>
+            <Text color="var(--color-red-4" margin="0">
+              The unique plants grown here have not undergone a comprehensive safety test. Any unauthorized contact might lead to unthinkable consequences!
+            </Text>
+          </template>
+        </TickerItem>
+      </Ticker>
+    `,
+  }),
+};
