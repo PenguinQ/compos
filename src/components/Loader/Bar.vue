@@ -2,10 +2,25 @@
 import type * as CSS from 'csstype';
 
 type Bar = {
+  /**
+   * Set the color of the Bar.
+   */
   color?: CSS.Property.BackgroundColor;
+  /**
+   * Set the Bar **container** CSS height.
+   */
   height?: CSS.Property.Height;
+  /**
+   * Set the Bar **container** CSS margin.
+   */
   margin?: CSS.Property.Margin;
+  /**
+   * Set the Bar size.
+   */
   size?: CSS.Property.Width | CSS.Property.Height;
+  /**
+   * Set the Bar **container** CSS width.
+   */
   width?: CSS.Property.Width;
 };
 

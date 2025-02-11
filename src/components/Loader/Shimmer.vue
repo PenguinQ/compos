@@ -3,11 +3,29 @@ import { computed, reactive } from 'vue';
 import type * as CSS from 'csstype';
 
 type Shimmer = {
+  /**
+   * Toggle Shimmer animation.
+   */
   animate?: boolean;
+  /**
+   * Set the Shimmer as block level element.
+   */
   block?: boolean;
+  /**
+   * Set the Shimmer CSS width.
+   */
   width?: CSS.Property.Width;
+  /**
+   * Set the Shimmer CSS height.
+   */
   height?: CSS.Property.Height;
+  /**
+   * Set the Shimmer CSS border-radius.
+   */
   radius?: CSS.Property.BorderRadius;
+  /**
+   * Set the Shimmer CSS width.
+   */
   margin?: CSS.Property.Margin;
 }
 

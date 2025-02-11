@@ -13,35 +13,35 @@ type SelectOptions = Omit<OptionHTMLAttributes, 'selected'> & {
 
 type Select = {
   /**
-   * Set additional properties for the select container.
+   * Set additional properties for the Select container.
    */
   containerProps?: object;
   /**
-   * Set the select into disabled state.
+   * Set the Select into disabled state.
    */
   disabled?: boolean;
   /**
-   * Set the select into error state.
+   * Set the Select into error state.
    */
   error?: boolean;
   /**
-   * Set the select label.
+   * Set the Select label.
    */
   label?: string;
   /**
-   * Set the select label additional properties.
+   * Set the Select label additional properties.
    */
   labelProps?: object;
   /**
-   * Set the select CSS margin.
+   * Set the Select CSS margin.
    */
   margin?: CSS.Property.Margin;
   /**
-   * Set the select message.
+   * Set the Select message.
    */
   message?: string;
   /**
-   * Set the select options in object way.
+   * Set the Select options in object way.
    */
   options?: SelectOptions[],
   /**
@@ -49,15 +49,15 @@ type Select = {
    */
   modelValue?: string | number;
   /**
-   * Set the select into success state.
+   * Set the Select into success state.
    */
   success?: boolean;
   /**
-   * Set the value for the select without using v-model two way data binding.
+   * Set the value for the Select without using v-model two way data binding.
    */
   value?: string | number;
   /**
-   * Set the select into list mode, to be used inside `ListItem`.
+   * Set the Select into list mode, to be used inside `ListItem`.
    */
   mode?: 'list';
 };
