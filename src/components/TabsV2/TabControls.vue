@@ -27,7 +27,7 @@ const emits = defineEmits(['update:modelValue']);
 
 defineSlots<TabControlsSlots>();
 
-const scope_id     = useScopeId();
+const scopeId      = useScopeId();
 const containerRef = ref<HTMLDivElement | null>(null);
 const scrollerRef  = ref<HTMLDivElement | null>(null);
 const active       = ref(props.modelValue ? props.modelValue : 0);
@@ -73,7 +73,7 @@ onMounted(() => {
 
 <template>
   <div v-if="$slots.default" ref="containerRef" :class="classes">
-    <div :[`${scope_id}`]="''" ref="scrollerRef" class="cp-tab-controls-container">
+    <div v-bind="{ ...{ [scopeId || '']: '' } }" ref="scrollerRef" class="cp-tab-controls-container">
       <component
         v-for="(tab, index) in $slots.default()"
         :is="tab"
