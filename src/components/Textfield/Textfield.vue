@@ -7,35 +7,35 @@ import ComposIcon, { Eye, EyeSlash } from '@/components/Icons';
 
 interface Textfield extends /* @vue-ignore */ InputHTMLAttributes {
   /**
-   * Append text to the textfield.
+   * Append text to the Textfield.
    */
   append?: string;
   /**
-   * Set additional properties for the textfield container.
+   * Set additional properties for the Textfield container.
    */
   containerProps?: object;
   /**
-   * Set the textfield into disabled state.
+   * Set the Textfield into disabled state.
    */
   disabled?: boolean;
   /**
-   * Set the textfield into disabled state.
+   * Set the Textfield into disabled state.
    */
   error?: boolean;
   /**
-   * Set the textfield label.
+   * Set the Textfield label.
    */
   label?: string;
   /**
-   * Set the textfield label additional properties.
+   * Set the Textfield label additional properties.
    */
   labelProps?: object;
   /**
-   * Set the textfield CSS margin.
+   * Set the Textfield CSS margin.
    */
   margin?: CSS.Property.Margin;
   /**
-   * Set the message for the textfield.
+   * Set the message for the Textfield.
    */
   message?: string;
   /**
@@ -44,23 +44,23 @@ interface Textfield extends /* @vue-ignore */ InputHTMLAttributes {
   modelValue?: string | number;
   modelModifiers?: object;
   /**
-   * Set the textarea placeholder.
+   * Set the Textfield placeholder.
    */
   placeholder?: string;
   /**
-   * Prepend text to the textfield.
+   * Prepend text to the Textfield.
    */
   prepend?: string;
   /**
-   * Set the textfield into disabled state.
+   * Set the Textfield into disabled state.
    */
   success?: boolean;
   /**
-   * Set the textfield input type.
+   * Set the Textfield input type.
    */
   type?: 'email' | 'number' | 'password' | 'tel' | 'text';
   /**
-   * Set the value for the textfield without using v-model two way data binding.
+   * Set the value for the Textfield without using v-model two way data binding.
    */
   value?: string | number;
 }
@@ -163,7 +163,7 @@ defineExpose<TextfieldExpose>({ input: inputRef });
       />
       <div v-if="append || $slots.append || isPassword" class="cp-form-affix">
         <button
-          class="cp-form--textfield__password-toggle"
+          class="cp-form-textfield__password-toggle"
           v-if="isPassword"
           type="button"
           @click="togglePassword"

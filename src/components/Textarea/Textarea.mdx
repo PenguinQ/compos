@@ -1,0 +1,59 @@
+import { Canvas, Meta, ArgTypes, Story, Markdown, Unstyled } from '@storybook/blocks';
+
+import * as TextareaStories from './Textarea.stories';
+import Textarea from './Textarea.vue';
+
+<Meta title="Components/Textarea" component={Textarea} />
+
+# Textarea
+Textarea is just a multiline Textfield, yeah.
+
+## Usage
+To start using **Textarea**, see the example below:
+
+<div className="demo-block">
+  <Story of={TextareaStories.DocUsage} />
+
+  ```tsx
+  <script setup lang="ts">
+    import { ref } from 'vue';
+    import { Text, Textarea } from '@/components';
+
+    const value = ref('');
+  </script>
+
+  <template>
+    <Text>Textarea value: {{ value ? value : '-' }}</Text>
+    <Textarea v-model="value" />
+  </template>
+  ```
+</div>
+
+## Props
+<ArgTypes of={Textarea} />
+
+## Examples
+### Non Two-Way Data Binding
+You can also use **Textarea** without using v-model two-way data binding using `@input`, see the example below:
+
+<div className="demo-block">
+  <Story of={TextareaStories.DocNonTWDB} />
+
+  ```tsx
+  <script setup lang="ts">
+    import { ref } from 'vue';
+    import { Text, Textarea } from '@/components';
+
+    const value = ref('');
+
+    const handleInput = (e: Event) => {
+      value.value = (e.target as HTMLInputElement).value;
+    };
+  </script>
+
+  <template>
+    <Text>Textarea value: {{ value ? value : '-' }}</Text>
+    <Textarea @input="handleInput" />
+  </template>
+  ```
+</div>
