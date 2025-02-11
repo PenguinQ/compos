@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import type { Ref } from 'vue';
-import type { ToastItemProps } from '../ToastItem.vue';
+import type { ToastItem as ToastItemProps } from '../ToastItem.vue';
 
 type ToastItem = Omit<ToastItemProps, 'modelValue'>;
 
