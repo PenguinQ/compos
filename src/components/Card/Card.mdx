@@ -1,0 +1,140 @@
+import { Canvas, Meta, ArgTypes, Story, Markdown, Unstyled } from '@storybook/blocks';
+
+import * as CardStories from './Card.stories';
+import Card from './Card.vue';
+import CardHeader from './CardHeader.vue';
+import CardTitle from './CardTitle.vue';
+import CardSubtitle from './CardSubtitle.vue';
+import CardBody from './CardBody.vue';
+
+<Meta title="Components/Card" />
+
+# Card
+You wanted some **Card** huh?
+
+## Usage
+To start using **Card**, see the example below:
+
+<div className="demo-block">
+  <Story of={CardStories.DocUsage} />
+
+  ```tsx
+  <script setup lang="ts">
+    import { Card } from '@/components';
+  </script>
+
+  <template>
+    <Card
+      title="Penacony"
+      subtitle="Planet of Festivities"
+      content='A colossal structure located in the Asdana system, with the soaring hotel "The Reverie" as its iconic landmark. Once a frontier prison belonging to the IPC, The Family had modeled it to serve as an interstellar transportation hub and the gateway to the Sweetdream Paradise.'
+    />
+  </template>
+  ```
+</div>
+
+## Props
+<ArgTypes of={Card} />
+
+## Subcomponents
+**Card** has subcomponents that handle layouting of the **Card** if you wanted set the layout by yourself, they are:
+
+1. CardHeader
+2. CardTitle
+3. CardSubtitle
+4. CardBody
+
+To use it, see the example below:
+
+<div className="demo-block">
+  <Story of={CardStories.DocSubcomponent} />
+
+  ```tsx
+  <script setup lang="ts">
+    import {
+      Card,
+      CardHeader,
+      CardTitle,
+      CardSubtitle,
+      CardBody,
+    } from '@/components';
+  </script>
+
+  <template>
+    <Card>
+      <CardHeader>
+        <CardTitle>Penacony</CardTitle>
+        <CardSubtitle>Planet of Festivities</CardSubtitle>
+      </CardHeader>
+      <CardBody>
+        A colossal <a href="#">structure</a> located in the Asdana system, with the soaring hotel "The Reverie" as its iconic landmark. Once a frontier prison belonging to the IPC, The Family had modeled it to serve as an interstellar transportation hub and the gateway to the Sweetdream Paradise.
+      </CardBody>
+    </Card>
+  </template>
+  ```
+</div>
+
+## Examples
+### Clickable Card
+You can also set the **Card** to have click effect by using `clickable` prop, see the example below:
+
+<div className="demo-block">
+  <Story of={CardStories.DocClickable} />
+
+  ```tsx
+  <script setup lang="ts">
+    import {
+      Card,
+      CardHeader,
+      CardTitle,
+      CardSubtitle,
+      CardBody,
+    } from '@/components';
+
+    const handleClick = () => {
+      alert('Clickable Card!');
+    };
+  </script>
+
+  <template>
+    <Card
+      title="Penacony"
+      subtitle="Planet of Festivities"
+      content='A colossal structure located in the Asdana system, with the soaring hotel "The Reverie" as its iconic landmark. Once a frontier prison belonging to the IPC, The Family had modeled it to serve as an interstellar transportation hub and the gateway to the Sweetdream Paradise.'
+      clickable
+      @click="handleClick"
+    />
+  </template>
+  ```
+</div>
+
+### Card as a Link
+You can also set the **Card** as a internal route/external link, see the example below:
+
+> When act as link, **Card** will have clickable effect on it.
+
+<div className="demo-block">
+  <Story of={CardStories.DocLink} />
+
+  ```tsx
+  <script setup lang="ts">
+    import {
+      Card,
+      CardHeader,
+      CardTitle,
+      CardSubtitle,
+      CardBody,
+    } from '@/components';
+  </script>
+
+  <template>
+    <Card
+      title="Penacony"
+      subtitle="Planet of Festivities"
+      content='A colossal structure located in the Asdana system, with the soaring hotel "The Reverie" as its iconic landmark. Once a frontier prison belonging to the IPC, The Family had modeled it to serve as an interstellar transportation hub and the gateway to the Sweetdream Paradise.'
+      to="https://honkai-star-rail.fandom.com/wiki/Penacony"
+      target="_blank"
+    />
+  </template>
+  ```
+</div>

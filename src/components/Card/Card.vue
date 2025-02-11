@@ -63,7 +63,7 @@ const CardHeader   = defineAsyncComponent(() => import('./CardHeader.vue'));
 const CardTitle    = defineAsyncComponent(() => import('./CardTitle.vue'));
 const CardSubtitle = defineAsyncComponent(() => import('./CardSubtitle.vue'));
 
-const scope_id   = useScopeId();
+const scopeId    = useScopeId();
 const isExternal = computed(() => typeof props.to === 'string' && props.to.startsWith('http'));
 const classes    = computed(() => ({
   'cp-card'           : true,
@@ -78,13 +78,12 @@ const classes    = computed(() => ({
   <template v-if="to">
     <a
       v-if="isExternal"
-      v-bind="$attrs"
+      v-bind="{ ...$attrs, ...{ [scopeId || '']: '' } }"
       :class="classes"
       :href="(to as string)"
       :target="target"
       :style="{ padding, margin, borderRadius: radius }"
       rel="noopener"
-      :[`${scope_id}`]="''"
     >
       <slot v-if="$slots.default" />
       <template v-else>
@@ -98,13 +97,12 @@ const classes    = computed(() => ({
     <!-- @vue-ignore -->
     <RouterLink v-else v-bind="$props" v-slot="{ href, navigate }" custom>
       <a
-        v-bind="$attrs"
+        v-bind="{ ...$attrs, ...{ [scopeId || '']: '' } }"
         :class="classes"
         :href="href"
         :target="target"
         :style="{ padding, margin, borderRadius: radius }"
         rel="noopener"
-        :[`${scope_id}`]="''"
         @click="navigate"
       >
       <slot v-if="$slots.default" />
@@ -120,10 +118,9 @@ const classes    = computed(() => ({
   </template>
   <div
     v-else
-    v-bind="$attrs"
+    v-bind="{ ...$attrs, ...{ [scopeId || '']: '' } }"
     :class="classes"
     :style="{ padding, margin, borderRadius: radius }"
-    :[`${scope_id}`]="''"
   >
     <slot v-if="$slots.default" />
     <template v-else>

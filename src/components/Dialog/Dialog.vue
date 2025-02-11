@@ -63,9 +63,9 @@ const emits = defineEmits([
   'leave-cancelled',
 ]);
 
-const scope_id = useScopeId();
-const show     = ref(props.modelValue !== undefined ? props.modelValue : false);
-const classes  = computed(() => ({
+const scopeId = useScopeId();
+const show    = ref(props.modelValue !== undefined ? props.modelValue : false);
+const classes = computed(() => ({
   'cp-dialog'            : true,
   'cp-dialog--fullscreen': props.fullscreen,
 }));
@@ -114,8 +114,7 @@ watch(
   >
     <div
       v-if="show"
-      v-bind="$attrs"
-      :[scope_id]="''"
+      v-bind="{ ...$attrs, ...{ [scopeId || '']: '' } }"
       :class="classes"
       :style="{ maxWidth, minWidth, width }"
     >
