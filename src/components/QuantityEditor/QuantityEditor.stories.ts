@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 
+import { Text } from '@components';
 import QuantityEditor from './QuantityEditor.vue';
 
 const meta: Meta<typeof QuantityEditor> = {
@@ -21,16 +22,19 @@ const meta: Meta<typeof QuantityEditor> = {
   },
   args: {
     disabled: false,
-    label: '',
-    labelProps: {},
-    message: '',
+    error: false,
+    min: 0,
+    small: false,
+    step: 1,
+    width: 2,
   },
 };
 
 export default meta;
+
 type Story = StoryObj<typeof QuantityEditor>;
 
-export const Default: Story = {
+export const Playground: Story = {
   render: (args) => ({
     components: { QuantityEditor },
     setup() {
@@ -40,27 +44,39 @@ export const Default: Story = {
   }),
 };
 
-// export const OnChange: Story = {
-//   render: (args) => ({
-//     components: { QuantityEditor },
-//     setup() {
-//       const quantity = ref(0);
+export const DocUsage = {
+  render: () => ({
+    components: { QuantityEditor, Text },
+    setup() {
+      const quantityValue = ref('0');
 
-//       const handleButtons = (value: string) => {
-//         quantity.value = parseInt(value);
-//       };
+      return { quantityValue };
+    },
+    template: `
+      <Text>QuantityEditor value: {{ quantityValue ? quantityValue : '-' }}</Text>
+      <QuantityEditor v-model="quantityValue" />
+    `,
+  }),
+};
 
-//       return { args, quantity, handleButtons };
-//     },
-//     template: `
-//       Quantity: {{ quantity }}
-//       <br />
-//       <br />
-//       <QuantityEditor
-//         value="quantity"
-//         @clickIncrement="handleButtons"
-//         @clickDecrement="handleButtons"
-//       />
-//     `,
-//   }),
-// };
+export const DocNonTWDB = {
+  render: () => ({
+    components: { QuantityEditor, Text },
+    setup() {
+      const quantityValue = ref(0);
+
+      const handleButtons = (value: string) => {
+        quantityValue.value = parseInt(value);
+      };
+
+      return { quantityValue, handleButtons };
+    },
+    template: `
+      <Text>QuantityEditor value: {{ quantityValue ? quantityValue : '-' }}</Text>
+      <QuantityEditor
+        @clickIncrement="handleButtons"
+        @clickDecrement="handleButtons"
+      />
+    `,
+  }),
+};

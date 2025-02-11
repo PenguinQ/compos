@@ -80,7 +80,7 @@ const props = withDefaults(defineProps<Textarea>(), {
 
 const emits = defineEmits([
   /**
-   * Slot used to create custom prepend, since message property only accept string.
+   * Callback for v-model two-way data binding, **used internally**, Storybook shows by default.
    */
   'update:modelValue',
 ]);
