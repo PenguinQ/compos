@@ -102,7 +102,7 @@ export const DocUsage = {
   }),
 };
 
-export const DocSubcomponent = {
+export const DocSubcomponents = {
   tags: ['!dev'],
   render: () => ({
     components: {

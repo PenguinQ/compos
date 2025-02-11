@@ -53,8 +53,8 @@ type TickerSlots = {
 };
 
 const props = withDefaults(defineProps<Ticker>(), {
-  activeIndex: 0,
-  autoplay: false,
+  activeIndex     : 0,
+  autoplay        : false,
   autoplayDuration: 5000,
 });
 
