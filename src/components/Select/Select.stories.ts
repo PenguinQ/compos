@@ -1,65 +1,58 @@
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 import type { ComponentProps } from 'vue-component-type-helpers';
-
-import { onlyShowArgs } from '@story/helpers';
 
 import { Text } from '@components';
 import Select from './Select.vue';
 
 type SelectProps = ComponentProps<typeof Select>;
 
-const defaultArgs: any = {
-  containerProps: {
-    control: 'object',
-  },
-  disabled: {
-    control: 'boolean',
-  },
-  error: {
-    control: 'boolean',
-  },
-  label: {
-    control: 'text',
-  },
-  labelProps: {
-    control: 'object',
-  },
-  margin: {
-    control: 'text',
-  },
-  message: {
-    control: 'text',
-  },
-  options: {
-    control: 'object',
-  },
-  success: {
-    control: 'boolean',
-  },
-  value: {
-    control: 'text',
-  },
-  modelValue: {
-    name: 'v-model',
-    control: 'text',
-  },
-};
-
 const meta: Meta<SelectProps> = {
   component: Select,
-  argTypes: defaultArgs,
+  argTypes: {
+    containerProps: {
+      control: 'object',
+    },
+    disabled: {
+      control: 'boolean',
+    },
+    error: {
+      control: 'boolean',
+    },
+    label: {
+      control: 'text',
+    },
+    labelProps: {
+      control: 'object',
+    },
+    margin: {
+      control: 'text',
+    },
+    message: {
+      control: 'text',
+    },
+    options: {
+      control: 'object',
+    },
+    success: {
+      control: 'boolean',
+    },
+    value: {
+      control: 'text',
+    },
+    modelValue: {
+      name: 'v-model',
+      control: 'text',
+    },
+    mode: {
+      control: 'select',
+      options: ['list'],
+    },
+  },
   args: {
-    containerProps: undefined,
-    disabled: undefined,
-    error: undefined,
-    label: '',
-    labelProps: undefined,
-    margin: '',
-    message: '',
-    modelValue: '',
-    success: undefined,
-    value: '',
+    disabled: false,
+    error: false,
+    success: false,
   },
 };
 
@@ -75,114 +68,93 @@ export const Playground: Story = {
     },
     template: `
       <Select v-bind="args">
-        <option value="">Pick your Character</option>
-        <option value="Himeko">Himeko</option>
-        <option value="Jade">Jade</option>
-        <option value="Kafka">Kafka</option>
-        <option value="Natasha">Natasha</option>
-        <option value="Black Swan">Black Swan</option>
-        <option value="Acheron">Acheron</option>
-        <option value="Feixiao">Feixiao</option>
-      </Select>
     `,
   }),
 };
 
-export const ObjectOptions: Story = {
-  name: 'Options as object',
-  render: (args) => ({
+export const DocUsage = {
+  tags: ['!dev'],
+  render: () => ({
     components: { Select },
     setup() {
-      return { args };
+      const value = ref('');
+      const options = [
+        { value: '', text: 'Pick your Character' },
+        { value: 'Himeko', text: 'Himeko' },
+        { value: 'Jade', text: 'Jade' },
+        { value: 'Aglaea', text: 'Aglaea' },
+        { value: 'Kafka', text: 'Kafka' },
+        { value: 'Natasha', text: 'Natasha' },
+        { value: 'Black Swan', text: 'Black Swan' },
+        { value: 'Acheron', text: 'Acheron' },
+        { value: 'Feixiao', text: 'Feixiao' },
+      ];
+
+      return { value, options };
     },
     template: `
-      <Select v-bind="args" />
-    `,
-  }),
-  argTypes: onlyShowArgs(defaultArgs, ['options']),
-  args: {
-    options: [
-      { value: '', text: 'Pick your Character' },
-      { value: 'Himeko', text: 'Himeko' },
-      { value: 'Jade', text: 'Jade' },
-      { value: 'Kafka', text: 'Kafka' },
-      { value: 'Natasha', text: 'Natasha' },
-      { value: 'Black Swan', text: 'Black Swan' },
-      { value: 'Acheron', text: 'Acheron' },
-      { value: 'Feixiao', text: 'Feixiao' },
-    ]
-  },
-};
-
-export const UsingVModel: Story = {
-  name: 'Using v-model (two-way data binding)',
-  render: (args) => ({
-    components: { Text, Select },
-    setup() {
-      const selectValue = ref(args.modelValue);
-
-      watch(
-        () => args.modelValue,
-        (newValue) => {
-          selectValue.value = newValue;
-        },
-      );
-
-      return { args, selectValue };
-    },
-    template: `
-      <Text>v-model value: {{ selectValue ? selectValue : '-' }}</Text>
-      <Select v-model="selectValue">
-        <option value="">Pick your Character</option>
-        <option value="Himeko">Himeko</option>
-        <option value="Jade">Jade</option>
-        <option value="Kafka">Kafka</option>
-        <option value="Natasha">Natasha</option>
-        <option value="Black Swan">Black Swan</option>
-        <option value="Acheron">Acheron</option>
-        <option value="Feixiao">Feixiao</option>
+      <Select v-model="value">
+        <option :key="index" v-for="(option, index) of options" :value="option.value">
+          {{ option.text }}
+        </option>
       </Select>
     `,
   }),
-  argTypes: onlyShowArgs(defaultArgs, ['modelValue']),
 };
 
-export const UsingValue: Story = {
-  name: 'Using value (non two-way data binding)',
-  render: (args) => ({
-    components: { Text, Select },
+export const DocObject = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { Select },
     setup() {
-      const selectValue = ref(args.value);
+      const value = ref('');
+      const options = [
+        { value: '', text: 'Pick your Character' },
+        { value: 'Himeko', text: 'Himeko' },
+        { value: 'Jade', text: 'Jade' },
+        { value: 'Aglaea', text: 'Aglaea' },
+        { value: 'Kafka', text: 'Kafka' },
+        { value: 'Natasha', text: 'Natasha' },
+        { value: 'Black Swan', text: 'Black Swan' },
+        { value: 'Acheron', text: 'Acheron' },
+        { value: 'Feixiao', text: 'Feixiao' },
+      ];
 
-      watch(
-        () => args.value,
-        (newValue) => {
-          selectValue.value = newValue;
-        },
-      );
+      return { value, options };
+    },
+    template: `
+      <Select v-model="value" :options="options">
+    `,
+  }),
+};
+
+export const DocNonTWDB = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { Select, Text },
+    setup() {
+      const selectValue = ref('');
+      const options = [
+        { value: '', text: 'Pick your Character' },
+        { value: 'Himeko', text: 'Himeko' },
+        { value: 'Jade', text: 'Jade' },
+        { value: 'Aglaea', text: 'Aglaea' },
+        { value: 'Kafka', text: 'Kafka' },
+        { value: 'Natasha', text: 'Natasha' },
+        { value: 'Black Swan', text: 'Black Swan' },
+        { value: 'Acheron', text: 'Acheron' },
+        { value: 'Feixiao', text: 'Feixiao' },
+      ];
 
       const handleChange = (value: string) => {
         selectValue.value = value;
       };
 
-      return {
-        selectValue,
-        handleChange,
-      };
+      return { selectValue, options, handleChange };
     },
     template: `
-      <Text>Inputted value: {{ selectValue ? selectValue : '-' }}</Text>
-      <Select :value="selectValue" @change="handleChange">
-        <option value="">Pick your Character</option>
-        <option value="Himeko">Himeko</option>
-        <option value="Jade">Jade</option>
-        <option value="Kafka">Kafka</option>
-        <option value="Natasha">Natasha</option>
-        <option value="Black Swan">Black Swan</option>
-        <option value="Acheron">Acheron</option>
-        <option value="Feixiao">Feixiao</option>
-      </Select>
+      <Text>Select value: {{ selectValue ? selectValue : '-' }}</Text>
+      <Select :options="options" @change="handleChange">
     `,
   }),
-  argTypes: onlyShowArgs(defaultArgs, ['value']),
 };

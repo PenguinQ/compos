@@ -6,13 +6,16 @@ import ListItem from './ListItem.vue';
 import type { ListItem as ListItemProps } from './ListItem.vue';
 
 type List = {
+  /**
+   * Set the title of the List.
+   */
   title?: string;
   /**
-   * Set the inset spacing.
+   * Set the inset spacing of the List.
    */
   inset?: boolean;
   /**
-   * Set the list of item to be shown on the list.
+   * Set the list of item to be shown on the List.
    */
   items?: ListItemProps[];
 };

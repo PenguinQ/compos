@@ -1,9 +1,9 @@
-import { Canvas, Meta, ArgTypes, Story, Markdown, Unstyled } from '@storybook/blocks';
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
 
 import * as TextfieldStories from './Textfield.stories';
 import Textfield from './Textfield.vue';
 
-<Meta title="Components/Textfield" component={Textfield} />
+<Meta title="Components/Textfield" of={TextfieldStories} />
 
 # Textfield
 Textfield is just a... input field that can do... things?
@@ -11,23 +11,7 @@ Textfield is just a... input field that can do... things?
 ## Usage
 To start using **Textfield**, see the example below:
 
-<div className="demo-block">
-  <Story of={TextfieldStories.DocUsage} />
-
-  ```tsx
-  <script setup lang="ts">
-    import { ref } from 'vue';
-    import { Text, Textfield } from '@/components';
-
-    const value = ref('');
-  </script>
-
-  <template>
-    <Text>Textfield value: {{ value ? value : '-' }}</Text>
-    <Textfield v-model="value" />
-  </template>
-  ```
-</div>
+<Canvas of={TextfieldStories.DocUsage} />
 
 ## Props
 <ArgTypes of={Textfield} />
@@ -36,27 +20,7 @@ To start using **Textfield**, see the example below:
 ### Non Two-Way Data Binding
 You can also use **Textfield** without using v-model two-way data binding using `@input`, see the example below:
 
-<div className="demo-block">
-  <Story of={TextfieldStories.DocNonTWDB} />
-
-  ```tsx
-  <script setup lang="ts">
-    import { ref } from 'vue';
-    import { Text, Textfield } from '@/components';
-
-    const value = ref('');
-
-    const handleInput = (e: Event) => {
-      value.value = (e.target as HTMLInputElement).value;
-    };
-  </script>
-
-  <template>
-    <Text>Textfield value: {{ value ? value : '-' }}</Text>
-    <Textfield @input="handleInput" />
-  </template>
-  ```
-</div>
+<Canvas of={TextfieldStories.DocNonTWDB} />
 
 ### Append or Prepending Text or Element
 You can append or prepend either text or element using:
@@ -68,39 +32,4 @@ You can append or prepend either text or element using:
 
 See the example below:
 
-<div className="demo-block">
-  <Story of={TextfieldStories.DocAppendPrepend} />
-
-  ```tsx
-  <script setup lang="ts">
-    import { Textfield } from '@/components';
-    import ComposIcon, { Cash, Translate } from '@/components/Icons';
-  </script>
-
-  <template>
-    <Textfield prepend="Prepend" placeholder="Prepend text using prepend prop" />
-    <br />
-    <Textfield placeholder="Prepend text / anything using slot">
-      <template #prepend>Prepend</template>
-    </Textfield>
-    <br />
-    <Textfield placeholder="Prepend text / anything using slot">
-      <template #prepend>
-        <ComposIcon :icon="Cash" />
-      </template>
-    </Textfield>
-    <br />
-    <Textfield append="Append" placeholder="Append text using append prop" />
-    <br />
-    <Textfield placeholder="Append text / anything using slot">
-      <template #append>Append</template>
-    </Textfield>
-    <br />
-    <Textfield placeholder="Append text / anything using slot">
-      <template #append>
-        <ComposIcon :icon="Translate" />
-      </template>
-    </Textfield>
-  </template>
-  ```
-</div>
+<Canvas of={TextfieldStories.DocAppendPrepend} />
