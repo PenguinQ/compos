@@ -1,79 +1,66 @@
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 import type { ComponentProps } from 'vue-component-type-helpers';
 
-import { onlyShowArgs } from '@story/helpers';
-
-import { Text, Ticker, TickerItem } from '@components';
+import { Text } from '@components';
+import ComposIcon, { Cash, Translate } from '@components/Icons';
 import Textfield from './Textfield.vue';
 
 type TextfieldProps = ComponentProps<typeof Textfield>;
 
-const defaultArgs: any = {
-  append: {
-    control: 'text',
-  },
-  containerProps: {
-    control: 'object',
-  },
-  disabled: {
-    control: 'boolean',
-  },
-  error: {
-    control: 'boolean',
-  },
-  label: {
-    control: 'text',
-  },
-  labelProps: {
-    control: 'object',
-  },
-  margin: {
-    control: 'text',
-  },
-  message: {
-    control: 'text',
-  },
-  placeholder: {
-    control: 'text',
-  },
-  prepend: {
-    control: 'text',
-  },
-  success: {
-    control: 'boolean',
-  },
-  type: {
-    control: 'select',
-    options: ['email', 'number', 'password', 'tel', 'text'],
-  },
-  value: {
-    control: 'text',
-  },
-  modelValue: {
-    name: 'v-model',
-    control: 'text',
-  },
-};
-
 const meta: Meta<TextfieldProps> = {
   component: Textfield,
-  argTypes: defaultArgs,
+  argTypes: {
+    append: {
+      control: 'text',
+    },
+    containerProps: {
+      control: 'object',
+    },
+    disabled: {
+      control: 'boolean',
+    },
+    error: {
+      control: 'boolean',
+    },
+    label: {
+      control: 'text',
+    },
+    labelProps: {
+      control: 'object',
+    },
+    margin: {
+      control: 'text',
+    },
+    message: {
+      control: 'text',
+    },
+    placeholder: {
+      control: 'text',
+    },
+    prepend: {
+      control: 'text',
+    },
+    success: {
+      control: 'boolean',
+    },
+    type: {
+      control: 'select',
+      options: ['email', 'number', 'password', 'tel', 'text'],
+    },
+    value: {
+      control: 'text',
+    },
+    modelValue: {
+      name: 'v-model',
+      control: 'text',
+    },
+  },
   args: {
-    append: '',
-    containerProps: undefined,
-    disabled: undefined,
-    error: undefined,
-    label: '',
-    labelProps: undefined,
-    margin: '',
-    message: '',
-    placeholder: '',
-    prepend: '',
-    modelValue: '',
-    success: undefined,
-    type: undefined,
-    value: '',
+    disabled: false,
+    error: false,
+    success: false,
+    type: 'text',
   },
 };
 
@@ -91,100 +78,73 @@ export const Playground: Story = {
   }),
 };
 
-export const AppendPrependSlot: Story = {
-  name: 'Append/prepend using slot',
-  render: (args) => ({
-    components: { Text, Textfield, Ticker, TickerItem },
+export const DocUsage = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { Text, Textfield },
     setup() {
       const value = ref('');
 
-      return { args, value };
+      return { value };
     },
     template: `
-      <Ticker>
-        <TickerItem
-          title="Customize Append or Prepend"
-          description="If you wanted to have customized DOM inside append or prepend, you can pass it as a slot item."
-        />
-      </Ticker>
-
-      <Text margin="16px 0">Prepend</Text>
-      <Textfield v-bind="args">
-        <template #prepend>
-          <span style="color: var(--color-red-4)">Prepend</span>
-        </template>
-      </Textfield>
-
-      <Text margin="16px 0">Append</Text>
-      <Textfield v-bind="args">
-        <template #append>
-          <span style="color: var(--color-red-4)">Append</span>
-        </template>
-      </Textfield>
+      <Text>Textfield value: {{ value ? value : '-' }}</Text>
+      <Textfield v-model="value" />
     `,
   }),
-  argTypes: {
-    append: {
-      table: {
-        disable: true,
-      },
-    },
-    prepend: {
-      table: {
-        disable: true,
-      },
-    },
-  },
 };
 
-export const UsingVModel: Story = {
-  name: 'Using v-model (two-way data binding)',
-  render: (args) => ({
+export const DocNonTWDB = {
+  tags: ['!dev'],
+  render: () => ({
     components: { Text, Textfield },
     setup() {
-      const textfieldValue = ref(args.modelValue);
-
-      watch(
-        () => args.modelValue,
-        (newValue) => {
-          textfieldValue.value = newValue;
-        },
-      );
-
-      return { textfieldValue };
-    },
-    template: `
-      <Text>v-model value: {{ textfieldValue ? textfieldValue : '-' }}</Text>
-      <Textfield v-model="textfieldValue" />
-    `,
-  }),
-  argTypes: onlyShowArgs(defaultArgs, ['modelValue']),
-};
-
-export const UsingValue: Story = {
-  name: 'Using value (non two-way data binding)',
-  render: (args) => ({
-    components: { Text, Textfield },
-    setup() {
-      const textfieldValue = ref(args.value);
-
-      watch(
-        () => args.value,
-        (newValue) => {
-          textfieldValue.value = newValue;
-        },
-      );
+      const value = ref('');
 
       const handleInput = (e: Event) => {
-        textfieldValue.value = (e.target as HTMLInputElement).value;
+        value.value = (e.target as HTMLInputElement).value;
       };
 
-      return { textfieldValue, handleInput };
+      return { value, handleInput };
     },
     template: `
-      <Text>Inputted value: {{ textfieldValue ? textfieldValue : '-' }}</Text>
-      <Textfield :value="textfieldValue" @input="handleInput" />
+      <Text>Textfield value: {{ value ? value : '-' }}</Text>
+      <Textfield @input="handleInput" />
     `,
   }),
-  argTypes: onlyShowArgs(defaultArgs, ['value']),
+};
+
+export const DocAppendPrepend = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { ComposIcon, Textfield },
+    setup() {
+      return { Cash, Translate };
+    },
+    template: `
+      <Textfield prepend="Prepend" placeholder="Prepend text using prepend prop" />
+      <br />
+      <Textfield placeholder="Prepend text / anything using slot">
+        <template #prepend>Prepend</template>
+      </Textfield>
+      <br />
+      <Textfield placeholder="Prepend text / anything using slot">
+        <template #prepend>
+          <ComposIcon :icon="Cash" />
+        </template>
+      </Textfield>
+      <br />
+      <Textfield append="Append" placeholder="Append text using append prop" />
+      <br />
+      <Textfield placeholder="Append text / anything using slot">
+        <template #append>Append</template>
+      </Textfield>
+      <br />
+      <Textfield placeholder="Append text / anything using slot">
+        <template #append>
+          <ComposIcon :icon="Translate" />
+        </template>
+      </Textfield>
+    `,
+  }),
 };
