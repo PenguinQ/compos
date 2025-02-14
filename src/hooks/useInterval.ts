@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted } from 'vue';
 
 export default (callback: () => void, duration = 1000) => {
   let timer: ReturnType<typeof setInterval> | null = null;

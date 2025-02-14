@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
+import type { Slot } from 'vue';
 import type * as CSS from 'csstype';
+
 import { useScopeId } from '@hooks';
 
 import Overlay from '@/components/Overlay';
@@ -16,20 +18,23 @@ type Dialog = {
    */
   hideHeader?: boolean;
   /**
-   * Set the maximum width of the Dialog.
+   * Set the CSS max-width value of the Dialog.
    */
   maxWidth?: CSS.Property.MaxWidth;
   /**
-   * Set the minimum width of the Dialog.
+   * Set the CSS min-width value of the Dialog.
    */
   minWidth?: CSS.Property.MinWidth;
+  /**
+   * Set the active state of Dialog using v-model two way data binding.
+   */
   modelValue?: boolean;
   /**
-   * Hide close button.
+   * Hide the Dialog close button.
    */
   noClose?: boolean;
   /**
-   * Turn the Dialog persistent, disabled closing when clicking the overlay.
+   * Turn the Dialog persistent, disable Dialog closing when clicking the overlay.
    */
   persistent?: boolean;
   /**
@@ -37,9 +42,28 @@ type Dialog = {
    */
   title?: string;
   /**
-   * Set the width of the Dialog.
+   * Set the CSS width value of the Dialog.
    */
   width?: CSS.Property.Width;
+};
+
+type DialogSlots = {
+  /**
+   * Slot used to render custom activator element for the Dialog.
+   */
+  activator?: Slot;
+  /**
+   * Slot used to custom content for the Dialog header.
+   */
+  header?: Slot;
+  /**
+   * Slot used to create content inside the Dialog.
+   */
+  default?: Slot;
+  /**
+   * Slot used to create content for the Dialog footer.
+   */
+  footer?: Slot;
 };
 
 defineOptions({ inheritAttrs: false });
@@ -52,16 +76,45 @@ const props = withDefaults(defineProps<Dialog>(), {
 });
 
 const emits = defineEmits([
+  /**
+   * Callback for v-model two-way data binding, **used internally**, Storybook shows by default.
+   */
   'update:modelValue',
+  /**
+   * Callback before Dialog show.
+   */
   'before-enter',
+  /**
+   * Callback when Dialog starting to show.
+   */
   'enter',
+  /**
+   * Callback after Dialog show.
+   */
   'after-enter',
+  /**
+   * Callback when Dialog cancel to show.
+   */
   'enter-cancelled',
+  /**
+   * Callback before Dialog hide.
+   */
   'before-leave',
+  /**
+   * Callback when Dialog starting to hide.
+   */
   'leave',
+  /**
+   * Callback after Dialog hide.
+   */
   'after-leave',
+  /**
+   * Callback when Dialog cancel to hide.
+   */
   'leave-cancelled',
 ]);
+
+defineSlots<DialogSlots>();
 
 const scopeId = useScopeId();
 const show    = ref(props.modelValue !== undefined ? props.modelValue : false);
@@ -146,8 +199,7 @@ watch(
 </template>
 
 <style lang="scss">
-$root: '.cp-dialog';
-$headerFullHeight: 56px;
+$headerHeight: 56px;
 
 .cp-dialog {
   min-width: calc(320px - 32px);
@@ -206,8 +258,8 @@ $headerFullHeight: 56px;
     @include page;
     border-radius: 0px;
 
-    #{$root}-header__content {
-      height: $headerFullHeight;
+    .cp-dialog-header__content {
+      height: $headerHeight;
       color: var(--color-white);
       background-color: var(--color-black);
       display: flex;
@@ -217,16 +269,16 @@ $headerFullHeight: 56px;
       box-shadow: rgba(0, 0, 0, 0.16) 0 3px 6px, rgba(0, 0, 0, 0.23) 0 3px 6px;
     }
 
-    #{$root}__title {
+    .cp-dialog__title {
       @include text-heading-3;
       color: var(--color-white);
       text-align: left;
       padding: 0 0 0 16px;
     }
 
-    #{$root}__close {
-      width: $headerFullHeight;
-      height: $headerFullHeight;
+    .cp-dialog__close {
+      width: $headerHeight;
+      height: $headerHeight;
       background-color: transparent;
       border: none;
       box-shadow: none;
@@ -245,14 +297,11 @@ $headerFullHeight: 56px;
       }
     }
 
-    #{$root}-body {
+    .cp-dialog-body {
       @include content;
 
       &__inner {
         @include content-inner;
-        display: flex;
-        flex-direction: column;
-        overflow-y: auto;
       }
     }
   }
@@ -276,7 +325,7 @@ $headerFullHeight: 56px;
     }
 
     &--fullscreen {
-      #{$root}__title {
+      .cp-dialog__title {
         @include text-heading-5;
       }
     }

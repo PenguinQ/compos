@@ -17,6 +17,7 @@ import {
   Checkbox,
   Dialog,
   EmptyState,
+  Page,
   PullToRefresh,
   Textarea,
   Textfield,
@@ -215,7 +216,7 @@ watch(
           @enter="handleOpenDialog"
           @leave="loadProducts = false"
         >
-          <Header>
+          <Page>
             <Toolbar>
               <ToolbarAction icon @click="handleCloseDialog">
                 <ComposIcon :icon="X" :size="40" />
@@ -225,83 +226,83 @@ watch(
                 Done
               </ToolbarAction>
             </Toolbar>
-          </Header>
-          <Content>
-            <template #fixed>
-              <PullToRefresh @refresh="handleRefreshList" />
-            </template>
-            <EmptyState
-              v-if="productListError"
-              :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-              :title="GLOBAL.ERROR_EMPTY_TITLE"
-              :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-              margin="56px 0"
-            >
-              <template #action>
-                <Button @click="productListRefetch">Try Again</Button>
+            <Content>
+              <template #fixed>
+                <PullToRefresh @refresh="handleRefreshList" />
               </template>
-            </EmptyState>
-            <template v-else>
-              <Bar v-if="productListLoading" />
+              <EmptyState
+                v-if="productListError"
+                :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+                :title="GLOBAL.ERROR_EMPTY_TITLE"
+                :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+                margin="56px 0"
+              >
+                <template #action>
+                  <Button @click="productListRefetch">Try Again</Button>
+                </template>
+              </EmptyState>
               <template v-else>
-                <EmptyState
-                  v-if="!product_list?.products.length && searchQuery === ''"
-                  emoji="🍃"
-                  :title="BUNDLE_FORM.PRODUCT_LIST_EMPTY_TITLE"
-                  :description="BUNDLE_FORM.PRODUCT_LIST_EMPTY_DESCRIPTION"
-                  height="100%"
-                />
-                <EmptyState
-                  v-else-if="!product_list?.products.length && searchQuery !== ''"
-                  emoji="😵‍💫"
-                  :title="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_TITLE"
-                  :description="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_DESCRIPTION"
-                  height="100%"
-                />
+                <Bar v-if="productListLoading" />
                 <template v-else>
-                  <div class="product-list">
-                    <template :key="product.id" v-for="product of product_list?.products">
-                      <ProductSelection
-                        small
-                        :aria-label="`Add ${product.name}`"
-                        :images="product.images"
-                        :name="product.name"
-                        :selected="isProductSelected(product) ? true : undefined"
-                        @click="handleSelectProduct(product)"
+                  <EmptyState
+                    v-if="!product_list?.products.length && searchQuery === ''"
+                    emoji="🍃"
+                    :title="BUNDLE_FORM.PRODUCT_LIST_EMPTY_TITLE"
+                    :description="BUNDLE_FORM.PRODUCT_LIST_EMPTY_DESCRIPTION"
+                    height="100%"
+                  />
+                  <EmptyState
+                    v-else-if="!product_list?.products.length && searchQuery !== ''"
+                    emoji="😵‍💫"
+                    :title="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_TITLE"
+                    :description="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_DESCRIPTION"
+                    height="100%"
+                  />
+                  <template v-else>
+                    <div class="product-list">
+                      <template :key="product.id" v-for="product of product_list?.products">
+                        <ProductSelection
+                          small
+                          :aria-label="`Add ${product.name}`"
+                          :images="product.images"
+                          :name="product.name"
+                          :selected="isProductSelected(product) ? true : undefined"
+                          @click="handleSelectProduct(product)"
+                        />
+                        <ProductSelection
+                          :key="variant.id"
+                          v-for="variant of product.variants"
+                          small
+                          variant
+                          :aria-label="`Add ${product.name} - ${variant.name}`"
+                          :images="variant.images"
+                          :name="variant.name"
+                          :selected="isVariantSelected(variant.id) ? true : undefined"
+                          @click="handleSelectVariant(variant, product.name)"
+                        />
+                      </template>
+                    </div>
+                  </template>
+                  <template v-if="!productListLoading && !productListError">
+                    <FloatingActions v-if="product_list?.products.length" sticky=".cp-content">
+                      <Pagination
+                        frame
+                        :loading="productListLoading"
+                        :page="page.current"
+                        :total_page="page.total"
+                        :first_page="page.current <= 1"
+                        :last_page="page.current >= page.total"
+                        @clickFirst="toPrevPage($event, true)"
+                        @clickPrev="toPrevPage"
+                        @clickNext="toNextPage"
+                        @clickLast="toNextPage($event, true)"
                       />
-                      <ProductSelection
-                        :key="variant.id"
-                        v-for="variant of product.variants"
-                        small
-                        variant
-                        :aria-label="`Add ${product.name} - ${variant.name}`"
-                        :images="variant.images"
-                        :name="variant.name"
-                        :selected="isVariantSelected(variant.id) ? true : undefined"
-                        @click="handleSelectVariant(variant, product.name)"
-                      />
-                    </template>
-                  </div>
-                </template>
-                <template v-if="!productListLoading && !productListError">
-                  <FloatingActions v-if="product_list?.products.length" sticky=".cp-content">
-                    <Pagination
-                      frame
-                      :loading="productListLoading"
-                      :page="page.current"
-                      :total_page="page.total"
-                      :first_page="page.current <= 1"
-                      :last_page="page.current >= page.total"
-                      @clickFirst="toPrevPage($event, true)"
-                      @clickPrev="toPrevPage"
-                      @clickNext="toNextPage"
-                      @clickLast="toNextPage($event, true)"
-                    />
-                  </FloatingActions>
+                    </FloatingActions>
+                  </template>
                 </template>
               </template>
-            </template>
-          </Content>
+            </Content>
+          </Page>
         </Dialog>
       </template>
     </Container>

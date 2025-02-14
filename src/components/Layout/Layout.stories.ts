@@ -1,31 +1,38 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 
-import Page from './Page.vue';
-import Header from './Header.vue';
-import Content from './Content.vue';
 import Container from './Container.vue';
+import Content from './Content.vue';
+import Header from './Header.vue';
 import Footer from './Footer.vue';
+import Page from './Page.vue';
 
-const meta: Meta<typeof Content> = {
-  title: 'Layout/Content',
-  component: Content,
-  argTypes: {
-  },
-  args: {
+const meta: Meta = {
+  title: 'Layouts/Test',
+  // component: Content,
+  subcomponents: {
+    Container,
+    Content,
+    Header,
+    Footer,
+    Page,
   },
 };
 
 export default meta;
 
-type Story = StoryObj<typeof Content>;
+type Story = StoryObj;
 
-export const Default: Story = {
+export const StoryContainer: Story = {
   render: (args) => ({
-    components: { Content },
+    components: { Page },
     setup() {
       return { args };
     },
-    template: `<Content v-bind="args">{{ args.default }}</Content>`,
+    template: `
+      <Page>
+        Berak
+      </Page>
+    `,
   }),
 };
 

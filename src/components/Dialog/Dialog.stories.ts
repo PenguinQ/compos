@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
+import type { ComponentProps } from 'vue-component-type-helpers';
 
 import {
   Button,
@@ -14,10 +15,15 @@ import {
 import ComposIcon, { X, WarningCircle } from '@components/Icons';
 import Dialog from './Dialog.vue';
 
-const meta: Meta<typeof Dialog> = {
+type DialogProps = ComponentProps<typeof Dialog>;
+
+const meta: Meta<DialogProps> = {
   component: Dialog,
   argTypes: {
     fullscreen: {
+      control: 'boolean',
+    },
+    hideHeader: {
       control: 'boolean',
     },
     maxWidth: {
@@ -25,6 +31,10 @@ const meta: Meta<typeof Dialog> = {
     },
     minWidth: {
       control: 'text',
+    },
+    modelValue: {
+      name: 'v-model',
+      control: 'boolean',
     },
     noClose: {
       control: 'boolean',
@@ -41,6 +51,8 @@ const meta: Meta<typeof Dialog> = {
   },
   args: {
     fullscreen: false,
+    hideHeader: false,
+    modelValue: true,
     noClose: false,
     persistent: false,
     title: 'Kafka',
@@ -48,9 +60,10 @@ const meta: Meta<typeof Dialog> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Dialog>;
 
-export const Default: Story = {
+type Story = StoryObj<DialogProps>;
+
+export const Playground: Story = {
   render: (args) => ({
     components: {
       Button,
@@ -58,13 +71,10 @@ export const Default: Story = {
       Text,
     },
     setup() {
-      const show = ref(false);
-
-      return { args, show };
+      return { args };
     },
     template: `
-      <Button @click="show = true">Show Dialog</Button>
-      <Dialog v-model="show" v-bind="args">
+      <Dialog v-bind="args">
         <Text>
           A member of the Stellaron Hunters who is calm, collected, and beautiful.
           Her record on the wanted list of the Interastral Peace Corporation only lists her name and her hobby.
@@ -75,31 +85,45 @@ export const Default: Story = {
   }),
 };
 
-export const Activator: Story = {
-  render: (args) => ({
+export const DocUsage = {
+  tags: ['!dev'],
+  render: () => ({
     components: {
       Button,
       Dialog,
       Text,
-      Ticker,
-      TickerItem,
     },
     setup() {
       const show = ref(false);
 
-      return { args, show };
+      return { show };
     },
     template: `
-      <Ticker>
-        <TickerItem
-          title="Trigger Dialog by Activator"
-          description="You can also trigger modal without defining v-model by putting the triggering element inside activator slot and bind provided props to the element."
-        />
-      </Ticker>
+      <Button @click="show = !show">Show Dialog</Button>
+      <Dialog v-model="show" title="Kafka">
+        <Text>
+          A member of the Stellaron Hunters who is calm, collected, and beautiful.
+          Her record on the wanted list of the Interastral Peace Corporation only lists her name and her hobby.
+          People have always imagined her to be elegant, respectable, and in pursuit of things of beauty even in combat.
+        </Text>
+      </Dialog>
+    `,
+  }),
+};
 
-      <br />
-
-      <Dialog v-bind="args">
+export const DocActivator = {
+  tags: ['!dev'],
+  render: () => ({
+    components: {
+      Button,
+      Dialog,
+      Text,
+    },
+    setup() {
+      return {};
+    },
+    template: `
+      <Dialog title="Kafka">
         <template #activator="{ props }">
           <Button v-bind="props">Show Dialog</Button>
         </template>
@@ -113,67 +137,95 @@ export const Activator: Story = {
   }),
 };
 
-Activator.storyName = 'Show using activator slot';
-
-export const FullscreenCustom: Story = {
-  render: (args) => ({
+export const DocSlotHeader = {
+  tags: ['!dev'],
+  render: () => ({
     components: {
       Button,
       Dialog,
       Text,
-      Ticker,
-      TickerItem,
-      Toolbar,
-      ToolbarAction,
-      ToolbarSpacer,
-      ToolbarTitle,
-      ComposIcon,
     },
     setup() {
       const show = ref(false);
 
-      const alertAction = () => {
-        alert('Action clicked!');
-      };
-
-      return { args, show, alertAction, X, WarningCircle };
+      return { show };
     },
     template: `
-      <Ticker>
-        <TickerItem
-          title="Custom Header"
-          description="Default header for dialog only support basic info and action such as title, and close button, to have multi functional header you can utilize Toolbar component to create custom header and put it inside header slot."
-        />
-      </Ticker>
-
-      <br />
-
-      <Button @click="show = true">Show Dialog</Button>
-      <Dialog v-model="show" v-bind="args">
+      <Button @click="show = !show">Show Dialog</Button>
+      <Dialog v-model="show">
         <template #header>
-          <Toolbar>
-            <ToolbarAction icon>
-              <ComposIcon :icon="X" @click="show = false" :size="40" />
-            </ToolbarAction>
-            <ToolbarTitle>{{ args.title }}</ToolbarTitle>
-            <ToolbarSpacer />
-            <ToolbarAction icon @click="alertAction">
-              <ComposIcon :icon="WarningCircle" />
-            </ToolbarAction>
-          </Toolbar>
+          <Text
+            heading="3"
+            color="var(--color-red-4)"
+            textAlign="center"
+            margin="16px 0 0"
+          >
+            Kafka
+          </Text>
         </template>
         <Text>
           A member of the Stellaron Hunters who is calm, collected, and beautiful.
           Her record on the wanted list of the Interastral Peace Corporation only lists her name and her hobby.
           People have always imagined her to be elegant, respectable, and in pursuit of things of beauty even in combat.
         </Text>
-        <div style="height: 1000px; background-color: azure;" />
       </Dialog>
     `,
   }),
-  args: {
-    fullscreen: true,
-  },
 };
 
-FullscreenCustom.storyName = 'Fullscreen (Custom Header)';
+export const DocSlotFooter = {
+  tags: ['!dev'],
+  render: () => ({
+    components: {
+      Button,
+      Dialog,
+      Text,
+    },
+    setup() {
+      const show = ref(false);
+
+      return { show };
+    },
+    template: `
+      <Button @click="show = !show">Show Dialog</Button>
+      <Dialog v-model="show" title="Kafka">
+        <Text>
+          A member of the Stellaron Hunters who is calm, collected, and beautiful.
+          Her record on the wanted list of the Interastral Peace Corporation only lists her name and her hobby.
+          People have always imagined her to be elegant, respectable, and in pursuit of things of beauty even in combat.
+        </Text>
+        <template #footer>
+          <div style="padding: 0 16px 16px;">
+            <Button full @click="show = false">Close Dialog</Button>
+          </div>
+        </template>
+      </Dialog>
+    `,
+  }),
+};
+
+export const DocFullscreen = {
+  tags: ['!dev'],
+  render: () => ({
+    components: {
+      Button,
+      Dialog,
+      Text,
+    },
+    setup() {
+      const show = ref(false);
+
+      return { show };
+    },
+    template: `
+      <Button @click="show = !show">Show Dialog</Button>
+      <Dialog v-model="show" title="Kafka" fullscreen>
+        <Text>
+          A member of the Stellaron Hunters who is calm, collected, and beautiful.
+          Her record on the wanted list of the Interastral Peace Corporation only lists her name and her hobby.
+          People have always imagined her to be elegant, respectable, and in pursuit of things of beauty even in combat.
+        </Text>
+      </Dialog>
+    `,
+  }),
+};
