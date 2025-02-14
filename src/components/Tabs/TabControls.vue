@@ -1,14 +1,28 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue';
+import {
+  computed,
+  Fragment,
+  ref,
+  onMounted,
+  watch,
+} from 'vue';
 import type { Slot } from 'vue';
 
 import { useScopeId } from '@/hooks';
 import { isVisible } from '@/helpers';
 
 type TabControls = {
+  /**
+   * Set the TabControls.
+   */
   grow?: boolean;
+  /**
+   * Set the active TabControl using v-model two way data binding.
+   */
   modelValue: number;
-  sticky?: boolean;
+  /**
+   * Set the variant of the TabControls.
+   */
   variant?: 'alternate';
 };
 
@@ -19,13 +33,17 @@ type TabControlsSlots = {
 defineOptions({ name: 'TabControls' });
 
 const props = withDefaults(defineProps<TabControls>(), {
-  grow  : false,
-  sticky: false,
+  grow: false,
 });
 
-const emits = defineEmits(['update:modelValue']);
+const emits = defineEmits([
+  /**
+   * Callback for v-model two-way data binding, **used internally**, Storybook shows by default.
+   */
+  'update:modelValue',
+]);
 
-defineSlots<TabControlsSlots>();
+const slots = defineSlots<TabControlsSlots>();
 
 const scopeId      = useScopeId();
 const containerRef = ref<HTMLDivElement | null>(null);
@@ -36,6 +54,15 @@ const classes = computed(() => ({
   'cp-tab-controls--grow'     : props.grow,
   'cp-tab-controls--alternate': props.variant === 'alternate',
 }));
+const tabs = computed(() => {
+  if (!slots.default) return [];
+
+  return slots.default().map(vnode => {
+    if (vnode.type === Fragment) return vnode.children;
+
+    return vnode;
+  }).flat();
+});
 
 const scrollToView = (index: number) => {
   if (scrollerRef.value) {
@@ -75,7 +102,8 @@ onMounted(() => {
   <div v-if="$slots.default" ref="containerRef" :class="classes">
     <div v-bind="{ ...{ [scopeId || '']: '' } }" ref="scrollerRef" class="cp-tab-controls-container">
       <component
-        v-for="(tab, index) in $slots.default()"
+        :key="index"
+        v-for="(tab, index) in tabs"
         :is="tab"
         :data-cp-active="active === index ? true : undefined"
         @click="handleTab(index)"

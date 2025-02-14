@@ -94,31 +94,37 @@ const searchElements = (inputs: UnwrapRef<ListInputs>, container: HTMLDivElement
 };
 
 const handleSelect = (wrapper: UnwrapRef<HTMLDivElement>) => {
-  const select = wrapper.querySelector('select');
+  const select   = wrapper.querySelector('select');
+  const disabled = select?.hasAttribute('disabled');
 
-  if (select?.hasAttribute('disabled')) hasDisabledInput.value = true;
+  if (disabled) {
+    hasDisabledInput.value = true;
+  } else {
+    containerRef.value?.addEventListener('click', () => {
+      select?.focus();
 
-  containerRef.value?.addEventListener('click', () => {
-    select?.focus();
-
-    if ('showPicker' in HTMLSelectElement.prototype) {
-      select?.showPicker();
-    } else {
-      select?.dispatchEvent(new MouseEvent('mousedown'));
-    }
-  });
+      if ('showPicker' in HTMLSelectElement.prototype) {
+        (select as any)?.showPicker();
+      } else {
+        select?.dispatchEvent(new MouseEvent('mousedown'));
+      }
+    });
+  }
 
   hasInput.value = true;
 };
 
 const handleCheckbox = (wrapper: UnwrapRef<HTMLDivElement>) => {
-  const checkbox = wrapper.querySelector('input[type="checkbox"]') as HTMLInputElement;
+  const checkbox = wrapper.querySelector('input[type="checkbox"]');
+  const disabled = checkbox?.hasAttribute('disabled');
 
-  if (checkbox?.hasAttribute('disabled')) hasDisabledInput.value = true;
-
-  containerRef.value?.addEventListener('click', () => {
-    checkbox?.click();
-  });
+  if (disabled) {
+    hasDisabledInput.value = true;
+  } else {
+    containerRef.value?.addEventListener('click', () => {
+      (checkbox as HTMLInputElement)?.click();
+    });
+  }
 
   hasInput.value = true;
 };

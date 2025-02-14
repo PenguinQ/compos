@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
+import { getSameSiblings, hasClass, setElementsAttribute } from '@/helpers';
+
 export interface Radio extends /* @vue-ignore */ InputHTMLAttributes {
   /**
    * Set the Radio container additional properties.
@@ -11,6 +13,10 @@ export interface Radio extends /* @vue-ignore */ InputHTMLAttributes {
    * Set the Radio to disabled state.
    */
   disabled?: boolean;
+  /**
+   * Set the unchecked value for the Checkbox.
+   */
+  falseValue?: string | number | boolean;
   /**
    * Set the Radio width to 100%.
    */
@@ -24,9 +30,17 @@ export interface Radio extends /* @vue-ignore */ InputHTMLAttributes {
    */
   modelValue?: string | number | boolean;
   /**
+   * Set the Radio name attribute.
+   */
+  name?: string;
+  /**
    * Set the Radio tabindex.
    */
   tabindex?: string | number
+  /**
+   * Set the checked value for the Checkbox.
+   */
+  trueValue?: string | number | boolean;
   /**
    * Set the value for the Radio without using v-model two way data binding.
    */
@@ -38,16 +52,83 @@ defineOptions({ inheritAttrs: false });
 const props = withDefaults(defineProps<Radio>(), {
   disabled  : false,
   full      : false,
-  tabindex: 0,
+  tabindex  : 0,
+  modelValue: undefined,
+  trueValue : undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
+  falseValue: undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
+  value     : undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
 });
+
+const emits = defineEmits([
+  /**
+   * Callback for v-model two-way data binding, **used internally**, Storybook shows by default.
+   */
+  'update:modelValue',
+]);
 
 const containerRef = ref<HTMLLabelElement | null>(null);
 const inputRef     = ref<HTMLInputElement | null>(null);
-const isChecked    = computed(() => props.modelValue ? props.modelValue === props.value : false);
+const isControlled = computed(() => props.modelValue !== undefined);
+const radioValue   = computed(() => {
+  if (props.trueValue !== undefined) return props.trueValue;
+
+  if (props.value !== undefined) return props.value;
+
+  return true;
+});
+const isChecked = computed(() => {
+  if (isControlled.value && radioValue.value !== undefined) return props.modelValue === radioValue.value;
+
+  return false;
+});
 const classes = computed(() => ({
   'cp-form-radio'      : true,
   'cp-form-radio--full': props.full,
 }));
+
+const handleChange = (e: Event) => {
+  e.stopPropagation();
+
+  const target  = e.target as HTMLInputElement;
+  const checked = target.checked;
+  let updateValue;
+
+  if (isControlled.value) {
+    if (checked) {
+      if (props.trueValue !== undefined) {
+        updateValue = props.trueValue;
+      } else if (props.value !== undefined) {
+        updateValue = props.value;
+      } else {
+        updateValue = true;
+      }
+    } else {
+      if (props.falseValue !== undefined) {
+        updateValue = props.falseValue;
+      } else {
+        updateValue = false;
+      }
+    }
+
+    emits('update:modelValue', updateValue);
+  } else {
+    const inGroup = hasClass('cp-radio-group', containerRef.value?.parentElement as HTMLElement);
+
+    if (!inGroup) {
+      if (props.name) {
+        const siblings = getSameSiblings(containerRef.value as HTMLElement);
+
+        setElementsAttribute(siblings, {
+          target: 'input',
+          attributeName: 'aria-checked',
+          attributeValue: 'false',
+        });
+      }
+
+      target.setAttribute('aria-checked', 'true');
+    }
+  }
+};
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Enter') inputRef.value?.click();
@@ -68,12 +149,13 @@ const handleKeydown = (e: KeyboardEvent) => {
         type="radio"
         v-bind="$attrs"
         :checked="($attrs['checked'] as 'true' | 'false') || isChecked"
+        :name="name"
         :disabled="disabled"
-        :value="value"
+        :value="radioValue"
         :aria-disabled="disabled"
         :aria-label="label"
         :aria-checked="($attrs['aria-checked'] as 'true' | 'false' | 'mixed') || isChecked"
-        @change="$emit('update:modelValue', value)"
+        @change="handleChange"
       />
       <div class="cp-form-radio__circle" />
     </div>
