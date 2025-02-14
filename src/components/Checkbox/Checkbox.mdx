@@ -5,7 +5,7 @@ import Checkbox from './Checkbox.vue';
 
 <Meta title="Components/Checkbox" of={CheckboxStories} />
 
-# Checkbox
+# Checkbox ✅
 Checkbox is... well, a box... to be checked!
 
 ## Usage
@@ -21,7 +21,9 @@ To start using **Checkbox**, see the example below:
 The recommended way to use **Checkbox** is using Vue two-way data binding (v-model). But, you can also go the other route
 using `value` and `@change`, see the example below:
 
-<Canvas of={CheckboxStories.DocUsingValue} />
+<Canvas of={CheckboxStories.DocNonTWDB} />
+
+> In non two-way data binding mode, `falseValue` prop will be ignored, only `trueValue` will work.
 
 ### Multiple Selection
 You can also have multiple selection of Checkboxes in a single v-model value, just set the v-model value as an array and

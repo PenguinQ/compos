@@ -1,0 +1,45 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+
+import * as TabStories from './Tabs.stories';
+import TabControl from './TabControl.vue';
+import TabControls from './TabControls.vue';
+import TabPanel from './TabPanel.vue';
+import TabPanels from './TabPanels.vue';
+
+<Meta title="Components/Tabs" of={TabStories} />
+
+# Tabs 🗂️
+Tabs is a collection of components that used to organizes and presents contents across multiple panels. Wow, so formal. 🤓
+
+## Usage
+To start using **Tabs** you need to import the required components, which is:
+
+1. TabControls
+2. TabControl
+3. TabPanels
+4. TabPanel
+
+See the example below:
+
+<Canvas of={TabStories.DocUsage} />
+
+## Props
+### TabControls Props
+<ArgTypes of={TabControls} />
+
+### TabControl Props
+<ArgTypes of={TabControl} />
+
+### TabPanels Props
+<ArgTypes of={TabPanels} />
+
+### TabPanel Props
+<ArgTypes of={TabPanel} />
+
+## Examples
+### Lazy a TabPanel
+You can lazy load a TabPanel using `lazy` prop on TabPanel, see the example below:
+
+<Canvas of={TabStories.DocLazy} />
+
+If you inspect the panel, it will rendered as `<!--v-if-->` until you select one of the TabControl related.

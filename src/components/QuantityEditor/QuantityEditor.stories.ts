@@ -73,6 +73,7 @@ export const Playground: Story = {
 };
 
 export const DocUsage = {
+  tags: ['!dev'],
   render: () => ({
     components: { QuantityEditor, Text },
     setup() {
@@ -88,6 +89,7 @@ export const DocUsage = {
 };
 
 export const DocNonTWDB = {
+  tags: ['!dev'],
   render: () => ({
     components: { QuantityEditor, Text },
     setup() {

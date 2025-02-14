@@ -2,6 +2,9 @@
 import type { Slot } from 'vue';
 
 type TabControl = {
+  /**
+   * Set the TabControl text.
+   */
   title?: string;
 };
 
@@ -10,20 +13,18 @@ type TabControlSlots = {
 };
 
 defineOptions({ name: 'TabControl' });
-defineSlots<TabControlSlots>();
 defineProps<TabControl>();
+defineSlots<TabControlSlots>();
 </script>
 
 <template>
-  <button class="cp-tab-control" type="button" role="tab">
+  <button v-bind="$attrs" class="cp-tab-control" type="button" role="tab">
     <template v-if="$slots.title" name="title" />
     <template v-else>{{ title }}</template>
   </button>
 </template>
 
 <style lang="scss">
-$parent: '.cp-tab-controls';
-
 .cp-tab-control {
   @include text-body-md;
   height: var(--tab-height);
@@ -37,7 +38,7 @@ $parent: '.cp-tab-controls';
   cursor: pointer;
   padding: 0 32px;
 
-  #{$parent}--grow & {
+  .cp-tab-controls--grow & {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -46,7 +47,7 @@ $parent: '.cp-tab-controls';
     padding-left: 0;
   }
 
-  #{$parent}--alternate & {
+  .cp-tab-controls--alternate & {
     color: var(--color-black);
     background-color: var(--color-white);
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Slot } from 'vue';
+import { computed, Fragment } from 'vue';
+import type { Slot, VNode } from 'vue';
 import type * as CSSType from 'csstype'
 
 type RadioGroup = {
@@ -21,17 +22,59 @@ type RadioSlots = {
   default?: Slot;
 };
 
-defineProps<RadioGroup>();
-defineSlots<RadioSlots>();
+const props = defineProps<RadioGroup>();
+const slots = defineSlots<RadioSlots>();
 
-const emits = defineEmits(['update:modelValue']);
+const emits = defineEmits([
+  /**
+   * Callback for v-model two-way data binding, **used internally**, Storybook shows by default.
+   */
+  'update:modelValue',
+]);
 
 const groupId = `radio-group-${crypto.randomUUID().slice(0, 8)}`;
+const radios = computed(() => {
+  if (!slots.default) return [];
 
-const handleClick = (e: Event) => {
-  const target = e.target as HTMLInputElement;
+  return slots.default().map(vnode => {
+    if (vnode.type === Fragment) return vnode.children;
 
-  emits('update:modelValue', target.value);
+    return vnode;
+  }).flat();
+});
+
+const handleChange = (e: Event, vnode: VNode) => {
+  const { props } = vnode;
+  const target    = e.target as HTMLInputElement;
+  let targetValue = props?.value;
+
+  if (target.checked) {
+    if (props?.trueValue !== undefined) {
+      targetValue = props.trueValue;
+    } else if (props?.value !== undefined) {
+      targetValue = props.value;
+    } else {
+      targetValue = true;
+    }
+  } else {
+    if (props?.falseValue !== undefined) {
+      targetValue = props.falseValue;
+    } else {
+      targetValue = false;
+    }
+  }
+
+  emits('update:modelValue', targetValue);
+};
+
+const isChecked = (vnode: VNode) => {
+  const { props: vnodeProps } = vnode;
+
+  if (vnodeProps?.trueValue !== undefined) {
+    return vnodeProps.trueValue === props.modelValue;
+  }
+
+  return vnodeProps?.value === props.modelValue;
 };
 </script>
 
@@ -44,12 +87,12 @@ const handleClick = (e: Event) => {
     <component
       :key="index"
       v-if="$slots.default"
-      v-for="(radio, index) in $slots.default()"
+      v-for="(radio, index) in radios"
       :is="radio"
       :name="groupId"
-      :checked="modelValue === radio.props?.value ? true : false"
-      :aria-checked="modelValue === radio.props?.value ? true : false"
-      @click="handleClick"
+      :checked="isChecked(radio as VNode)"
+      :aria-checked="isChecked(radio as VNode)"
+      @change="handleChange($event, radio as VNode)"
     />
   </div>
 </template>

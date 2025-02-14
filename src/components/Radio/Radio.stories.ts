@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 import type { ComponentProps } from 'vue-component-type-helpers';
 
-import { Text } from '@components';
+import { Text, Checkbox } from '@components';
 import Radio from './Radio.vue';
 import RadioGroup from './RadioGroup.vue';
 
@@ -50,14 +50,10 @@ export const Playground: Story = {
   render: (args) => ({
     components: { Radio },
     setup() {
-      const handleClick = (e) => {
-        console.log(e.target);
-      };
-
-      return { args, handleClick };
+      return { args };
     },
     template: `
-      <Radio v-bind="args" @click="handleClick" />
+      <Radio v-bind="args" />
     `,
   }),
   args: {
@@ -83,6 +79,31 @@ export const DocUsage = {
   }),
 };
 
+export const DocFragment = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { Checkbox, Radio, RadioGroup, Text },
+    setup() {
+      const value = ref('');
+      const radios = [
+        { value: 'Kafka', label: 'Kafka' },
+        { value: 'Himeko', label: 'Himeko' },
+        { value: 'Natasha', label: 'Natasha' },
+        { value: 'Ruan Mei', label: 'Ruan Mei' },
+      ]
+
+      return { value, radios };
+    },
+    template: `
+      <Text>Selected Character: {{ value ? value : '-' }}</Text>
+      <RadioGroup v-model="value">
+        <Checkbox value="Aglaea" label="Aglaea" />
+        <Radio value="Aglaea" label="Aglaea" />
+        <Radio v-for="(radio, index) of radios" :value="radio.value" :label="radio.label" />
+      </RadioGroup>
+    `,
+  }),
+};
 
 export const DocSubComponents = {
   tags: ['!dev'],
@@ -120,9 +141,9 @@ export const DocNonTWDB = {
     },
     template: `
       <Text>Enter Simulated Universe: {{ radioValue ? radioValue : '-' }}</Text>
-      <Radio name="radio1" value="Yes" label="Yes" @click="handleClick" />
+      <Radio name="radio1" value="Yes" label="Yes" @change="handleClick" />
       <br />
-      <Radio name="radio1" value="No" label="No" @click="handleClick" />
+      <Radio name="radio1" value="No" label="No" @change="handleClick" />
     `,
   }),
 };

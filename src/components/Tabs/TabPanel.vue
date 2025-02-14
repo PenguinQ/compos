@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { ref, onBeforeMount, watch } from 'vue';
+import { ref, onBeforeMount, watch, useAttrs } from 'vue';
 import type * as CSS from 'csstype';
 
 type TabPanel = {
-  active?: boolean; // Internal props
+  /**
+   * Set lazy load the TabPanel.
+   */
   lazy?: boolean;
+  /**
+   * Set the CSS padding value of the TabPanel.
+   */
   padding?: CSS.Property.Padding;
+  /**
+   * Set the CSS margin value of the TabPanel.
+   */
   margin?: CSS.Property.Margin;
 };
 
@@ -15,17 +23,18 @@ const props = withDefaults(defineProps<TabPanel>(), {
   lazy: false,
 });
 
+const attrs   = useAttrs();
 const tabRef  = ref<HTMLDivElement | null>(null);
 const tabLazy = ref(false);
 
 onBeforeMount(() => {
   if (props.lazy) {
-    if (props.active) tabLazy.value = true;
+    if (attrs.active) tabLazy.value = true;
   }
 });
 
 watch(
-  () => props.active,
+  () => attrs.active,
   (active) => {
     if (props.lazy) {
       if (active) {
@@ -43,7 +52,7 @@ watch(
 <template>
   <template v-if="lazy">
     <div
-      v-bind="$attrs"
+      v-bind="{ ...$attrs, 'active': undefined }"
       v-if="tabLazy"
       ref="tabRef"
       class="cp-tab-panel"
@@ -55,8 +64,8 @@ watch(
   </template>
   <template v-else>
     <div
-      v-bind="$attrs"
-      v-show="active"
+      v-bind="{ ...$attrs, 'active': undefined }"
+      v-show="$attrs.active"
       ref="tabRef"
       class="cp-tab-panel"
       role="tabpanel"
