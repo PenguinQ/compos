@@ -1,0 +1,45 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+
+import * as DialogStories from './Dialog.stories';
+import Dialog from './Dialog.vue';
+
+<Meta title="Components/Dialog" of={DialogStories} />
+
+# Dialog 💬
+Dialog is something happened when two or more people talk about something... wait, that's not it! 🤨
+
+## Usage
+To start using **Dialog**, see the example below:
+
+<Canvas of={DialogStories.DocUsage} />
+
+## Props
+<ArgTypes of={Dialog} />
+
+## Examples
+### Using Activator Slot to Trigger Dialog
+Without using `v-model` you can trigger the Dialog using `activator` slot, see the example below:
+
+<Canvas of={DialogStories.DocActivator} />
+
+### Create Custom Header Using Slot
+You can create custom header using provided `header` slot, see the example below:
+
+<Canvas of={DialogStories.DocSlotHeader} />
+
+> The Dialog `header` slot have no style on it, so it up to the user to create spacing etc.
+
+### Dialog With Some Action Using Slot
+For the Dialog to have some action, you can utilize the provided `footer` slot, see the example below:
+
+<Canvas of={DialogStories.DocSlotFooter} />
+
+> The Dialog `footer` slot have no style on it, so it up to the user to create spacing etc.
+
+### Fullscreen Dialog
+You can use `fullscreen` property to set the Dialog takes the whole width and height, usually used in mobile view.
+See the example below:
+
+<Canvas of={DialogStories.DocFullscreen} />
+
+> You can create custom header by hide the current header using `hideHeader` and compose your own using **Toolbar** component.
