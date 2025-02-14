@@ -67,7 +67,7 @@ export const Playground: Story = {
       return { args };
     },
     template: `
-      <Select v-bind="args">
+      <Select v-bind="args" />
     `,
   }),
 };
@@ -123,7 +123,7 @@ export const DocObject = {
       return { value, options };
     },
     template: `
-      <Select v-model="value" :options="options">
+      <Select v-model="value" :options="options" />
     `,
   }),
 };
@@ -154,7 +154,7 @@ export const DocNonTWDB = {
     },
     template: `
       <Text>Select value: {{ selectValue ? selectValue : '-' }}</Text>
-      <Select :options="options" @change="handleChange">
+      <Select :options="options" @change="handleChange" />
     `,
   }),
 };

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, getCurrentInstance } from 'vue';
+import { computed, ref } from 'vue';
 import type { InputHTMLAttributes, Slot } from 'vue';
 
 import ComposIcon, { Check } from '@/components/Icons';
 
-export type CheckboxValue = string | number | boolean;
+type CheckboxValue = string | number | boolean;
 
 interface Checkbox extends /* @vue-ignore */ InputHTMLAttributes {
   /**
@@ -75,6 +75,7 @@ const props = withDefaults(defineProps<Checkbox>(), {
   error     : false,
   full      : false,
   tabindex  : 0,
+  modelValue: undefined,
   trueValue : undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
   falseValue: undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
   value     : undefined, // Redeclared with default since defineProps set the default value of any undefined props with boolean type as false.
@@ -85,40 +86,35 @@ const emits = defineEmits([
    * Callback for v-model two-way data binding, **used internally**, Storybook shows by default.
    */
   'update:modelValue',
-  /**
-   * Callback when the Checkbox state is changed, return Checkbox value.
-   */
-  'change',
 ]);
 
 defineSlots<CheckboxSlots>();
 
-const instance     = getCurrentInstance();
-const isControlled = computed(() => 'modelValue' in (instance?.vnode.props || {}));
-const checkedValue = computed(() => {
+const containerRef  = ref<HTMLLabelElement | null>(null);
+const inputRef      = ref<HTMLInputElement | null>(null);
+const inListItem    = ref(false);
+const isControlled  = computed(() => props.modelValue !== undefined);
+const isArray       = computed(() => props.modelValue instanceof Array);
+const checkboxValue = computed(() => {
   if (props.trueValue !== undefined) return props.trueValue;
 
   if (props.value !== undefined) return props.value;
 
   return true;
 });
-const valueArray = computed({
+const checkboxArrayValues = computed({
   get() {
-    return props.modelValue;
+    return props.modelValue as CheckboxValue[];
   },
   set(value) {
     emits('update:modelValue', value);
   },
 });
-const isArray   = computed(() => props.modelValue instanceof Array);
 const isChecked = computed(() => {
-  if (checkedValue.value !== undefined) {
-    if (isControlled.value) return props.modelValue === checkedValue.value;
-  }
+  if (checkboxValue.value !== undefined && isControlled.value) return props.modelValue === checkboxValue.value;
+
+  return false;
 });
-const containerRef = ref<HTMLLabelElement | null>(null);
-const inputRef     = ref<HTMLInputElement | null>(null);
-const inListItem   = ref(false);
 const classes = computed(() => ({
   'cp-form-checkbox'      : true,
   'cp-form-checkbox--full': props.full,
@@ -132,30 +128,36 @@ const handleChange = (e: Event) => {
   const checked = target.checked;
   let updateValue;
 
-  if (checked) {
-    if (props.trueValue !== undefined) {
-      updateValue = props.trueValue;
-    } else if (props.value !== undefined) {
-      updateValue = props.value;
+  if (isControlled.value) {
+    if (checked) {
+      if (props.trueValue !== undefined) {
+        updateValue = props.trueValue;
+      } else if (props.value !== undefined) {
+        updateValue = props.value;
+      } else {
+        updateValue = true;
+      }
     } else {
-      updateValue = true;
+      if (props.falseValue !== undefined) {
+        updateValue = props.falseValue;
+      } else {
+        updateValue = false;
+      }
     }
+
+    emits('update:modelValue', updateValue);
   } else {
-    if (props.falseValue !== undefined) {
-      updateValue = props.falseValue;
-    } else {
-      updateValue = false;
-    }
+    // Update input aria-checked attribute if the Radio is uncontrolled element
+    target.setAttribute('aria-checked', `${checked}`);
   }
-
-  if (props.modelValue === props.falseValue) target.checked = true;
-
-  emits('update:modelValue', updateValue);
-  emits('change', e);
 };
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Enter') inputRef.value?.click();
+};
+
+const inArray = (array: CheckboxValue[], value: CheckboxValue) => {
+  return array.includes(value);
 };
 </script>
 
@@ -178,11 +180,14 @@ const handleKeydown = (e: KeyboardEvent) => {
           ref="inputRef"
           type="checkbox"
           v-bind="$attrs"
-          v-model="valueArray"
+          v-model="checkboxArrayValues"
           :tabindex="tabindex"
-          :checked="valueArray === checkedValue"
+          :checked="inArray(checkboxArrayValues, checkboxValue)"
           :disabled="disabled"
-          :value="checkedValue"
+          :value="checkboxValue"
+          :aria-disabled="disabled"
+          :aria-label="label"
+          :aria-checked="($attrs['aria-checked'] as 'true' | 'false' | 'mixed') || inArray(checkboxArrayValues, checkboxValue)"
         />
         <input
           v-else
@@ -190,9 +195,12 @@ const handleKeydown = (e: KeyboardEvent) => {
           type="checkbox"
           v-bind="$attrs"
           :tabindex="tabindex"
-          :checked="isChecked"
+          :checked="($attrs['checked'] as 'true' | 'false') || isChecked"
           :disabled="disabled"
-          :value="checkedValue"
+          :value="checkboxValue"
+          :aria-disabled="disabled"
+          :aria-label="label"
+          :aria-checked="($attrs['aria-checked'] as 'true' | 'false' | 'mixed') || isChecked"
           @change="handleChange"
         />
         <div class="cp-form-checkbox__box">

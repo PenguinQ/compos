@@ -87,7 +87,7 @@ export const DocUsage = {
   }),
 };
 
-export const DocUsingValue = {
+export const DocNonTWDB = {
   tags: ['!dev'],
   render: () => ({
     components: { Checkbox, Text },
@@ -109,7 +109,7 @@ export const DocUsingValue = {
     },
     template: `
       <Text>Simulated Universe Insight Mode: {{ checked }}</Text>
-      <Checkbox :value="true" label="Insight Mode" @change="handleChange" />
+      <Checkbox label="Insight Mode" @change="handleChange" />
     `,
   }),
 };
@@ -119,7 +119,7 @@ export const DocMultiple = {
   render: () => ({
     components: { Checkbox, Text },
     setup() {
-      const selected = ref([]);
+      const selected = ref(['Kafka', 'Himeko']);
 
       return { selected };
     },
