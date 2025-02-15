@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
 
-type DescriptionListItem = {
-  title: string;
-  description: string | number;
-  props?: object;
-};
+import type { DescriptionListItem as DescriptionListItemProps } from './DescriptionListItem.vue';
 
-type DescriptionListProps = {
+type DescriptionList = {
   /**
    * Set the alignment for the description list, default is vertical.
    */
@@ -23,12 +19,12 @@ type DescriptionListProps = {
   /**
    * Set the content for each item of description list.
    */
-  items?: DescriptionListItem[];
+  items?: DescriptionListItemProps[];
 };
 
 defineOptions({ inheritAttrs: false });
 
-const props = defineProps<DescriptionListProps>();
+const props = defineProps<DescriptionList>();
 
 const classes  = computed(() => ({
   'cp-description-list'            : true,
@@ -44,9 +40,8 @@ const DescriptionListItem = defineAsyncComponent(() => import('./DescriptionList
   <dl v-if="items" :class="classes" v-bind="$attrs">
     <component
       :is="DescriptionListItem"
-      :key="item.title"
-      v-for="item in items"
-      v-bind="item.props"
+      :key="index"
+      v-for="(item, index) in items"
       :title="item.title"
       :description="item.description"
     />

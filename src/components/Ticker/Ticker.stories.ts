@@ -142,6 +142,7 @@ export const DocSubcomponents = {
           v-for="(item, index) in items"
           :title="item.title"
           :description="item.description"
+          :type="item.type"
         />
       </Ticker>
     `,

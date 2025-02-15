@@ -1,0 +1,36 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+
+import * as DescriptionListStories from './DescriptionList.stories';
+import DescriptionList from './DescriptionList.vue';
+import DescriptionListItem from './DescriptionListItem.vue';
+
+<Meta title="Components/DescriptionList" of={DescriptionListStories} />
+
+# DescriptionList 📋
+DescriptionList is a component to display a list of terms, with a description of each term.
+
+## Usage
+To start using **DescriptionList**, see the example below:
+
+<Canvas of={DescriptionListStories.DocUsage} />
+
+## Props
+<ArgTypes of={DescriptionList} />
+
+## Subcomponents
+DescriptionList has subcomponents that can be used to create the list of items manually, they are:
+
+1. DescriptionListItem
+
+To start using it, see the example below:
+
+<Canvas of={DescriptionListStories.DocSubcomponents} />
+
+### DescriptionListItem Props
+<ArgTypes of={DescriptionListItem} />
+
+## Examples
+### Custom Content in DescriptionListItem
+You can create custom content inside the **DescriptionListItem** just by set the children of the component as anything you wanted, see the example below:
+
+<Canvas of={DescriptionListStories.DocCustom} />

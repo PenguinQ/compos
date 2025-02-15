@@ -1,13 +1,22 @@
 <script setup lang="ts">
 import type * as CSS from 'csstype';
 
-export type DescriptionListItemProps = {
+export type DescriptionListItem = {
+  /**
+   * Set the CSS align-items value of the item.
+   */
   alignItems?: CSS.Property.AlignItems;
+  /**
+   * Set the title text of the item.
+   */
   title?: string;
-  description?: string | number;
+  /**
+   * Set the description text of the item.
+   */
+  description?: string;
 };
 
-defineProps<DescriptionListItemProps>();
+defineProps<DescriptionListItem>();
 </script>
 
 <template>
@@ -21,19 +30,16 @@ defineProps<DescriptionListItemProps>();
 </template>
 
 <style lang="scss">
-$root: '.cp-description-list';
-
-#{$root}__item {
+.cp-description-list__item {
   display: flex;
   flex-direction: column;
   padding: 12px 16px;
 
   dt {
+    @include text-body-sm;
     color: var(--color-black);
     font-family: var(--text-heading-family);
     font-weight: 600;
-    font-size: 16px;
-    line-height: 24px;
     margin: 0;
   }
 
@@ -44,13 +50,13 @@ $root: '.cp-description-list';
     margin: 4px 0 0;
   }
 
-  #{$root}--horizontal & {
+  .cp-description-list--horizontal & {
     flex-direction: row;
     align-items: flex-start;
     gap: 12px;
 
     dt {
-      @include text-body-sm;
+      line-height: var(--text-body-height-md-px);
       width: 128px;
       flex: 0 0 128px;
     }
@@ -61,11 +67,11 @@ $root: '.cp-description-list';
     }
   }
 
-  #{$root}--rtl & {
+  .cp-description-list--rtl & {
     direction: rtl;
   }
 
-  #{$root}--compact & {
+  .cp-description-list--compact & {
     padding-top: 8px;
     padding-bottom: 8px;
   }
