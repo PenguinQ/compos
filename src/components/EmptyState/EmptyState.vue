@@ -40,7 +40,7 @@ type EmptyState = {
   /**
    * Set the EmptyState title text.
    */
-  title: string;
+  title?: string;
   /**
    * Set the EmptyState width.
    */
@@ -72,10 +72,10 @@ const classes = computed(() => ({
 <template>
   <div :class="classes" :style="{ width, height, padding, margin }">
     <div class="cp-empty-state__container" :style="{ width }">
-      <picture v-if="image">
+      <picture v-if="image" class="cp-empty-state__image">
         <img :src="image" :alt="imageAlt ? imageAlt : 'Empty state image'" :style="{ width: imageWidth, height: imageHeight }" />
       </picture>
-      <div v-if="emoji" class="cp-empty-state__emoji">{{ emoji }}</div>
+      <div v-if="!image && emoji" class="cp-empty-state__emoji">{{ emoji }}</div>
       <div class="cp-empty-state__body">
         <Text v-if="!$slots.title" class="cp-empty-state__title" heading="2">
           {{ title }}
@@ -111,8 +111,13 @@ const classes = computed(() => ({
     gap: 12px;
   }
 
-  picture {
+  &__image {
+    max-width: 300px;
+    max-height: 300px;
+
     img {
+      width: 100%;
+      height: 100%;
       display: block;
     }
   }

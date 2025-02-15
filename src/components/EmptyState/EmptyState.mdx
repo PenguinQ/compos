@@ -1,0 +1,32 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+
+import * as EmptyStateStories from './EmptyState.stories';
+import EmptyState from './EmptyState.vue';
+
+<Meta title="Components/EmptyState" of={EmptyStateStories} />
+
+# EmptyState 📭
+EmptyState is a component to provide feedback when no data is available to display, or error, or... yeah you know what is it for.
+
+## Usage
+To start using **EmptyState**, see the example below:
+
+<Canvas of={EmptyStateStories.DocUsage} />
+
+## Props
+<ArgTypes of={EmptyState} />
+
+## Examples
+### Custom EmptyState Using slots
+**EmptyState** provide several slots that can be used to customize the EmptyState looks or provide actions, they are:
+
+1. `title`
+2. `subtitle`
+3. `description`
+4. `action`
+
+For usage, see the example below:
+
+<Canvas of={EmptyStateStories.DocSlots} />
+
+> Any **Button** inside the `action` slot are styled automatically to give them equal width.

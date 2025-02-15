@@ -133,17 +133,17 @@ export const DocNonTWDB = {
     setup() {
       const radioValue = ref('');
 
-      const handleClick = (e: Event) => {
+      const handleCHange = (e: Event) => {
         radioValue.value = (e.target as HTMLInputElement).value;
       };
 
-      return { radioValue, handleClick };
+      return { radioValue, handleCHange };
     },
     template: `
       <Text>Enter Simulated Universe: {{ radioValue ? radioValue : '-' }}</Text>
-      <Radio name="radio1" value="Yes" label="Yes" @change="handleClick" />
+      <Radio name="radio1" value="Yes" label="Yes" @change="handleCHange" />
       <br />
-      <Radio name="radio1" value="No" label="No" @change="handleClick" />
+      <Radio name="radio1" value="No" label="No" @change="handleCHange" />
     `,
   }),
 };
