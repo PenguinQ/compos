@@ -1,10 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
+import type { ComponentProps } from 'vue-component-type-helpers';
 
-import { Card } from '@components';
+import { Text } from '@components';
 import DescriptionList from './DescriptionList.vue';
+import DescriptionListItem from './DescriptionListItem.vue';
 
-const meta: Meta<typeof DescriptionList> = {
+type DescriptionListProps = ComponentProps<typeof DescriptionList>;
+
+const meta: Meta<DescriptionListProps> = {
   component: DescriptionList,
+  subcomponents: {
+    DescriptionListItem,
+  },
   argTypes: {
     alignment: {
       control: 'select',
@@ -29,38 +36,169 @@ const meta: Meta<typeof DescriptionList> = {
     items: [
       {
         title: 'Name',
-        description: "<script>console.log('haha')</script>Dosanko Gal wa Namaramenkoi",
+        description: "Jade",
       },
       {
         title: 'Description',
         description:
-          'Shiki Tsubasa has just moved from Tokyo to Hokkaido in the middle of winter. Not quite appreciating how far apart towns are in the country, he gets off the taxi at the next town over from his destination so he can see the sights around his home, but he is shocked when he learns the "next town" is a 3-hour walk away. However, he also meets a cute Dosanko (born and raised in Hokkaido) gyaru named Fuyuki Minami who is braving 8 degrees celcius below 0 weather in the standard gyaru outfit of short skirts and bare legs!',
+          'A senior manager in the IPC Strategic Investment Department and one of the Ten Stonehearts. Her Cornerstone is the "Jade of Credit."',
       },
       {
-        title: 'Stock',
-        description: '87',
+        title: 'Path',
+        description: 'Erudition',
       },
       {
-        title: 'Price',
-        description: 'Rp100,000',
+        title: 'Rarity',
+        description: '⭐️⭐️⭐️⭐️⭐️',
       },
     ],
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof DescriptionList>;
 
-export const Default: Story = {
-  render: (args: any) => ({
-    components: { Card, DescriptionList },
+type Story = StoryObj<DescriptionListProps>;
+
+export const Playground: Story = {
+  render: (args) => ({
+    components: { DescriptionList },
     setup() {
       return { args };
     },
     template: `
-      <Card>
-        <DescriptionList v-bind="args" />
-      </Card>
+      <DescriptionList v-bind="args" />
+    `,
+  }),
+};
+
+export const DocUsage = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { DescriptionList },
+    setup() {
+      const items = [
+        {
+          title: 'Name',
+          description: "Jade",
+        },
+        {
+          title: 'Description',
+          description:
+            'A senior manager in the IPC Strategic Investment Department and one of the Ten Stonehearts. Her Cornerstone is the "Jade of Credit."',
+        },
+        {
+          title: 'Path',
+          description: 'Erudition',
+        },
+        {
+          title: 'Rarity',
+          description: '⭐️⭐️⭐️⭐️⭐️',
+        },
+      ];
+
+      return { items };
+    },
+    template: `
+      <DescriptionList :items="items" />
+    `,
+  }),
+};
+
+export const DocSubcomponents = {
+  tags: ['!dev'],
+  render: () => ({
+    components: {
+      DescriptionList,
+      DescriptionListItem,
+    },
+    setup() {
+      const items = [
+        {
+          title: 'Name',
+          description: "Jade",
+        },
+        {
+          title: 'Description',
+          description:
+            'A senior manager in the IPC Strategic Investment Department and one of the Ten Stonehearts. Her Cornerstone is the "Jade of Credit."',
+        },
+        {
+          title: 'Path',
+          description: 'Erudition',
+        },
+        {
+          title: 'Rarity',
+          description: '⭐️⭐️⭐️⭐️⭐️',
+        },
+      ];
+
+      return { items };
+    },
+    template: `
+      <DescriptionList>
+        <DescriptionListItem
+          :key="index"
+          v-for="(item, index) of items"
+          :title="item.title"
+          :description="item.description"
+        />
+      </DescriptionList>
+    `,
+  }),
+};
+
+export const DocCustom = {
+  tags: ['!dev'],
+  render: () => ({
+    components: {
+      DescriptionList,
+      DescriptionListItem,
+      Text,
+    },
+    setup() {
+      const items = [
+        {
+          title: 'Name',
+          description: "Jade",
+        },
+        {
+          title: 'Description',
+          description:
+            'A senior manager in the IPC Strategic Investment Department and one of the Ten Stonehearts. Her Cornerstone is the "Jade of Credit."',
+        },
+        {
+          title: 'Path',
+          description: 'Erudition',
+        },
+        {
+          title: 'Rarity',
+          description: '⭐️⭐️⭐️⭐️⭐️',
+        },
+      ];
+
+      return { items };
+    },
+    template: `
+      <DescriptionList>
+        <DescriptionListItem>
+          <dt>Name</dt>
+          <dd>
+            <Text as="span" color="#C77DFF" margin="0">Jade</Text>
+          </dd>
+        </DescriptionListItem>
+        <DescriptionListItem>
+          <dt>Description</dt>
+          <dd>A senior manager in the IPC Strategic Investment Department and one of the Ten Stonehearts. Her Cornerstone is the "Jade of Credit."</dd>
+        </DescriptionListItem>
+        <DescriptionListItem>
+          <dt>Path</dt>
+          <dd><a href="#">Erudition</a></dd>
+        </DescriptionListItem>
+        <DescriptionListItem>
+          <dt>Rarity</dt>
+          <dd>⭐️⭐️⭐️⭐️⭐️</dd>
+        </DescriptionListItem>
+      </DescriptionList>
     `,
   }),
 };

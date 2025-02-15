@@ -82,6 +82,12 @@ $baseApple: 17; // In iOS default dynamic font size are 17, while MacOS or other
   --text-heading-height-4: 1.35;
   --text-heading-height-5: 1.4;
   --text-heading-height-6: 1.4;
+  --text-heading-height-1-px: calc(26px * 1.3);
+  --text-heading-height-2-px: calc(24px * 1.3);
+  --text-heading-height-3-px: calc(22px * 1.35);
+  --text-heading-height-4-px: calc(20px * 1.35);
+  --text-heading-height-5-px: calc(18px * 1.4);
+  --text-heading-height-6-px: calc(16px * 1.4);
   --text-body-size-lg: calc((16 / #{$baseOther}) * 1rem);
   --text-body-size-md: calc((14 / #{$baseOther}) * 1rem);
   --text-body-size-sm: calc((12 / #{$baseOther}) * 1rem);
@@ -90,6 +96,10 @@ $baseApple: 17; // In iOS default dynamic font size are 17, while MacOS or other
   --text-body-height-md: 1.4;
   --text-body-height-sm: 1.33;
   --text-body-height-xs: 1.2;
+  --text-body-height-lg-px: calc(16px * 1.5);
+  --text-body-height-md-px: calc(14px * 1.4);
+  --text-body-height-sm-px: calc(12px * 1.33);
+  --text-body-height-xs-px: calc(10px * 1.2);
 
   // Transition
   --transition-duration-very-fast: 200ms;

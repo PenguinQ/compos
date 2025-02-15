@@ -2,6 +2,7 @@ import { Canvas, Source, Meta, ArgTypes } from '@storybook/blocks';
 
 import * as TickerStories from './Ticker.stories';
 import Ticker from './Ticker.vue';
+import TickerItem from './TickerItem.vue';
 
 <Meta title="Components/Ticker" of={TickerStories} />
 
@@ -24,6 +25,9 @@ To start using **Ticker**, see the example below:
 To use it, see the example below:
 
 <Canvas of={TickerStories.DocSubcomponents} />
+
+### TickerItem Props
+<ArgTypes of={TickerItem} />
 
 ## Examples
 ### Custom Layouting Using Provided Slot
