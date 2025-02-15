@@ -94,7 +94,7 @@ export const DocUsage = {
     },
     template: `
       <Select v-model="value">
-        <option :key="index" v-for="(option, index) of options" :value="option.value">
+        <option :key="index" v-for="(option, index) in options" :value="option.value">
           {{ option.text }}
         </option>
       </Select>
