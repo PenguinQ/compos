@@ -87,7 +87,7 @@ const isChecked = (vnode: VNode) => {
     <component
       :key="index"
       v-if="$slots.default"
-      v-for="(radio, index) in radios"
+      v-for="(radio, index) in (radios as VNode[])"
       :is="radio"
       :name="groupId"
       :checked="isChecked(radio as VNode)"
