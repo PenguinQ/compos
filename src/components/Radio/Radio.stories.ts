@@ -99,7 +99,7 @@ export const DocFragment = {
       <RadioGroup v-model="value">
         <Checkbox value="Aglaea" label="Aglaea" />
         <Radio value="Aglaea" label="Aglaea" />
-        <Radio v-for="(radio, index) of radios" :value="radio.value" :label="radio.label" />
+        <Radio v-for="(radio, index) in radios" :value="radio.value" :label="radio.label" />
       </RadioGroup>
     `,
   }),

@@ -6,7 +6,7 @@ import {
   onMounted,
   watch,
 } from 'vue';
-import type { Slot } from 'vue';
+import type { Slot, VNode } from 'vue';
 
 import { useScopeId } from '@/hooks';
 import { isVisible } from '@/helpers';
@@ -103,7 +103,7 @@ onMounted(() => {
     <div v-bind="{ ...{ [scopeId || '']: '' } }" ref="scrollerRef" class="cp-tab-controls-container">
       <component
         :key="index"
-        v-for="(tab, index) in tabs"
+        v-for="(tab, index) in (tabs as VNode[])"
         :is="tab"
         :data-cp-active="active === index ? true : undefined"
         @click="handleTab(index)"

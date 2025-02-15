@@ -148,7 +148,7 @@ const handleInput = (e: Event) => {
         @input="handleInput"
         @change="handleChange"
       >
-        <option v-if="options" v-for="{ text, ...rest } of options" v-bind="rest">
+        <option v-if="options" v-for="{ text, ...rest } in options" v-bind="rest">
           {{ text }}
         </option>
         <slot v-else></slot>

@@ -45,7 +45,7 @@ export const RowStory: StoryRow = {
     },
     template: `
       <Row v-bind="args">
-        <Column :key="index" v-for="(column, index) of args.previewColumnNumber" class="grid-column">
+        <Column :key="index" v-for="(column, index) in args.previewColumnNumber" class="grid-column">
           {{ column }}
         </Column>
       </Row>

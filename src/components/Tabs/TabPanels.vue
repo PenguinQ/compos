@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, Fragment } from 'vue';
-import type { Slot } from 'vue';
+import type { Slot, VNode } from 'vue';
 
 type TabPanels = {
   /**
@@ -33,7 +33,7 @@ const panels = computed(() => {
 <template>
   <div v-if="$slots.default" class="cp-tab-panels">
     <component
-      v-for="(panel, index) in panels"
+      v-for="(panel, index) in (panels as VNode[])"
       :is="panel"
       :active="active === index"
       :data-cp-active="active === index ? true : undefined"

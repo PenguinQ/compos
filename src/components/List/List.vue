@@ -33,7 +33,7 @@ const classes = computed(() => ({
 <template>
   <div :class="classes">
     <Text v-if="title" class="cp-list__title" heading="3">{{ title }}</Text>
-    <ListItem :key="item.title" v-for="item of items" v-bind="item" />
+    <ListItem :key="item.title" v-for="item in items" v-bind="item" />
     <slot />
   </div>
 </template>

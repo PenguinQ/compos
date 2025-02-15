@@ -307,12 +307,12 @@ export const DocSelect = {
           </ListDescription>
           <template v-if="n < 4" #prepend>
             <Select v-model="value" :error="(n % 3) === 1" :disabled="(n % 3) === 2">
-              <option v-for="option of options" :value="option.value">{{ option.label }}</option>
+              <option v-for="option in options" :value="option.value">{{ option.label }}</option>
             </Select>
           </template>
           <template v-else #append>
             <Select v-model="value" :error="(n % 3) === 1" :disabled="(n % 3) === 2">
-              <option v-for="option of options" :value="option.value">{{ option.label }}</option>
+              <option v-for="option in options" :value="option.value">{{ option.label }}</option>
             </Select>
           </template>
         </ListItem>
