@@ -3,12 +3,19 @@ import { Text } from '@/components';
 import ComposIcon, { InfoCircleFill, XCircleFill, WarningCircleFill } from '@/components/Icons';
 
 export type TickerItem = {
+  /**
+   * Set the title text for the item.
+   */
   title?: string;
+  /**
+   * Set the description text for the item.
+   */
   description: string;
+  /**
+   * Set the type of the item.
+   */
   type?: 'error' | 'info' | 'warning';
 };
-
-defineOptions({ name: 'TickerItem' });
 
 const props = withDefaults(defineProps<TickerItem>(), {
   type: 'info',
