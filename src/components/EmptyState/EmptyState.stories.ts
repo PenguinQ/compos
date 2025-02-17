@@ -61,9 +61,9 @@ const meta: Meta<EmptyStateProps> = {
 
 export default meta;
 
-type EmptyState = StoryObj<EmptyStateProps>;
+type Story = StoryObj<EmptyStateProps>;
 
-export const Playground: EmptyState = {
+export const Playground: Story = {
   render: (args) => ({
     components: { EmptyState },
     setup() {

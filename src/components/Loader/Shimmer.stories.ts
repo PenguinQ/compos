@@ -12,9 +12,9 @@ const meta: Meta<ShimmerProps> = {
 
 export default meta;
 
-type StoryShimmer = StoryObj<ShimmerProps>;
+type Story = StoryObj<ShimmerProps>;
 
-export const Playground: StoryShimmer = {
+export const Playground: Story = {
   render: (args) => ({
     components: { Shimmer },
     setup() {

@@ -1,11 +1,18 @@
 import type { Preview } from '@storybook/vue3';
 
-// CSS
 import './preview.scss';
 
 const preview: Preview = {
   parameters: {
-    // actions: { argTypesRegex: "^on[A-Z].*" }, // Dropped in v8
+    options: {
+      storySort: {
+        order: [
+          'General',
+          'Layouts',
+          'Components',
+        ],
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,
@@ -13,7 +20,6 @@ const preview: Preview = {
       },
     },
   },
-  // @ts-ignore
   tags: ['autodocs'],
 };
 

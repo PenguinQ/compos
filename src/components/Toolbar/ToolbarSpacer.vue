@@ -2,6 +2,9 @@
 import type * as CSS from 'csstype';
 
 type ToolbarSpacer = {
+  /**
+   * Set the CSS width value of the ToolbarSpacer.
+   */
   width?: CSS.Property.Width;
 };
 

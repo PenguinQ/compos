@@ -1,0 +1,38 @@
+import { Canvas, Meta, ArgTypes } from '@storybook/blocks';
+
+import * as ToolbarStories from './Toolbar.stories';
+import Toolbar from './Toolbar.vue';
+import ToolbarAction from './ToolbarAction.vue';
+import ToolbarSpacer from './ToolbarSpacer.vue';
+import ToolbarTitle from './ToolbarTitle.vue';
+
+<Meta title="Components/EmptyState" of={ToolbarStories} />
+
+# Toolbar 🍫
+**Toolbar** is a component that serves as primary navigation and action container that provides
+essential functions, search capabilities, and many more.
+
+## Usage
+To start using **Toolbar**, see the example below:
+
+<Canvas of={ToolbarStories.DocUsage} />
+
+## Props
+<ArgTypes of={Toolbar} />
+
+## Subcomponents
+**Toolbar** have subcomponents that you can use to show title, give actions, or spacing within it, they are:
+
+1. ToolbarAction
+2. ToolbarSpacer
+3. ToolbarTitle
+
+See the example below:
+
+<Canvas of={ToolbarStories.DocSubcomponents} />
+
+## Examples
+### Extend Toolbar Using Extension Slot
+**Toolbar** also have `extension` slot that you can use to add elements below the **Toolbar**, see the example below:
+
+<Canvas of={ToolbarStories.DocExtension} />
