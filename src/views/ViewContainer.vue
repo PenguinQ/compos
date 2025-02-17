@@ -9,7 +9,7 @@ import { Archive, ArchiveFill, Basket, BasketFill, Gear, GearFill } from '@/comp
 <template>
   <Page>
     <RouterView />
-    <BottomNavbar ref="nav">
+    <BottomNavbar>
       <BottomNavbarButton
         title="Sales Management"
         :icon="($route.name as string).startsWith('sale') ? BasketFill : Basket"
