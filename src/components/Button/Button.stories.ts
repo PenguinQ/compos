@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import type { ComponentProps } from 'vue-component-type-helpers';
 
+import ComposIcon, { Archive } from '@components/Icons';
 import Button from './Button.vue';
 import ButtonGroup from './ButtonGroup.vue';
-import ComposIcon, { Archive } from '@components/Icons';
 
 type ButtonProps = ComponentProps<typeof Button>;
 

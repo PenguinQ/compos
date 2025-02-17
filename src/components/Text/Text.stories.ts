@@ -1,10 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
+import type { ComponentProps } from 'vue-component-type-helpers';
 
 import { CSS } from '@story/constants';
 
 import Text from './Text.vue';
 
-const meta: Meta<typeof Text> = {
+type TextProps = ComponentProps<typeof Text>;
+
+const meta: Meta<TextProps> = {
   component: Text,
   argTypes: {
     as: {
@@ -74,7 +77,8 @@ const meta: Meta<typeof Text> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Text>;
+
+type Story = StoryObj<TextProps>;
 
 export const Default: Story = {
   render: (args) => ({

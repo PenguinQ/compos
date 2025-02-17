@@ -4,7 +4,13 @@ import type { ButtonHTMLAttributes } from 'vue';
 import type * as CSS from 'csstype';
 
 interface ToolbarAction extends /* @vue-ignore */ ButtonHTMLAttributes {
+  /**
+   * Set the ToolbarAction into icon mode.
+   */
   icon?: boolean;
+  /**
+   * Set the CSS background-color value of the ToolbarAction.
+   */
   backgroundColor?: CSS.Property.BackgroundColor;
 }
 
