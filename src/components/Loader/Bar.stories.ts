@@ -12,9 +12,9 @@ const meta: Meta<BarProps> = {
 
 export default meta;
 
-type StoryBar = StoryObj<BarProps>;
+type Story = StoryObj<BarProps>;
 
-export const Playground: StoryBar = {
+export const Playground: Story = {
   render: (args) => ({
     components: { Bar },
     setup() {

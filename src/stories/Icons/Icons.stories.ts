@@ -1,21 +1,20 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
-import { ComponentProps } from 'vue-component-type-helpers';
 
 import ComposIcon, { CashCoin } from '@components/Icons';
 import IconList from './IconList.vue';
 
-type IconProps = ComponentProps<typeof ComposIcon>;
+type IconProps = typeof ComposIcon;
 
 const meta: Meta<IconProps> = {
-  title: 'Icons',
+  title: 'General/Icons',
   component: ComposIcon,
 };
 
 export default meta;
 
-type PlaygroundStory = StoryObj<IconProps>;
+type Story = StoryObj<IconProps>;
 
-export const Playground: PlaygroundStory = {
+export const Playground: Story = {
   render: (args) => ({
     components: { ComposIcon },
     setup() {
@@ -33,6 +32,19 @@ export const Playground: PlaygroundStory = {
       control: 'text',
     },
   },
+};
+
+export const DocUsage = {
+  tags: ['!dev'],
+  render: () => ({
+    components: { ComposIcon },
+    setup() {
+      return { CashCoin };
+    },
+    template: `
+      <ComposIcon :icon="CashCoin" />
+    `,
+  }),
 };
 
 export const List = {

@@ -34,9 +34,9 @@ const meta: Meta<ColumnProps> = {
 
 export default meta;
 
-type StoryColumn = StoryObj<ColumnProps>;
+type Story = StoryObj<ColumnProps>;
 
-export const ColumnStory: StoryColumn = {
+export const ColumnStory: Story = {
   name: 'Playground',
   render: (args) => ({
     components: { Row, Column },

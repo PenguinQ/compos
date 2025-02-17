@@ -1,13 +1,27 @@
 <script setup lang="ts">
 import { ref, defineAsyncComponent } from 'vue';
+import type { Slot } from 'vue';
 
 type Toolbar = {
+  /**
+   * Set the Toolbar title text.
+   */
   title?: string;
-  onBack?: () => void;
+};
+
+type ToolbarSlots = {
+  /**
+   * Slot used to create content inside the Dialog.
+   */
+  default?: Slot;
+  /**
+   * Slot used to create content for the Dialog extension.
+   */
+  extension?: Slot;
 };
 
 defineProps<Toolbar>();
-defineEmits(['back']);
+defineSlots<ToolbarSlots>();
 
 const ToolbarTitle = defineAsyncComponent(() => import('./ToolbarTitle.vue'));
 
@@ -27,9 +41,21 @@ const toggleToolbar = (toggle: boolean) => {
 };
 
 defineExpose({
-  outer    : outerRef,
-  inner    : innerRef,
+  /**
+   * Toolbar container.
+   */
+  outer: outerRef,
+  /**
+   * Toolbar inner container.
+   */
+  inner: innerRef,
+  /**
+   * Toolbar extension container.
+   */
   extension: extensionRef,
+  /**
+   * Function to hide Toolbar.
+   */
   toggleToolbar,
 });
 </script>

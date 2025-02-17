@@ -1,24 +1,18 @@
 import { Canvas, Meta, Story } from '@storybook/blocks';
 
-<Meta title="Icons" />
+import * as IconsStories from './Icons.stories';
+
+<Meta title="General/Icons" of={IconsStories} />
 
 # Icons
 Icon component are used to render all icons used in the applications as a **web component** that render the icon as an inline SVG.
 
 By default, icon size are set to **24px**.
 
-## Usages
-To start using the icons, import the component `ComposIcon` and the icon you needs.
+## Usage
+To start using the icons, import the component `ComposIcon` and the icon you needs, see the example below:
 
-```tsx
-<script setup lang="ts">
-  import ComposIcon, { Archive } from '@components/Icons';
-</script>
-
-<template>
-  <ComposIcon :icon="Archive" />
-</template>
-```
+<Canvas of={IconsStories.DocUsage} />
 
 ## Properties
 | Name  |  Type  | Default Value | Description                                                                                  |

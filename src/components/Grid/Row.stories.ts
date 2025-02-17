@@ -34,9 +34,9 @@ const meta: Meta<RowProps> = {
 
 export default meta;
 
-type StoryRow = StoryObj<RowProps>;
+type Story = StoryObj<RowProps>;
 
-export const RowStory: StoryRow = {
+export const RowStory: Story = {
   name: 'Playground',
   render: (args) => ({
     components: { Row, Column },

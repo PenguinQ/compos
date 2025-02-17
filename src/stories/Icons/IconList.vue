@@ -6,7 +6,7 @@ const { default: _, ...icons } = Icons;
 
 <template>
   <div class="docs-icon-container">
-    <div class="docs-icon" v-for="(value, key) of icons">
+    <div class="docs-icon" v-for="(value, key) in icons">
       <ComposIcon :icon="value" :size="32" />
       <span class="docs-icon__label">{{ key }}</span>
     </div>
