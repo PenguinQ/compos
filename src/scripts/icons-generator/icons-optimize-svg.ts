@@ -128,8 +128,8 @@ const updateShapes = (svgString: string) => {
             const shapeFill   = shape.getAttribute('fill');
             const shapeStroke = shape.getAttribute('stroke');
 
-            if (shapeFill)   shape.setAttribute('fill', 'currentColor');
-            if (shapeStroke) shape.setAttribute('stroke', 'currentColor');
+            if (shapeFill)   shape.removeAttribute('fill');
+            if (shapeStroke) shape.removeAttribute('stroke');
           }
         }
       }
@@ -158,7 +158,7 @@ const optimizeSVG = (pattern: string, callback: (glyphs: ContentType[]) => void)
       const result = optimize(data, {
         path,
         multipass: true,
-        plugins  : [
+        plugins: [
           'cleanupAttrs',
           'cleanupIds',
           'removeComments',
@@ -170,13 +170,29 @@ const optimizeSVG = (pattern: string, callback: (glyphs: ContentType[]) => void)
           'removeTitle',
           'removeXMLProcInst',
           {
-            name: 'sortXMLNS',
-            fn  : () => {
+            name: 'removeSVGFill',
+            fn: () => {
               return {
                 root: {
                   enter: (node) => {
                     node.children.map(child => {
-                      const { _xmlns, ...rest } = (child as XastElement).attributes;
+                      const { fill, ...rest } = (child as XastElement).attributes;
+
+                      (child as XastElement).attributes = { ...rest };
+                    });
+                  },
+                },
+              };
+            },
+          },
+          {
+            name: 'sortXMLNS',
+            fn: () => {
+              return {
+                root: {
+                  enter: (node) => {
+                    node.children.map(child => {
+                      const { xmlns, ...rest } = (child as XastElement).attributes;
 
                       (child as XastElement).attributes = { xmlns: 'http://www.w3.org/2000/svg', ...rest };
                     });

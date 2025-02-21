@@ -7,7 +7,7 @@ import ora from 'ora';
 import { __foldername } from './icons-build.ts';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname  = dirname(__filename);
 
 export default async () => {
   const bold    = chalk.bold;
@@ -26,7 +26,9 @@ export function addIcons(icons: Record<string, string>) {
 class ComposIcon extends HTMLElement {
   static observedAttributes = ['name', 'icon', 'size', 'color'];
   static _cache = new Map();
-  static _fetchPromises = new Map();
+  static _pendingFetches = new Map();
+  private connected: boolean = false;
+  private content: string | undefined = '';
 
   constructor() {
     super();
@@ -34,26 +36,50 @@ class ComposIcon extends HTMLElement {
   }
 
   connectedCallback() {
-    this.render();
-    this.setAttribute('role', 'img');
-    this.removeAttribute('icon');
-    this.removeAttribute('size');
-    this.removeAttribute('color');
+    if (!this.connected) {
+      this.render();
+      this.setAttribute('role', 'img');
+      this.removeAttribute('icon');
+
+      this.connected = true;
+    }
   }
 
-  attributeChangedCallback(_name: string, oldValue: string | null, newValue: string | null) {
-    if (oldValue !== newValue) this.render();
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
+    if (!this.connected || oldValue === newValue) return;
+
+    if (newValue) {
+      switch (name) {
+        case 'icon':
+        case 'name':
+          this.content = '';
+          this.render();
+          this.removeAttribute('icon');
+          break;
+        case 'color':
+        case 'size':
+          this.render();
+          break;
+      }
+    }
   }
 
   async fetchIcon(url: string) {
     if (ComposIcon._cache.has(url)) return ComposIcon._cache.get(url);
 
-    if (ComposIcon._fetchPromises.has(url)) return ComposIcon._fetchPromises.get(url);
+    if (ComposIcon._pendingFetches.has(url)) return ComposIcon._pendingFetches.get(url);
 
     const fetchPromise = (async () => {
       try {
         const response = await fetch(url);
+        const contentType = response.headers.get('content-type');
+
+        if (!contentType?.includes('svg')) throw new Error('Invalid icon source');
+
         const svgContent = await response.text();
+
+        if (!svgContent.includes('<svg')) throw new Error('Invalid SVG content');
+
         ComposIcon._cache.set(url, svgContent);
 
         return svgContent;
@@ -62,11 +88,11 @@ class ComposIcon extends HTMLElement {
 
         return null;
       } finally {
-        ComposIcon._fetchPromises.delete(url);
+        ComposIcon._pendingFetches.delete(url);
       }
     })();
 
-    ComposIcon._fetchPromises.set(url, fetchPromise);
+    ComposIcon._pendingFetches.set(url, fetchPromise);
 
     return fetchPromise;
   }
@@ -74,45 +100,36 @@ class ComposIcon extends HTMLElement {
   getSize() {
     const size = this.getAttribute('size');
 
-    return isNaN(Number(size)) ? size : \`\${size}px\`;
+    return size ? isNaN(Number(size)) ? size : \`\${size}px\` : undefined;
   }
 
   async render() {
-    const svgIcon = this.getAttribute('icon') || this.getAttribute('name');
+    if (!this.content) {
+      const svg = this.getAttribute('icon') || this.getAttribute('name');
 
-    if (!svgIcon) return;
+      if (!svg) return;
 
-    let svgContent = composIconRegistry.get(svgIcon);
+      let icon = composIconRegistry.get(svg);
 
-    if (!svgContent) {
-      if (svgIcon.startsWith('<svg')) {
-        svgContent = svgIcon;
-      } else {
-        svgContent = await this.fetchIcon(svgIcon);
+      if (!icon) {
+        icon = svg.startsWith('<svg') ? svg : await this.fetchIcon(svg);
 
-        if (!svgContent) return;
+        if (!icon) return;
       }
+
+      this.content = icon;
     }
 
     const size = this.getSize();
     const color = this.getAttribute('color');
     const template = document.createElement('template');
 
-    if (size) {
-      this.style.width = size;
-      this.style.height = size;
-    }
-
-    if (color) {
-      this.style.color = color;
-    }
-
     template.innerHTML = \`
       <style>
         :host {
-          width: 24px;
-          height: 24px;
-          fill: currentColor;
+          width: \${size || '24px'};
+          height: \${size || '24px'};
+          fill: \${color || 'currentColor'};
           vertical-align: middle;
           display: inline-block;
           contain: strict;
@@ -124,7 +141,7 @@ class ComposIcon extends HTMLElement {
           display: block;
         }
       </style>
-      \${svgContent}
+      \${this.content}
     \`;
 
     this.shadowRoot?.replaceChildren(template.content.cloneNode(true));
