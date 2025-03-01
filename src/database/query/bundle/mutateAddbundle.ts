@@ -35,7 +35,7 @@ export default async (data: MutateAddBundleQuery) => {
     if (!isNumeric(price))        throw new Error('Bundle price must be a number');
     if (!products.length)         throw new Error('Bundle must have at least one product');
 
-    const clean_price = sanitizeNumeric(price) as string;
+    const clean_price = sanitizeNumeric(price);
 
     let bundle_active     = true;
     const bundle_products = <BundleDocProduct[]>[];
@@ -46,14 +46,12 @@ export default async (data: MutateAddBundleQuery) => {
       if (!isNumeric(quantity)) throw new Error('Product quantity must be a number');
       if (!quantity)            throw new Error('Product quantity cannot be zero');
 
-      const clean_quantity = sanitizeNumeric(quantity) as number;
-
       if (!active) bundle_active = false;
 
       bundle_products.push({
-        quantity: clean_quantity,
         id,
         product_id,
+        quantity,
         active,
       });
     }

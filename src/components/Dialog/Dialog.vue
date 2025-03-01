@@ -133,7 +133,7 @@ const handleClickActivator = () => {
   emits('update:modelValue', show.value);
 };
 
-const activator_props = reactive({
+const activatorProps = reactive({
   onclick: handleClickActivator,
 });
 
@@ -147,7 +147,7 @@ watch(
 </script>
 
 <template>
-  <slot name="activator" v-bind="{ props: activator_props }" />
+  <slot name="activator" v-bind="{ props: activatorProps }" />
   <Overlay
     class="cp-overlay--dialog"
     role="dialog"
@@ -172,7 +172,7 @@ watch(
       :style="{ maxWidth, minWidth, width }"
     >
       <div v-if="!hideHeader" class="cp-dialog-header">
-        <slot name="header" v-bind="{ props: activator_props }" />
+        <slot name="header" v-bind="{ props: activatorProps }" />
         <div v-if="!$slots.header" class="cp-dialog-header__content">
           <h3 v-if="title" class="cp-dialog__title">{{ title }}</h3>
           <button
@@ -192,7 +192,7 @@ watch(
         </div>
       </div>
       <div v-if="$slots.footer" class="cp-dialog-footer">
-        <slot name="footer" v-bind="{ props: activator_props }" />
+        <slot name="footer" v-bind="{ props: activatorProps }" />
       </div>
     </div>
   </Overlay>
