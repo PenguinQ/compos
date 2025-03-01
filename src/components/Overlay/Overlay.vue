@@ -4,12 +4,12 @@ import type * as CSS from 'csstype';
 
 import { useOverlayContainer } from '@/hooks';
 
-interface Overlay {
+type Overlay = {
   duration?: number;
   modelValue?: boolean;
   fullscreen?: boolean;
   padding?: CSS.Property.Padding;
-}
+};
 
 defineOptions({ inheritAttrs: false });
 

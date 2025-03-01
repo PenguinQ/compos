@@ -50,7 +50,13 @@ const props = withDefaults(defineProps<ToastItem>(), {
   persistOnHover: false,
 });
 
-const emits = defineEmits(['update:modelValue', 'enter', 'after-enter', 'leave', 'after-leave']);
+const emits = defineEmits([
+  'update:modelValue',
+  'enter',
+  'after-enter',
+  'leave',
+  'after-leave',
+]);
 
 const display = ref(props.modelValue ? props.modelValue : props.show);
 

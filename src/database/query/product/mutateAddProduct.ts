@@ -36,11 +36,11 @@ export default async (data: MutateAddProductQuery) => {
       name  = '',
       price = '0',
       stock = 0,
-      description,
       by,
-      variants,
+      description,
       new_images,
       sku,
+      variants,
     } = data;
     const clean_name = sanitize(name);
 
@@ -74,8 +74,7 @@ export default async (data: MutateAddProductQuery) => {
         if (!isNumeric(v_price))        throw new Error('Price must be a number');
         if (!isNumeric(v_stock))        throw new Error('Stock must be a number');
 
-        const clean_v_price = sanitizeNumeric(v_price) as string;
-        const clean_v_stock = sanitizeNumeric(v_stock) as number;
+        const clean_v_price = sanitizeNumeric(v_price);
 
         variant_array.push({
           id        : v_id,
@@ -83,7 +82,7 @@ export default async (data: MutateAddProductQuery) => {
           active    : v_stock >= 1 ? true : false,
           name      : clean_v_name,
           price     : clean_v_price,
-          stock     : clean_v_stock,
+          stock     : v_stock,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           ...(sku ? { sku: sanitize(v_sku as string) } : {}),
@@ -163,9 +162,8 @@ export default async (data: MutateAddProductQuery) => {
      * -------------------------
      */
     else {
-      const clean_price = sanitizeNumeric(price!) as string;
-      const clean_stock = sanitizeNumeric(stock!) as number;
-      const is_active   = clean_stock >= 1 ? true : false;
+      const clean_price = sanitizeNumeric(price);
+      const is_active   = stock >= 1 ? true : false;
 
       /**
        * --------------------
@@ -176,13 +174,13 @@ export default async (data: MutateAddProductQuery) => {
        * 3. sku is optional.
        */
       const _queryProduct = await db.product.insert({
-        active     : is_active,
         id         : product_id,
+        active     : is_active,
         name       : clean_name,
         price      : clean_price,
-        stock      : clean_stock,
         created_at : new Date().toISOString(),
         updated_at : new Date().toISOString(),
+        stock,
         ...(description ? { description: sanitize(description) } : {}),
         ...(by ? { by: sanitize(by) } : {}),
         ...(sku ? { sku: sanitize(sku) } : {}),

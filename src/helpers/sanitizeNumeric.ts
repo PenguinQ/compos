@@ -1,7 +1,9 @@
-export default (value: string | number): string | number => {
-  if (typeof value === 'number') return Number(value.toString().replace(/^0+/, '') || '0');
+export default (number: string) => {
+  if (typeof number === 'number') return number;
 
-  if (/^0+$/.test(value)) return '0';
+  const digits = number.replace(/[^0-9]/g, '');
 
-  return value.replace(/^0+/, '');
+  if (digits.length > 1 && digits.charAt(0) === '0') return digits.replace(/^0+/g, '');
+
+  return digits;
 };

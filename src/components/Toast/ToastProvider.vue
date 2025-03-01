@@ -3,6 +3,7 @@ import { provide, inject } from 'vue';
 
 import Toast from './Toast.vue';
 import ToastItem from './ToastItem.vue';
+
 import { useToast } from './hooks';
 import type { ToastReturn } from './hooks/useToast';
 
@@ -29,7 +30,7 @@ if (!plugin) provide('ToastProvider', { items, add });
   <Toast v-if="items.length" :to="to">
     <ToastItem
       v-for="(item, index) in items"
-      :key="index"
+      :key="`global-toast-${index}`"
       :duration="item.duration"
       :html="item.html"
       :message="item.message"

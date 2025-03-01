@@ -140,16 +140,16 @@ export default async ({ id, data }: MutateEditProductQuery) => {
   try {
     const { sanitize } = DOMPurify;
     const {
-      name,
-      by,
-      description,
-      sku,
-      price,
-      stock,
-      variants,
+      name             = '',
+      price            = '0',
+      stock            = 0,
       new_images       = [],
       deleted_images   = [],
       deleted_variants = [],
+      by,
+      description,
+      sku,
+      variants,
     } = data;
     const clean_name = sanitize(name);
 
@@ -256,13 +256,13 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        */
       for (const variant of variants) {
         const {
-          id            : v_id,
-          name          : v_name,
-          price         : v_price,
-          stock         : v_stock,
-          sku           : v_sku,
+          name          : v_name           = '',
+          price         : v_price          = '0',
+          stock         : v_stock          = 0,
           new_images    : v_new_images     = [],
           deleted_images: v_deleted_images = [],
+          id            : v_id,
+          sku           : v_sku,
         } = variant;
         const clean_v_name = sanitize(v_name);
 
@@ -270,9 +270,8 @@ export default async ({ id, data }: MutateEditProductQuery) => {
         if (!isNumeric(v_price))  throw new Error(`${v_name} price cannot be empty and must be a number`);
         if (!isNumeric(v_stock))  throw new Error(`${v_name} stock cannot be empty and must be a number`);
 
-        const clean_v_price = sanitizeNumeric(v_price) as string;
-        const clean_v_stock = sanitizeNumeric(v_stock) as number;
-        const v_is_active   = clean_v_stock >= 1 ? true : false;
+        const clean_v_price = sanitizeNumeric(v_price);
+        const v_is_active   = v_stock >= 1 ? true : false;
 
         /**
          * -------------------------------------
@@ -303,7 +302,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
               active: v_is_active,
               name  : clean_v_name,
               price : clean_v_price,
-              stock : clean_v_stock,
+              stock : v_stock,
               ...(v_sku ? { sku: sanitize(v_sku as string) } : {}),
             },
           });
@@ -393,7 +392,7 @@ export default async ({ id, data }: MutateEditProductQuery) => {
             product_id: id,
             name      : clean_v_name,
             price     : clean_v_price,
-            stock     : clean_v_stock,
+            stock     : v_stock,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             ...(sku ? { sku: sanitize(v_sku as string) } : {}),
@@ -441,16 +440,15 @@ export default async ({ id, data }: MutateEditProductQuery) => {
       if (!price || !isNumeric(price)) throw new Error('Product without variants price cannot be empty and must be a number');
       if (!stock || !isNumeric(stock)) throw new Error('Product without variants stock cannot be empty and must be a number');
 
-      const clean_price = sanitizeNumeric(price) as string;
-      const clean_stock = sanitizeNumeric(stock) as number;
-      const is_active = clean_stock >= 1 ? true : false;
+      const clean_price = sanitizeNumeric(price);
+      const is_active = stock >= 1 ? true : false;
 
       await _queryProductConstruct.update({
         $set: {
-          active     : is_active,
-          name       : clean_name,
-          price      : clean_price,
-          stock      : clean_stock,
+          active: is_active,
+          name  : clean_name,
+          price : clean_price,
+          stock,
           ...(description ? { description: sanitize(description) } : {}),
           ...(by ? { by: sanitize(by) } : {}),
           ...(sku ? { sku: sanitize(sku) } : {}),
