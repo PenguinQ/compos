@@ -6,7 +6,7 @@ import { SALE_ID_PREFIX } from '@/database/constants';
 import type { SaleDocProduct } from '@/database/types';
 
 // Helpers
-import { isNumeric } from '@/helpers';
+import { isNumericString } from '@/helpers';
 import { ComPOSError } from '@/helpers/createError';
 
 type MutateAddSaleQueryData = {
@@ -21,15 +21,15 @@ type MutateAddSaleQuery = {
 
 export default async ({ data }: MutateAddSaleQuery) => {
   try {
+    const ulid         = monotonicFactory();
     const { sanitize } = DOMPurify;
-    const ulid    = monotonicFactory();
     const sale_id = SALE_ID_PREFIX + ulid();
     const { name, balance, products = [] } = data;
     const clean_name = sanitize(name);
 
-    if (clean_name.trim() === '')       throw new Error('Name cannot be empty');
-    if (balance && !isNumeric(balance)) throw new Error('Balance must be a number');
-    if (!products.length)               throw new Error('Product cannot be empty');
+    if (clean_name.trim() === '')             throw new Error('Name cannot be empty');
+    if (balance && !isNumericString(balance)) throw new Error('Balance must be a number');
+    if (!products.length)                     throw new Error('Product cannot be empty');
 
     await db.sale.insert({
       id           : sale_id,

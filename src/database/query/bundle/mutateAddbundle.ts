@@ -6,7 +6,7 @@ import { BUNDLE_ID_PREFIX } from '@/database/constants';
 import type { BundleDocProduct } from '@/database/types';
 
 // Helpers
-import { isNumeric, sanitizeNumeric } from '@/helpers';
+import { isNumeric, isNumericString, sanitizeNumericString } from '@/helpers';
 import { ComPOSError } from '@/helpers/createError';
 
 type MutateAddBundleQuery = {
@@ -32,10 +32,10 @@ export default async (data: MutateAddBundleQuery) => {
     const clean_name = sanitize(name);
 
     if (clean_name.trim() === '') throw new Error('Bundle name cannot be empty');
-    if (!isNumeric(price))        throw new Error('Bundle price must be a number');
+    if (!isNumericString(price))  throw new Error('Bundle price must be a number');
     if (!products.length)         throw new Error('Bundle must have at least one product');
 
-    const clean_price = sanitizeNumeric(price);
+    const clean_price = sanitizeNumericString(price) ?? '0';
 
     let bundle_active     = true;
     const bundle_products = <BundleDocProduct[]>[];

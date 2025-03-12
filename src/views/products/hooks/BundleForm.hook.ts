@@ -12,7 +12,7 @@ import { getProductList } from '@/database/query/product';
 import { formDetailNormalizer, formProductListNormalizer } from '../normalizer/BundleForm.normalizer'
 
 // Common Helpers
-import { debounce, isNumeric } from '@/helpers';
+import { debounce, isNumeric, isNumericString } from '@/helpers';
 
 // Types
 import type {
@@ -247,7 +247,7 @@ export const useBundleForm = () => {
       formError.name = '';
     }
 
-    if (!isNumeric(formData.price)) {
+    if (!isNumericString(formData.price)) {
       formError.price = 'Bundle price must be a number and cannot be empty.';
       errors.push('');
     } else {
@@ -419,7 +419,7 @@ export const useBundleForm = () => {
 
     const target = e.target as HTMLInputElement;
 
-    if (!isNumeric(target.value)) {
+    if (!isNumericString(target.value)) {
       product.quantity = 1;
       product.total_price = Big(product.price).times(1).toString();
     }

@@ -11,7 +11,7 @@ import { formDetailNormalizer } from '../normalizer/ProductForm.normalizer';
 import type { ProductFormNormalizerReturn } from '../normalizer/ProductForm.normalizer';
 
 // Helpers
-import { isImagesValid, isNumeric } from '@/helpers';
+import { isImagesValid, isNumeric, isNumericString } from '@/helpers';
 
 type Image = {
   id?: string;
@@ -356,7 +356,7 @@ export const useProductForm = () => {
       formError.name = '';
     }
 
-    if (!isNumeric(formData.price)) {
+    if (!isNumericString(formData.price)) {
       formError.price = 'Product price must be a number and cannot be empty.';
       errors.push('');
     } else {
@@ -379,7 +379,7 @@ export const useProductForm = () => {
           formError.variants[index].name = '';
         }
 
-        if (!isNumeric(variant.price)) {
+        if (!isNumericString(variant.price)) {
           formError.variants[index].price = 'Variant price must be a number and cannot be empty.';
           errors.push('');
         } else {

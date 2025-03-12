@@ -10,7 +10,7 @@ import { THUMBNAIL_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
 import type { ProductDoc, VariantDoc } from '@/database/types';
 
 // Helpers
-import { isNumeric, sanitizeNumeric } from '@/helpers';
+import { isNumeric, isNumericString, sanitizeNumericString } from '@/helpers';
 import { ComPOSError } from '@/helpers/createError';
 
 type MutateEditProductQueryVariant = {
@@ -266,11 +266,11 @@ export default async ({ id, data }: MutateEditProductQuery) => {
         } = variant;
         const clean_v_name = sanitize(v_name);
 
-        if (!clean_v_name.trim()) throw new Error('Variant name cannot be empty');
-        if (!isNumeric(v_price))  throw new Error(`${v_name} price cannot be empty and must be a number`);
-        if (!isNumeric(v_stock))  throw new Error(`${v_name} stock cannot be empty and must be a number`);
+        if (!clean_v_name.trim())      throw new Error('Variant name cannot be empty');
+        if (!isNumericString(v_price)) throw new Error(`${v_name} price cannot be empty and must be a number`);
+        if (!isNumeric(v_stock))       throw new Error(`${v_name} stock cannot be empty and must be a number`);
 
-        const clean_v_price = sanitizeNumeric(v_price);
+        const clean_v_price = sanitizeNumericString(v_price) ?? '0';
         const v_is_active   = v_stock >= 1 ? true : false;
 
         /**
@@ -437,10 +437,10 @@ export default async ({ id, data }: MutateEditProductQuery) => {
        * 2.1. Update the product detail.
        * -------------------------------
        */
-      if (!price || !isNumeric(price)) throw new Error('Product without variants price cannot be empty and must be a number');
-      if (!stock || !isNumeric(stock)) throw new Error('Product without variants stock cannot be empty and must be a number');
+      if (!isNumericString(price)) throw new Error('Product without variants price cannot be empty and must be a number');
+      if (!isNumeric(stock))       throw new Error('Product without variants stock cannot be empty and must be a number');
 
-      const clean_price = sanitizeNumeric(price);
+      const clean_price = sanitizeNumericString(price) ?? '0';
       const is_active = stock >= 1 ? true : false;
 
       await _queryProductConstruct.update({
