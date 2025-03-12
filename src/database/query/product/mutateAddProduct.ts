@@ -9,7 +9,7 @@ import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
 import type { VariantDoc } from '@/database/types';
 
 // Helpers
-import { isNumeric, sanitizeNumeric } from '@/helpers';
+import { isNumeric, isNumericString, sanitizeNumericString } from '@/helpers';
 import { ComPOSError } from '@/helpers/createError';
 
 type MutateAddProductVariant = Partial<VariantDoc> & {
@@ -44,9 +44,9 @@ export default async (data: MutateAddProductQuery) => {
     } = data;
     const clean_name = sanitize(name);
 
-    if (clean_name.trim() === '')   throw new Error('Product name cannot be empty');
-    if (price && !isNumeric(price)) throw new Error('Product price must be a number');
-    if (stock && !isNumeric(stock)) throw new Error('Product stock must be a number');
+    if (clean_name.trim() === '') throw new Error('Product name cannot be empty');
+    if (!isNumericString(price))  throw new Error('Product price must be a number');
+    if (!isNumeric(stock))        throw new Error('Product stock must be a number');
 
     /**
      * ----------------------
@@ -71,10 +71,10 @@ export default async (data: MutateAddProductQuery) => {
         const clean_v_name = sanitize(v_name);
 
         if (clean_v_name.trim() === '') throw new Error('Variant name cannot be empty');
-        if (!isNumeric(v_price))        throw new Error('Price must be a number');
+        if (!isNumericString(v_price))  throw new Error('Price must be a number');
         if (!isNumeric(v_stock))        throw new Error('Stock must be a number');
 
-        const clean_v_price = sanitizeNumeric(v_price);
+        const clean_v_price = sanitizeNumericString(v_price) ?? '0';
 
         variant_array.push({
           id        : v_id,
@@ -99,11 +99,11 @@ export default async (data: MutateAddProductQuery) => {
        * --------------------
        * 1.1. Insert product.
        * --------------------
-       * 1. description is optional.
-       * 2. by is optional.
-       * 3. price is optional since it's a variant.
-       * 4. stock is optional since it's a variant.
-       * 5. sku is optional since it's a variant.
+       * 1. description (optional)
+       * 2. by          (optional)
+       * 3. price       (optional, since it has variants)
+       * 4. stock       (optional, since it has variants)
+       * 5. sku         (optional, since it has variants)
        */
       const _queryProduct = await db.product.insert({
         active     : product_active,
@@ -162,16 +162,16 @@ export default async (data: MutateAddProductQuery) => {
      * -------------------------
      */
     else {
-      const clean_price = sanitizeNumeric(price);
+      const clean_price = sanitizeNumericString(price) ?? '0';
       const is_active   = stock >= 1 ? true : false;
 
       /**
        * --------------------
        * 2.1. Insert product.
        * --------------------
-       * 1. description is optional.
-       * 2. by is optional.
-       * 3. sku is optional.
+       * 1. description (optional)
+       * 2. by          (optional)
+       * 3. sku         (optional)
        */
       const _queryProduct = await db.product.insert({
         id         : product_id,

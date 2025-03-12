@@ -5,7 +5,7 @@ import { db } from '@/database';
 import type { SaleDocProduct } from '@/database/types';
 
 // Helpers
-import { createError, isNumeric } from '@/helpers';
+import { createError, isNumericString } from '@/helpers';
 import { ComPOSError } from '@/helpers/createError';
 
 type MutateEditSaleQueryData = {
@@ -35,13 +35,13 @@ export default async ({ id, data }: MutateEditSaleQuery) => {
     if (finished)                 throw new Error('You cannot edit a finished sale');
     if (clean_name.trim() === '') throw new Error('Name cannot be empty');
     if (!products.length)         throw new Error('Product cannot be empty');
-    if (initial_balance && !isNumeric(initial_balance)) throw new Error('Balance must be a number');
+    if (initial_balance && !isNumericString(initial_balance)) throw new Error('Balance must be a number');
 
     /**
      * -----------------------------------------------------------------------------------------------------
      * If balance is not undefined, compare the balance value with the total sum of change from every order.
      * -----------------------------------------------------------------------------------------------------
-     * If new balance is lower than the total sum of change, abort the operation.
+     * - If new balance is lower than the total sum of change, abort the operation.
      */
     if (initial_balance) {
       const _queryOrders = await db.order.find({

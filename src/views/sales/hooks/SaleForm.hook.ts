@@ -24,7 +24,7 @@ import type {
 } from '../normalizer/SaleForm.normalizer';
 
 // Helpers
-import { debounce, isNumeric } from '@/helpers';
+import { debounce, isNumericString } from '@/helpers';
 
 type FormDataProduct = {
   id: string;
@@ -415,7 +415,7 @@ export const useSaleForm = () => {
       formError.name = '';
     }
 
-    if (formData.balance && !isNumeric(formData.balance)) {
+    if (formData.balance && !isNumericString(formData.balance)) {
       formError.balance = 'Sale balance must be a number.';
       errors.push('');
     } else {
