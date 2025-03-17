@@ -219,8 +219,8 @@ export default async ({ products, normalizer }: GetSaleProductsQuery) => {
         products_data.push({
           images: product_images,
           name  : product_name,
-          price : price!,
-          stock : stock!,
+          price : price,
+          stock : stock,
           id,
           active,
           quantity,

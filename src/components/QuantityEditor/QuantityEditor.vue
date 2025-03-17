@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, nextTick } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
 import ComposIcon, { Plus, Dash } from '@/components/Icons';
@@ -9,6 +9,14 @@ interface QuantityEditor extends /* @vue-ignore */ InputHTMLAttributes {
    * Set the quantity editor into disabled state.
    */
   disabled?: boolean;
+  /**
+   * Set the decrement button into disabled state.
+   */
+  disabledDecrement?: boolean;
+  /**
+   * Set the increment button into disabled state.
+   */
+  disabledIncrement?: boolean;
   /**
    * Set the quantity editor into disabled state.
    */
@@ -38,6 +46,10 @@ interface QuantityEditor extends /* @vue-ignore */ InputHTMLAttributes {
    */
   modelValue?: string | number;
   /**
+   * Set the v-model modifiers.
+   */
+  modelModifiers?: Record<string, boolean>;
+  /**
    * Reduce the size of the quantity editor.
    */
   small?: boolean;
@@ -52,7 +64,7 @@ interface QuantityEditor extends /* @vue-ignore */ InputHTMLAttributes {
   /**
    * Set the width of the quantity editor input, represented as a number of digits.
    */
-  width?: number | string;
+  width?: 'auto' | number | string;
 }
 
 defineOptions({ inheritAttrs: false });
@@ -63,7 +75,7 @@ const props = withDefaults(defineProps<QuantityEditor>(), {
   min     : 0,
   small   : false,
   step    : 1,
-  width   : 2,
+  width   : 'auto',
 });
 
 const emits = defineEmits([
@@ -72,9 +84,13 @@ const emits = defineEmits([
    */
   'update:modelValue',
   /**
-   * Callback when the input value changes, return event.
+   * Callback for change event, return event.
    */
   'change',
+  /**
+   * Callback for input event, return event.
+   */
+  'input',
   /**
    * Callback when - button is clicked, return value of the input with the type of **string**.
    */
@@ -85,7 +101,20 @@ const emits = defineEmits([
   'clickIncrement',
 ]);
 
-const inputRef = ref<HTMLInputElement | null>(null);
+const computedValue = computed(() => props.modelValue ?? props.value);
+const inputUpdate   = ref(false);
+const inputRef      = ref<HTMLInputElement | null>(null);
+const inputValue    = ref(computedValue.value != null ? String(computedValue.value) : '');
+const inputWidth = computed(() => {
+  if (props.width === 'auto') return inputValue.value.length > 2 ? `calc(${inputValue.value.length}ch + 16px)` : '';
+
+  return `calc(${props.width}ch + 16px)`;
+});
+const isNumber = computed(() => {
+  const hasModifiers = props.modelModifiers && props.modelModifiers.number;
+
+  return (computedValue.value != null && typeof computedValue.value === 'number') || hasModifiers;
+});
 const classes = computed(() => ({
   'cp-form'                : true,
   'cp-form-quantity'       : true,
@@ -93,36 +122,97 @@ const classes = computed(() => ({
 }));
 let timeout: ReturnType<typeof setTimeout>;
 
+const normalizeInput = (input: string) => {
+  let number = input.replace(/^-+/, '-');
+
+  number = number.replace(/(?!^)-/g, '');
+
+  if (number === '-') return '-';
+
+  number = number.replace(/^(-?)0+(?=\d)/g, '$1');
+  number = number.replace(/^0+$/, '0');
+
+  if (number === '-0') return '0';
+
+  return number;
+};
+
+const handleStep = (direction: 'up' | 'down') => {
+  if (!inputRef.value) return;
+
+  const input  = inputRef.value;
+  const value  = Number(input.value);
+  const step   = Math.round(props.step);
+  let newValue = direction === 'up' ? value + step : value - step;
+
+  if (props.max != null && newValue > props.max) newValue = props.max;
+
+  if (props.min != null && newValue < props.min) newValue = props.min;
+
+  inputValue.value = String(newValue);
+};
+
 const updateQuantity = (e: Event | undefined, increment: boolean = true) => {
   e?.preventDefault();
   clearTimeout(timeout);
 
-  const el = inputRef.value;
+  increment ? handleStep('up') : handleStep('down');
 
-  increment ? el?.stepUp(props.step) : el?.stepDown(props.step);
+  timeout = setTimeout(() => updateQuantity(e, increment), 160);
 
-  timeout = setTimeout(() => updateQuantity(e, increment), 200);
+  const returnValue = isNumber.value ? Number(inputValue.value) : inputValue.value;
 
-  emits('update:modelValue', el?.value)
-  increment ? emits('clickIncrement', el?.value) : emits('clickDecrement', el?.value);
+  inputUpdate.value = true;
+
+  emits('update:modelValue', returnValue);
+
+  increment ? emits('clickIncrement', returnValue) : emits('clickDecrement', returnValue);
+
+  nextTick(() => inputUpdate.value = false);
 };
 
-const stopQuantityUpdate = () => clearTimeout(timeout);
+const stopUpdateQuantity = () => clearTimeout(timeout);
 
-const handleKeyDown = (e: KeyboardEvent, increment: boolean = true) => {
+const handleStepKeydown = (e: KeyboardEvent, increment: boolean = true) => {
   if (e.key === 'Enter') updateQuantity(undefined, increment);
 };
 
-const handleInput = (e: Event) => {
-  emits('update:modelValue', (e.target as HTMLInputElement).value);
+const handleKeyDown = (e: KeyboardEvent) => {
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
 };
 
-watch(
-  () => props.modelValue,
-  () => {
-    emits('change');
-  },
-);
+const handleKeyPress = (e: KeyboardEvent) => {
+  const keyMap = ['-', 'ArrowLeft', 'ArrowRight', 'Backspace', 'Delete', 'Tab'];
+
+  if (!/^\d$/.test(e.key) && !keyMap.includes(e.key)) e.preventDefault();
+};
+
+const handleInput = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+
+  target.value = normalizeInput(target.value);
+
+  if (props.max != null && props.max < Number(target.value)) {
+    target.value = String(props.max);
+  } else if (props.min != null && props.min > Number(target.value)) {
+    target.value = String(props.min);
+  }
+
+  inputValue.value = target.value;
+
+  if (inputValue.value.startsWith('-') && inputValue.value.length < 2) return;
+
+  inputUpdate.value = true;
+
+  emits('update:modelValue', isNumber.value ? Number(inputValue.value) : inputValue.value);
+  emits('input', e);
+
+  nextTick(() => inputUpdate.value = false);
+};
+
+watch(computedValue, (newValue) => {
+  if (!inputUpdate.value) inputValue.value = normalizeInput(String(newValue));
+});
 </script>
 
 <template>
@@ -138,40 +228,40 @@ watch(
     <div class="cp-form-quantity__field">
       <button
         type="button"
-        :disabled="disabled"
+        :disabled="disabled || disabledDecrement"
         @mousedown="updateQuantity($event, false)"
-        @mouseup="stopQuantityUpdate"
-        @mouseleave="stopQuantityUpdate"
+        @mouseup="stopUpdateQuantity"
+        @mouseleave="stopUpdateQuantity"
         @touchstart="updateQuantity($event, false)"
-        @touchend="stopQuantityUpdate"
-        @keydown="handleKeyDown($event, false)"
-        @keyup="stopQuantityUpdate"
+        @touchend="stopUpdateQuantity"
+        @keydown="handleStepKeydown($event, false)"
+        @keyup="stopUpdateQuantity"
       >
         <ComposIcon :icon="Dash" size="28" />
       </button>
       <input
         ref="inputRef"
         v-bind="$attrs"
-        type="number"
+        type="text"
+        pattern="-?[0-9]*"
         inputmode="numeric"
         :disabled="disabled"
-        :min="min"
-        :max="max"
-        :value="value || modelValue"
+        :value="inputValue"
         @input="handleInput"
-        @change="$emit('change', $event)"
-        :style="{ width: `calc(${width}ch + 16px)` }"
+        @keydown="handleKeyDown"
+        @keypress="handleKeyPress"
+        :style="{ width: inputWidth }"
       />
       <button
         type="button"
-        :disabled="disabled"
+        :disabled="disabled || disabledIncrement"
         @mousedown="updateQuantity($event)"
-        @mouseup="stopQuantityUpdate"
-        @mouseleave="stopQuantityUpdate"
+        @mouseup="stopUpdateQuantity"
+        @mouseleave="stopUpdateQuantity"
         @touchstart="updateQuantity($event)"
-        @touchend="stopQuantityUpdate"
-        @keydown="handleKeyDown($event)"
-        @keyup="stopQuantityUpdate"
+        @touchend="stopUpdateQuantity"
+        @keydown="handleStepKeydown($event)"
+        @keyup="stopUpdateQuantity"
       >
         <ComposIcon :icon="Plus" size="28" />
       </button>
@@ -206,7 +296,9 @@ watch(
     outline: none;
     cursor: pointer;
     padding: 0 4px;
-    transition: all 300ms cubic-bezier(0.63, 0.01, 0.29, 1);
+    transition-property: background-color, border-color;
+    transition-duration: var(--transition-duration-normal);
+    transition-timing-function: var(--transition-timing-function);
 
     &:first-child {
       border-top-right-radius: 0;
@@ -218,9 +310,9 @@ watch(
       border-bottom-left-radius: 0;
     }
 
-    svg {
+    compos-icon {
       fill: var(--color-white);
-      transition: transform 300ms cubic-bezier(0.63, 0.01, 0.29, 1);
+      transition: transform var(--transition-duration-normal) var(--transition-timing-function);
     }
 
     &:not(:disabled) {
@@ -230,7 +322,7 @@ watch(
       }
 
       &:active {
-        svg {
+        compos-icon {
           transform: scale(0.8);
         }
       }
@@ -258,7 +350,9 @@ watch(
     border-radius: 0;
     outline: none;
     padding: 8px 0;
-    transition: all 300ms cubic-bezier(0.63, 0.01, 0.29, 1);
+    transition-property: background-color, border-color;
+    transition-duration: var(--transition-duration-normal);
+    transition-timing-function: var(--transition-timing-function);
 
     &::placeholder {
       color: #CED3DC;

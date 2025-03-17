@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import type { Meta, StoryObj } from '@storybook/vue3';
 import type { ComponentProps } from 'vue-component-type-helpers';
 
@@ -33,7 +33,7 @@ const meta: Meta<QuantityEditorProps> = {
     },
     modelValue: {
       name: 'v-model',
-      control: 'text',
+      control: 'number',
     },
     small: {
       control: 'boolean',
@@ -45,7 +45,7 @@ const meta: Meta<QuantityEditorProps> = {
       control: 'text',
     },
     width: {
-      control: 'number',
+      control: 'text',
     },
   },
   args: {
@@ -54,7 +54,7 @@ const meta: Meta<QuantityEditorProps> = {
     min: 0,
     small: false,
     step: 1,
-    width: 2,
+    width: 'auto',
   },
 };
 
@@ -64,12 +64,22 @@ type Story = StoryObj<QuantityEditorProps>;
 
 export const Playground: Story = {
   render: (args) => ({
-    components: { QuantityEditor },
+    components: { QuantityEditor, Text },
     setup() {
-      return { args };
+      const quantityValue = ref(args.modelValue);
+
+      return { args, quantityValue };
     },
-    template: `<QuantityEditor v-bind="args" />`,
+    template: `
+      <Text>QuantityEditor value: {{ quantityValue }}</Text>
+      <QuantityEditor v-bind="args" v-model="quantityValue" />
+      &nbsp;
+      <button @click="quantityValue = 1000">Change Value</button>
+    `,
   }),
+  args: {
+    modelValue: 0,
+  },
 };
 
 export const DocUsage = {
@@ -77,12 +87,12 @@ export const DocUsage = {
   render: () => ({
     components: { QuantityEditor, Text },
     setup() {
-      const quantityValue = ref('0');
+      const quantityValue = ref(0);
 
       return { quantityValue };
     },
     template: `
-      <Text>QuantityEditor value: {{ quantityValue ? quantityValue : '-' }}</Text>
+      <Text>QuantityEditor value: {{ quantityValue }}</Text>
       <QuantityEditor v-model="quantityValue" />
     `,
   }),
@@ -99,11 +109,19 @@ export const DocNonTWDB = {
         quantityValue.value = parseInt(value);
       };
 
-      return { quantityValue, handleButtons };
+      const handleInput = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+
+        quantityValue.value = target.value as any;
+      };
+
+      return { quantityValue, handleInput, handleButtons };
     },
     template: `
-      <Text>QuantityEditor value: {{ quantityValue ? quantityValue : '-' }}</Text>
+      <Text>QuantityEditor value: {{ quantityValue }}</Text>
       <QuantityEditor
+        :value="quantityValue"
+        @input="handleInput"
         @clickIncrement="handleButtons"
         @clickDecrement="handleButtons"
       />

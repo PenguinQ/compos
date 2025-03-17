@@ -5,4 +5,5 @@ export { default as ListSearch } from './ListSearch.vue';
 export { default as OrderCard } from './OrderCard.vue';
 export { default as Pagination } from './Pagination.vue';
 export { default as ProductImage } from './ProductImage.vue';
-export { default as ProductSelection } from './ProductSelection.vue';
+export { default as ProductListItem } from './ProductListItem.vue';
+export { default as ProductSelectionItem } from './ProductSelectionItem.vue';

@@ -33,7 +33,7 @@ import {
 import ComposIcon, { ArrowLeftShort, PencilSquare, Trash } from '@/components/Icons';
 
 // View Components
-import { ProductImage } from '@/views/components';
+import { ProductImage, ProductListItem } from '@/views/components';
 
 // Constants
 import GLOBAL from '@/views/constants';
@@ -193,7 +193,7 @@ watch(
                   <CardTitle>Variants</CardTitle>
                   <CardSubtitle>Variants available in this product.</CardSubtitle>
                 </CardHeader>
-                <CardBody>
+                <CardBody padding="0">
                   <EmptyState
                     v-if="!data.variants?.length"
                     emoji="🍃"
@@ -201,29 +201,28 @@ watch(
                     :description="PRODUCT_DETAIL.EMPTY_VARIANT_DESCRIPTION"
                     margin="56px 0"
                   />
-                  <div v-else class="product-detail-items">
-                    <div
-                      v-for="variant in data.variants"
-                      class="product-detail-item"
-                      :data-inactive="!variant.active ? true : undefined"
-                    >
-                      <ProductImage width="80px" height="80px">
-                        <img v-if="!variant.images.length" :src="no_image" :alt="`${variant.name} image`">
-                        <img v-else v-for="image of variant.images" :src="image ? image : no_image" :alt="`${variant.name} image`">
-                      </ProductImage>
-                      <div class="product-detail-item__body">
-                        <Text class="product-detail-item__name" body="large" as="h4">
-                          <Label v-if="!variant.active" color="red">Inactive</Label>
-                          {{ variant.name }}
-                        </Text>
-                        <div class="product-detail-item__body">
-                          <Text body="small" margin="0 0 2px">Price: {{ variant.price_formatted }}</Text>
-                          <Text body="small" margin="0 0 2px">Stock: {{ variant.stock }}</Text>
-                          <Text body="small" margin="0">SKU: {{ variant.sku || '-' }}</Text>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <template v-else>
+                    <ProductListItem
+                      :key="`variant-${variant.id}`"
+                      v-for="variant of data.variants"
+                      :active="variant.active"
+                      :name="variant.name"
+                      :details="[
+                        {
+                          name: 'Price',
+                          value: variant.price_formatted,
+                        },
+                        {
+                          name: 'Stock',
+                          value: String(variant.stock),
+                        },
+                        {
+                          name: 'SKU',
+                          value: variant.sku ||  '-',
+                        },
+                      ]"
+                    />
+                  </template>
                 </CardBody>
               </Card>
             </Column>

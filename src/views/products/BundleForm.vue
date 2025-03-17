@@ -19,6 +19,7 @@ import {
   EmptyState,
   Page,
   PullToRefresh,
+  QuantityEditor,
   Textarea,
   Textfield,
   Toolbar,
@@ -26,17 +27,26 @@ import {
   ToolbarSpacer,
   ToolbarTitle,
 } from '@/components';
-import ComposIcon, { ArrowLeftShort, Save, X } from '@/components/Icons';
+import ComposIcon, {
+  ArrowLeftShort,
+  Save,
+  X,
+  XLarge,
+} from '@/components/Icons';
 
 // View Components
 import {
   FloatingActions,
   Pagination,
-  ProductSelection,
+  ProductListItem,
+  ProductSelectionItem,
 } from '@/views/components';
 
 // Hooks
 import { useBundleForm } from './hooks/BundleForm.hook';
+
+// Helpers
+import { toIDR } from '@/helpers';
 
 // Constants
 import GLOBAL from '@/views/constants';
@@ -48,7 +58,7 @@ const {
   bundleDetail,
   formData,
   formError,
-  product_list,
+  productList,
   page,
   searchQuery,
   loadProducts,
@@ -65,8 +75,6 @@ const {
   handleCloseDialog,
   handleSearch,
   handleSubmit,
-  handleChangeQuantity,
-  handleUpdateQuantity,
   toPrevPage,
   toNextPage,
   isProductSelected,
@@ -170,7 +178,7 @@ watch(
                 <CardTitle>Products</CardTitle>
                 <CardSubtitle>List of products included in the bundle.</CardSubtitle>
               </CardHeader>
-              <CardBody>
+              <CardBody padding="0">
                 <EmptyState
                   v-if="!formData.products.length"
                   emoji="📦"
@@ -179,139 +187,154 @@ watch(
                   margin="56px 0"
                 >
                   <template #action>
-                    <Button @click="showProductsDialog = true">Add Product</Button>
+                    <Button @click="showProductsDialog = !showProductsDialog">Add Product</Button>
                   </template>
                 </EmptyState>
-                <template v-else>
-                  <div class="selected-products">
-                    <ProductSelection
-                      :key="product.id"
-                      v-for="(product, index) in formData.products"
-                      :images="product.images"
-                      :name="product.name"
-                      :price="product.total_price"
-                      :stock="product.stock"
-                      :sku="product.sku || '-'"
-                      :quantity="product.quantity"
-                      :quantityMax="product.stock"
-                      display
-                      @clickRemove="handleRemoveProduct(index)"
-                      @changeQuantity="handleChangeQuantity($event, product)"
-                      @inputQuantity="handleUpdateQuantity($event, product)"
-                      @clickQuantityDecrement="handleUpdateQuantity($event, product)"
-                      @clickQuantityIncrement="handleUpdateQuantity($event, product)"
-                    />
+                <div v-else class="selected-product-list">
+                  <ProductListItem
+                    :key="`form-product-bundle-${product.id}`"
+                    v-for="(product, index) in formData.products"
+                    :active="product.active"
+                    :images="product.images"
+                    :name="product.name"
+                    :details="[
+                      {
+                        name: 'Price',
+                        value: toIDR(product.total_price),
+                      },
+                      {
+                        name: 'Stock',
+                        value: String(product.stock),
+                      },
+                      {
+                        name: 'SKU',
+                        value: product.sku || '-',
+                      },
+                    ]"
+                  >
+                    <template #extension>
+                      <QuantityEditor
+                        v-if="product.quantity !== undefined && product.active"
+                        v-model="product.quantity"
+                        :min="1"
+                        :max="product.stock"
+                        small
+                        readonly
+                      />
+                      <button
+                        class="selected-product-list__remove button button--icon"
+                        :aria-label="`Remove ${product.name}`"
+                        @click="handleRemoveProduct(index)"
+                      >
+                        <ComposIcon :icon="XLarge" size="14" />
+                      </button>
+                    </template>
+                  </ProductListItem>
+                  <div class="selected-product-list__action">
+                    <Button variant="outline" full @click="showProductsDialog = true">Add Product</Button>
                   </div>
-                  <Button full @click="showProductsDialog = true">Add Product</Button>
-                </template>
+                </div>
               </CardBody>
             </Card>
           </form>
         </template>
-        <Dialog
-          class="product-selection"
-          v-model="showProductsDialog"
-          fullscreen
-          hideHeader
-          @enter="handleOpenDialog"
-          @leave="loadProducts = false"
-        >
-          <Page>
-            <Toolbar>
-              <ToolbarAction icon @click="handleCloseDialog">
-                <ComposIcon :icon="X" :size="40" />
-              </ToolbarAction>
-              <input class="product-selection-search" placeholder="Search Product" @input="handleSearch" />
-              <ToolbarAction @click="handleCloseDialog($event, true)">
-                Done
-              </ToolbarAction>
-            </Toolbar>
-            <Content>
-              <template #fixed>
-                <PullToRefresh @refresh="handleRefreshList" />
-              </template>
-              <EmptyState
-                v-if="productListError"
-                :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-                :title="GLOBAL.ERROR_EMPTY_TITLE"
-                :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-                margin="56px 0"
-              >
-                <template #action>
-                  <Button @click="productListRefetch">Try Again</Button>
-                </template>
-              </EmptyState>
-              <template v-else>
-                <Bar v-if="productListLoading" />
-                <template v-else>
-                  <EmptyState
-                    v-if="!product_list?.products.length && searchQuery === ''"
-                    emoji="🍃"
-                    :title="BUNDLE_FORM.PRODUCT_LIST_EMPTY_TITLE"
-                    :description="BUNDLE_FORM.PRODUCT_LIST_EMPTY_DESCRIPTION"
-                    height="100%"
-                  />
-                  <EmptyState
-                    v-else-if="!product_list?.products.length && searchQuery !== ''"
-                    emoji="😵‍💫"
-                    :title="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_TITLE"
-                    :description="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_DESCRIPTION"
-                    height="100%"
-                  />
-                  <template v-else>
-                    <div class="product-list">
-                      <template :key="product.id" v-for="product of product_list?.products">
-                        <ProductSelection
-                          small
-                          :aria-label="`Add ${product.name}`"
-                          :images="product.images"
-                          :name="product.name"
-                          :selected="isProductSelected(product) ? true : undefined"
-                          @click="handleSelectProduct(product)"
-                        />
-                        <ProductSelection
-                          :key="variant.id"
-                          v-for="variant of product.variants"
-                          small
-                          variant
-                          :aria-label="`Add ${product.name} - ${variant.name}`"
-                          :images="variant.images"
-                          :name="variant.name"
-                          :selected="isVariantSelected(variant.id) ? true : undefined"
-                          @click="handleSelectVariant(variant, product.name)"
-                        />
-                      </template>
-                    </div>
-                  </template>
-                  <template v-if="!productListLoading && !productListError">
-                    <FloatingActions v-if="product_list?.products.length" sticky=".cp-content">
-                      <Pagination
-                        frame
-                        :loading="productListLoading"
-                        :page="page.current"
-                        :total_page="page.total"
-                        :first_page="page.current <= 1"
-                        :last_page="page.current >= page.total"
-                        @clickFirst="toPrevPage($event, true)"
-                        @clickPrev="toPrevPage"
-                        @clickNext="toNextPage"
-                        @clickLast="toNextPage($event, true)"
-                      />
-                    </FloatingActions>
-                  </template>
-                </template>
-              </template>
-            </Content>
-          </Page>
-        </Dialog>
       </template>
     </Container>
   </Content>
+  <Dialog
+    class="product-selection-dialog"
+    v-model="showProductsDialog"
+    fullscreen
+    hideHeader
+    @enter="handleOpenDialog"
+    @leave="loadProducts = false"
+  >
+    <Page>
+      <Toolbar>
+        <ToolbarAction icon @click="handleCloseDialog">
+          <ComposIcon :icon="X" :size="40" />
+        </ToolbarAction>
+        <input class="product-selection-dialog__search" placeholder="Search Product" @input="handleSearch" />
+        <ToolbarAction @click="handleCloseDialog($event, true)">
+          Done
+        </ToolbarAction>
+      </Toolbar>
+      <Content>
+        <template #fixed>
+          <PullToRefresh @refresh="handleRefreshList" />
+        </template>
+        <EmptyState
+          v-if="productListError"
+          :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+          :title="GLOBAL.ERROR_EMPTY_TITLE"
+          :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+          margin="56px 0"
+        >
+          <template #action>
+            <Button @click="productListRefetch">Try Again</Button>
+          </template>
+        </EmptyState>
+        <template v-else>
+          <Bar v-if="productListLoading" />
+          <template v-else>
+            <EmptyState
+              v-if="!productList?.products.length && searchQuery === ''"
+              emoji="🍃"
+              :title="BUNDLE_FORM.PRODUCT_LIST_EMPTY_TITLE"
+              :description="BUNDLE_FORM.PRODUCT_LIST_EMPTY_DESCRIPTION"
+              height="100%"
+            />
+            <EmptyState
+              v-else-if="!productList?.products.length && searchQuery !== ''"
+              emoji="😵‍💫"
+              :title="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_TITLE"
+              :description="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_DESCRIPTION"
+              height="100%"
+            />
+            <template v-else>
+              <div class="product-selection-list">
+                <template :key="product.id" v-for="product of productList?.products">
+                  <ProductSelectionItem
+                    :images="product.images"
+                    :name="product.name"
+                    :selected="isProductSelected(product) ? true : undefined"
+                    :aria-label="`Add ${product.name}`"
+                    @click="handleSelectProduct(product)"
+                  />
+                  <ProductSelectionItem
+                    v-for="variant of product.variants"
+                    :key="variant.id"
+                    :indent="1"
+                    :images="variant.images"
+                    :name="variant.name"
+                    :selected="isVariantSelected(variant.id) ? true : undefined"
+                    :aria-label="`Add ${product.name} - ${variant.name}`"
+                    @click="handleSelectVariant(variant, product.name)"
+                  />
+                </template>
+              </div>
+            </template>
+            <template v-if="!productListLoading && !productListError">
+              <FloatingActions v-if="productList?.products.length" sticky=".cp-content">
+                <Pagination
+                  frame
+                  :loading="productListLoading"
+                  :page="page.current"
+                  :total_page="page.total"
+                  :first_page="page.current <= 1"
+                  :last_page="page.current >= page.total"
+                  @clickFirst="toPrevPage($event, true)"
+                  @clickPrev="toPrevPage"
+                  @clickNext="toNextPage"
+                  @clickLast="toNextPage($event, true)"
+                />
+              </FloatingActions>
+            </template>
+          </template>
+        </template>
+      </Content>
+    </Page>
+  </Dialog>
 </template>
 
 <style lang="scss" src="@/assets/page-form.scss" />
-<style lang="scss" scoped>
-.selected-products {
-  margin-bottom: 16px;
-}
-</style>

@@ -7,6 +7,7 @@ type DetailProductBundleItem = {
 };
 
 type DetailProduct = {
+  active: boolean;
   images: string[];
   name: string;
   price: string;
@@ -81,7 +82,7 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
   const saleProductsSold = [];
 
   for (const product of products) {
-    const { name, price, images, quantity, items } = product;
+    const { active, name, price, images, quantity, items } = product;
     const saleProductsItems = [];
 
     if (items) {
@@ -94,6 +95,7 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
 
     saleProducts.push({
       priceFormatted: toIDR(price),
+      active,
       images,
       name,
       price,
