@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue';
+import { watch, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Common Components
@@ -15,8 +15,6 @@ import {
   CardBody,
   CardHeader,
   CardTitle,
-  DescriptionList,
-  DescriptionListItem,
   Dialog,
   EmptyState,
   Label,
@@ -26,6 +24,10 @@ import {
   ToolbarAction,
   ToolbarSpacer,
   ToolbarTitle,
+  TabControl,
+  TabControls,
+  TabPanel,
+  TabPanels
 } from '@/components';
 import ComposIcon, {
   Box,
@@ -39,7 +41,7 @@ import ComposIcon, {
 } from '@/components/Icons';
 
 // View Components
-import { OrderCard, ProductImage } from '@/views/components';
+import { OrderCard, ProductListItem } from '@/views/components';
 
 // Hooks
 import { useSaleDetail } from './hooks/SaleDetail.hook';
@@ -47,9 +49,6 @@ import { useSaleDetail } from './hooks/SaleDetail.hook';
 // Constants
 import GLOBAL from '@/views/constants';
 import { SALE_DETAIL } from './constants';
-
-// Assets
-import no_image from '@assets/illustration/no_image.svg';
 
 const router = useRouter();
 const {
@@ -66,6 +65,7 @@ const {
   mutateFinish,
   handleRefresh,
 } = useSaleDetail();
+const tab = ref(0);
 
 watch(
   data,
@@ -99,6 +99,13 @@ watch(
           <ComposIcon :icon="CheckLarge" :size="32" />
         </ToolbarAction>
       </template>
+      <template #extension>
+        <TabControls v-model="tab" grow>
+          <TabControl title="Details" />
+          <TabControl title="Products" />
+          <TabControl title="Orders" />
+        </TabControls>
+      </template>
     </Toolbar>
   </Header>
   <Content>
@@ -110,100 +117,58 @@ watch(
       :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
       :title="GLOBAL.ERROR_EMPTY_TITLE"
       :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-      margin="80px 0"
+      height="100%"
     >
       <template #action>
         <Button @click="refetch">Try Again</Button>
       </template>
     </EmptyState>
-    <Container v-else class="page-container">
+    <template v-else>
       <Bar v-if="isLoading" margin="56px 0" />
-      <template v-else>
-        <Row>
-          <Column col="12">
-            <Card class="section-card" variant="outline">
-              <CardHeader>
-                <CardTitle>{{ data.name }}</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <DescriptionList class="pd-description-list" alignment="horizontal">
-                  <DescriptionListItem alignItems="center">
-                    <dt>Status</dt>
-                    <dd>
-                      <Label :color="data.finished ? undefined : 'red'">
-                        {{ data.finished ? 'Finished' : 'Running' }}
-                      </Label>
-                    </dd>
-                  </DescriptionListItem>
-                  <DescriptionListItem>
-                    <dt>Initial Balance</dt>
-                    <dd>{{ data.initialBalanceFormatted || '-' }}</dd>
-                  </DescriptionListItem>
-                  <DescriptionListItem>
-                    <dt>Final Balance</dt>
-                    <dd>{{ data.finalBalanceFormatted || '-' }}</dd>
-                  </DescriptionListItem>
-                  <DescriptionListItem>
-                    <dt>Revenue</dt>
-                    <dd>{{ data.revenueFormatted || '-' }}</dd>
-                  </DescriptionListItem>
-                  <DescriptionListItem>
-                    <dt>Updated At</dt>
-                    <dd>{{ data.updatedAt || '-' }}</dd>
-                  </DescriptionListItem>
-                </DescriptionList>
-              </CardBody>
-            </Card>
-          </Column>
-          <Column col="12">
-            <Card class="section-card" variant="outline">
-              <CardHeader>
-                <CardTitle>Products</CardTitle>
-              </CardHeader>
-              <CardBody padding="0">
-                <div class="sales-products-list">
-                  <div class="sales-product" v-for="product in data.products">
-                    <ProductImage class="sales-product-image">
-                      <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
-                      <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
-                    </ProductImage>
-                    <div class="sales-product-content">
-                      <Text heading="6" margin="0">{{ product.name }}</Text>
-                      <div class="sales-product-details">
-                        <div class="sales-product-details__item">
-                          <ComposIcon :icon="Tag" />
-                          {{ product.priceFormatted }}
-                        </div>
-                        <div class="sales-product-details__item">
-                          <ComposIcon :icon="CartPlus" />
-                          {{ product.quantity }}
-                        </div>
-                      </div>
-                      <div v-if="product.items" class="sales-product-items">
-                        <div v-for="item of product.items" class="sales-product-items-details">
-                          <div class="sales-product-items-details__item">
-                            <ComposIcon :icon="Box" />
-                            {{ item.name }}
-                          </div>
-                          <div class="sales-product-items-details__item">
-                            <ComposIcon :icon="CartPlus" />
-                            {{ item.quantity }}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-          </Column>
-          <Column :col="{ default: 12, md: 6 }">
+      <TabPanels v-else v-model="tab">
+        <TabPanel>
+          <Container class="page-container">
+            <div class="sale-summaries">
+              <Text heading="2" margin="0 0 8px">
+                {{ data.name }}
+                <Label :color="data.finished ? undefined : 'green'" style="vertical-align: middle;">
+                  {{ data.finished ? 'Finished' : 'Running' }}
+                </Label>
+              </Text>
+              <Text body="small" margin="0 0 16px">Last update: {{ data.updatedAt || '-' }}</Text>
+              <Row :col="{ default: 2, md: 3 }" gutter="16px">
+                <Column>
+                  <Card class="info-card" data-emoji="🌿">
+                    <CardBody>
+                      <div class="info-card__title">Initial Balance</div>
+                      <div class="info-card__value">{{ data.initialBalanceFormatted || '-' }}</div>
+                    </CardBody>
+                  </Card>
+                </Column>
+                <Column>
+                  <Card class="info-card" data-emoji="🌱">
+                    <CardBody>
+                      <div class="info-card__title">Final Balance</div>
+                      <div class="info-card__value">{{ data.finalBalanceFormatted || '-' }}</div>
+                    </CardBody>
+                  </Card>
+                </Column>
+                <Column>
+                  <Card class="info-card" data-emoji="💰">
+                    <CardBody>
+                      <div class="info-card__title">Revenue</div>
+                      <div class="info-card__value">{{ data.revenueFormatted || '-' }}</div>
+                    </CardBody>
+                  </Card>
+                </Column>
+              </Row>
+            </div>
             <Card class="section-card" variant="outline">
               <CardHeader>
                 <CardTitle>Products Sold</CardTitle>
               </CardHeader>
               <CardBody padding="0">
-                <div class="sales-products-sold">
+                <div class="products-sold">
                   <EmptyState
                     v-if="!data.productsSold.length"
                     :emoji="SALE_DETAIL.EMPTY_SOLD_EMOJI"
@@ -240,36 +205,71 @@ watch(
                 </div>
               </CardBody>
             </Card>
-          </Column>
-          <Column :col="{ default: 12, md: 6 }">
-            <Card class="section-card" variant="outline">
-              <CardHeader>
-                <CardTitle>Order</CardTitle>
-              </CardHeader>
-              <CardBody padding="0">
-                <EmptyState
-                  v-if="!data.orders.length"
-                  :emoji="SALE_DETAIL.EMPTY_ORDER_EMOJI"
-                  :title="SALE_DETAIL.EMPTY_ORDER_TITLE"
-                  :description="SALE_DETAIL.EMPTY_ORDER_DESCRIPTION"
-                  margin="80px 0"
-                />
-                <div v-else class="sales-orders-list">
-                  <OrderCard
-                    v-for="order in data.orders"
-                    :title="order.name"
-                    :total="order.totalFormatted"
-                    :tendered="order.tenderedFormatted"
-                    :change="order.changeFormatted"
-                    :products="order.products"
-                  />
+          </Container>
+        </TabPanel>
+        <TabPanel>
+          <div class="product-list">
+            <ProductListItem
+              :key="`sale-product-${index}`"
+              v-for="(product, index) of data.products"
+              :active="product.active"
+              :name="product.name"
+            >
+              <template #details>
+                <div class="product-list-details">
+                  <div class="product-list-details__item">
+                    <ComposIcon :icon="Tag" />
+                    {{ product.priceFormatted }}
+                  </div>
+                  <div class="product-list-details__item">
+                    <ComposIcon :icon="CartPlus" />
+                    {{ product.quantity }}
+                  </div>
                 </div>
-              </CardBody>
-            </Card>
-          </Column>
-        </Row>
-      </template>
-    </Container>
+                <div v-if="product.items" class="product-list-items">
+                  <div
+                    v-for="(item, index) of product.items"
+                    :key="index"
+                    class="product-list-items__item"
+                  >
+                    <div class="product-list-items__detail">
+                      <ComposIcon :icon="Box" />
+                      {{ item.name }}
+                    </div>
+                    <div class="product-list-items__detail">
+                      <ComposIcon :icon="CartPlus" />
+                      {{ item.quantity }}
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </ProductListItem>
+          </div>
+        </TabPanel>
+        <TabPanel>
+          <EmptyState
+            v-if="!data.orders.length"
+            :emoji="SALE_DETAIL.EMPTY_ORDER_EMOJI"
+            :title="SALE_DETAIL.EMPTY_ORDER_TITLE"
+            :description="SALE_DETAIL.EMPTY_ORDER_DESCRIPTION"
+            margin="80px 0"
+          />
+          <div v-else class="order-list">
+            <Row :col="{ default: 1, md: 2 }">
+              <Column v-for="(order, index) in data.orders" :key="`order-${index}`">
+                <OrderCard
+                  :title="order.name"
+                  :total="order.totalFormatted"
+                  :tendered="order.tenderedFormatted"
+                  :change="order.changeFormatted"
+                  :products="order.products"
+                />
+              </Column>
+            </Row>
+          </div>
+        </TabPanel>
+      </TabPanels>
+    </template>
   </Content>
   <Dialog v-model="dialogDelete" :title="`Delete ${data?.name}?`">
     <Text body="large" textAlign="center" margin="0">
@@ -301,186 +301,193 @@ watch(
 
 <style lang="scss" src="@/assets/page-detail.scss" />
 <style lang="scss" scoped>
-.sales {
-  &-products-list {
-    max-height: 400px;
-    overflow-y: auto;
+.sale-summaries {
+  padding: 0 16px;
+  margin-bottom: 24px;
+}
+
+.info-card {
+  position: relative;
+
+  &::after {
+    content: attr(data-emoji);
+    font-size: 64px;
+    line-height: 1;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    transform: translate(12%, 12%);
   }
 
-  &-product {
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
-    display: flex;
-    gap: 16px;
-    padding: 16px;
-    margin-top: -1px;
+  .cp-card__body {
+    padding: 8px 12px;
+  }
 
-    &:first-of-type {
-      margin-top: 0;
-      border-top-color: transparent;
-    }
+  &__title {
+    @include text-body-sm;
+    font-family: var(--text-heading-family);
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-green-4);
+    display: inline-block;
+    padding-right: 16px;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
 
+  &__value {
+    font-family: var(--text-heading-family);
+    font-size: 1.5rem;
+    line-height: 1.6;
+    font-weight: 600;
+  }
+
+  &__background {
+    font-size: 64px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    opacity: 0.6;
+    transform: translate(12%, 12%);
+  }
+}
+
+.product-list {
+  .vc-product-list-item {
     &:last-of-type {
-      border-bottom-color: transparent;
+      border-color: var(--color-border);
     }
+  }
 
-    &-image {
-      width: 60px;
-      height: 60px;
-      background-color: var(--color-white);
-      border: 1px solid rgba(46, 64, 87, 0.4);
-      border-radius: 4px;
-      overflow: hidden;
-      flex-shrink: 0;
+  &-details {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
 
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        display: block;
+    &__item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      compos-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
       }
     }
+  }
 
-    &-content {
-      min-width: 0;
-      flex-grow: 1;
-    }
+  &-items {
+    display: inline-flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-border);
+    padding-top: 12px;
+    padding-inline-end: 12px;
+    margin-top: 12px;
 
-    &-details {
+    &__item {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-top: 8px;
 
-      &__item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-
-        compos-icon {
-          width: 16px;
-          height: 16px;
-          flex-shrink: 0;
-        }
+      &:first-of-type {
+        margin-top: 0;
       }
+
     }
 
-    &-items {
-      display: inline-flex;
-      flex-direction: column;
-      border-top: 1px solid var(--color-border);
-      padding-top: 12px;
-      padding-inline-end: 12px;
-      margin-top: 12px;
+    &__detail {
+      @include text-body-sm;
+      display: flex;
+      align-items: center;
+      gap: 8px;
 
-      &-details {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-top: 8px;
-
-        &:first-of-type {
-          margin-top: 0;
-        }
-
-        &__item {
-          @include text-body-sm;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-
-          compos-icon {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
-          }
-        }
+      compos-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
       }
     }
   }
+}
 
-  &-products-sold {
-    max-height: 400px;
-    overflow-y: auto;
+.products-sold {
+  max-height: 400px;
+  overflow-y: auto;
 
-    table {
-      width: 100%;
-      table-layout: fixed;
-      border-collapse: separate;
-      border-spacing: 0;
+  table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
 
-      th,
-      td {
-        background-color: var(--color-white);
-        text-align: center;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        padding: 8px;
+    th,
+    td {
+      background-color: var(--color-white);
+      text-align: center;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      padding: 8px;
+
+      &:first-of-type {
+        width: 50%;
+        padding-left: 16px;
+        text-align: left;
+      }
+
+      &:last-of-type {
+        width: 30%;
+        text-align: right;
+        padding-right: 16px;
+      }
+    }
+
+    thead {
+      th {
+        border-bottom: 1px solid var(--color-border);
+        position: sticky;
+        top: 0;
+      }
+    }
+
+    tbody {
+      tr {
+        &[data-product-item] {
+          td {
+            @include text-body-sm;
+            text-align: left;
+          }
+
+          td:first-of-type {
+            padding-left: 24px;
+          }
+        }
 
         &:first-of-type {
-          width: 50%;
-          padding-left: 16px;
-          text-align: left;
+          td {
+            padding-top: 16px;
+          }
         }
 
         &:last-of-type {
-          width: 30%;
-          text-align: right;
-          padding-right: 16px;
-        }
-      }
-
-      thead {
-        th {
-          border-bottom: 1px solid var(--color-border);
-          position: sticky;
-          top: 0;
-        }
-      }
-
-      tbody {
-        tr {
-          &[data-product-item] {
-            td {
-              @include text-body-sm;
-              text-align: left;
-            }
-
-            td:first-of-type {
-              padding-left: 24px;
-            }
-          }
-
-          &:first-of-type {
-            td {
-              padding-top: 16px;
-            }
-          }
-
-          &:last-of-type {
-            td {
-              padding-bottom: 16px;
-            }
+          td {
+            padding-bottom: 16px;
           }
         }
       }
     }
   }
+}
 
-  &-orders-list {
-    max-height: 400px;
-    background-color: var(--color-neutral-2);
-    overflow-y: auto;
-    padding: 16px;
+.order-list {
+  padding: 16px;
+}
 
-    .vc-order-card {
-      margin-bottom: 16px;
-
-      &:last-of-type {
-        margin-bottom: 0;
-      }
-    }
+@include screen-md {
+  .sale-summaries {
+    padding: 0;
   }
 }
 </style>

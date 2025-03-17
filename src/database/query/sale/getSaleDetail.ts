@@ -20,6 +20,7 @@ type SaleDetailBundleItem = {
 
 export type SaleDetailProduct = {
   id: string;
+  active: boolean;
   product_id?: string;
   images: string[];
   name: string;
@@ -110,7 +111,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
 
         if (!_queryProduct) throw new Error('Product not found');
 
-        const { name, price, sku } = _queryProduct.toJSON();
+        const { active, name, price, sku } = _queryProduct.toJSON();
         const product_attachments  = _queryProduct.allAttachments();
         const product_images       = product_attachments.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
         const product_data: SaleDetailProduct = {
@@ -120,6 +121,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
           quantity  : product.quantity,
           sku       : sku ? sku : '',
           price     : price!,           // Since it's a product without a variant, it's expected to have a price.
+          active,
           name,
         };
 
@@ -141,13 +143,18 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
 
         if (!_queryProduct) throw new Error('Variant main product not found');
 
-        const { id: variant_product_id, name: variant_product_name } = _queryProduct.toJSON();
+        const {
+          id    : variant_product_id,
+          active: variant_product_active,
+          name  : variant_product_name,
+        } = _queryProduct.toJSON();
         const { name, price, sku } = _queryVariant.toJSON();
         const variant_attachments  = _queryVariant.allAttachments();
         const variant_images       = variant_attachments.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
         const product_data: SaleDetailProduct = {
           id        : product.id,
           product_id: variant_product_id,
+          active    : variant_product_active,
           images    : [],
           name      : is_variant ? `${variant_product_name} - ${name}` : name,
           quantity  : product.quantity,
@@ -169,7 +176,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
 
         if (!_queryBundle) throw new Error('Bundle not found');
 
-        const { name, price, products } = _queryBundle.toJSON();
+        const { active, name, price, products } = _queryBundle.toJSON();
         const bundle_images = [];
         const bundle_items  = [];
 
@@ -233,6 +240,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
           images  : bundle_images,
           quantity: product.quantity,
           items   : bundle_items,
+          active,
           name,
           price,
         });

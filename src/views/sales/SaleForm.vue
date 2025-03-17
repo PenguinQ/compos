@@ -17,6 +17,7 @@ import {
   EmptyState,
   Page,
   PullToRefresh,
+  QuantityEditor,
   TabControl,
   TabControls,
   TabPanel,
@@ -27,11 +28,15 @@ import {
   ToolbarSpacer,
   ToolbarTitle,
 } from '@/components';
-import ComposIcon, { ArrowLeftShort, X, Save } from '@/components/Icons';
+import ComposIcon, { ArrowLeftShort, X, XLarge, Save } from '@/components/Icons';
 
 // View Components
-import { FloatingActions, Pagination } from '@/views/components';
-import SaleProduct from './components/SaleProduct.vue';
+import {
+  FloatingActions,
+  Pagination,
+  ProductListItem,
+  ProductSelectionItem,
+} from '@/views/components';
 
 // Hooks
 import { useSaleForm } from './hooks/SaleForm.hook';
@@ -178,21 +183,32 @@ watch(
                   </template>
                 </EmptyState>
                 <template v-else>
-                  <div class="products-list">
-                    <template :key="product.id" v-for="(product, index) in formData.products">
-                      <SaleProduct
-                        type="form"
-                        :images="product.images"
-                        :name="product.name"
-                        :quantity="product.quantity"
-                        @clickRemove="handleRemoveProduct(index)"
-                        @clickDecrement="(value: string) => product.quantity = parseInt(value)"
-                        @clickIncrement="(value: string) => product.quantity = parseInt(value)"
-                      />
-                    </template>
-                  </div>
-                  <div class="products-list-actions">
-                    <Button full @click="showDialog = true">Add Product</Button>
+                  <div class="selected-product-list">
+                    <ProductListItem
+                      :key="`form-sale-product-${product.id}`"
+                      v-for="(product, index) of formData.products"
+                      :name="product.name"
+                      :details="[
+                        {
+                          name: 'Quantity per Order',
+                          value: String(product.quantity),
+                        },
+                      ]"
+                    >
+                      <template #extension>
+                        <QuantityEditor v-model="product.quantity" :min="1" readonly />
+                        <button
+                          class="selected-product-list__remove button button--icon"
+                          :aria-label="`Remove ${product.name}`"
+                          @click="handleRemoveProduct(index)"
+                        >
+                          <ComposIcon :icon="XLarge" size="14" />
+                        </button>
+                      </template>
+                    </ProductListItem>
+                    <div class="selected-product-list__action">
+                      <Button full variant="outline" @click="showDialog = true">Add Product</Button>
+                    </div>
                   </div>
                 </template>
               </CardBody>
@@ -202,10 +218,8 @@ watch(
       </template>
     </Container>
   </Content>
-
-  <!-- Dialogs -->
   <Dialog
-    class="products-dialog"
+    class="product-selection-dialog"
     v-model="showDialog"
     fullscreen
     hideHeader
@@ -219,21 +233,19 @@ watch(
         </ToolbarAction>
         <input
           v-if="productListTab === 0"
-          class="products-dialog__search"
+          class="product-selection-dialog__search"
           placeholder="Search Product"
           :value="searchProductQuery"
           @input="handleSearch($event, 'product')"
         />
         <input
           v-else
-          class="products-dialog__search"
+          class="product-selection-dialog__search"
           placeholder="Search Bundle"
           :value="searchBundleQuery"
           @input="handleSearch($event, 'bundle')"
         />
-        <ToolbarAction @click="handleDialogClose($event, true)">
-          Done
-        </ToolbarAction>
+        <ToolbarAction @click="handleDialogClose($event, true)">Done</ToolbarAction>
         <template #extension>
           <TabControls v-model="productListTab" grow>
             <TabControl title="Product" @click="productListTab = 0" />
@@ -275,27 +287,23 @@ watch(
                   :description="SALE_FORM.PRODUCT_EMPTY_SEARCH_DESCRIPTION"
                   margin="56px 0"
                 />
-                <div v-else class="products-dialog-list">
+                <div v-else class="product-selection-list">
                   <template :key="product.id" v-for="product of productList?.products">
-                    <SaleProduct
-                      small
-                      role="button"
-                      :aria-label="`Add ${product.name}`"
+                    <ProductSelectionItem
                       :images="product.images"
                       :name="product.name"
                       :selected="isProductSelected(product) ? true : undefined"
+                      :aria-label="`Add ${product.name}`"
                       @click="handleSelectProduct(product)"
                     />
-                    <SaleProduct
-                      :key="variant.id"
+                    <ProductSelectionItem
                       v-for="variant of product.variants"
-                      small
-                      variant
-                      role="button"
-                      :aria-label="`Add ${product.name} - ${variant.name}`"
+                      :key="variant.id"
+                      :indent="1"
                       :images="variant.images"
                       :name="variant.name"
                       :selected="isVariantSelected(variant.id) ? true : undefined"
+                      :aria-label="`Add ${product.name} - ${variant.name}`"
                       @click="handleSelectVariant(product.name, variant)"
                     />
                   </template>
@@ -347,18 +355,16 @@ watch(
                   :description="SALE_FORM.BUNDLE_EMPTY_SEARCH_DESCRIPTION"
                   margin="56px 0"
                 />
-                <div v-else class="products-dialog-list">
-                  <template :key="bundle.id" v-for="bundle of bundleList.bundles">
-                    <SaleProduct
-                      small
-                      role="button"
-                      :aria-label="`Add ${bundle.name}`"
-                      :images="bundle.images"
-                      :name="bundle.name"
-                      :selected="isBundleSelected(bundle) ? true : undefined"
-                      @click="handleSelectBundle(bundle)"
-                    />
-                  </template>
+                <div v-else class="product-selection-list">
+                  <ProductSelectionItem
+                    :key="bundle.id"
+                    v-for="bundle of bundleList.bundles"
+                    :images="bundle.images"
+                    :name="bundle.name"
+                    :selected="isBundleSelected(bundle) ? true : undefined"
+                    :aria-label="`Add ${bundle.name}`"
+                    @click="handleSelectBundle(bundle)"
+                  />
                 </div>
                 <template v-if="!isBundleListLoading && !isBundleListError">
                   <FloatingActions sticky=".cp-content">
@@ -386,51 +392,3 @@ watch(
 </template>
 
 <style lang="scss" src="@/assets/page-form.scss" />
-<style lang="scss" scoped>
-.products-list {
-  .vc-sales-form-product {
-    &:first-of-type {
-      border-top-color: transparent;
-    }
-
-    &:last-of-type  {
-      border-bottom-color: transparent;
-    }
-  }
-
-  &-actions {
-    border-top: 1px solid var(--color-border);
-    padding: 16px;
-  }
-}
-
-.products-dialog {
-  &__search {
-    @include text-body-md;
-    min-width: 100px;
-    flex-grow: 1;
-    height: 40px;
-    border: none;
-    padding: 0;
-    margin: 0;
-    border-radius: 4px;
-    outline: none;
-    padding: 0 16px;
-    margin: 0 16px;
-  }
-
-  :deep() {
-    .cp-dialog-body {
-      padding: 0;
-    }
-  }
-
-  &-list {
-    .vc-sales-form-product {
-      &:first-of-type {
-        border-top-color: transparent;
-      }
-    }
-  }
-}
-</style>

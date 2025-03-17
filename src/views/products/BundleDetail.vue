@@ -33,7 +33,7 @@ import {
 import ComposIcon, { ArrowLeftShort, PencilSquare, Trash } from '@/components/Icons';
 
 // View Components
-import { ProductImage } from '@/views/components';
+import { ProductImage, ProductListItem } from '@/views/components';
 
 // Constants
 import GLOBAL from '@/views/constants';
@@ -167,7 +167,7 @@ watch(
                   <CardTitle>Products</CardTitle>
                   <CardSubtitle>Products available in this bundle.</CardSubtitle>
                 </CardHeader>
-                <CardBody>
+                <CardBody padding="0">
                   <EmptyState
                     v-if="!data.products.length"
                     emoji="🍃"
@@ -175,29 +175,32 @@ watch(
                     :description="BUNDLE_DETAIL.EMPTY_PRODUCT_DESCRIPTION"
                     margin="56px 0"
                   />
-                  <div v-else class="product-detail-items">
-                    <div
-                      v-for="product in data.products"
-                      class="product-detail-item"
-                      :data-inactive="!product.active ? true : undefined"
-                    >
-                      <ProductImage width="80px" height="80px">
-                        <img :src="`${product.image ? product.image : no_image}`" :alt="`${product.name} image`" />
-                      </ProductImage>
-                      <div class="product-detail-item__body">
-                        <Text class="product-detail-item__name" body="large" as="h4">
-                          <Label v-if="!product.active" color="red">Inactive</Label>
-                          {{ product.product_name ? `${product.product_name} - ${product.name}` : product.name }}
-                        </Text>
-                        <div class="product-detail-item__info">
-                          <Text body="small" margin="0 0 2px">Price: {{ product.price_formatted }}</Text>
-                          <Text body="small" margin="0 0 2px">Stock: {{ product.stock }}</Text>
-                          <Text body="small" margin="0 0 2px">Quantity: {{ product.quantity }}</Text>
-                          <Text body="small" margin="0">SKU: {{ product.sku || '-' }}</Text>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <template v-else>
+                    <ProductListItem
+                      :key="`product-bundle-${product.id}`"
+                      v-for="product of data.products"
+                      :active="product.active"
+                      :name="product.name"
+                      :details="[
+                        {
+                          name: 'Price',
+                          value: product.price_formatted,
+                        },
+                        {
+                          name: 'Stock',
+                          value: String(product.stock),
+                        },
+                        {
+                          name: 'Quantity',
+                          value: String(product.quantity),
+                        },
+                        {
+                          name: 'SKU',
+                          value: product.sku || '-',
+                        },
+                      ]"
+                    />
+                  </template>
                 </CardBody>
               </Card>
             </Column>

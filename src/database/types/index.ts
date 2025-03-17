@@ -25,11 +25,11 @@ export type QueryReturn = {
 };
 
 /**
- * ---------------------------------------------------------------------------------------
- * 1. Price is optional, since product can have variants, each variant has it's own price.
- * 2. Stock is optional since product can have variants, each variant has it's own stock.
- * 3. SKU is optional and since product can have variants, each variant has it's own SKU.
- * ---------------------------------------------------------------------------------------
+ * ------------------------------------------------------------------------------------------------
+ * 1. "price" is optional since product can have "variants", and each variant has it's own "price".
+ * 2. "stock" is optional since product can have "variants", and each variant has it's own "stock".
+ * 3. "sku" is optional since product can have "variants", and each variant has it's own "sku".
+ * ------------------------------------------------------------------------------------------------
  */
 export type ProductDoc = {
   id: string;
@@ -62,9 +62,9 @@ export type VariantDoc = {
 export type VariantCollection = RxCollection<VariantDoc>;
 
 /**
- * ------------------------------------------------------------------------------
- * 1. product_id is optional, since the product can be a product without variant.
- * ------------------------------------------------------------------------------
+ * ---------------------------------------------------------------------------------------
+ * 1. "product_id" is optional since the bundle product can be a product without variants.
+ * ---------------------------------------------------------------------------------------
  */
 export type BundleDocProduct = {
   id: string;
@@ -96,10 +96,10 @@ export type OrderDocBundleItem = {
 };
 
 /**
- * ----------------------------------------------------------------------------------------
- * 1. SKU is optional, since the product can be a bundle and bundle items has it's own sku.
- * 2. Items is optional, since items only for bundle.
- * ----------------------------------------------------------------------------------------
+ * ---------------------------------------------------------------------------------------------------
+ * 1. "sku" is optional since the product can be a bundle, and each of bundle item has it's own "sku".
+ * 2. "items" is optional since "items" only for bundle.
+ * ---------------------------------------------------------------------------------------------------
  */
 export type OrderDocProduct = {
   id: string;

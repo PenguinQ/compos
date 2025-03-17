@@ -12,12 +12,15 @@ import { getProductList } from '@/database/query/product';
 import { formDetailNormalizer, formProductListNormalizer } from '../normalizer/BundleForm.normalizer'
 
 // Common Helpers
-import { debounce, isNumeric, isNumericString } from '@/helpers';
+import {
+  debounce,
+  isNumeric,
+  isNumericString,
+} from '@/helpers';
 
 // Types
 import type {
   FormDetailNormalizerReturn,
-  FormDetailProduct,
   FormProductListNormalizerReturn,
   FormProductListProduct,
   FormProductListVariant,
@@ -131,7 +134,7 @@ export const useBundleForm = () => {
   });
 
   const {
-    data     : product_list,
+    data     : productList,
     refetch  : productListRefetch,
     isLoading: productListLoading,
     isError  : productListError,
@@ -273,26 +276,28 @@ export const useBundleForm = () => {
     }
   };
 
-  const toPrevPage = (_e: Event, toFirst?: boolean) => {
-    if (toFirst) {
-      page.current = 1;
-    } else {
-      if (page.current > 1) page.current -= 1;
-    }
-
-    !page.first && productListRefetch();
+  const handleRemoveProduct = (index: number) => {
+    formData.products.splice(index, 1);
+    formError.products.splice(index, 1);
   };
 
-  const toNextPage = (_e: Event, toLast?: boolean) => {
-    if (toLast) {
-      page.current = page.total;
-    } else {
-      if (page.current < page.total) page.current += 1;
+  const getUpdatedPrice = (products: FormDataProduct[]) => {
+    let total_price = Big(0);
+
+    for (const product of products) {
+      const { price, quantity } = product;
+
+      total_price = total_price.plus(Big(price).times(quantity));
     }
 
-    !page.last && productListRefetch();
+    return total_price.toFixed();
   };
 
+  /**
+   * -----------------------------
+   * Product list Dialog functions
+   * -----------------------------
+   */
   const handleOpenDialog = () => {
     loadProducts.value = true;
     formData.selected_products = [...formData.products];
@@ -326,7 +331,7 @@ export const useBundleForm = () => {
           if (!is_variant_selected) {
             products.push({
               name       : `${name} - ${variant_name}`,
-              total_price: Big(price).times(1).toString(),
+              total_price: Big(price).times(1).toFixed(),
               quantity   : 1,
               sku        : sku || '',
               id,
@@ -351,7 +356,7 @@ export const useBundleForm = () => {
       } else {
         products.push({
           product_id : '',
-          total_price: Big(price).times(1).toString(),
+          total_price: Big(price).times(1).toFixed(),
           quantity   : 1,
           sku        : sku || '',
           id,
@@ -393,11 +398,6 @@ export const useBundleForm = () => {
     }
   };
 
-  const handleRemoveProduct = (index: number) => {
-    formData.products.splice(index, 1);
-    formError.products.splice(index, 1);
-  };
-
   const isProductSelected = (data: FormProductListProduct) => {
     const { id, variants } = data;
     const products = formData.selected_products;
@@ -415,44 +415,32 @@ export const useBundleForm = () => {
     return formData.selected_products.find(product => product.id === id);
   };
 
-  const handleChangeQuantity = (e: Event, product: FormDetailProduct) => {
-
-    const target = e.target as HTMLInputElement;
-
-    if (!isNumericString(target.value)) {
-      product.quantity = 1;
-      product.total_price = Big(product.price).times(1).toString();
-    }
-  };
-
-  const handleUpdateQuantity = (e: Event | string, product: FormDetailProduct) => {
-    let quantity = 0;
-
-    if (typeof e === 'string') {
-      quantity = parseInt(e);
+  const toPrevPage = (_e: Event, toFirst?: boolean) => {
+    if (toFirst) {
+      page.current = 1;
     } else {
-      const target_value = (e.target as HTMLInputElement).value;
-      quantity = parseInt(target_value ? target_value : '0');
+      if (page.current > 1) page.current -= 1;
     }
 
-    product.quantity = quantity;
-    product.total_price = Big(product.price).times(quantity).toString();
+    !page.first && productListRefetch();
   };
 
-  const getUpdatedPrice = (products: FormDataProduct[]) => {
-    let total_price = Big(0);
-
-    for (const product of products) {
-      const { price, quantity } = product;
-
-      total_price = total_price.plus(Big(price).times(quantity));
+  const toNextPage = (_e: Event, toLast?: boolean) => {
+    if (toLast) {
+      page.current = page.total;
+    } else {
+      if (page.current < page.total) page.current += 1;
     }
 
-    return total_price.toString();
+    !page.last && productListRefetch();
   };
 
-  const handleRefresh = async (e: any) => {
-    // Reset any possible dynamic fields
+  /**
+   * ----------------------
+   * PullToRefresh handlers
+   * ----------------------
+   */
+  const handleRefresh = async (loading: any) => {
     formData.name              = '';
     formData.description       = '';
     formData.price             = '0';
@@ -464,10 +452,10 @@ export const useBundleForm = () => {
     formError.products         = [];
 
     await bundleDetailRefetch();
-    e.complete();
+    loading.complete();
   };
 
-  const handleRefreshList = async (e: any) => {
+  const handleRefreshList = async (loading: any) => {
     const resetPage = async () => {
       loadProducts.value = false;
       page.current       = 1;
@@ -478,7 +466,7 @@ export const useBundleForm = () => {
 
     await resetPage();
     await productListRefetch();
-    e.complete();
+    loading.complete();
   };
 
   watch(
@@ -509,31 +497,29 @@ export const useBundleForm = () => {
     searchQuery,
     loadProducts,
     showProductsDialog,
-    product_list: product_list as Ref<FormProductListNormalizerReturn>,
+    productList: productList as Ref<FormProductListNormalizerReturn>,
     productListError,
     productListLoading,
-    productListRefetch,
     bundleDetailError,
     bundleDetailLoading,
+    mutateAddLoading,
+    mutateEditLoading,
+    productListRefetch,
     bundleDetailRefetch,
+    mutateAdd,
+    mutateEdit,
     handleSearch,
     handleOpenDialog,
     handleCloseDialog,
-    handleChangeQuantity,
-    handleUpdateQuantity,
     handleSubmit,
-    isProductSelected,
-    isVariantSelected,
     handleSelectProduct,
     handleSelectVariant,
     handleRemoveProduct,
     handleRefresh,
     handleRefreshList,
+    isProductSelected,
+    isVariantSelected,
     toPrevPage,
     toNextPage,
-    mutateAdd,
-    mutateAddLoading,
-    mutateEdit,
-    mutateEditLoading
   };
 };

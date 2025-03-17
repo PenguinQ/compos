@@ -17,7 +17,7 @@ export const SALE_DETAIL = {
   EMPTY_ORDER_DESCRIPTION: 'No order has been made, yet.',
   EMPTY_SOLD_EMOJI: '🍃',
   EMPTY_SOLD_TITLE: 'Whoosh...',
-  EMPTY_SOLD_DESCRIPTION: 'Currently no products has been sold, yet.',
+  EMPTY_SOLD_DESCRIPTION: 'No products has been sold, yet.',
 };
 
 export const SALE_FORM = {
