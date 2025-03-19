@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue';
+import { computed, ref, watch, nextTick, onMounted } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
 import ComposIcon, { Plus, Dash } from '@/components/Icons';
@@ -9,14 +9,6 @@ interface QuantityEditor extends /* @vue-ignore */ InputHTMLAttributes {
    * Set the quantity editor into disabled state.
    */
   disabled?: boolean;
-  /**
-   * Set the decrement button into disabled state.
-   */
-  disabledDecrement?: boolean;
-  /**
-   * Set the increment button into disabled state.
-   */
-  disabledIncrement?: boolean;
   /**
    * Set the quantity editor into disabled state.
    */
@@ -101,11 +93,10 @@ const emits = defineEmits([
   'clickIncrement',
 ]);
 
-const computedValue = computed(() => props.modelValue ?? props.value);
-const inputUpdate   = ref(false);
-const inputRef      = ref<HTMLInputElement | null>(null);
-const inputValue    = ref(computedValue.value != null ? String(computedValue.value) : '');
-const inputWidth = computed(() => {
+const inputRef       = ref<HTMLInputElement | null>(null);
+const computedValue  = computed(() => props.modelValue ?? props.value);
+const inputValue     = ref(computedValue.value != null ? String(computedValue.value) : '');
+const inputWidth     = computed(() => {
   if (props.width === 'auto') return inputValue.value.length > 2 ? `calc(${inputValue.value.length}ch + 16px)` : '';
 
   return `calc(${props.width}ch + 16px)`;
@@ -141,7 +132,7 @@ const handleStep = (direction: 'up' | 'down') => {
   if (!inputRef.value) return;
 
   const input  = inputRef.value;
-  const value  = Number(input.value);
+  const value  = Number(input.value === '-' ? '' : input.value);
   const step   = Math.round(props.step);
   let newValue = direction === 'up' ? value + step : value - step;
 
@@ -152,23 +143,24 @@ const handleStep = (direction: 'up' | 'down') => {
   inputValue.value = String(newValue);
 };
 
-const updateQuantity = (e: Event | undefined, increment: boolean = true) => {
+const updateQuantity = (e: Event | undefined, increment = true) => {
   e?.preventDefault();
   clearTimeout(timeout);
 
   increment ? handleStep('up') : handleStep('down');
 
-  timeout = setTimeout(() => updateQuantity(e, increment), 160);
-
   const returnValue = isNumber.value ? Number(inputValue.value) : inputValue.value;
-
-  inputUpdate.value = true;
 
   emits('update:modelValue', returnValue);
 
   increment ? emits('clickIncrement', returnValue) : emits('clickDecrement', returnValue);
 
-  nextTick(() => inputUpdate.value = false);
+  if (
+    props.min >= Number(inputValue.value) ||
+    props.max && props.max <= Number(inputValue.value)
+  ) return;
+
+  timeout = setTimeout(() => updateQuantity(e, increment), 200);
 };
 
 const stopUpdateQuantity = () => clearTimeout(timeout);
@@ -202,16 +194,15 @@ const handleInput = (e: Event) => {
 
   if (inputValue.value.startsWith('-') && inputValue.value.length < 2) return;
 
-  inputUpdate.value = true;
-
   emits('update:modelValue', isNumber.value ? Number(inputValue.value) : inputValue.value);
   emits('input', e);
-
-  nextTick(() => inputUpdate.value = false);
 };
 
-watch(computedValue, (newValue) => {
-  if (!inputUpdate.value) inputValue.value = normalizeInput(String(newValue));
+watch(computedValue, newValue => {
+  const normalizedValue = normalizeInput(String(newValue));
+
+  // Detect and apply changes coming from external update
+  if (inputValue.value && inputValue.value !== normalizedValue) inputValue.value = normalizedValue;
 });
 </script>
 
@@ -228,7 +219,7 @@ watch(computedValue, (newValue) => {
     <div class="cp-form-quantity__field">
       <button
         type="button"
-        :disabled="disabled || disabledDecrement"
+        :disabled="disabled || min === Number(inputValue)"
         @mousedown="updateQuantity($event, false)"
         @mouseup="stopUpdateQuantity"
         @mouseleave="stopUpdateQuantity"
@@ -254,7 +245,7 @@ watch(computedValue, (newValue) => {
       />
       <button
         type="button"
-        :disabled="disabled || disabledIncrement"
+        :disabled="disabled || max === Number(inputValue)"
         @mousedown="updateQuantity($event)"
         @mouseup="stopUpdateQuantity"
         @mouseleave="stopUpdateQuantity"
