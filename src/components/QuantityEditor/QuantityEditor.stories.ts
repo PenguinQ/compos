@@ -73,8 +73,6 @@ export const Playground: Story = {
     template: `
       <Text>QuantityEditor value: {{ quantityValue }}</Text>
       <QuantityEditor v-bind="args" v-model="quantityValue" />
-      &nbsp;
-      <button @click="quantityValue = 1000">Change Value</button>
     `,
   }),
   args: {
