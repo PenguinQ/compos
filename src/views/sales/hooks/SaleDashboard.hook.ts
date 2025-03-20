@@ -1,4 +1,4 @@
-import { computed, reactive, inject, ref, watch } from 'vue';
+import { computed, reactive, inject, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Big from 'big.js';
 import type { Ref } from 'vue';
@@ -397,10 +397,6 @@ export const useSaleDashboard = () => {
   const handleShowOrderHistory = () => {
     controlsView.value = controlsView.value !== 'order-history' ? 'order-history' : 'order-default';
   };
-
-  watch(orderedProducts, newValue => {
-    console.log(newValue);
-  });
 
   return {
     saleId     : params.id,

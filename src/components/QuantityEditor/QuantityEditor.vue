@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { InputHTMLAttributes } from 'vue';
 
 import ComposIcon, { Plus, Dash } from '@/components/Icons';
@@ -151,17 +151,16 @@ const updateQuantity = (e: Event | undefined, increment = true) => {
 
   const returnValue = isNumber.value ? Number(inputValue.value) : inputValue.value;
 
-  // emits('update:modelValue', returnValue);
   emits('update:modelValue', returnValue);
 
-  // increment ? emits('clickIncrement', returnValue) : emits('clickDecrement', returnValue);
+  increment ? emits('clickIncrement', returnValue) : emits('clickDecrement', returnValue);
 
-  // if (
-  //   props.min >= Number(inputValue.value) ||
-  //   props.max && props.max <= Number(inputValue.value)
-  // ) return;
+  if (
+    props.min >= Number(inputValue.value) ||
+    props.max && props.max <= Number(inputValue.value)
+  ) return;
 
-  // timeout = setTimeout(() => updateQuantity(e, increment), 200);
+  timeout = setTimeout(() => updateQuantity(e, increment), 200);
 };
 
 const stopUpdateQuantity = () => clearTimeout(timeout);
@@ -203,7 +202,7 @@ watch(computedValue, newValue => {
   const normalizedValue = normalizeInput(String(newValue));
 
   // Detect and apply changes coming from external update
-  if (inputValue.value !== String(newValue)) inputValue.value = normalizedValue;
+  if (inputValue.value && inputValue.value !== normalizedValue) inputValue.value = normalizedValue;
 });
 </script>
 

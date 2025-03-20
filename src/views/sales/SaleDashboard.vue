@@ -160,12 +160,19 @@ onUnmounted(() => {
             <CardBody padding="0">
               <div
                 v-for="product in products"
-                :key="`${product.id}`"
+                :key="`product-${product.id}`"
                 :class="`product${product.active ? '' : ' product--inactive'}`"
               >
                 <ProductImage class="product-image">
                   <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
-                  <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
+                  <template v-else>
+                    <img
+                      v-for="(image, index) in product.images"
+                      :key="`product-${product.id}-image-${index}`"
+                      :src="image ? image : no_image"
+                      :alt="`${product.name} image`"
+                    />
+                  </template>
                 </ProductImage>
                 <div class="product-content">
                   <div class="product-content__main">
@@ -186,22 +193,20 @@ onUnmounted(() => {
                         </div>
                       </div>
                     </div>
-                    <div class="product-actions">
-                      <QuantityEditor
-                        v-model="product.amount"
-                        :step="product.quantity"
-                        :max="product.stock"
-                        :disabled="!product.active"
-                        @clickIncrement="handleSortOrder(product.id)"
-                        @clickDecrement="handleSortOrder(product.id)"
-                      />
-                    </div>
+                    <QuantityEditor
+                      v-model="product.amount"
+                      :step="product.quantity"
+                      :max="product.stock"
+                      :disabled="!product.active"
+                      @clickIncrement="handleSortOrder(product.id)"
+                      @clickDecrement="handleSortOrder(product.id)"
+                    />
                   </div>
                   <div v-if="product.items" class="product-content__additional">
                     <div class="product-bundle-details">
                       <div
                         v-for="item of product.items"
-                        :key="`${item.id}`"
+                        :key="`product-${item.id}-item`"
                         class="product-bundle-info"
                       >
                         <span class="product-bundle-info__item" style="flex-shrink: 1;">
@@ -262,6 +267,7 @@ onUnmounted(() => {
                   <div v-else class="order-list">
                     <OrderCard
                       v-for="order of ordersData.orders"
+                      :key="`order-${order.id}`"
                       :title="order.name"
                       :total="order.totalFormatted"
                       :tendered="order.tenderedFormatted"
@@ -281,10 +287,21 @@ onUnmounted(() => {
                 height="100%"
               />
               <div v-else class="order-products-list">
-                <div v-for="product of sortedOrderedProducts" class="order-product">
+                <div
+                  v-for="product of sortedOrderedProducts"
+                  :key="`order-product-${product.id}`"
+                  class="order-product"
+                >
                   <ProductImage class="product-image">
                     <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
-                    <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
+                    <template v-else>
+                      <img
+                        v-for="(image, index) in product.images"
+                        :key="`order-product-${product.id}-image-${index}`"
+                        :src="image ? image : no_image"
+                        :alt="`${product.name} image`"
+                      />
+                    </template>
                   </ProductImage>
                   <div class="order-product-content">
                     <Text class="text-truncate" heading="6" margin="0 0 4px">{{ product.name }}</Text>
@@ -303,7 +320,6 @@ onUnmounted(() => {
                     :max="product.stock"
                     small
                   />
-                  <input type="number" v-model="product.amount" min="0" :max="product.stock" />
                 </div>
               </div>
             </template>
@@ -436,10 +452,21 @@ onUnmounted(() => {
           height="100%"
         />
         <div v-else class="order-products-list">
-          <div v-for="product of sortedOrderedProducts" class="order-product">
+          <div
+            v-for="product of sortedOrderedProducts"
+            :key="`dialog-order-product-${product.id}`"
+            class="order-product"
+          >
             <ProductImage class="product-image">
               <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
-              <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
+              <template v-else>
+                <img
+                  v-for="(image, index) in product.images"
+                  :key="`dialog-order-product-${product.id}-image-${index}`"
+                  :src="image ? image : no_image"
+                  :alt="`${product.name} image`"
+                />
+              </template>
             </ProductImage>
             <div class="order-product-content">
               <Text heading="6" margin="0 0 4px">{{ product.name }}</Text>
@@ -588,6 +615,7 @@ onUnmounted(() => {
         <div v-else class="order-list">
           <OrderCard
             v-for="order of ordersData.orders"
+            :key="`dialog-order-${order.id}`"
             :title="order.name"
             :total="order.totalFormatted"
             :tendered="order.tenderedFormatted"
@@ -614,19 +642,6 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
-.cp-page {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  contain: layout;
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 0;
-}
-
 .dashboard {
   height: 100%;
   display: grid;
@@ -725,17 +740,6 @@ onUnmounted(() => {
         height: 16px;
       }
     }
-  }
-
-  &__details {
-    flex-grow: 1;
-  }
-
-  &__name {
-    @include text-body-lg;
-    font-family: var(--text-heading-family);
-    font-weight: 600;
-    margin-bottom: 4px;
   }
 }
 
@@ -1033,17 +1037,6 @@ onUnmounted(() => {
       }
     }
   }
-
-  &-actions {
-    overflow: hidden;
-    border-radius: 8px;
-    flex: 0 0 auto;
-
-    .vc-button-block {
-      width: 40px;
-      height: 40px;
-    }
-  }
 }
 
 @include screen-sm {
@@ -1052,13 +1045,6 @@ onUnmounted(() => {
       align-items: center;
       flex-direction: row;
       gap: 12px;
-    }
-
-    &-actions {
-      .vc-button-block {
-        width: 50px;
-        height: 50px;
-      }
     }
   }
 };
@@ -1101,15 +1087,6 @@ onUnmounted(() => {
     &-image {
       width: 80px;
       height: 80px;
-    }
-
-    &-actions {
-      border-radius: 12px;
-
-      .vc-button-block {
-        width: 60px;
-        height: 60px;
-      }
     }
   }
 
