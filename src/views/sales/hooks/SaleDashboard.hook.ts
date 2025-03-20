@@ -1,4 +1,4 @@
-import { computed, reactive, inject, ref } from 'vue';
+import { computed, reactive, inject, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Big from 'big.js';
 import type { Ref } from 'vue';
@@ -28,55 +28,44 @@ import type {
   OrdersNormalizerReturn,
 } from '../normalizer/SaleDashboard.normalizer';
 
-type OrderedProductBundleItem = {
-  id: string;
-  name: string;
-  quantity: number;
-  stock: number;
-  price: Big;
-  sku?: string;
-};
-
-/**
- * ---------------------------------------------------------------------------------------------
- * 1. stock is optional, since the product can be a bundle, and bundle items has it's own stock.
- * 2. items is optional, since items only for bundle.
- * ---------------------------------------------------------------------------------------------
- */
-type OrderedProduct = {
-  id: string;
-  images: string[];
-  name: string;
+interface Product extends Omit<ProductsNormalizerProduct, 'price'> {
   price: Big;
   amount: number;
-  quantity: number;
-  stock?: number;
-  items?: OrderedProductBundleItem[];
-  sku?: string;
-};
+  sortOrder: number;
+}
 
 export const useSaleDashboard = () => {
   const toast  = inject('ToastProvider');
   const route  = useRoute();
   const router = useRouter();
   const { params } = route;
-  const dialogFinish       = ref(false);
-  const dialogPayment      = ref(false);
-  const dialogHistory      = ref(false);
-  const controlsView       = ref('order-default');
-  const detailsProducts    = ref<DetailsNormalizerProduct[]>([]);
-  const loadProducts       = ref(false);
-  const loadOrders         = ref(false);
-  const orderedProducts    = ref<OrderedProduct[]>([]);
-  const totalProductsCount = computed(() => orderedProducts.value.reduce((acc, product) => acc += product.amount, 0));
-  const totalProductsPrice = computed(() => orderedProducts.value.reduce((acc, product) => acc.plus(Big(product.price).times(product.amount)), Big(0)));
-  const paymentInput       = ref('0');
-  const paymentTendered    = computed(() => Big(paymentInput.value));
-  const paymentChange      = computed(() => totalProductsPrice.value.gt(paymentTendered.value) ? 0 : paymentTendered.value.minus(totalProductsPrice.value));
-  const balance            = reactive<{ initial?: string; current?: string; }>({
+  const dialogFinish          = ref(false);
+  const dialogPayment         = ref(false);
+  const dialogHistory         = ref(false);
+  const controlsView          = ref('order-default');
+  const detailsProducts       = ref<DetailsNormalizerProduct[]>([]);
+  const loadProducts          = ref(false);
+  const loadOrders            = ref(false);
+  const products              = ref<Product[]>([]);
+  const orderedProducts       = computed(() => products.value.filter(p => p.amount > 0));
+  const sortedOrderedProducts = computed(() => orderedProducts.value.sort((a, b) => a.sortOrder - b.sortOrder));
+  const totalProductsCount    = computed(() => orderedProducts.value.reduce((acc, product) => acc += product.amount, 0));
+  const totalProductsPrice    = computed(() => orderedProducts.value.reduce((acc, product) => acc.plus(Big(product.price).times(product.amount)), Big(0)));
+  const paymentInput          = ref('0');
+  const paymentTendered       = computed(() => Big(paymentInput.value));
+  const paymentChange         = computed(() => totalProductsPrice.value.gt(paymentTendered.value) ? 0 : paymentTendered.value.minus(totalProductsPrice.value));
+  const balance = reactive<{ initial?: string; current?: string; }>({
     initial: undefined,
     current: undefined,
   });
+  const productsStock = new Map<string, number>();
+
+  const resetProductsAmount = () => {
+    for (const product of products.value) {
+      product.amount    = 0;
+      product.sortOrder = 0;
+    }
+  };
 
   const {
     data     : detailsData,
@@ -115,7 +104,6 @@ export const useSaleDashboard = () => {
   });
 
   const {
-    data     : productsData,
     isError  : isProductsError,
     isLoading: isProductsLoading,
     refetch  : productsRefetch,
@@ -131,7 +119,60 @@ export const useSaleDashboard = () => {
       toast.add({ message: 'Failed to get the sale products', type: 'error', duration: 2000 });
       console.error('Failed to get the sale products,', error.message);
     },
+    onSuccess: response => {
+      const { products: responseProducts } = response as ProductsNormalizerReturn;
+      const tempProducts = [];
+
+      // Reset the products stock map
+      productsStock.clear();
+
+      for (const product of responseProducts) {
+        tempProducts.push({
+          id            : product.id,
+          active        : product.active,
+          images        : product.images,
+          name          : product.name,
+          price         : Big(product.price),
+          priceFormatted: product.priceFormatted,
+          quantity      : product.quantity,
+          stock         : product.stock,
+          items         : product.items,
+          amount        : 0,
+          sortOrder     : 0,
+        });
+
+        if (isBundle(product.id)) {
+          for (const item of product.items || []) {
+            if (!productsStock.has(item.id)) productsStock.set(item.id, item.stock);
+          }
+        } else {
+          if (!productsStock.has(product.id)) {
+            productsStock.set(product.id, product.stock);
+          }
+        }
+      }
+
+      products.value = tempProducts;
+    },
   });
+
+  const handleSortOrder = (id: string) => {
+    const product  = products.value.find(p => p.id === id);
+
+    if (product) {
+      const inOrders = product.amount > 0;
+
+      if (product.sortOrder === 0 && inOrders) {
+        const highestOrder = products.value.reduce((acc, curr) => {
+          return curr.sortOrder > acc.sortOrder ? curr : acc;
+        }, products.value[0]).sortOrder;
+
+        product.sortOrder = highestOrder + 1;
+      } else if (product.sortOrder !== 0 && !inOrders) {
+        product.sortOrder = 0;
+      }
+    }
+  };
 
   const {
     data     : ordersData,
@@ -172,8 +213,8 @@ export const useSaleDashboard = () => {
     mutateFn: () => {
       const mutateProducts = [];
 
-      for (const order of orderedProducts.value) {
-        const { amount, id, name, price, items, sku } = order;
+      for (const product of orderedProducts.value) {
+        const { amount, id, name, price, items, sku } = product;
         let itemList = [];
 
         if (items) {
@@ -215,11 +256,11 @@ export const useSaleDashboard = () => {
       console.error('Failed to add order,', error.message);
     },
     onSuccess: () => {
-      orderedProducts.value = [];
-      paymentInput.value    = '0';
-      controlsView.value    = 'order-default';
-      dialogPayment.value   = false;
-      dialogHistory.value   = false;
+      resetProductsAmount();
+      paymentInput.value  = '0';
+      controlsView.value  = 'order-default';
+      dialogPayment.value = false;
+      dialogHistory.value = false;
 
       // Get new products data.
       productsRefetch();
@@ -246,91 +287,6 @@ export const useSaleDashboard = () => {
     },
   });
 
-  const handleClickIncrement = (product: ProductsNormalizerProduct) => {
-    const {
-      id,
-      images,
-      name,
-      items,
-      stock,
-      price,
-      quantity,
-      sku,
-    } = product;
-    const order = orderedProducts.value.find(product => product.id === id);
-
-    if (order) {
-      const orderAmount = order.amount + quantity!;
-
-      if (orderAmount > stock!) {
-        // @ts-ignore
-        toast.add({ message: `Insufficient stock for ${name}, only ${stock} remaining. You ordered ${orderAmount}`, type: 'error', duration: 2000 });
-      } else {
-        order.amount += quantity!;
-      }
-    } else {
-      const bundle_items = [];
-
-      if (items) {
-        for (const item of items) {
-          const { id, name, price, quantity, stock, sku } = item;
-
-          bundle_items.push({
-            price: Big(price),
-            id,
-            name,
-            quantity,
-            stock,
-            sku,
-          });
-        }
-      }
-
-      orderedProducts.value.push({
-        amount: quantity ? quantity : 1,
-        items : bundle_items.length ? bundle_items : undefined,
-        price : Big(price),
-        id,
-        images,
-        name,
-        stock,
-        quantity,
-        sku,
-      });
-    }
-  };
-
-  const handleClickDecrement = (product: ProductsNormalizerProduct) => {
-    const { id, quantity } = product;
-    const order = orderedProducts.value.find(product => product.id === id);
-
-    const removeOrder = () => {
-      const filtered = orderedProducts.value.filter(product => product.id !== id);
-
-      orderedProducts.value = filtered;
-    };
-
-    if (order) {
-      if (order.amount > 1) {
-        order.amount -= quantity ? quantity : 1;
-
-        if (!order.amount || order.amount < 0) removeOrder();
-      } else {
-        removeOrder();
-      }
-    }
-  };
-
-  const handleClickQuantityDecrement = (value: string, id: string) => {
-    const intValue = parseInt(value);
-
-    if (!intValue) {
-      const filtered = orderedProducts.value.filter(product => product.id !== id);
-
-      orderedProducts.value = filtered;
-    }
-  };
-
   const handleClickBackspace = () => {
     paymentInput.value = paymentInput.value.length === 1 ? '0' : paymentInput.value.slice(0, -1);
   };
@@ -346,7 +302,7 @@ export const useSaleDashboard = () => {
   };
 
   const handleClickClear = () => {
-    orderedProducts.value = [];
+    resetProductsAmount();
   };
 
   const handleClickCancel = () => {
@@ -358,63 +314,48 @@ export const useSaleDashboard = () => {
     if (totalProductsCount.value) {
       if (paymentTendered.value) {
         /**
-         * -------------------------------------------------------------------
-         * Create a temporary list of product for amount and stock comparison.
-         * -------------------------------------------------------------------
+         * ------------------------------
+         * Create a map of product stock.
+         * ------------------------------
          */
-        const tempList = <{ id: string; name: string; amount: number; stock: number; }[]>[];
+        const orderProductsAmount = new Map<string, { name: string; amount: number; }>();
 
         for (const product of orderedProducts.value) {
-          const { id, name, items, amount, stock } = product;
+          const { id, amount, name } = product;
 
           if (isBundle(id)) {
-            for (const item of items!) {
-              const {
-                id      : item_id,
-                name    : item_name,
-                quantity: item_quantity,
-                stock   : item_stock,
-              } = item;
-              const inTempList = tempList.find(product => product.id === item_id);
+            for (const item of product.items || []) {
+              const { id: itemId, name: itemName } = item;
 
-              if (inTempList) {
-                const index = tempList.indexOf(inTempList);
-
-                tempList[index].amount += item_quantity;
-              } else {
-                tempList.push({
-                  id    : item_id,
-                  name  : item_name,
-                  amount: item_quantity * amount,
-                  stock : item_stock,
+              if (orderProductsAmount.has(itemId)) {
+                orderProductsAmount.set(itemId, {
+                  name  : itemName,
+                  amount: orderProductsAmount.get(itemId)!.amount + amount,
                 });
+              } else {
+                orderProductsAmount.set(itemId, { name: itemName, amount});
               }
             }
           } else {
-            const inTempList = tempList.find(product => product.id === id);
-
-            if (inTempList) {
-              const index = tempList.indexOf(inTempList);
-
-              tempList[index].amount += amount;
-            } else {
-              tempList.push({ id, name, amount, stock: stock! });
+            if (!orderProductsAmount.has(id)) {
+              orderProductsAmount.set(id, { name, amount });
             }
           }
         }
 
         /**
-         * -----------------------------------------------------------------------------------------
-         * Check if any of the products inside the temporary list has amount greater than the stock.
-         * -----------------------------------------------------------------------------------------
-         * If one of the product amount is greater than the stock, stop the operation and show toaster.
+         * ------------------------------------------------------------------------------------
+         * Looping through ordered product to check if the amount are greater than their stock.
+         * ------------------------------------------------------------------------------------
+         * If the condition is fullfilled, stop the operation.
          */
-        for (const product of tempList) {
-          const { name, amount, stock } = product;
+        for (const [key, value] of orderProductsAmount.entries()) {
+          const { amount, name } = value;
+          const stock = productsStock.get(key)!;
 
           if (amount > stock) {
             // @ts-ignore
-            toast.add({ message: `Insufficient stock for ${name}, only ${stock} remaining. You ordered ${amount}`, type: 'error', duration: 5000 });
+            toast.add({ message: `Insufficient stock for ${name}, only ${stock} remaining; You ordered ${amount}`, type: 'error', duration: 5000 });
 
             return false;
           }
@@ -457,16 +398,21 @@ export const useSaleDashboard = () => {
     controlsView.value = controlsView.value !== 'order-history' ? 'order-history' : 'order-default';
   };
 
+  watch(orderedProducts, newValue => {
+    console.log(newValue);
+  });
+
   return {
-    saleId      : params.id,
-    detailsData : detailsData as Ref<DetailsNormalizerReturn>,
-    productsData: productsData as Ref<ProductsNormalizerReturn>,
-    ordersData  : ordersData as Ref<OrdersNormalizerReturn>,
+    saleId     : params.id,
+    detailsData: detailsData as Ref<DetailsNormalizerReturn>,
+    ordersData : ordersData as Ref<OrdersNormalizerReturn>,
+    products,
+    orderedProducts,
+    sortedOrderedProducts,
     dialogFinish,
     dialogPayment,
     dialogHistory,
     controlsView,
-    orderedProducts,
     balance,
     paymentChange,
     paymentTendered,
@@ -481,15 +427,13 @@ export const useSaleDashboard = () => {
     isOrdersLoading,
     isMutateFinishLoading,
     isMutateAddOrderLoading,
-    handleClickDecrement,
-    handleClickIncrement,
-    handleClickQuantityDecrement,
     handleClickBackspace,
     handleClickCalculator,
     handleClickCancel,
     handleClickClear,
     handlePayment,
     handleShowOrderHistory,
+    handleSortOrder,
     productsRefetch,
     ordersRefetch,
     mutateFinish,
