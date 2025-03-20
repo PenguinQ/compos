@@ -42,11 +42,11 @@ type ProductsNormalizerItem = GetSaleProductsBundleItem & {
 };
 
 /**
- * --------------------------------------------------------------------------------------------------
- * 1. stock is optional since the product can be a bundle, and bundle items has it's own stock.
- * 2. sku is optional since the product can be a bundle, and bundle items has it's own sku.
- * 3. items is optional since items only used for bundle.
- * --------------------------------------------------------------------------------------------------
+ * -------------------------------------------------------------------------------------------------------
+ * 1. "stock" is optional since the product can be a bundle, and each of bundle item has it's own "stock".
+ * 2. "sku" is optional since the product can be a bundle, and each of bundle item has it's own "sku".
+ * 3. "items" is optional since "items" only used for bundle.
+ * -------------------------------------------------------------------------------------------------------
  */
 export type ProductsNormalizerProduct = {
   id: string;
@@ -55,7 +55,7 @@ export type ProductsNormalizerProduct = {
   name: string;
   price: string;
   priceFormatted: string;
-  stock?: number;
+  stock: number;
   quantity: number;
   sku?: string;
   items?: ProductsNormalizerItem[];
@@ -82,11 +82,18 @@ export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
       stock,
       items,
     } = product;
-    let itemList = [];
+    let itemList  = [];
+    let itemStock = stock;
 
     if (items) {
       for (const item of items) {
         const { id, name, price, quantity, sku, stock } = item;
+
+        if (itemStock) {
+          if (itemStock > stock) itemStock = stock;
+        } else {
+          itemStock = stock;
+        }
 
         itemList.push({
           priceFormatted: toIDR(price),
@@ -100,17 +107,16 @@ export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
       }
     }
 
-
     productList.push({
-      items          : itemList.length ? itemList : undefined,
-      priceFormatted : toIDR(price),
+      items         : itemList.length ? itemList : undefined,
+      priceFormatted: toIDR(price),
+      stock         : itemStock!,
       id,
       active,
       images,
       name,
       sku,
       price,
-      stock,
       quantity,
     });
   }

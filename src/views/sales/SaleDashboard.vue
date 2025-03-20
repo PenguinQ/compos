@@ -24,8 +24,6 @@ import ComposIcon, {
   ArrowLeftShort,
   BackspaceFill,
   XCircleFill,
-  PlusLarge,
-  DashLarge,
   Cash,
   CashCoin,
   ClockHistory,
@@ -39,11 +37,7 @@ import ComposIcon, {
 } from '@/components/Icons';
 
 // View Components
-import {
-  ButtonBlock,
-  OrderCard,
-  ProductImage,
-} from '@/views/components';
+import { OrderCard, ProductImage } from '@/views/components';
 
 // Helpers
 import { debounce, toIDR } from '@/helpers';
@@ -66,9 +60,10 @@ const {
   controlsView,
   balance,
   detailsData,
-  productsData,
-  ordersData,
+  products,
   orderedProducts,
+  sortedOrderedProducts,
+  ordersData,
   totalProductsCount,
   totalProductsPrice,
   paymentInput,
@@ -81,15 +76,13 @@ const {
   isOrdersError,
   isOrdersLoading,
   isMutateFinishLoading,
-  handleClickDecrement,
-  handleClickIncrement,
-  handleClickQuantityDecrement,
   handleClickBackspace,
   handleClickCalculator,
   handleClickCancel,
   handleClickClear,
   handlePayment,
   handleShowOrderHistory,
+  handleSortOrder,
   productsRefetch,
   ordersRefetch,
   mutateFinish,
@@ -147,11 +140,8 @@ onUnmounted(() => {
       </ToolbarAction>
     </Toolbar>
   </Header>
-
-  <!-- Content -->
   <Content>
     <div class="dashboard">
-      <!-- Products -->
       <div class="dashboard-content">
         <EmptyState
           v-if="isProductsError"
@@ -169,7 +159,8 @@ onUnmounted(() => {
           <Card v-else class="products-card">
             <CardBody padding="0">
               <div
-                v-for="product of productsData?.products"
+                v-for="product in products"
+                :key="`${product.id}`"
                 :class="`product${product.active ? '' : ' product--inactive'}`"
               >
                 <ProductImage class="product-image">
@@ -196,25 +187,23 @@ onUnmounted(() => {
                       </div>
                     </div>
                     <div class="product-actions">
-                      <ButtonBlock
+                      <QuantityEditor
+                        v-model="product.amount"
+                        :step="product.quantity"
+                        :max="product.stock"
                         :disabled="!product.active"
-                        backgroundColor="var(--color-red-4)"
-                        @click="handleClickDecrement(product)"
-                      >
-                        <ComposIcon :icon="DashLarge" />
-                      </ButtonBlock>
-                      <ButtonBlock
-                        :disabled="!product.active"
-                        backgroundColor="var(--color-blue-4)"
-                        @click="handleClickIncrement(product)"
-                      >
-                        <ComposIcon :icon="PlusLarge" />
-                      </ButtonBlock>
+                        @clickIncrement="handleSortOrder(product.id)"
+                        @clickDecrement="handleSortOrder(product.id)"
+                      />
                     </div>
                   </div>
                   <div v-if="product.items" class="product-content__additional">
                     <div class="product-bundle-details">
-                      <div v-for="item of product.items" class="product-bundle-info">
+                      <div
+                        v-for="item of product.items"
+                        :key="`${item.id}`"
+                        class="product-bundle-info"
+                      >
                         <span class="product-bundle-info__item" style="flex-shrink: 1;">
                           <ComposIcon :icon="Box" />
                           <span class="text-truncate">{{ item.name }}</span>
@@ -236,7 +225,6 @@ onUnmounted(() => {
           </Card>
         </template>
       </div>
-
       <!-- Controls -->
       <div class="dashboard-control">
         <Card v-if="controlsView !== 'order-payment'" class="order-card">
@@ -286,14 +274,14 @@ onUnmounted(() => {
             </template>
             <template v-else>
               <EmptyState
-                v-if="!orderedProducts.length"
+                v-if="!sortedOrderedProducts.length"
                 :emoji="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_EMOJI"
                 :title="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_TITLE"
                 :description="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_DESCRIPTION"
                 height="100%"
               />
               <div v-else class="order-products-list">
-                <div v-for="product of orderedProducts" class="order-product">
+                <div v-for="product of sortedOrderedProducts" class="order-product">
                   <ProductImage class="product-image">
                     <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
                     <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
@@ -310,14 +298,12 @@ onUnmounted(() => {
                     </div>
                   </div>
                   <QuantityEditor
-                    class="order-product__quantity"
-                    small
-                    readonly
-                    v-model.number="product.amount"
+                    v-model="product.amount"
                     :step="product.quantity"
                     :max="product.stock"
-                    @clickDecrement="handleClickQuantityDecrement($event, product.id)"
+                    small
                   />
+                  <input type="number" v-model="product.amount" min="0" :max="product.stock" />
                 </div>
               </div>
             </template>
@@ -434,23 +420,6 @@ onUnmounted(() => {
       </div>
     </div>
   </Content>
-
-  <!-- Dialog Finish -->
-  <Dialog v-model="dialogFinish" :title="`Finish ${detailsData?.name}?`">
-    <Text body="large" textAlign="center" margin="0">
-      Finishing this product will finish this dashboard session, set the status as finished and redirect to the sale detail page.
-    </Text>
-    <template #footer>
-      <div class="dialog-actions">
-        <Button color="green" full @click="mutateFinish">
-          {{ isMutateFinishLoading ? 'Loading' : 'Finish' }}
-        </Button>
-        <Button variant="outline" full @click="dialogFinish = false">Cancel</Button>
-      </div>
-    </template>
-  </Dialog>
-
-  <!-- Dialog Payment on Mobile View -->
   <Dialog
     class="dialog-payment"
     v-model="dialogPayment"
@@ -460,14 +429,14 @@ onUnmounted(() => {
     <div class="dialog-payment-container">
       <template v-if="controlsView === 'order-default'">
         <EmptyState
-          v-if="!orderedProducts.length"
+          v-if="!sortedOrderedProducts.length"
           :emoji="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_EMOJI"
           :title="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_TITLE"
           :description="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_DESCRIPTION"
           height="100%"
         />
         <div v-else class="order-products-list">
-          <div v-for="product of orderedProducts" class="order-product">
+          <div v-for="product of sortedOrderedProducts" class="order-product">
             <ProductImage class="product-image">
               <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
               <img v-else v-for="image of product.images" :src="image ? image : no_image" :alt="`${product.name} image`">
@@ -484,13 +453,12 @@ onUnmounted(() => {
               </div>
             </div>
             <QuantityEditor
-              class="order-product__quantity"
-              small
-              readonly
-              v-model.number="product.amount"
+              v-model="product.amount"
               :step="product.quantity"
               :max="product.stock"
-              @clickDecrement="handleClickQuantityDecrement($event, product.id)"
+              small
+              @clickDecrement="handleSortOrder(product.id)"
+              @clickIncrement="handleSortOrder(product.id)"
             />
           </div>
         </div>
@@ -590,8 +558,6 @@ onUnmounted(() => {
       </div>
     </div>
   </Dialog>
-
-  <!-- Dialog Order History on Mobile View -->
   <Dialog
     class="dialog-history"
     v-model="dialogHistory"
@@ -630,6 +596,19 @@ onUnmounted(() => {
           />
         </div>
       </template>
+    </template>
+  </Dialog>
+  <Dialog v-model="dialogFinish" :title="`Finish ${detailsData?.name}?`">
+    <Text body="large" textAlign="center" margin="0">
+      Finishing this product will finish this dashboard session, set the status as finished and redirect to the sale detail page.
+    </Text>
+    <template #footer>
+      <div class="dialog-actions">
+        <Button color="green" full @click="mutateFinish">
+          {{ isMutateFinishLoading ? 'Loading' : 'Finish' }}
+        </Button>
+        <Button variant="outline" full @click="dialogFinish = false">Cancel</Button>
+      </div>
     </template>
   </Dialog>
 </template>
