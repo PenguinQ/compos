@@ -29,11 +29,11 @@ if (!plugin) provide('ToastProvider', { items, add });
   <slot />
   <Toast v-if="items.length" :to="to">
     <ToastItem
-      v-for="(item, index) in items"
-      :key="`global-toast-${index}`"
+      v-for="item in items"
+      :key="`toast-provider-item-${item.id}`"
       :duration="item.duration"
       :html="item.html"
-      :message="item.message"
+      :message="`${item.id} - ${item.message}`"
       :persist="item.persist"
       :persistOnHover="item.persistOnHover"
       :noClose="item.noClose"

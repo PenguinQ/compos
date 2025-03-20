@@ -30,8 +30,8 @@ defineExpose({ items, add });
     <Teleport :to="to">
       <div class="cp-toast-container">
         <ToastItem
-          v-for="(item, index) in items"
-          :key="index"
+          v-for="item in items"
+          :key="`toast-item-${item.id}`"
           :duration="item.duration"
           :html="item.html"
           :message="item.message"
