@@ -138,8 +138,8 @@ export const DocSubcomponents = {
     template: `
       <Ticker>
         <TickerItem
-          :key="index"
           v-for="(item, index) in items"
+          :key="index"
           :title="item.title"
           :description="item.description"
           :type="item.type"

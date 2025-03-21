@@ -15,6 +15,8 @@ import TickerItem from './TickerItem.vue';
 import type { TickerItem as TickerItemProps } from './TickerItem.vue';
 import type * as CSS from 'csstype';
 
+import { instanceCounters } from '@/helpers';
+
 type TickerItem = { props?: object } & TickerItemProps;
 
 type Ticker = {
@@ -41,8 +43,8 @@ type Ticker = {
 };
 
 type TickerState = {
-  active_index: number;
-  active_type: string;
+  activeIndex: number;
+  activeType: string;
   items: VNode[];
   length: number;
   types: string[];
@@ -62,26 +64,27 @@ defineSlots<TickerSlots>();
 
 const slots     = useSlots();
 const sliderRef = ref<HTMLDivElement | null>();
+const tickerId  = ref(instanceCounters('ticker'));
 const ticker = reactive<TickerState>({
-  active_index: 0,
-  active_type : '',
-  items       : [],
-  length      : 0,
-  types       : [],
+  activeIndex: 0,
+  activeType : '',
+  items      : [],
+  length     : 0,
+  types      : [],
 });
 const classes = computed(() => ({
   'cp-ticker'         : true,
-  'cp-ticker--info'   : ticker.active_type === 'info',
-  'cp-ticker--warning': ticker.active_type === 'warning',
-  'cp-ticker--error'  : ticker.active_type === 'error',
+  'cp-ticker--info'   : ticker.activeType === 'info',
+  'cp-ticker--warning': ticker.activeType === 'warning',
+  'cp-ticker--error'  : ticker.activeType === 'error',
 }));
 let autoplay_interval: ReturnType<typeof setInterval>;
 
 const handleNext = () => {
-  if (ticker.active_index === ticker.length - 1) {
-    ticker.active_index = 0;
+  if (ticker.activeIndex === ticker.length - 1) {
+    ticker.activeIndex = 0;
   } else {
-    ticker.active_index += 1;
+    ticker.activeIndex += 1;
   }
 };
 
@@ -93,7 +96,7 @@ const startAutoplay = () => {
 };
 
 const handleClickControl = (index: number) => {
-  ticker.active_index = index - 1;
+  ticker.activeIndex = index - 1;
 };
 
 const handleMouseEnter = () => {
@@ -143,21 +146,23 @@ onBeforeMount(() => {
   if (props.items) {
     const types = getItemTypes(props.items);
 
-    ticker.active_index = props.activeIndex > props.items.length - 1 ? 0 : props.activeIndex;
-    ticker.active_type  = types[props.activeIndex];
-    ticker.length       = props.items.length;
-    ticker.types        = types;
+    ticker.activeIndex = props.activeIndex > props.items.length - 1 ? 0 : props.activeIndex;
+    ticker.activeType  = types[props.activeIndex];
+    ticker.length      = props.items.length;
+    ticker.types       = types;
   }
 
   if (slots.default) {
     const { length, types, children } = getSlotDetail(slots.default());
 
-    ticker.active_index = props.activeIndex > length - 1 ? 0 : props.activeIndex;
-    ticker.active_type  = types[props.activeIndex];
-    ticker.items        = children;
-    ticker.length       = length;
-    ticker.types        = types;
+    ticker.activeIndex = props.activeIndex > length - 1 ? 0 : props.activeIndex;
+    ticker.activeType  = types[props.activeIndex];
+    ticker.items       = children;
+    ticker.length      = length;
+    ticker.types       = types;
   }
+
+  console.log(ticker.items)
 });
 
 onMounted(() => {
@@ -176,10 +181,10 @@ watch(
     if (items) {
       const types = getItemTypes(items);
 
-      ticker.active_index = props.activeIndex;
-      ticker.active_type  = types[props.activeIndex];
-      ticker.types        = types;
-      ticker.length       = items.length;
+      ticker.activeIndex = props.activeIndex;
+      ticker.activeType  = types[props.activeIndex];
+      ticker.types       = types;
+      ticker.length      = items.length;
 
       if (props.autoplay) items.length > 1 ? startAutoplay() : endAutoplay();
     }
@@ -188,9 +193,15 @@ watch(
 );
 
 watch(
-  [() => props.activeIndex, () => props.autoplay],
-  ([index, autoplay], [old_index, _old_autoplay]) => {
-    if (autoplay !== _old_autoplay) {
+  [
+    () => props.activeIndex,
+    () => props.autoplay,
+  ],
+  (
+    [index, autoplay],
+    [oldIndex, oldAutoplay],
+  ) => {
+    if (autoplay !== oldAutoplay) {
       if (autoplay) {
         ticker.length > 1 ? startAutoplay() : endAutoplay();
       } else {
@@ -198,24 +209,30 @@ watch(
       }
     }
 
-    if (index !== old_index) {
+    if (index !== oldIndex) {
       if (index > ticker.length - 1) {
-        ticker.active_index = 0;
+        ticker.activeIndex = 0;
       } else {
-        ticker.active_index = index;
+        ticker.activeIndex = index;
       }
     }
   },
 );
 
 watch(
-  [() => ticker.active_index, () => ticker.length],
-  ([index, length], [_prev_index, prev_length]) => {
-    if (length !== prev_length) {
+  [
+    () => ticker.activeIndex,
+    () => ticker.length,
+  ],
+  (
+    [index, length],
+    [_prevIndex, prevLength],
+  ) => {
+    if (length !== prevLength) {
       if (props.autoplay) ticker.length > 1 ? startAutoplay() : endAutoplay();
     }
 
-    ticker.active_type = ticker.types[index];
+    ticker.activeType = ticker.types[index];
   },
 );
 
@@ -223,8 +240,8 @@ if (slots.default) {
   watch(slots.default, (slot) => {
     const { length, types, children } = getSlotDetail(slot);
 
-    ticker.active_index = props.activeIndex;
-    ticker.active_type  = types[props.activeIndex];
+    ticker.activeIndex = props.activeIndex;
+    ticker.activeType  = types[props.activeIndex];
     ticker.items        = children;
     ticker.length       = length;
     ticker.types        = types;
@@ -239,26 +256,28 @@ if (slots.default) {
     <div
       ref="sliderRef"
       class="cp-ticker-items"
-      :style="{ transform: `translate3d(-${100 * ticker.active_index}%, 0, 0)` }"
+      :style="{ transform: `translate3d(-${100 * ticker.activeIndex}%, 0, 0)` }"
     >
       <template v-if="items">
         <component
           v-for="(item, index) in items"
+          :key="`${tickerId}-item-${index}`"
           v-bind="item.props"
           :is="TickerItem"
-          :key="item.title"
+          :id="`${tickerId}-item-${index}`"
           :title="item.title"
           :description="item.description"
           :type="item.type"
-          :data-cp-active="ticker.active_index === index ? true : undefined"
+          :data-cp-active="ticker.activeIndex === index ? true : undefined"
         />
       </template>
       <template v-if="$slots.default">
         <component
           v-for="(item, index) in ticker.items"
+          :key="item.key ?? `${tickerId}-item-${index}`"
+          :id="`${tickerId}-item-${index}`"
           :is="item"
-          :key="index"
-          :data-cp-active="ticker.active_index === index ? true : undefined"
+          :data-cp-active="ticker.activeIndex === index ? true : undefined"
         />
       </template>
     </div>
@@ -268,7 +287,7 @@ if (slots.default) {
         v-for="index in ticker.length"
         class="cp-ticker-control"
         role="button"
-        :data-cp-active="ticker.active_index === index - 1 ? true : undefined"
+        :data-cp-active="ticker.activeIndex === index - 1 ? true : undefined"
         @click="handleClickControl(index)"
       />
     </div>
