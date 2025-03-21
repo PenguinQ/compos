@@ -8,6 +8,7 @@ export { default as getUpdateTime } from './getUpdateTime';
 export { default as hasClass } from './hasClass';
 export { default as hasClassStartsWith } from './hasClassStartsWith';
 export { default as removeClass } from './removeClass';
+export { default as instanceCounters } from './instanceCounters';
 export { default as isImagesValid } from './isImagesValid';
 export { default as isNumeric } from './isNumeric';
 export { default as isNumericString } from './isNumericString';

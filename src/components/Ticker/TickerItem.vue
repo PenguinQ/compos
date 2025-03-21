@@ -70,6 +70,8 @@ $root: '.cp-ticker-item';
     opacity: 0;
     transform: translate3d(-50%, 0, 0);
     transition: all var(--transition-duration-slow) 160ms var(--transition-timing-function);
+    user-select: none;
+    pointer-events: none;
 
     #{$root-container}--error & {
       color: var(--color-red-7);
