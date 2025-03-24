@@ -135,7 +135,7 @@ export const DocSubcomponents = {
     },
     template: `
       <List>
-        <ListItem v-for="item in items">
+        <ListItem v-for="(item, index) in items" :key="\`story-list-item-$\{index}\`">
           <ListTitle>{{ item.title }}</ListTitle>
           <ListDescription>{{ item.description }}</ListDescription>
         </ListItem>
