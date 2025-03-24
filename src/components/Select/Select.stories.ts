@@ -53,6 +53,17 @@ const meta: Meta<SelectProps> = {
     disabled: false,
     error: false,
     success: false,
+    options: [
+      { value: '', text: 'Pick your Character' },
+      { value: 'Himeko', text: 'Himeko' },
+      { value: 'Jade', text: 'Jade' },
+      { value: 'Aglaea', text: 'Aglaea' },
+      { value: 'Kafka', text: 'Kafka' },
+      { value: 'Natasha', text: 'Natasha' },
+      { value: 'Black Swan', text: 'Black Swan' },
+      { value: 'Acheron', text: 'Acheron' },
+      { value: 'Feixiao', text: 'Feixiao' },
+    ],
   },
 };
 
@@ -94,7 +105,7 @@ export const DocUsage = {
     },
     template: `
       <Select v-model="value">
-        <option :key="index" v-for="(option, index) in options" :value="option.value">
+        <option :key="\`story-select-option-$\{index}\`" v-for="(option, index) in options" :value="option.value">
           {{ option.text }}
         </option>
       </Select>
