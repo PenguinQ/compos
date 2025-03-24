@@ -52,7 +52,14 @@ export const Playground: Story = {
     setup() {
       const tab = ref(0);
 
-      return { args, tab };
+      const controls = [
+        { title: 'Himeko' },
+        { title: 'Jade' },
+        { title: 'Aglaea' },
+        { title: 'Kafka' },
+      ];
+
+      return { args, tab, controls };
     },
     template: `
       <Text>Active TabControl/TabPanel index: {{ args.modelValue }}</Text>
