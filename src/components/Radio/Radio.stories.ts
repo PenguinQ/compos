@@ -117,7 +117,7 @@ export const DocSubComponents = {
     template: `
       <Text>Selected Character: {{ value ? value : '-' }}</Text>
       <RadioGroup v-model="value">
-        <Radio value="Kafka" label="Kafka" />
+        <Radio value="Kafka" label="Kafka" data-berak="haha" />
         <Radio value="Himeko" label="Himeko" />
         <Radio value="Natasha" label="Natasha" />
         <Radio value="Ruan Mei" label="Ruan Mei" />
