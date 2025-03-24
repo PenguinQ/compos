@@ -32,7 +32,7 @@ defineOptions({ inheritAttrs: false });
 
 const props = defineProps<DescriptionList>();
 
-const listCounter = ref(instanceCounters('ticker'));
+const listCounter = ref(instanceCounters('description-list'));
 const classes  = computed(() => ({
   'cp-description-list'            : true,
   'cp-description-list--horizontal': props.alignment === 'horizontal',
