@@ -7,13 +7,13 @@ export type DescriptionListItem = {
    */
   alignItems?: CSS.Property.AlignItems;
   /**
-   * Set the title text of the item.
-   */
-  title?: string;
-  /**
    * Set the description text of the item.
    */
   description?: string;
+  /**
+   * Set the title text of the item.
+   */
+  title?: string;
 };
 
 defineProps<DescriptionListItem>();

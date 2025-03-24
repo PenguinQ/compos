@@ -25,6 +25,9 @@ const meta: Meta<DescriptionListProps> = {
       control: 'select',
       options: ['default', 'rtl'],
     },
+    id: {
+      control: 'text',
+    },
     items: {
       control: 'object',
     },
@@ -137,7 +140,6 @@ export const DocSubcomponents = {
     template: `
       <DescriptionList>
         <DescriptionListItem
-          :key="index"
           v-for="(item, index) in items"
           :title="item.title"
           :description="item.description"
