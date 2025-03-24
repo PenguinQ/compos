@@ -20,6 +20,9 @@ const meta: Meta<TickerProps> = {
     autoplayDuration: {
       control: 'number',
     },
+    id: {
+      control: 'text',
+    },
     items: {
       control: 'object',
     },
@@ -139,7 +142,7 @@ export const DocSubcomponents = {
       <Ticker>
         <TickerItem
           v-for="(item, index) in items"
-          :key="index"
+          :key="\`ticker-item-$\{index}\`"
           :title="item.title"
           :description="item.description"
           :type="item.type"

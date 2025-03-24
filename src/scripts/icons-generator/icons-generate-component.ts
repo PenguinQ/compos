@@ -37,6 +37,7 @@ class ComposIcon extends HTMLElement {
     this.render();
     this.setAttribute('role', 'img');
     this.removeAttribute('icon');
+    this.removeAttribute('name');
     this.removeAttribute('size');
     this.removeAttribute('color');
   }
