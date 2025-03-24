@@ -37,7 +37,7 @@ switch (props.type) {
 
 <template>
   <div class="cp-ticker-item">
-    <ComposIcon class="cp-ticker-item__icon" :name="icon" size="72" />
+    <ComposIcon class="cp-ticker-item__icon" :icon="icon" size="72" />
     <div class="cp-ticker-item__content">
       <div class="cp-ticker-item__title">
         <Text v-if="title" heading="6" as="h4" margin="0" v-html="title" />

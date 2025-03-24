@@ -8,8 +8,9 @@ import {
   onBeforeMount,
   onMounted,
   onUnmounted,
+  isVNode,
 } from 'vue';
-import type { VNode, Slot } from 'vue';
+import type { VNode, Slot, VNodeArrayChildren } from 'vue';
 
 import TickerItem from './TickerItem.vue';
 import type { TickerItem as TickerItemProps } from './TickerItem.vue';
@@ -32,6 +33,10 @@ type Ticker = {
    * Set the Ticker autoplay duration.
    */
   autoplayDuration?: number;
+  /**
+   * Set the Ticker id.
+   */
+  id?: string;
   /**
    * Set the item for each Ticker.
    */
@@ -62,9 +67,9 @@ const props = withDefaults(defineProps<Ticker>(), {
 
 defineSlots<TickerSlots>();
 
-const slots     = useSlots();
-const sliderRef = ref<HTMLDivElement | null>();
-const tickerId  = ref(instanceCounters('ticker'));
+const slots         = useSlots();
+const sliderRef     = ref<HTMLDivElement | null>();
+const tickerCounter = ref(instanceCounters('ticker'));
 const ticker = reactive<TickerState>({
   activeIndex: 0,
   activeType : '',
@@ -96,7 +101,7 @@ const startAutoplay = () => {
 };
 
 const handleClickControl = (index: number) => {
-  ticker.activeIndex = index - 1;
+  ticker.activeIndex = props.items ? index - 1 : index;
 };
 
 const handleMouseEnter = () => {
@@ -119,14 +124,26 @@ const getSlotDetail = (slots: VNode[]) => {
   let slotTypes: string[]   = [];
   let slotChildren: VNode[] = [];
 
+  if (!slots || !Array.isArray(slots)) {
+    return {
+      length  : 0,
+      types   : [],
+      children: [],
+    };
+  }
+
   slots.forEach((slot: VNode) => {
+    if (!slot) return;
+
     const { children, type, props } = slot;
 
     if (typeof type === 'symbol') {
-      if (children && typeof children === 'object') {
-        (children as []).forEach((child: VNode) => {
-          slotTypes.push(child.props?.type ? child.props.type : null);
-          slotChildren.push(child);
+      if (children && typeof children === 'object' && Array.isArray(children)) {
+        (children as VNodeArrayChildren).forEach(child => {
+          if (isVNode(child)) {
+            slotTypes.push(child.props?.type ? child.props.type : null);
+            slotChildren.push(child);
+          }
         });
       }
     } else {
@@ -161,8 +178,6 @@ onBeforeMount(() => {
     ticker.length      = length;
     ticker.types       = types;
   }
-
-  console.log(ticker.items)
 });
 
 onMounted(() => {
@@ -249,10 +264,36 @@ if (slots.default) {
     if (props.autoplay) length > 1 ? startAutoplay() : endAutoplay();
   });
 }
+
+const createKey = ({
+  id,
+  index,
+  item,
+  prefix,
+}: {
+  id?: string;
+  index: number;
+  item: VNode;
+  prefix: string;
+}) => {
+  if (item.props?.id) return `${item.props.id}-${prefix}-${index}`;
+
+  if (item.props?.key) {
+    return typeof item.props.key !== 'symbol' ? `${item.props.key}-${prefix}-${index}` : item.props.key;
+  }
+
+  return id ? `${id}-${prefix}-${index}` : `${tickerCounter.value}-${prefix}-${index}`;
+};
 </script>
 
 <template>
-  <div :class="classes" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave" :style="{ margin }">
+  <div
+    :class="classes"
+    :id="id"
+    :style="{ margin }"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
+  >
     <div
       ref="sliderRef"
       class="cp-ticker-items"
@@ -261,35 +302,46 @@ if (slots.default) {
       <template v-if="items">
         <component
           v-for="(item, index) in items"
-          :key="`${tickerId}-item-${index}`"
+          :key="id ? `${id}-item-${index}` : `${tickerCounter}-item-${index}`"
           v-bind="item.props"
           :is="TickerItem"
-          :id="`${tickerId}-item-${index}`"
           :title="item.title"
           :description="item.description"
           :type="item.type"
           :data-cp-active="ticker.activeIndex === index ? true : undefined"
         />
       </template>
-      <template v-if="$slots.default">
+      <template v-else-if="ticker.items.length">
         <component
           v-for="(item, index) in ticker.items"
-          :key="item.key ?? `${tickerId}-item-${index}`"
-          :id="`${tickerId}-item-${index}`"
+          :key="createKey({ index, item, id, prefix: 'item' })"
           :is="item"
+          :data-cp-key="createKey({ id, index, item, prefix: 'item' })"
           :data-cp-active="ticker.activeIndex === index ? true : undefined"
         />
       </template>
     </div>
     <div v-if="ticker.length > 1" class="cp-ticker-controls">
-      <span
-        :key="index"
-        v-for="index in ticker.length"
-        class="cp-ticker-control"
-        role="button"
-        :data-cp-active="ticker.activeIndex === index - 1 ? true : undefined"
-        @click="handleClickControl(index)"
-      />
+      <template v-if="items">
+        <span
+          v-for="index in ticker.length"
+          :key="id ? `${id}-control-${index}` : `${tickerCounter}-control-${index}`"
+          class="cp-ticker-control"
+          role="button"
+          :data-cp-active="ticker.activeIndex === index - 1 ? true : undefined"
+          @click="handleClickControl(index)"
+        />
+      </template>
+      <template v-else-if="ticker.items.length">
+        <span
+          v-for="(item, index) in ticker.items"
+          :key="createKey({ item, id, index, prefix: 'control' })"
+          class="cp-ticker-control"
+          role="button"
+          :data-cp-active="ticker.activeIndex === index ? true : undefined"
+          @click="handleClickControl(index)"
+        />
+      </template>
     </div>
   </div>
 </template>
