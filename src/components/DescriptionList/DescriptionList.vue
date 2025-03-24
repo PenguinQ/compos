@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue';
+import { computed, ref, defineAsyncComponent } from 'vue';
 
 import type { DescriptionListItem as DescriptionListItemProps } from './DescriptionListItem.vue';
+
+import { instanceCounters } from '@/helpers';
 
 type DescriptionList = {
   /**
@@ -17,6 +19,10 @@ type DescriptionList = {
    */
   direction?: 'rtl';
   /**
+   * Set the Ticker id.
+   */
+  id?: string;
+  /**
    * Set the content for each item of description list.
    */
   items?: DescriptionListItemProps[];
@@ -26,6 +32,7 @@ defineOptions({ inheritAttrs: false });
 
 const props = defineProps<DescriptionList>();
 
+const listCounter = ref(instanceCounters('ticker'));
 const classes  = computed(() => ({
   'cp-description-list'            : true,
   'cp-description-list--horizontal': props.alignment === 'horizontal',
@@ -39,9 +46,9 @@ const DescriptionListItem = defineAsyncComponent(() => import('./DescriptionList
 <template>
   <dl v-if="items" :class="classes" v-bind="$attrs">
     <component
-      :is="DescriptionListItem"
-      :key="index"
       v-for="(item, index) in items"
+      :key="id ? `${id}-item-${index}` : `${listCounter}-item-${index}`"
+      :is="DescriptionListItem"
       :title="item.title"
       :description="item.description"
     />
