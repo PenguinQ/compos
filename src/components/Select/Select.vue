@@ -5,7 +5,7 @@ import type * as CSS from 'csstype'
 
 import ComposIcon, { ChevronDown, ChevronExpand } from '@/components/Icons';
 
-import { hasClassStartsWith } from '@/helpers';
+import { hasClassStartsWith, instanceCounters } from '@/helpers';
 
 type SelectOptions = Omit<OptionHTMLAttributes, 'selected'> & {
   text: string;
@@ -24,6 +24,10 @@ type Select = {
    * Set the Select into error state.
    */
   error?: boolean;
+  /**
+   * Set the Select id.
+   */
+  id?: string;
   /**
    * Set the Select label.
    */
@@ -102,9 +106,10 @@ const emits = defineEmits([
 
 defineSlots<SelectSlots>();
 
-const containerRef = ref<HTMLDivElement | null>(null);
-const selectRef    = ref<HTMLSelectElement | null>(null);
-const inListItem   = ref(false);
+const selectCounter = ref(instanceCounters('select'));
+const containerRef  = ref<HTMLDivElement | null>(null);
+const selectRef     = ref<HTMLSelectElement | null>(null);
+const inListItem    = ref(false);
 
 onMounted(() => {
   const parent = containerRef.value?.parentElement as HTMLElement;
@@ -143,15 +148,22 @@ const handleInput = (e: Event) => {
         ref="selectRef"
         v-bind="$attrs"
         class="cp-form-field"
+        :id="id"
         :disabled="disabled"
         :value="value || modelValue"
         @input="handleInput"
         @change="handleChange"
       >
-        <option v-if="options" v-for="{ text, ...rest } in options" v-bind="rest">
-          {{ text }}
-        </option>
-        <slot v-else></slot>
+        <template v-if="options">
+          <option
+            v-for="({ text, ...rest }, index) in options"
+            v-bind="rest"
+            :key="id ? `${id}-option-${index}` : `${selectCounter}-control-${index}`"
+          >
+            {{ text }}
+          </option>
+        </template>
+        <slot v-else />
       </select>
       <ComposIcon :icon="inListItem ? ChevronExpand : ChevronDown" class="cp-form-select__icon" />
     </div>
