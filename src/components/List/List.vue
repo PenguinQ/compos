@@ -1,15 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import { Text } from '@/components';
 import ListItem from './ListItem.vue';
 import type { ListItem as ListItemProps } from './ListItem.vue';
+
+import { instanceCounters } from '@/helpers';
 
 type List = {
   /**
    * Set the title of the List.
    */
   title?: string;
+  /**
+   * Set the List id.
+   */
+  id?: string;
   /**
    * Set the inset spacing of the List.
    */
@@ -24,6 +30,7 @@ const props = withDefaults(defineProps<List>(), {
   inset: false,
 });
 
+const listCounter = ref(instanceCounters('list'));
 const classes = computed(() => ({
   'cp-list'       : true,
   'cp-list--inset': props.inset,
@@ -33,7 +40,11 @@ const classes = computed(() => ({
 <template>
   <div :class="classes">
     <Text v-if="title" class="cp-list__title" heading="3">{{ title }}</Text>
-    <ListItem :key="item.title" v-for="item in items" v-bind="item" />
+    <ListItem
+      v-for="(item, index) in items"
+      :key="id ? `${id}-item-${index}` : `${listCounter}-item-${index}`"
+      v-bind="item"
+    />
     <slot />
   </div>
 </template>
