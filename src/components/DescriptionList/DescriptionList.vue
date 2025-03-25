@@ -3,7 +3,7 @@ import { computed, ref, defineAsyncComponent } from 'vue';
 
 import type { DescriptionListItem as DescriptionListItemProps } from './DescriptionListItem.vue';
 
-import { instanceCounters } from '@/helpers';
+import { createLoopKey, instanceCounters } from '@/helpers';
 
 type DescriptionList = {
   /**
@@ -32,7 +32,7 @@ defineOptions({ inheritAttrs: false });
 
 const props = defineProps<DescriptionList>();
 
-const listCounter = ref(instanceCounters('description-list'));
+const instance = ref(instanceCounters('description-list'));
 const classes  = computed(() => ({
   'cp-description-list'            : true,
   'cp-description-list--horizontal': props.alignment === 'horizontal',
@@ -47,7 +47,7 @@ const DescriptionListItem = defineAsyncComponent(() => import('./DescriptionList
   <dl v-if="items" :class="classes" v-bind="$attrs">
     <component
       v-for="(item, index) in items"
-      :key="id ? `${id}-item-${index}` : `${listCounter}-item-${index}`"
+      :key="createLoopKey({ id, index, prefix: instance, suffix: 'item' })"
       :is="DescriptionListItem"
       :title="item.title"
       :description="item.description"

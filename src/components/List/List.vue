@@ -5,7 +5,7 @@ import { Text } from '@/components';
 import ListItem from './ListItem.vue';
 import type { ListItem as ListItemProps } from './ListItem.vue';
 
-import { instanceCounters } from '@/helpers';
+import { createLoopKey, instanceCounters } from '@/helpers';
 
 type List = {
   /**
@@ -30,7 +30,7 @@ const props = withDefaults(defineProps<List>(), {
   inset: false,
 });
 
-const listCounter = ref(instanceCounters('list'));
+const instance = ref(instanceCounters('list'));
 const classes = computed(() => ({
   'cp-list'       : true,
   'cp-list--inset': props.inset,
@@ -42,7 +42,7 @@ const classes = computed(() => ({
     <Text v-if="title" class="cp-list__title" heading="3">{{ title }}</Text>
     <ListItem
       v-for="(item, index) in items"
-      :key="id ? `${id}-item-${index}` : `${listCounter}-item-${index}`"
+      :key="createLoopKey({ id, index, prefix: instance, suffix: 'item' })"
       v-bind="item"
     />
     <slot />
