@@ -16,7 +16,7 @@ import TickerItem from './TickerItem.vue';
 import type { TickerItem as TickerItemProps } from './TickerItem.vue';
 import type * as CSS from 'csstype';
 
-import { instanceCounters } from '@/helpers';
+import { createLoopKey, instanceCounters } from '@/helpers';
 
 type TickerItem = { props?: object } & TickerItemProps;
 
@@ -67,9 +67,9 @@ const props = withDefaults(defineProps<Ticker>(), {
 
 defineSlots<TickerSlots>();
 
-const slots         = useSlots();
-const sliderRef     = ref<HTMLDivElement | null>();
-const tickerCounter = ref(instanceCounters('ticker'));
+const slots     = useSlots();
+const sliderRef = ref<HTMLDivElement | null>();
+const instance  = ref(instanceCounters('ticker'));
 const ticker = reactive<TickerState>({
   activeIndex: 0,
   activeType : '',
@@ -264,26 +264,6 @@ if (slots.default) {
     if (props.autoplay) length > 1 ? startAutoplay() : endAutoplay();
   });
 }
-
-const createKey = ({
-  id,
-  index,
-  item,
-  prefix,
-}: {
-  id?: string;
-  index: number;
-  item: VNode;
-  prefix: string;
-}) => {
-  if (item.props?.id) return `${item.props.id}-${prefix}-${index}`;
-
-  if (item.props?.key) {
-    return typeof item.props.key !== 'symbol' ? `${item.props.key}-${prefix}-${index}` : item.props.key;
-  }
-
-  return id ? `${id}-${prefix}-${index}` : `${tickerCounter.value}-${prefix}-${index}`;
-};
 </script>
 
 <template>
@@ -302,7 +282,7 @@ const createKey = ({
       <template v-if="items">
         <component
           v-for="(item, index) in items"
-          :key="id ? `${id}-item-${index}` : `${tickerCounter}-item-${index}`"
+          :key="createLoopKey({ id, index, prefix: instance, suffix: 'item' })"
           v-bind="item.props"
           :is="TickerItem"
           :title="item.title"
@@ -314,9 +294,8 @@ const createKey = ({
       <template v-else-if="ticker.items.length">
         <component
           v-for="(item, index) in ticker.items"
-          :key="createKey({ index, item, id, prefix: 'item' })"
+          :key="createLoopKey({ id, index, item, prefix: instance, suffix: 'item' })"
           :is="item"
-          :data-cp-key="createKey({ id, index, item, prefix: 'item' })"
           :data-cp-active="ticker.activeIndex === index ? true : undefined"
         />
       </template>
@@ -325,7 +304,7 @@ const createKey = ({
       <template v-if="items">
         <span
           v-for="index in ticker.length"
-          :key="id ? `${id}-control-${index}` : `${tickerCounter}-control-${index}`"
+          :key="createLoopKey({ id, index, prefix: instance, suffix: 'control' })"
           class="cp-ticker-control"
           role="button"
           :data-cp-active="ticker.activeIndex === index - 1 ? true : undefined"
@@ -335,7 +314,7 @@ const createKey = ({
       <template v-else-if="ticker.items.length">
         <span
           v-for="(item, index) in ticker.items"
-          :key="createKey({ item, id, index, prefix: 'control' })"
+          :key="createLoopKey({ id, index, item, prefix: instance, suffix: 'control' })"
           class="cp-ticker-control"
           role="button"
           :data-cp-active="ticker.activeIndex === index ? true : undefined"

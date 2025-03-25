@@ -141,6 +141,7 @@ export const DocSubcomponents = {
       <DescriptionList>
         <DescriptionListItem
           v-for="(item, index) in items"
+          :key="\`description-list-$\{index}\`"
           :title="item.title"
           :description="item.description"
         />

@@ -9,7 +9,7 @@ import {
 import type { Slot, VNode } from 'vue';
 
 import { useScopeId } from '@/hooks';
-import { instanceCounters, isVisible } from '@/helpers';
+import { createLoopKey, instanceCounters, isVisible } from '@/helpers';
 
 type TabControls = {
   /**
@@ -49,11 +49,11 @@ const emits = defineEmits([
 
 const slots = defineSlots<TabControlsSlots>();
 
-const scopeId        = useScopeId();
-const controlCounter = ref(instanceCounters('tab-controls'));
-const containerRef   = ref<HTMLDivElement | null>(null);
-const scrollerRef    = ref<HTMLDivElement | null>(null);
-const active         = ref(props.modelValue ? props.modelValue : 0);
+const scopeId      = useScopeId();
+const instance     = ref(instanceCounters('tab-controls'));
+const containerRef = ref<HTMLDivElement | null>(null);
+const scrollerRef  = ref<HTMLDivElement | null>(null);
+const active       = ref(props.modelValue ? props.modelValue : 0);
 const classes = computed(() => ({
   'cp-tab-controls'           : true,
   'cp-tab-controls--grow'     : props.grow,
@@ -90,16 +90,6 @@ const handleTab = (index: number) => {
   !props.grow && scrollToView(index);
 };
 
-const createKey = (item: VNode, index: number) => {
-  if (item.props?.key != null) return item.props.key;
-
-  if (item.props?.id) return item.props.id;
-
-  if (props.id) return `${props.id}-control-${index}`
-
-  return `${controlCounter.value}-control-${index}`;
-};
-
 watch(
   () => props.modelValue,
   (newModel) => {
@@ -127,7 +117,7 @@ onMounted(() => {
     >
       <component
         v-for="(tab, index) in (tabs as VNode[])"
-        :key="createKey(tab, index)"
+        :key="createLoopKey({ id, index, item: tab, prefix: instance, suffix: 'control' })"
         :is="tab"
         :data-cp-active="active === index ? true : undefined"
         @click="handleTab(index)"

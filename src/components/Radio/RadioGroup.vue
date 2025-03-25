@@ -3,7 +3,7 @@ import { computed, ref, Fragment } from 'vue';
 import type { Slot, VNode } from 'vue';
 import type * as CSSType from 'csstype'
 
-import { instanceCounters } from '@/helpers';
+import { createLoopKey, instanceCounters } from '@/helpers';
 
 type RadioGroup = {
   /**
@@ -38,7 +38,7 @@ const emits = defineEmits([
   'update:modelValue',
 ]);
 
-const radioGroupCounter = ref(instanceCounters('radio-group'));
+const instance = ref(instanceCounters('radio-group'));
 const radios = computed(() => {
   if (!slots.default) return [];
 
@@ -83,20 +83,10 @@ const isChecked = (vnode: VNode) => {
   return vnodeProps?.value === props.modelValue;
 };
 
-const createKey = (item: VNode, index: number) => {
-  if (item.props?.key != null) return item.props.key;
-
-  if (item.props?.id) return item.props.id;
-
-  if (props.id) return `${props.id}-item-${index}`
-
-  return `${radioGroupCounter.value}-item-${index}`;
-};
-
-const createName = (item: VNode) => {
+const createLoopName = (item: VNode) => {
   if (item.props?.name != null) return item.props.name;
 
-  return props.id ? `${props.id}-item` : `${radioGroupCounter.value}-item`;
+  return props.id ? `${props.id}-item` : `${instance.value}-item`;
 };
 </script>
 
@@ -109,9 +99,9 @@ const createName = (item: VNode) => {
     <template v-if="$slots.default">
       <component
         v-for="(radio, index) in (radios as VNode[])"
-        :key="createKey(radio, index)"
+        :key="createLoopKey({ id, index, item: radio, prefix: instance, suffix: 'item' })"
         :is="radio"
-        :name="createName(radio)"
+        :name="createLoopName(radio)"
         :checked="isChecked(radio as VNode)"
         :aria-checked="isChecked(radio as VNode)"
         @change="handleChange($event, radio as VNode)"

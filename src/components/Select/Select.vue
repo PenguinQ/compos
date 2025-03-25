@@ -5,7 +5,7 @@ import type * as CSS from 'csstype'
 
 import ComposIcon, { ChevronDown, ChevronExpand } from '@/components/Icons';
 
-import { hasClassStartsWith, instanceCounters } from '@/helpers';
+import { createLoopKey, hasClassStartsWith, instanceCounters } from '@/helpers';
 
 type SelectOptions = Omit<OptionHTMLAttributes, 'selected'> & {
   text: string;
@@ -106,10 +106,10 @@ const emits = defineEmits([
 
 defineSlots<SelectSlots>();
 
-const selectCounter = ref(instanceCounters('select'));
-const containerRef  = ref<HTMLDivElement | null>(null);
-const selectRef     = ref<HTMLSelectElement | null>(null);
-const inListItem    = ref(false);
+const instance     = ref(instanceCounters('select'));
+const containerRef = ref<HTMLDivElement | null>(null);
+const selectRef    = ref<HTMLSelectElement | null>(null);
+const inListItem   = ref(false);
 
 onMounted(() => {
   const parent = containerRef.value?.parentElement as HTMLElement;
@@ -157,8 +157,8 @@ const handleInput = (e: Event) => {
         <template v-if="options">
           <option
             v-for="({ text, ...rest }, index) in options"
+            :key="createLoopKey({ id, index, prefix: instance, suffix: 'option' })"
             v-bind="rest"
-            :key="id ? `${id}-option-${index}` : `${selectCounter}-control-${index}`"
           >
             {{ text }}
           </option>

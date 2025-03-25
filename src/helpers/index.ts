@@ -1,6 +1,7 @@
 export { default as addClass } from './addClass';
 export { default as cleanWhitespace } from './cleanWhitespace';
 export { default as createError } from './createError';
+export { default as createLoopKey } from './createLoopKey';
 export { default as debounce } from './debounce';
 export { default as deepClone } from './deepClone';
 export { default as getSameSiblings } from './getSameSiblings';
