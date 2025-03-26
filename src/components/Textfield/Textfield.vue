@@ -52,6 +52,10 @@ interface Textfield extends /* @vue-ignore */ InputHTMLAttributes {
    */
   prepend?: string;
   /**
+   * Set the Textfield size.
+   */
+  size?: 'small';
+  /**
    * Set the Textfield into disabled state.
    */
   success?: boolean;
@@ -109,6 +113,11 @@ defineSlots<TextfieldSlots>();
 const isPassword   = computed(() => props.type === 'password');
 const showPassword = ref(false);
 const inputRef     = ref<HTMLInputElement | null>(null);
+const classes = computed(() => ({
+  'cp-form'                 : true,
+  'cp-form-textfield'       : true,
+  'cp-form-textfield--small': props.size === 'small' ? true : false,
+}));
 
 const handleInput = (e: Event) => {
   emits('update:modelValue', (e.target as HTMLInputElement).value);
@@ -124,7 +133,7 @@ defineExpose<TextfieldExpose>({ input: inputRef });
 <template>
   <div
     v-bind="containerProps"
-    class="cp-form cp-form-textfield"
+    :class="classes"
     :data-cp-disabled="disabled ? true : undefined"
     :data-cp-error="error ? true : undefined"
     :data-cp-success="success ? true : undefined"
@@ -189,8 +198,7 @@ defineExpose<TextfieldExpose>({ input: inputRef });
 
   .cp-form-affix {
     color: inherit;
-    font-size: 16px;
-    line-height: 22px;
+    @include text-body-lg;
     font-weight: 400;
     transition: color var(--transition-duration-normal) var(--transition-timing-function);
     display: flex;
@@ -222,6 +230,18 @@ defineExpose<TextfieldExpose>({ input: inputRef });
     outline: none;
     cursor: pointer;
     padding: 4px;
+  }
+
+  &--small {
+    .cp-form-affix,
+    .cp-form-field {
+      @include text-body-md;
+    }
+
+    .cp-form-field {
+      padding-top: 12px;
+      padding-bottom: 12px;
+    }
   }
 }
 </style>
