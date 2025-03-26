@@ -41,6 +41,10 @@ const meta: Meta<TextfieldProps> = {
     prepend: {
       control: 'text',
     },
+    size: {
+      control: 'select',
+      options: ['small'],
+    },
     success: {
       control: 'boolean',
     },
