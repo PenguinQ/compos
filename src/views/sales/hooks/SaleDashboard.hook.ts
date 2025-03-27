@@ -11,7 +11,7 @@ import {
   getSaleOrders,
   mutateFinishSale,
 } from '@/database/query/sale';
-import { mutateAddOrder } from '@/database/query/order';
+import { mutateAddOrder, mutateCancelOrder } from '@/database/query/order';
 import { isBundle } from '@/database/utils';
 
 // Normalizers
@@ -39,9 +39,6 @@ export const useSaleDashboard = () => {
   const route  = useRoute();
   const router = useRouter();
   const { params } = route;
-  const dialogFinish          = ref(false);
-  const dialogPayment         = ref(false);
-  const dialogHistory         = ref(false);
   const controlsView          = ref('order-default');
   const detailsProducts       = ref<DetailsNormalizerProduct[]>([]);
   const loadProducts          = ref(false);
@@ -57,6 +54,16 @@ export const useSaleDashboard = () => {
   const balance = reactive<{ initial?: string; current?: string; }>({
     initial: undefined,
     current: undefined,
+  });
+  const dialog = reactive({
+    cancel : false,
+    finish : false,
+    history: false,
+    payment: false,
+  });
+  const cancelDetail = reactive({
+    id  : '',
+    name: '',
   });
   const productsStock = new Map<string, number>();
 
@@ -259,14 +266,33 @@ export const useSaleDashboard = () => {
       resetProductsAmount();
       paymentInput.value  = '0';
       controlsView.value  = 'order-default';
-      dialogPayment.value = false;
-      dialogHistory.value = false;
+      dialog.payment = false;
+      dialog.history = false;
 
       // Get new products data.
       productsRefetch();
 
       // @ts-ignore
       toast.add({ message: 'Order added', type: 'success', duration: 2000 });
+    },
+  });
+
+  const {
+    mutate   : mutateCancelOrderFn,
+    isLoading: isMutateCancelOrderFnLoading,
+  } = useMutation({
+    mutateFn: (data) => mutateCancelOrder(data?.id),
+    onError: (error, variables) => {
+      // @ts-ignore
+      toast.add({ message: `Failed to cancel the order ${variables?.name}, ${error.message}`, type: 'error', duration: 2000 });
+      console.error(`Failed to cancel the order, ${variables?.name}`, error.message);
+    },
+    onSuccess: (_, variables) => {
+      // @ts-ignore
+      toast.add({ message: `Order ${variables?.name} cancelled`, type: 'success', duration: 2000 });
+
+      dialog.cancel = false;
+      productsRefetch();
     },
   });
 
@@ -398,6 +424,12 @@ export const useSaleDashboard = () => {
     controlsView.value = controlsView.value !== 'order-history' ? 'order-history' : 'order-default';
   };
 
+  const handleCancelOrder = (id: string, name: string) => {
+    cancelDetail.id   = id;
+    cancelDetail.name = name;
+    dialog.cancel     = true;
+  };
+
   return {
     saleId     : params.id,
     detailsData: detailsData as Ref<DetailsNormalizerReturn>,
@@ -405,14 +437,13 @@ export const useSaleDashboard = () => {
     products,
     orderedProducts,
     sortedOrderedProducts,
-    dialogFinish,
-    dialogPayment,
-    dialogHistory,
     controlsView,
     balance,
     paymentChange,
     paymentTendered,
     paymentInput,
+    dialog,
+    cancelDetail,
     totalProductsCount,
     totalProductsPrice,
     isDetailsError,
@@ -423,6 +454,8 @@ export const useSaleDashboard = () => {
     isOrdersLoading,
     isMutateFinishLoading,
     isMutateAddOrderLoading,
+    isMutateCancelOrderFnLoading,
+    handleCancelOrder,
     handleClickBackspace,
     handleClickCalculator,
     handleClickCancel,
@@ -433,5 +466,6 @@ export const useSaleDashboard = () => {
     productsRefetch,
     ordersRefetch,
     mutateFinish,
+    mutateCancelOrderFn,
   };
 };

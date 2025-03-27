@@ -43,6 +43,7 @@ const handleClear = () => {
       v-bind="$attrs"
       :value="modelValue"
       :placeholder="placeholder"
+      size="small"
       @input="handleInput"
     >
       <template v-if="modelValue" #append>
@@ -58,7 +59,7 @@ const handleClear = () => {
 .vc-list-search {
   background-color: #FFF;
   border-bottom: 1px solid var(--color-neutral-2);
-  padding: 8px 16px;
+  padding: 8px;
   margin-bottom: 16px;
   transition: transform var(--transition-duration-very-fast) var(--transition-timing-function);
 

@@ -1,5 +1,5 @@
 import { computed, ref, reactive, toRefs, watch, onBeforeUnmount, isRef } from 'vue';
-import type { Ref } from 'vue';
+import type { Ref, UnwrapRef } from 'vue';
 import type { Observable, Subscription } from 'rxjs';
 
 // Databases
@@ -17,10 +17,14 @@ type UseQueryParams = {
   onSuccess?: (response: object | undefined) => void;
 };
 
-type UseMutateParams = {
-  mutateFn: () => Promise<unknown>;
-  onError?: (response: Error) => void;
-  onSuccess?: (response?: unknown) => void;
+type MutateFnVariable = {
+  [key: string]: any;
+};
+
+type UseMutationParams<TVariables = MutateFnVariable, TData = unknown> = {
+  mutateFn: (variables?: TVariables) => Promise<TData>;
+  onError?: (response: Error, variables?: TVariables) => void;
+  onSuccess?: (response?: TData, variables?: TVariables) => void;
 };
 
 export const useQuery = (params: UseQueryParams) => {
@@ -245,33 +249,34 @@ export const useObservableQuery = (params: Omit<UseQueryParams, 'cache'>) => {
   };
 };
 
-export const useMutation = (params: UseMutateParams) => {
+export const useMutation = <TVariables = MutateFnVariable, TData = unknown>(params: UseMutationParams<TVariables, TData>) => {
   const { mutateFn, onError, onSuccess } = params;
   const states = reactive({
-    data     : undefined as undefined | unknown,
+    data     : undefined as undefined | TData,
     isError  : false,
     isLoading: false,
     isSuccess: false,
   });
 
-  const mutate = async (): Promise<void> => {
+  const mutate = async (variables?: TVariables): Promise<void> => {
     states.isLoading = true;
 
     try {
-      const result = await mutateFn();
+      const result = await mutateFn(variables);
 
       states.isLoading = false;
       states.isError   = false;
       states.isSuccess = true;
-      states.data      = result;
+      states.data      = result as unknown as UnwrapRef<TData>;
 
-      if (onSuccess) onSuccess(states.data);
+      if (onSuccess) onSuccess(result, variables);
     } catch (error) {
       states.isLoading = false;
-      states.isError   = false;
-      states.isSuccess = true;
+      states.isSuccess = false;
+      states.isError   = true;
+      states.data      = undefined;
 
-      if (onError) onError(error as Error);
+      if (onError) onError(error as Error, variables);
     }
   };
 

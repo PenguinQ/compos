@@ -8,8 +8,19 @@ import type { DexieSettings } from 'rxdb';
 import type { RxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import type { RxStorageMemory, RxStorageMemorySettings } from 'rxdb/plugins/storage-memory';
 
-import { sale, order, product, variant, bundle } from './schema';
-import { productORMs, variantORMs, bundleORMs, saleORMs } from './orms';
+import {
+  bundle,
+  order,
+  product,
+  sale,
+  variant,
+} from './schema';
+import {
+  bundleORMs,
+  productORMs,
+  saleORMs,
+  variantORMs,
+} from './orms';
 
 import type { Database, DatabaseCollection } from './types';
 
@@ -113,9 +124,7 @@ export const createCollections = async () => {
 
     const bundle = await collections.bundle.findOne(data.id).exec();
 
-    if (bundle) {
-      await bundle.removeFromSales();
-    }
+    if (bundle) await bundle.removeFromSales();
   }, false);
 
   collections.sale.preRemove(async (data) => {
@@ -123,9 +132,7 @@ export const createCollections = async () => {
 
     const sale = await collections.sale.findOne(data.id).exec();
 
-    if (sale) {
-      await sale.removeOrders();
-    }
+    if (sale) await sale.removeOrders();
   }, false);
 };
 

@@ -1,4 +1,4 @@
-import { inject, ref } from 'vue';
+import { inject, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 
@@ -9,6 +9,7 @@ import {
   mutateDeleteSale,
   mutateFinishSale,
 } from '@/database/query/sale';
+import { mutateCancelOrder } from '@/database/query/order';
 
 // Normalizers
 import { detailNormalizer } from '../normalizer/SaleDetail.normalizer';
@@ -19,8 +20,15 @@ export const useSaleDetail = () => {
   const route  = useRoute();
   const router = useRouter();
   const { params } = route;
-  const dialogDelete = ref(false);
-  const dialogFinish = ref(false);
+  const dialog = reactive({
+    cancel: false,
+    delete: false,
+    finish: false,
+  });
+  const cancelDetail = reactive({
+    id  : '',
+    name: '',
+  });
 
   const {
     data,
@@ -70,10 +78,36 @@ export const useSaleDetail = () => {
     onSuccess: (response) => {
       // @ts-ignore
       toast.add({ message: `Sale ${response} finished`, type: 'success', duration: 2000 });
-      dialogFinish.value = false;
+
+      dialog.finish = false;
       refetch();
     },
   });
+
+  const {
+    mutate   : mutateCancelOrderFn,
+    isLoading: isMutateCancelOrderFnLoading,
+  } = useMutation({
+    mutateFn: (data) => mutateCancelOrder(data?.id),
+    onError: (error, variables) => {
+      // @ts-ignore
+      toast.add({ message: `Failed to cancel the order ${variables?.name}, ${error.message}`, type: 'error', duration: 2000 });
+      console.error(`Failed to cancel the order, ${variables?.name}`, error.message);
+    },
+    onSuccess: (_, variables) => {
+      // @ts-ignore
+      toast.add({ message: `Order ${variables?.name} cancelled`, type: 'success', duration: 2000 });
+
+      dialog.cancel = false;
+      refetch();
+    },
+  });
+
+  const handleCancelOrder = (id: string, name: string) => {
+    cancelDetail.id   = id;
+    cancelDetail.name = name;
+    dialog.cancel     = true;
+  };
 
   const handleRefresh = async (e: any) => {
     await refetch();
@@ -83,15 +117,18 @@ export const useSaleDetail = () => {
   return {
     saleId: params.id,
     data  : data as Ref<DetailNormalizerReturn>,
-    dialogDelete,
-    dialogFinish,
+    dialog,
+    cancelDetail,
     isError,
     isLoading,
     isMutateDeleteLoading,
     isMutateFinishLoading,
+    isMutateCancelOrderFnLoading,
     refetch,
+    mutateCancelOrderFn,
     mutateDelete,
     mutateFinish,
+    handleCancelOrder,
     handleRefresh,
   };
 };

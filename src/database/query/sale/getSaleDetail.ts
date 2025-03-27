@@ -50,6 +50,7 @@ export type SaleDetailProductSold = {
 
 export type SaleDetailOrder = {
   id: string;
+  canceled: boolean;
   name: string;
   products: OrderDocProduct[];
   tendered: string;
@@ -262,7 +263,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
     const orders_data = <SaleDetailOrder[]>[];
 
     for (const order of _queryOrders) {
-      const { id, name, products, tendered, change, total } = order.toJSON();
+      const { id, canceled, name, products, tendered, change, total } = order.toJSON();
       const order_products = [];
 
       for (const product of products) {
@@ -288,6 +289,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
 
       orders_data.push({
         id,
+        canceled,
         name,
         products: order_products,
         tendered,

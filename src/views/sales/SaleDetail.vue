@@ -53,16 +53,19 @@ import { SALE_DETAIL } from './constants';
 const router = useRouter();
 const {
   saleId,
-  dialogDelete,
-  dialogFinish,
   data,
+  dialog,
+  cancelDetail,
   isError,
   isLoading,
+  isMutateCancelOrderFnLoading,
   isMutateDeleteLoading,
   isMutateFinishLoading,
   refetch,
+  mutateCancelOrderFn,
   mutateDelete,
   mutateFinish,
+  handleCancelOrder,
   handleRefresh,
 } = useSaleDetail();
 const tab = ref(0);
@@ -92,10 +95,10 @@ watch(
         <ToolbarAction v-if="!data.finished" icon backgroundColor="var(--color-blue-4)" @click="router.push(`/sale/edit/${saleId}`)">
           <ComposIcon :icon="PencilSquare" />
         </ToolbarAction>
-        <ToolbarAction icon backgroundColor="var(--color-red-4)" @click="dialogDelete = true">
+        <ToolbarAction icon backgroundColor="var(--color-red-4)" @click="dialog.delete = true">
           <ComposIcon :icon="Trash" />
         </ToolbarAction>
-        <ToolbarAction v-if="!data.finished" icon backgroundColor="var(--color-green-4)" @click="dialogFinish = true">
+        <ToolbarAction v-if="!data.finished" icon backgroundColor="var(--color-green-4)" @click="dialog.finish = true">
           <ComposIcon :icon="CheckLarge" :size="32" />
         </ToolbarAction>
       </template>
@@ -256,13 +259,15 @@ watch(
           />
           <div v-else class="order-list">
             <Row :col="{ default: 1, md: 2 }">
-              <Column v-for="(order, index) in data.orders" :key="`order-${index}`">
+              <Column v-for="order in data.orders" :key="`order-${order.id}`">
                 <OrderCard
+                  :canceled="order.canceled"
                   :title="order.name"
                   :total="order.totalFormatted"
                   :tendered="order.tenderedFormatted"
                   :change="order.changeFormatted"
                   :products="order.products"
+                  v-on="!data.finished && !order.canceled ? { cancel  : () => handleCancelOrder(order.id, order.name) } : {}"
                 />
               </Column>
             </Row>
@@ -271,7 +276,9 @@ watch(
       </TabPanels>
     </template>
   </Content>
-  <Dialog v-model="dialogDelete" :title="`Delete ${data?.name}?`">
+
+  <!-- Dialog Delete Sale -->
+  <Dialog v-model="dialog.delete" :title="`Delete ${data?.name}?`">
     <Text body="large" textAlign="center" margin="0">
       Currently there's no order on this sale yet, delete it?
     </Text>
@@ -280,11 +287,13 @@ watch(
         <Button color="red" full @click="mutateDelete">
           {{ isMutateDeleteLoading ? 'Loading' : 'Delete' }}
         </Button>
-        <Button variant="outline" full @click="dialogDelete = false">Cancel</Button>
+        <Button variant="outline" full @click="dialog.delete = false">Cancel</Button>
       </div>
     </template>
   </Dialog>
-  <Dialog v-model="dialogFinish" :title="`Finish ${data?.name}?`">
+
+  <!-- Dialog Finish Sale -->
+  <Dialog v-model="dialog.finish" :title="`Finish ${data?.name}?`">
     <Text body="large" textAlign="center" margin="0">
       Finishing this product will finish this sale and set the status as finished.
     </Text>
@@ -293,7 +302,33 @@ watch(
         <Button color="green" full @click="mutateFinish">
           {{ isMutateFinishLoading ? 'Loading' : 'Finish' }}
         </Button>
-        <Button variant="outline" full @click="dialogFinish = false">Cancel</Button>
+        <Button variant="outline" full @click="dialog.finish = false">Cancel</Button>
+      </div>
+    </template>
+  </Dialog>
+
+  <!-- Dialog Cancel Order -->
+  <Dialog
+    v-model="dialog.cancel"
+    :title="`Cancel ${cancelDetail.name}?`"
+    @leave="() => {
+      cancelDetail.id   = '';
+      cancelDetail.name = '';
+    }"
+  >
+    <Text body="large" textAlign="center" margin="0">
+      Canceling this order will mark the order as canceled and return used balance.
+    </Text>
+    <template #footer>
+      <div class="dialog-actions">
+        <Button
+          full
+          color="red"
+          @click="mutateCancelOrderFn({ id: cancelDetail.id, name: cancelDetail.name })"
+        >
+          {{ isMutateCancelOrderFnLoading ? 'Loading' : `Cancel ${cancelDetail.name}` }}
+        </Button>
+        <Button variant="outline" full @click="dialog.cancel = false">Cancel</Button>
       </div>
     </template>
   </Dialog>
