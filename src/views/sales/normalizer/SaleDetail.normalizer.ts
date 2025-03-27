@@ -40,6 +40,8 @@ type DetailOrderProduct = {
 };
 
 type DetailOrder = {
+  id: string;
+  canceled: boolean;
   name: string;
   products: DetailOrderProduct[];
   total: string;
@@ -105,7 +107,7 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
   }
 
   for (const order of orders) {
-    const { name, products, tendered, change, total }  = order;
+    const { id, canceled, name, products, tendered, change, total }  = order;
     const orderProducts = <DetailOrderProduct[]>[];
 
     for (const product of products) {
@@ -127,6 +129,8 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
       tenderedFormatted: toIDR(tendered),
       changeFormatted  : toIDR(change),
       totalFormatted   : toIDR(total),
+      id,
+      canceled,
       name,
       tendered,
       change,

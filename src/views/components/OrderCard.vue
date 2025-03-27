@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Card, CardBody, Text } from '@/components';
-import ComposIcon, { Box, Cash, CashCoin, Receipt } from '@/components/Icons';
+// Commpon Components
+import { Card, CardBody, Label, Text } from '@/components';
+import ComposIcon, { Box, Cash, CashCoin, Receipt, XLarge } from '@/components/Icons';
 
 type OrderCardProduct = {
   name: string;
@@ -8,20 +9,28 @@ type OrderCardProduct = {
 };
 
 type OrderCard = {
+  canceled: boolean;
+  change: string;
+  id?: string;
+  products: OrderCardProduct[];
   title: string;
   total: string;
   tendered: string;
-  change: string;
-  products: OrderCardProduct[];
+  onCancel?: Function;
 };
 
-defineProps<OrderCard>()
+withDefaults(defineProps<OrderCard>(), {
+  canceled: false,
+});
 </script>
 
 <template>
 <Card class="vc-order-card">
   <CardBody padding="12px 16px">
-    <Text heading="6" margin="0">{{ title }}</Text>
+    <Text class="vc-order-card__name" heading="6" margin="0">
+      {{ title }}
+      <Label v-if="canceled" color="red" variant="outline">Canceled</Label>
+    </Text>
     <div class="vc-order-card-details">
       <div class="vc-order-card-details__item">
         <ComposIcon :icon="Receipt" />
@@ -42,12 +51,37 @@ defineProps<OrderCard>()
         {{ product.quantity }}&times; {{ product.name }}
       </div>
     </div>
+    <button
+      v-if="onCancel"
+      type="button"
+      class="vc-order-card__remove button button--icon"
+      @click="$emit('cancel')"
+    >
+      <ComposIcon :icon="XLarge" :size="16" />
+    </button>
   </CardBody>
 </Card>
 </template>
 
 <style lang="scss">
 .vc-order-card {
+  overflow: unset;
+
+  .cp-card__body {
+    position: relative;
+  }
+
+  &__name {
+    position: relative;
+
+    .cp-label {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+    }
+  }
+
   &-details {
     border-top: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
@@ -55,6 +89,7 @@ defineProps<OrderCard>()
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+    position: relative;
     padding-top: 12px;
     padding-bottom: 12px;
     margin-bottom: 12px;
@@ -97,6 +132,16 @@ defineProps<OrderCard>()
         flex-shrink: 0;
       }
     }
+  }
+
+  &__remove {
+    color: var(--color-white);
+    background-color: var(--color-red-4);
+    border-radius: 4px;
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    padding: 4px;
   }
 }
 </style>

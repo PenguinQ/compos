@@ -76,7 +76,9 @@ export default async ({ id, sort, normalizer }: GetSaleOrdersQuery) => {
           });
         }
 
-        total_change = total_change.plus(Big(change));
+        if (!canceled) {
+          total_change = total_change.plus(Big(change));
+        }
 
         orders_data.push({
           products: order_products,

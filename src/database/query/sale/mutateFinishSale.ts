@@ -33,61 +33,15 @@ export default async (id: string): Promise<string> => {
     }).exec();
 
     /**
-     * --------------------------------------------
-     * 2. Sum the orders total as the sale revenue.
-     * --------------------------------------------
+     * ---------------------------
+     * 2. Calculate final balance.
+     * ---------------------------
      */
-    const products_sold       = <any[]>[];
-    let   orders_total        = Big(0);
-    let   orders_total_change = Big(0);
+    let orders_total_change = Big(0);
 
     for (const order of _queryOrders) {
-      const { total, products, change } = order;
+      const { change } = order;
 
-      for (const product of products) {
-        const {
-          quantity: product_quantity,
-          id,
-          name,
-          price,
-          total,
-          sku,
-          items,
-        } = product;
-        const inArray    = products_sold.find(product => product.id === id);
-        const temp_items = [];
-
-        if (inArray) {
-          inArray.total     = Big(inArray.total).plus(total).toString();
-          inArray.quantity += product_quantity;
-        } else {
-          if (items) {
-            for (const item of items) {
-              const { id, name, price, quantity: item_quantity, sku } = item;
-
-              temp_items.push({
-                quantity: item_quantity * product_quantity,
-                id,
-                name,
-                price,
-                ...(sku ? { sku }: {}),
-              });
-            }
-          }
-
-          products_sold.push({
-            quantity: product_quantity,
-            id,
-            name,
-            price,
-            total,
-            ...(items ? { items: temp_items } : {}),
-            ...(sku ? { sku }: {}),
-          });
-        }
-      };
-
-      orders_total        = orders_total.plus(total);
       orders_total_change = orders_total_change.plus(change);
     }
 
@@ -97,10 +51,8 @@ export default async (id: string): Promise<string> => {
 
     await _querySaleConstruct.update({
       $set: {
-        finished     : true,
-        revenue      : orders_total.toString(),
-        products_sold: products_sold,
-        updated_at   : new Date().toISOString(),
+        finished  : true,
+        updated_at: new Date().toISOString(),
         ...(initial_balance ? { final_balance: Big(initial_balance).minus(orders_total_change).toString() } : {}),
       },
     });

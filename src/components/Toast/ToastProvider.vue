@@ -33,7 +33,7 @@ if (!plugin) provide('ToastProvider', { items, add });
       :key="`toast-provider-item-${item.id}`"
       :duration="item.duration"
       :html="item.html"
-      :message="`${item.id} - ${item.message}`"
+      :message="item.message"
       :persist="item.persist"
       :persistOnHover="item.persistOnHover"
       :noClose="item.noClose"

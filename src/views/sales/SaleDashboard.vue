@@ -54,9 +54,7 @@ import no_image from '@assets/illustration/no_image.svg';
 
 const {
   saleId,
-  dialogFinish,
-  dialogPayment,
-  dialogHistory,
+  dialog,
   controlsView,
   balance,
   detailsData,
@@ -69,6 +67,7 @@ const {
   paymentInput,
   paymentTendered,
   paymentChange,
+  cancelDetail,
   isDetailsLoading,
   isDetailsError,
   isProductsError,
@@ -76,6 +75,7 @@ const {
   isOrdersError,
   isOrdersLoading,
   isMutateFinishLoading,
+  handleCancelOrder,
   handleClickBackspace,
   handleClickCalculator,
   handleClickCancel,
@@ -85,24 +85,14 @@ const {
   handleSortOrder,
   productsRefetch,
   ordersRefetch,
+  mutateCancelOrderFn,
   mutateFinish,
 } = useSaleDashboard();
 
 const handleResize = debounce(() => {
   if (window.innerWidth >= 992) {
-    dialogPayment.value = false;
-    dialogHistory.value = false;
-  } else {
-    if (
-        controlsView.value === 'order-default' && orderedProducts.value.length ||
-        controlsView.value === 'order-payment' && !dialogPayment.value
-      ) {
-      dialogPayment.value = true;
-      dialogHistory.value = false;
-    } else if (controlsView.value === 'order-history' && !dialogHistory.value) {
-      dialogPayment.value = false;
-      dialogHistory.value = true;
-    }
+    dialog.payment = false;
+    dialog.history = false;
   }
 }, 200);
 
@@ -134,7 +124,7 @@ onUnmounted(() => {
         v-if="!isDetailsError && !isDetailsLoading"
         icon
         backgroundColor="var(--color-green-4)"
-        @click="dialogFinish = true"
+        @click="dialog.finish = true"
       >
         <ComposIcon :icon="CheckLarge" :size="32" />
       </ToolbarAction>
@@ -268,11 +258,13 @@ onUnmounted(() => {
                     <OrderCard
                       v-for="order of ordersData.orders"
                       :key="`order-${order.id}`"
+                      :canceled="order.canceled"
                       :title="order.name"
                       :total="order.totalFormatted"
                       :tendered="order.tenderedFormatted"
                       :change="order.changeFormatted"
                       :products="order.products"
+                      @cancel="handleCancelOrder(order.id, order.name)"
                     />
                   </div>
                 </template>
@@ -425,20 +417,22 @@ onUnmounted(() => {
           </CardBody>
         </Card>
         <div class="dashboard-actions-mobile">
-          <Button full :disabled="!totalProductsCount" @click="dialogPayment = true">
+          <Button full :disabled="!totalProductsCount" @click="dialog.payment = true">
             <ComposIcon :icon="Cash" style="margin-right: 8px;" />
             Pay ({{ totalProductsCount }})
           </Button>
-          <Button icon @click="dialogHistory = true">
+          <Button icon @click="dialog.history = true">
             <ComposIcon :icon="ClockHistory" />
           </Button>
         </div>
       </div>
     </div>
   </Content>
+
+  <!-- Dialog Payment Detail (Mobile View) -->
   <Dialog
     class="dialog-payment"
-    v-model="dialogPayment"
+    v-model="dialog.payment"
     title="Pay"
     fullscreen
   >
@@ -585,9 +579,11 @@ onUnmounted(() => {
       </div>
     </div>
   </Dialog>
+
+  <!-- Dialog Order History (Mobile View) -->
   <Dialog
     class="dialog-history"
-    v-model="dialogHistory"
+    v-model="dialog.history"
     title="Order History"
     fullscreen
   >
@@ -616,17 +612,21 @@ onUnmounted(() => {
           <OrderCard
             v-for="order of ordersData.orders"
             :key="`dialog-order-${order.id}`"
+            :canceled="order.canceled"
             :title="order.name"
             :total="order.totalFormatted"
             :tendered="order.tenderedFormatted"
             :change="order.changeFormatted"
             :products="order.products"
+            @cancel="handleCancelOrder(order.id, order.name)"
           />
         </div>
       </template>
     </template>
   </Dialog>
-  <Dialog v-model="dialogFinish" :title="`Finish ${detailsData?.name}?`">
+
+  <!-- Dialog Finish Sale -->
+  <Dialog v-model="dialog.finish" :title="`Finish ${detailsData?.name}?`">
     <Text body="large" textAlign="center" margin="0">
       Finishing this product will finish this dashboard session, set the status as finished and redirect to the sale detail page.
     </Text>
@@ -635,7 +635,29 @@ onUnmounted(() => {
         <Button color="green" full @click="mutateFinish">
           {{ isMutateFinishLoading ? 'Loading' : 'Finish' }}
         </Button>
-        <Button variant="outline" full @click="dialogFinish = false">Cancel</Button>
+        <Button variant="outline" full @click="dialog.finish = false">Cancel</Button>
+      </div>
+    </template>
+  </Dialog>
+
+  <!-- Dialog Cancel Order -->
+  <Dialog
+    v-model="dialog.cancel"
+    :title="`Cancel ${cancelDetail.name}?`"
+    @leave="() => {
+      cancelDetail.id   = '';
+      cancelDetail.name = '';
+    }"
+  >
+    <Text body="large" textAlign="center" margin="0">
+      Canceling this order will mark the order as canceled and return any used balance.
+    </Text>
+    <template #footer>
+      <div class="dialog-actions">
+        <Button color="green" full @click="mutateCancelOrderFn({ id: cancelDetail.id, name: cancelDetail.name })">
+          {{ isMutateFinishLoading ? 'Loading' : `Cancel ${cancelDetail.name}` }}
+        </Button>
+        <Button variant="outline" full @click="dialog.cancel = false">Cancel</Button>
       </div>
     </template>
   </Dialog>

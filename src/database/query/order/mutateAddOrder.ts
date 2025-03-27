@@ -6,10 +6,10 @@ import type { RxDocument } from 'rxdb';
 import { db } from '@/database';
 import { isBundle, isProduct, isVariant } from '@/database/utils';
 import { ORDER_ID_PREFIX } from '@/database/constants';
-import type { ProductDoc, VariantDoc } from '@/database/types';
+import type { ProductDoc, VariantDoc, OrderDocProduct } from '@/database/types';
 
 // Helpers
-import { ComPOSError } from '@/helpers/createError';
+import createError, { ComPOSError } from '@/helpers/createError';
 
 type MutateAddOrderDataBundleItem = {
   id: string;
@@ -43,7 +43,7 @@ export default async ({ id, data }: MutateAddOrder) => {
   try {
     const ulid           = monotonicFactory();
     const order_id       = ORDER_ID_PREFIX + ulid();
-    const order_products = [];
+    const order_products = <OrderDocProduct[]>[];
     let order_name       = 'Order #1';
     let order_total      = '0';
 
@@ -79,6 +79,11 @@ export default async ({ id, data }: MutateAddOrder) => {
         await (document as any).updateBundlesStatus(latest_document);
       }
     };
+
+    const _querySaleConstruct = db.sale.findOne(id);
+    const _querySale          = await _querySaleConstruct.exec();
+
+    if (!_querySale) throw createError('Sale not found', { status: 404 });
 
     /**
      * -----------------------
@@ -207,8 +212,26 @@ export default async ({ id, data }: MutateAddOrder) => {
     }
 
     /**
+     * -----------------
+     * 4. Add new order.
+     * -----------------
+     */
+    await db.order.insert({
+      id      : order_id,
+      sale_id : id,
+      canceled: false,
+      name    : order_name,
+      products: order_products,
+      total   : order_total,
+      tendered,
+      change,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+    /**
      * ------------------------------
-     * 4. Update each products stock.
+     * 5. Update each products stock.
      * ------------------------------
      */
     for (const product of products) {
@@ -236,21 +259,61 @@ export default async ({ id, data }: MutateAddOrder) => {
     }
 
     /**
-     * -----------------
-     * 5. Add new order.
-     * -----------------
+     * -----------------------------
+     * 6. Update sale products sold.
+     * -----------------------------
      */
-    await db.order.insert({
-      id      : order_id,
-      sale_id : id,
-      canceled: false,
-      name    : order_name,
-      products: order_products,
-      total   : order_total,
-      tendered,
-      change,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+    await _querySaleConstruct.modify(oldData => {
+      const mutable_products = [...oldData.products_sold];
+      let mutable_revenue    = oldData.revenue;
+
+      for (const order_product of order_products) {
+        const {
+          id      : order_product_id,
+          name    : order_product_name,
+          quantity: order_product_quantity,
+          price   : order_product_price,
+          total   : order_product_total,
+          sku     : order_product_sku,
+          items   : order_product_items,
+        } = order_product;
+
+        const mutable_product_index = mutable_products.findIndex(p => p.id === order_product_id);
+
+        if (mutable_product_index !== -1) {
+          const mutable_product = mutable_products[mutable_product_index];
+
+          mutable_products[mutable_product_index] = {
+            ...mutable_product,
+            quantity: mutable_product.quantity + order_product_quantity,
+            total   :
+              Big(mutable_product.total)
+              .plus(Big(order_product.price)
+              .times(order_product_quantity))
+              .toString(),
+          };
+        } else {
+          mutable_products.push({
+            id      : order_product_id,
+            name    : order_product_name,
+            price   : order_product_price,
+            quantity: order_product_quantity,
+            total   : order_product_total,
+            ...(order_product_sku ? { sku: order_product_sku } : {}),
+            ...(order_product_items ? { items: order_product_items } : {}),
+          });
+        }
+
+        mutable_revenue =
+          Big(mutable_revenue)
+          .plus(Big(order_product_price).times(order_product_quantity))
+          .toString();
+      }
+
+      oldData.products_sold = mutable_products;
+      oldData.revenue       = mutable_revenue;
+
+      return oldData;
     });
   } catch (error) {
     if (error instanceof ComPOSError || error instanceof Error) throw error;
