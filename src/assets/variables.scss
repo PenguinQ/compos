@@ -39,10 +39,6 @@ $baseApple: 17; // In iOS default dynamic font size are 17, while MacOS or other
   --color-yellow-6: #FFE566;
   --color-yellow-7: #FFE14C;
 
-  // TBA
-  // 1. background: linear-gradient(90deg, hsla(213, 77%, 14%, 1) 0%, hsla(202, 27%, 45%, 1) 100%);
-  // 2. background: linear-gradient(180deg, 2E4057 0%, #2E3657 100%);
-
   // Base Color
   // Alternate for color-black #0d1317
   --color-background: #FAFAFF;
@@ -64,6 +60,19 @@ $baseApple: 17; // In iOS default dynamic font size are 17, while MacOS or other
   --color-info: var(--color-blue-3);
   --color-disabled: #FCF7F8;
   --color-disabled-2: #B5B3BA;
+
+  // Gradient Color
+  // TBA
+  // 1. background: linear-gradient(90deg, hsla(213, 77%, 14%, 1) 0%, hsla(202, 27%, 45%, 1) 100%);
+  // 2. background: linear-gradient(180deg, #2E4057 0%, #2E3657 100%);
+  // --color-gradient-white-1: linear-gradient(to right, var(--color-white) 0%, var(--color-neutral-1) 100%);
+  // --color-gradient-black-1: linear-gradient(to right, #2E4057 0%, #4E6480 100%);
+  // --color-gradient-black-2: linear-gradient(to right, #2E4057 0%, #3A4D6A 100%);
+  // --color-gradient-black-3: linear-gradient(to right, #2E4057 0%, #283C58 100%);
+  // --color-gradient-black-4: linear-gradient(to right, #2E4057 0%, #1A2634 100%);
+  // --color-gradient-black-5: linear-gradient(to right, #2E4057 0%, #14202B 100%);
+  // --color-gradient-black-6: linear-gradient(to right, #2E4057 0%, #0E1922 100%);
+  // --color-gradient-black-7: linear-gradient(to right, #2E4057 0%, #080F15 100%);
 
   --color-border: var(--color-neutral-2);
   --color-focus-outline: var(--color-blue-5);

@@ -6,31 +6,31 @@ import ComposIcon, { Plus, Dash } from '@/components/Icons';
 
 interface QuantityEditor extends /* @vue-ignore */ InputHTMLAttributes {
   /**
-   * Set the quantity editor into disabled state.
+   * Set the QuantityEditor into disabled state.
    */
   disabled?: boolean;
   /**
-   * Set the quantity editor into disabled state.
+   * Set the QuantityEditor into disabled state.
    */
   error?: boolean;
   /**
-   * Set the quantity editor label.
+   * Set the QuantityEditor label.
    */
   label?: string;
   /**
-   * Set the quantity editor label additional properties.
+   * Set the QuantityEditor label additional properties.
    */
   labelProps?: object;
   /**
-   * Set the maximum number allowed in quantity editor.
+   * Set the maximum number allowed in QuantityEditor.
    */
   max?: number;
   /**
-   * Set the minimum number allowed in quantity editor.
+   * Set the minimum number allowed in QuantityEditor.
    */
   min?: number;
   /**
-   * Set the message for the quantity editor.
+   * Set the message for the QuantityEditor.
    */
   message?: string;
   /**
@@ -42,19 +42,19 @@ interface QuantityEditor extends /* @vue-ignore */ InputHTMLAttributes {
    */
   modelModifiers?: Record<string, boolean>;
   /**
-   * Reduce the size of the quantity editor.
+   * Set the QuantityEditor size.
    */
-  small?: boolean;
+  size?: 'small';
   /**
    * Set the increment/decrement number of steps.
    */
   step?: number;
   /**
-   * Set the value for the quantity editor without using v-model two way data binding.
+   * Set the value for the QuantityEditor without using v-model two way data binding.
    */
   value?: string | number;
   /**
-   * Set the width of the quantity editor input, represented as a number of digits.
+   * Set the width of the QuantityEditor input, represented as a number of digits.
    */
   width?: 'auto' | number | string;
 }
@@ -65,7 +65,6 @@ const props = withDefaults(defineProps<QuantityEditor>(), {
   disabled: false,
   error   : false,
   min     : 0,
-  small   : false,
   step    : 1,
   width   : 'auto',
 });
@@ -109,7 +108,7 @@ const isNumber = computed(() => {
 const classes = computed(() => ({
   'cp-form'                : true,
   'cp-form-quantity'       : true,
-  'cp-form-quantity--small': props.small,
+  'cp-form-quantity--small': props.size === 'small',
 }));
 let timeout: ReturnType<typeof setTimeout>;
 

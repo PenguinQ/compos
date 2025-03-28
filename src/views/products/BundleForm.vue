@@ -7,6 +7,8 @@ import {
   Header,
   Content,
   Container,
+  Row,
+  Column,
   Bar,
   Button,
   Card,
@@ -27,15 +29,11 @@ import {
   ToolbarSpacer,
   ToolbarTitle,
 } from '@/components';
-import ComposIcon, {
-  ArrowLeftShort,
-  Save,
-  X,
-  XLarge,
-} from '@/components/Icons';
+import ComposIcon, { ArrowLeftShort, Save, X } from '@/components/Icons';
 
 // View Components
 import {
+  ButtonRemove,
   FloatingActions,
   Pagination,
   ProductListItem,
@@ -140,37 +138,45 @@ watch(
                 <CardSubtitle>General information about the bundle.</CardSubtitle>
               </CardHeader>
               <CardBody>
-                <div class="product-form-fields">
-                  <Textfield
-                    id="bundle-name"
-                    label="Name"
-                    :labelProps="{ for: 'bundle-name' }"
-                    :error="formError.name ? true : false"
-                    :message="formError.name"
-                    v-model="formData.name"
-                  />
-                  <Textarea
-                    id="bundle-description"
-                    label="Description"
-                    :labelProps="{ for: 'bundle-description' }"
-                    v-model="formData.description"
-                  />
-                  <Textfield
-                    id="bundle-price"
-                    label="Price"
-                    prepend="Rp"
-                    v-model="formData.price"
-                    :readonly="formData.auto_price"
-                    :labelProps="{ for: 'bundle-price' }"
-                    :error="formError.price ? true : false"
-                    :message="formError.price ? formError.price : formData.auto_price ? BUNDLE_FORM.PRICE_MESSAGE : ''"
-                  />
-                  <Checkbox
-                    v-model="formData.auto_price"
-                    label="Auto Price"
-                    :message="BUNDLE_FORM.AUTO_PRICE_MESSAGE"
-                  />
-                </div>
+                <Row :col="1" :gutter="16">
+                  <Column>
+                    <Textfield
+                      id="bundle-name"
+                      label="Name"
+                      :labelProps="{ for: 'bundle-name' }"
+                      :error="formError.name ? true : false"
+                      :message="formError.name"
+                      v-model="formData.name"
+                    />
+                  </Column>
+                  <Column>
+                    <Textarea
+                      id="bundle-description"
+                      label="Description"
+                      :labelProps="{ for: 'bundle-description' }"
+                      v-model="formData.description"
+                    />
+                  </Column>
+                  <Column>
+                    <Textfield
+                      id="bundle-price"
+                      label="Price"
+                      prepend="Rp"
+                      v-model="formData.price"
+                      :readonly="formData.auto_price"
+                      :labelProps="{ for: 'bundle-price' }"
+                      :error="formError.price ? true : false"
+                      :message="formError.price ? formError.price : formData.auto_price ? BUNDLE_FORM.PRICE_MESSAGE : ''"
+                    />
+                  </Column>
+                  <Column>
+                    <Checkbox
+                      v-model="formData.auto_price"
+                      label="Auto Price"
+                      :message="BUNDLE_FORM.AUTO_PRICE_MESSAGE"
+                    />
+                  </Column>
+                </Row>
               </CardBody>
             </Card>
             <Card class="section-card" variant="outline">
@@ -190,50 +196,50 @@ watch(
                     <Button @click="showProductsDialog = !showProductsDialog">Add Product</Button>
                   </template>
                 </EmptyState>
-                <div v-else class="selected-product-list">
-                  <ProductListItem
-                    :key="`form-product-bundle-${product.id}`"
-                    v-for="(product, index) in formData.products"
-                    :active="product.active"
-                    :images="product.images"
-                    :name="product.name"
-                    :details="[
-                      {
-                        name: 'Price',
-                        value: toIDR(product.total_price),
-                      },
-                      {
-                        name: 'Stock',
-                        value: String(product.stock),
-                      },
-                      {
-                        name: 'SKU',
-                        value: product.sku || '-',
-                      },
-                    ]"
-                  >
-                    <template #extension>
-                      <QuantityEditor
-                        v-if="product.quantity !== undefined && product.active"
-                        v-model="product.quantity"
-                        :min="1"
-                        :max="product.stock"
-                        small
-                        readonly
-                      />
-                      <button
-                        class="selected-product-list__remove button button--icon"
-                        :aria-label="`Remove ${product.name}`"
-                        @click="handleRemoveProduct(index)"
-                      >
-                        <ComposIcon :icon="XLarge" size="14" />
-                      </button>
-                    </template>
-                  </ProductListItem>
-                  <div class="selected-product-list__action">
+                <template v-else>
+                  <div class="selected-product-list">
+                    <ProductListItem
+                      :key="`form-product-bundle-${product.id}`"
+                      v-for="(product, index) in formData.products"
+                      :active="product.active"
+                      :images="product.images"
+                      :name="product.name"
+                      :details="[
+                        {
+                          name: 'Price',
+                          value: toIDR(product.total_price),
+                        },
+                        {
+                          name: 'Stock',
+                          value: String(product.stock),
+                        },
+                        {
+                          name: 'SKU',
+                          value: product.sku || '-',
+                        },
+                      ]"
+                    >
+                      <template #extension>
+                        <QuantityEditor
+                          v-if="product.quantity !== undefined && product.active"
+                          v-model="product.quantity"
+                          :min="1"
+                          :max="product.stock"
+                          readonly
+                          size="small"
+                        />
+                        <ButtonRemove
+                          :size="22"
+                          :aria-label="`Remove ${product.name}`"
+                          @click="handleRemoveProduct(index)"
+                        />
+                      </template>
+                    </ProductListItem>
+                  </div>
+                  <div class="selected-product-list-action">
                     <Button variant="outline" full @click="showProductsDialog = true">Add Product</Button>
                   </div>
-                </div>
+                </template>
               </CardBody>
             </Card>
           </form>
@@ -241,6 +247,8 @@ watch(
       </template>
     </Container>
   </Content>
+
+  <!-- Dialog Product Selection -->
   <Dialog
     class="product-selection-dialog"
     v-model="showProductsDialog"

@@ -38,6 +38,7 @@ type FormData = {
   name: string;
   balance?: string;
   products: FormDataProduct[];
+  orderNotes: string[];
 };
 
 export const useSaleForm = () => {
@@ -53,11 +54,13 @@ export const useSaleForm = () => {
   const selectedProducts   = ref<FormDataProduct[]>([]);
   const productListTab     = ref(0);
   const formData = reactive<FormData>({
-    id      : '',
-    name    : '',
-    balance : '',
-    products: [],
+    id        : '',
+    name      : '',
+    balance   : '',
+    products  : [],
+    orderNotes: [''],
   });
+
   const formError = reactive({
     name   : '',
     product: '',
@@ -79,6 +82,14 @@ export const useSaleForm = () => {
   });
   const current_page_product = computed(() => pageProduct.current);
   const current_page_bundle  = computed(() => pageBundle.current);
+
+  const handleAddNote = () => {
+    formData.orderNotes.push('');
+  };
+
+  const handleRemoveNote = (index: number) => {
+    if (formData.orderNotes.length > 1) formData.orderNotes.splice(index, 1);
+  };
 
   const {
     data     : saleDetail,
@@ -102,7 +113,7 @@ export const useSaleForm = () => {
 
       formData.name     = name;
       formData.products = products;
-      if (balance) formData.balance  = balance;
+      if (balance) formData.balance = balance;
     },
   });
 
@@ -521,5 +532,7 @@ export const useSaleForm = () => {
     bundleListRefetch,
     productListRefetch,
     mutateAdd,
+    handleAddNote,
+    handleRemoveNote,
   };
 };

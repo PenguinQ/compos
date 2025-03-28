@@ -36,6 +36,8 @@ export const SALE_FORM = {
   PRODUCT_EMPTY_SEARCH_EMOJI: '😵‍💫',
   PRODUCT_EMPTY_SEARCH_TITLE: 'Welp',
   PRODUCT_EMPTY_SEARCH_DESCRIPTION: 'Looks like there\'s no active products with that title, look for another one!',
+  FORM_MESSAGE_BALANCE: 'Set the amount of money for a change you provide for this sale.',
+  FORM_MESSAGE_ORDER_NOTES: 'Set the predefined notes for every order that you can add on each order made.',
 };
 
 export const SALE_DASHBOARD = {
