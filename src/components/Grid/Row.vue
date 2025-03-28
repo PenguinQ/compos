@@ -35,7 +35,7 @@ const props = defineProps<Row>();
 
 const gutters: Gutter = { col: undefined, row: undefined };
 
-if (props.gutter) {
+if (props.gutter != null) {
   if (typeof props.gutter === 'object') {
     gutters.col = typeof props.gutter.col === 'number' ? `${props.gutter.col}px` : props.gutter.col;
     gutters.row = typeof props.gutter.row === 'number' ? `${props.gutter.row}px` : props.gutter.row;

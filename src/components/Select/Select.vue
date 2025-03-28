@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import type { Slot, OptionHTMLAttributes } from 'vue';
 import type * as CSS from 'csstype'
 
@@ -53,6 +53,10 @@ type Select = {
    */
   modelValue?: string | number;
   /**
+   * Set the Select size.
+   */
+  size?: 'small';
+  /**
    * Set the Select into success state.
    */
   success?: boolean;
@@ -83,7 +87,7 @@ type SelectSlots = {
 
 defineOptions({ inheritAttrs: false });
 
-withDefaults(defineProps<Select>(), {
+const props = withDefaults(defineProps<Select>(), {
   disabled: false,
   error   : false,
   success : false,
@@ -110,6 +114,11 @@ const instance     = ref(instanceCounters('select'));
 const containerRef = ref<HTMLDivElement | null>(null);
 const selectRef    = ref<HTMLSelectElement | null>(null);
 const inListItem   = ref(false);
+const classes      = computed(() => ({
+  'cp-form'              : true,
+  'cp-form-select'       : true,
+  'cp-form-select--small': props.size === 'small',
+}));
 
 onMounted(() => {
   const parent = containerRef.value?.parentElement as HTMLElement;
@@ -133,7 +142,7 @@ const handleInput = (e: Event) => {
   <div
     ref="containerRef"
     v-bind="containerProps"
-    class="cp-form cp-form-select"
+    :class="classes"
     :data-cp-disabled="disabled ? true : undefined"
     :data-cp-error="error ? true : undefined"
     :data-cp-success="success ? true : undefined"
@@ -211,6 +220,14 @@ const handleInput = (e: Event) => {
   &[data-cp-selected] {
     .cp-form-field {
       color: var(--color-black);
+    }
+  }
+
+  &--small {
+    .cp-form-field {
+      @include text-body-md;
+      padding-top: 12px;
+      padding-bottom: 12px;
     }
   }
 }

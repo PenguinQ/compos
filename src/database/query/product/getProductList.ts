@@ -96,7 +96,7 @@ export default async ({
 
         if (complete && product_variants) {
           for (const variant of product_variants) {
-            const _queryVariant = await db.variant.findOne({ selector: { id: variant } }).exec();
+            const _queryVariant = await db.variant.findOne({ selector: { id: variant, active } }).exec();
 
             if (_queryVariant) {
               const variant_json              = _queryVariant.toJSON();

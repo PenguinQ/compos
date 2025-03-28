@@ -39,20 +39,22 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
 
 export type ProductListVariant = {
   id: string;
+  active: boolean;
   images: string[];
   name: string;
 };
 
 export type ProductList = {
   id: string;
+  active: boolean;
   images: string[];
   name: string;
   variants: ProductListVariant[];
 };
 
 export type ProductListNormalizerReturn = {
-  products: ProductList[];
   page: Pagination,
+  products: ProductList[];
 };
 
 export const productListNormalizer = (data: unknown): ProductListNormalizerReturn => {
@@ -60,14 +62,15 @@ export const productListNormalizer = (data: unknown): ProductListNormalizerRetur
   const productList = [];
 
   for (const product of productsData) {
-    const { id, variants, name, images } = product;
+    const { id, active, variants, name, images } = product;
     const variantList = [];
 
     for (const variant of variants as VariantsData[]) {
-      const { id, images, name } = variant;
+      const { active, id, images, name } = variant;
 
       variantList.push({
         id    : id || '',
+        active: active || false,
         images: images || [],
         name  : name || '',
       });
@@ -75,6 +78,7 @@ export const productListNormalizer = (data: unknown): ProductListNormalizerRetur
 
     productList.push({
       id      : id || '',
+      active  : active || false,
       images  : images || [],
       name    : name || '',
       variants: variantList,
@@ -96,10 +100,11 @@ export const bundleListNormalizer = (data: unknown): BundleListNormalizerReturn 
   const bundleList = [];
 
   for (const bundle of bundlesData) {
-    const { id, name, images } = bundle;
+    const { id, active, name, images } = bundle;
 
     bundleList.push({
       id    : id || '',
+      active: active || false,
       images: images || [],
       name  : name || '',
     })

@@ -35,8 +35,9 @@ const meta: Meta<QuantityEditorProps> = {
       name: 'v-model',
       control: 'number',
     },
-    small: {
-      control: 'boolean',
+    size: {
+      control: 'select',
+      option: ['small'],
     },
     step: {
       control: 'number',
@@ -52,7 +53,6 @@ const meta: Meta<QuantityEditorProps> = {
     disabled: false,
     error: false,
     min: 0,
-    small: false,
     step: 1,
     width: 'auto',
   },

@@ -22,16 +22,20 @@ import {
   TabControls,
   TabPanel,
   TabPanels,
+  Text,
   Textfield,
   Toolbar,
   ToolbarAction,
   ToolbarSpacer,
   ToolbarTitle,
+  Row,
+  Column,
 } from '@/components';
-import ComposIcon, { ArrowLeftShort, X, XLarge, Save } from '@/components/Icons';
+import ComposIcon, { ArrowLeftShort, X, Save } from '@/components/Icons';
 
 // View Components
 import {
+  ButtonRemove,
   FloatingActions,
   Pagination,
   ProductListItem,
@@ -86,6 +90,9 @@ const {
   handleRefreshList,
   bundleListRefetch,
   productListRefetch,
+  //
+  handleAddNote,
+  handleRemoveNote,
 } = useSaleForm();
 
 watch(
@@ -142,27 +149,55 @@ watch(
                 <CardSubtitle>General information about the sale.</CardSubtitle>
               </CardHeader>
               <CardBody>
-                <div class="sales-form-fields">
-                  <Textfield
-                    id="sale-name"
-                    label="Name"
-                    placeholder="Sale name"
-                    :labelProps="{ for: 'sale-name' }"
-                    :error="formError.name ? true : false"
-                    :message="formError.name"
-                    v-model="formData.name"
-                  />
-                  <Textfield
-                    id="sale-balance"
-                    label="Balance"
-                    placeholder="Sale balance"
-                    prepend="Rp"
-                    v-model="formData.balance"
-                    :labelProps="{ for: 'sale-balance' }"
-                    :error="formError.balance ? true : false"
-                    :message="formError.balance"
-                  />
-                </div>
+                <Row col="1" :gutter="16">
+                  <Column>
+                    <Textfield
+                      id="sale-name"
+                      label="Name"
+                      placeholder="Sale name"
+                      :labelProps="{ for: 'sale-name' }"
+                      :error="formError.name ? true : false"
+                      :message="formError.name"
+                      v-model="formData.name"
+                    />
+                  </Column>
+                  <Column>
+                    <Textfield
+                      id="sale-balance"
+                      label="Balance"
+                      placeholder="Sale balance"
+                      prepend="Rp"
+                      v-model="formData.balance"
+                      :labelProps="{ for: 'sale-balance' }"
+                      :error="formError.balance ? true : false"
+                      :message="formError.balance ? formError.balance : SALE_FORM.FORM_MESSAGE_BALANCE"
+                    />
+                  </Column>
+                  <Column>
+                    <Text fontWeight="500" margin="0 0 4px">Order Notes (Optional)</Text>
+                    <div class="order-notes">
+                      <div
+                        class="order-notes-item"
+                        v-for="(_, index) in formData.orderNotes"
+                        :key="`order-note-${formData.id}-${index}`"
+                      >
+                        <Textfield
+                          v-model="formData.orderNotes[index]"
+                          placeholder="Paid with ..."
+                        />
+                        <ButtonRemove
+                          v-if="formData.orderNotes.length > 1"
+                          :size="22"
+                          @click="handleRemoveNote(index)"
+                        />
+                      </div>
+                    </div>
+                    <Text class="order-notes-message" margin="0 0 12px">
+                      {{ SALE_FORM.FORM_MESSAGE_ORDER_NOTES }}
+                    </Text>
+                    <Button variant="outline" full @click="handleAddNote">Add Note</Button>
+                  </Column>
+                </Row>
               </CardBody>
             </Card>
             <Card class="section-card" variant="outline">
@@ -196,19 +231,17 @@ watch(
                       ]"
                     >
                       <template #extension>
-                        <QuantityEditor v-model="product.quantity" :min="1" readonly />
-                        <button
-                          class="selected-product-list__remove button button--icon"
+                        <QuantityEditor v-model="product.quantity" :min="1" size="small" readonly />
+                        <ButtonRemove
+                          :size="22"
                           :aria-label="`Remove ${product.name}`"
                           @click="handleRemoveProduct(index)"
-                        >
-                          <ComposIcon :icon="XLarge" size="14" />
-                        </button>
+                        />
                       </template>
                     </ProductListItem>
-                    <div class="selected-product-list__action">
-                      <Button full variant="outline" @click="showDialog = true">Add Product</Button>
-                    </div>
+                  </div>
+                  <div class="selected-product-list-action">
+                    <Button full variant="outline" @click="showDialog = true">Add Product</Button>
                   </div>
                 </template>
               </CardBody>
@@ -218,6 +251,8 @@ watch(
       </template>
     </Container>
   </Content>
+
+  <!-- Dialog Product Selection -->
   <Dialog
     class="product-selection-dialog"
     v-model="showDialog"
@@ -357,8 +392,8 @@ watch(
                 />
                 <div v-else class="product-selection-list">
                   <ProductSelectionItem
-                    :key="bundle.id"
                     v-for="bundle of bundleList.bundles"
+                    :key="bundle.id"
                     :images="bundle.images"
                     :name="bundle.name"
                     :selected="isBundleSelected(bundle) ? true : undefined"
@@ -392,3 +427,28 @@ watch(
 </template>
 
 <style lang="scss" src="@/assets/page-form.scss" />
+<style lang="scss" scoped>
+.order-notes {
+  margin-bottom: 8px;
+
+  &-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+
+    &:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .vc-button-remove {
+      flex-shrink: 0;
+    }
+  }
+
+  &-message {
+    @include text-body-sm;
+  }
+}
+</style>

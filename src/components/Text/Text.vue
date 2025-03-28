@@ -119,7 +119,6 @@ const textClass = computed(() => ({
 
 <style lang="scss">
 .cp-text {
-  color: var(--color-black);
   font-family: var(--text-body-family);
   @include text-body-md;
   font-weight: 400;

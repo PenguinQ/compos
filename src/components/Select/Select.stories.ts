@@ -34,6 +34,10 @@ const meta: Meta<SelectProps> = {
     options: {
       control: 'object',
     },
+    size: {
+      control: 'select',
+      options: ['small'],
+    },
     success: {
       control: 'boolean',
     },

@@ -2,9 +2,8 @@
   &-label {
     max-width: 100%;
     color: var(--color-black);
-    font-size: 14px;
+    @include text-body-md;
     font-weight: 500;
-    line-height: 18px;
     display: inline-block;
     margin-bottom: 4px;
   }
@@ -47,8 +46,7 @@
 
   &-message {
     color: var(--color-black);
-    font-size: 12px;
-    line-height: 16px;
+    @include text-body-sm;
     word-break: break-word;
     margin: 8px 0 0;
   }
