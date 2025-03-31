@@ -380,6 +380,7 @@ watch(computedValue, newValue => {
     }
 
     input {
+      @include text-body-md;
       padding-top: 4px;
       padding-bottom: 4px;
     }
