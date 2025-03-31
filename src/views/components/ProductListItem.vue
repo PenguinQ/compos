@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // Common Components
 import { Text } from '@/components';
+import * as CSS from 'csstype';
 
 // View Components
 import ProductImage from '@/views/components/ProductImage.vue';
@@ -17,7 +18,9 @@ type ProductItem = {
   active?: boolean;
   details?: ProductItemDetail[];
   images?: string[];
-  name: string;
+  imageWidth?: CSS.Property.Width;
+  imageHeight?: CSS.Property.Height;
+  name?: string;
 };
 
 withDefaults(defineProps<ProductItem>(), {
@@ -27,30 +30,37 @@ withDefaults(defineProps<ProductItem>(), {
 </script>
 
 <template>
-  <div class="vc-product-list-item" :data-status="!active ? 'inactive' : undefined">
-    <ProductImage>
+  <div class="vc-pli" :data-status="!active ? 'inactive' : undefined">
+    <ProductImage :width="imageWidth" :height="imageHeight">
       <img v-if="images.length" v-for="image of images" :src="image" :alt="`${name} image`" />
       <img v-else :src="no_image" :alt="`${name} image`" />
     </ProductImage>
-    <div class="vc-product-list-item__body">
-      <Text body="large" fontWeight="600" truncate margin="0">{{ name }}</Text>
-      <div v-if="details" class="vc-product-list-item__details">
-        <table>
-          <tr v-for="detail of details">
-            <td><span>{{ detail.name }}</span></td>
-            <td>:</td>
-            <td>{{ detail.value }}</td>
-          </tr>
-        </table>
+    <div class="vc-pli-info">
+      <div class="vc-pli-info__main">
+        <div class="vc-pli-info__content">
+          <Text v-if="name" class="vc-pli-info__name" body="large" truncate>
+            {{ name }}
+          </Text>
+          <div v-if="details" class="vc-pli-info__details">
+            <table>
+              <tr v-for="detail of details">
+                <td><span>{{ detail.name }}</span></td>
+                <td>:</td>
+                <td>{{ detail.value }}</td>
+              </tr>
+            </table>
+          </div>
+          <slot name="details" />
+        </div>
+        <slot name="extensions" />
       </div>
-      <slot name="details"></slot>
+      <slot name="additionals" />
     </div>
-    <slot name="extension"></slot>
   </div>
 </template>
 
 <style lang="scss">
-.vc-product-list-item {
+.vc-pli {
   background-color: var(--color-white);
   border-bottom: 1px solid var(--color-border);
   display: flex;
@@ -79,44 +89,66 @@ withDefaults(defineProps<ProductItem>(), {
     z-index: 1;
   }
 
-  > * {
-    flex-shrink: 0;
-  }
-
   .vc-product-image {
     width: 80px;
     height: 80px;
+    align-self: flex-start;
     flex-shrink: 0;
     display: none;
-    align-self: flex-start;
   }
 
-  &__body {
+  &-info {
     min-width: 0;
     flex-grow: 1;
     flex-shrink: 1;
-  }
 
-  &__details {
-    overflow-x: auto;
-
-    table {
+    &__main {
       width: 100%;
-      @include text-body-sm;
-      border-collapse: collapse;
-      opacity: 0.8;
-      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
 
-      td {
-        padding: 2px 0;
+      > * {
+        flex-shrink: 0;
+      }
+    }
 
-        &:last-of-type {
-          padding-left: 1ch;
-        }
+    &__content {
+      min-width: 0;
+      flex-grow: 1;
+      flex-shrink: 1;
+    }
 
-        &:not(:last-of-type) {
-          width: 0;
-          white-space: nowrap;
+    &__name {
+      font-weight: 600;
+      margin-bottom: 4px;
+
+      &:only-child {
+        margin: 0;
+      }
+    }
+
+    &__details {
+      overflow-x: auto;
+      margin-top: -2px;
+
+      table {
+        width: 100%;
+        @include text-body-sm;
+        border-collapse: collapse;
+        opacity: 0.8;
+
+        td {
+          padding: 2px 0;
+
+          &:last-of-type {
+            padding-left: 1ch;
+          }
+
+          &:not(:last-of-type) {
+            width: 0;
+            white-space: nowrap;
+          }
         }
       }
     }
@@ -128,14 +160,14 @@ withDefaults(defineProps<ProductItem>(), {
     }
 
     .vc-product-image,
-    .vc-product-list-item__body {
+    .vc-pli-info {
       filter: grayscale(1);
     }
   }
 }
 
 @include screen-rwd(360) {
-  .vc-product-list-item {
+  .vc-pli {
     gap: 16px;
 
     .vc-product-image {

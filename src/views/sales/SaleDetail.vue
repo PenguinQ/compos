@@ -387,7 +387,7 @@ watch(
 }
 
 .product-list {
-  .vc-product-list-item {
+  .vc-pli {
     &:last-of-type {
       border-color: var(--color-border);
     }
