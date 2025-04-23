@@ -61,9 +61,11 @@ const {
 watch(
   data,
   (newData) => {
-    const { name } = newData;
+    if (newData) {
+      const { name } = newData;
 
-    document.title = `${name} - ComPOS`;
+      document.title = `${name} - ComPOS`;
+    }
   },
 );
 </script>
@@ -98,136 +100,134 @@ watch(
     <template #fixed>
       <PullToRefresh @refresh="handleRefresh" />
     </template>
-    <EmptyState
-      v-if="isError"
-      :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-      :title="GLOBAL.ERROR_EMPTY_TITLE"
-      :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-      margin="56px 0"
-    >
-      <template #action>
-        <Button @click="refetch">Try Again</Button>
-      </template>
-    </EmptyState>
+    <Bar v-if="isLoading" />
     <template v-else>
-      <Container class="page-container">
-        <Bar v-if="isLoading" margin="56px 0" />
-        <template v-else>
-          <Ticker
-            v-if="!data.active"
-            :items="[
-              {
-                title: 'Inactive Product',
-                description: `This product currently inactive since the stock is 0, or any variants of it has 0 stock.`,
-              },
-            ]"
-            margin="0 0 16px"
-          />
-          <Row>
-            <Column :col="{ default: 12, md: 'auto' }">
-              <ProductImage class="product-detail-image">
-                <img v-if="!data.images.length" :src="no_image" :alt="`${data.name} image`">
-                <img v-else v-for="image of data.images" :src="image ? image : no_image" :alt="`${data.name} image`">
-              </ProductImage>
-            </Column>
-            <Column>
-              <Card class="section-card" variant="outline">
-                <CardBody>
-                  <Text heading="3" margin="0 0 4px">{{ data.name }}</Text>
-                  <Text v-if="data.by" body="small" style="opacity: 0.8; margin: 0 0 8px;">{{ data.by }}</Text>
-                  <Text v-if="data.description">{{ data.description }}</Text>
-                  <Separator />
-                  <Ticker
-                    v-if="data.variants?.length"
-                    :items="[
+      <EmptyState
+        v-if="isError"
+        :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+        :title="GLOBAL.ERROR_EMPTY_TITLE"
+        :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+        height="100%"
+      >
+        <template #action>
+          <Button @click="refetch">Try Again</Button>
+        </template>
+      </EmptyState>
+      <Container v-else-if="data" class="page-container">
+        <Ticker
+          v-if="!data.active"
+          :items="[
+            {
+              title: 'Inactive Product',
+              description: `This product currently inactive since the stock is 0, or any variants of it has 0 stock.`,
+            },
+          ]"
+          margin="0 0 16px"
+        />
+        <Row>
+          <Column :col="{ default: 12, md: 'auto' }">
+            <ProductImage class="product-detail-image">
+              <img v-if="!data.images.length" :src="no_image" :alt="`${data.name} image`">
+              <img v-else v-for="image of data.images" :src="image ? image : no_image" :alt="`${data.name} image`">
+            </ProductImage>
+          </Column>
+          <Column>
+            <Card class="section-card" variant="outline">
+              <CardBody>
+                <Text heading="3" margin="0 0 4px">{{ data.name }}</Text>
+                <Text v-if="data.by" body="small" style="opacity: 0.8; margin: 0 0 8px;">{{ data.by }}</Text>
+                <Text v-if="data.description">{{ data.description }}</Text>
+                <Separator />
+                <Ticker
+                  v-if="data.variants?.length"
+                  :items="[
+                    {
+                      title: 'Price, Stock, and SKU',
+                      description: 'Since this product has variants that have their own price, stock, and SKU, the default price, stock, and SKU of this product will follow the variants.',
+                      type: 'info',
+                    },
+                  ]"
+                  margin="0 0 20px"
+                />
+                <DescriptionList class="product-detail-list" alignment="horizontal">
+                  <template v-if="data.variants?.length">
+                    <DescriptionListItem alignItems="center">
+                      <dt>Status</dt>
+                      <dd>
+                        <Label :color="data.active ? 'green' : 'red'">
+                          {{ data.active ? 'Active' : 'Inactive' }}
+                        </Label>
+                      </dd>
+                    </DescriptionListItem>
+                  </template>
+                  <template v-else>
+                    <DescriptionListItem alignItems="center">
+                      <dt>Status</dt>
+                      <dd>
+                        <Label :color="data.active ? 'green' : 'red'">
+                          {{ data.active ? 'Active' : 'Inactive' }}
+                        </Label>
+                      </dd>
+                    </DescriptionListItem>
+                    <DescriptionListItem>
+                      <dt>Price</dt>
+                      <dd>{{ data.priceFormatted }}</dd>
+                    </DescriptionListItem>
+                    <DescriptionListItem>
+                      <dt>Stock</dt>
+                      <dd>{{ data.stock }}</dd>
+                    </DescriptionListItem>
+                    <DescriptionListItem>
+                      <dt>SKU</dt>
+                      <dd>{{ data.sku || '-' }}</dd>
+                    </DescriptionListItem>
+                  </template>
+                  <DescriptionListItem>
+                    <dt>Updated At</dt>
+                    <dd>{{ data.updatedAt }}</dd>
+                  </DescriptionListItem>
+                </DescriptionList>
+              </CardBody>
+            </Card>
+            <Card class="section-card" variant="outline">
+              <CardHeader>
+                <CardTitle>Variants</CardTitle>
+                <CardSubtitle>Variants available in this product.</CardSubtitle>
+              </CardHeader>
+              <CardBody padding="0">
+                <EmptyState
+                  v-if="!data.variants?.length"
+                  emoji="🍃"
+                  :title="PRODUCT_DETAIL.EMPTY_VARIANT_TITLE"
+                  :description="PRODUCT_DETAIL.EMPTY_VARIANT_DESCRIPTION"
+                  margin="56px 0"
+                />
+                <template v-else>
+                  <ProductListItem
+                    :key="`variant-${variant.id}`"
+                    v-for="variant of data.variants"
+                    :active="variant.active"
+                    :name="variant.name"
+                    :details="[
                       {
-                        title: 'Price, Stock, and SKU',
-                        description: 'Since this product has variants that have their own price, stock, and SKU, the default price, stock, and SKU of this product will follow the variants.',
-                        type: 'info',
+                        name: 'Price',
+                        value: variant.priceFormatted,
+                      },
+                      {
+                        name: 'Stock',
+                        value: String(variant.stock),
+                      },
+                      {
+                        name: 'SKU',
+                        value: variant.sku ||  '-',
                       },
                     ]"
-                    margin="0 0 20px"
                   />
-                  <DescriptionList class="product-detail-list" alignment="horizontal">
-                    <template v-if="data.variants?.length">
-                      <DescriptionListItem alignItems="center">
-                        <dt>Status</dt>
-                        <dd>
-                          <Label :color="data.active ? 'green' : 'red'">
-                            {{ data.active ? 'Active' : 'Inactive' }}
-                          </Label>
-                        </dd>
-                      </DescriptionListItem>
-                    </template>
-                    <template v-else>
-                      <DescriptionListItem alignItems="center">
-                        <dt>Status</dt>
-                        <dd>
-                          <Label :color="data.active ? 'green' : 'red'">
-                            {{ data.active ? 'Active' : 'Inactive' }}
-                          </Label>
-                        </dd>
-                      </DescriptionListItem>
-                      <DescriptionListItem>
-                        <dt>Price</dt>
-                        <dd>{{ data.priceFormatted }}</dd>
-                      </DescriptionListItem>
-                      <DescriptionListItem>
-                        <dt>Stock</dt>
-                        <dd>{{ data.stock }}</dd>
-                      </DescriptionListItem>
-                      <DescriptionListItem>
-                        <dt>SKU</dt>
-                        <dd>{{ data.sku || '-' }}</dd>
-                      </DescriptionListItem>
-                    </template>
-                    <DescriptionListItem>
-                      <dt>Updated At</dt>
-                      <dd>{{ data.updatedAt }}</dd>
-                    </DescriptionListItem>
-                  </DescriptionList>
-                </CardBody>
-              </Card>
-              <Card class="section-card" variant="outline">
-                <CardHeader>
-                  <CardTitle>Variants</CardTitle>
-                  <CardSubtitle>Variants available in this product.</CardSubtitle>
-                </CardHeader>
-                <CardBody padding="0">
-                  <EmptyState
-                    v-if="!data.variants?.length"
-                    emoji="🍃"
-                    :title="PRODUCT_DETAIL.EMPTY_VARIANT_TITLE"
-                    :description="PRODUCT_DETAIL.EMPTY_VARIANT_DESCRIPTION"
-                    margin="56px 0"
-                  />
-                  <template v-else>
-                    <ProductListItem
-                      :key="`variant-${variant.id}`"
-                      v-for="variant of data.variants"
-                      :active="variant.active"
-                      :name="variant.name"
-                      :details="[
-                        {
-                          name: 'Price',
-                          value: variant.price_formatted,
-                        },
-                        {
-                          name: 'Stock',
-                          value: String(variant.stock),
-                        },
-                        {
-                          name: 'SKU',
-                          value: variant.sku ||  '-',
-                        },
-                      ]"
-                    />
-                  </template>
-                </CardBody>
-              </Card>
-            </Column>
-          </Row>
-        </template>
+                </template>
+              </CardBody>
+            </Card>
+          </Column>
+        </Row>
       </Container>
     </template>
   </Content>
@@ -246,4 +246,4 @@ watch(
   </Dialog>
 </template>
 
-<style lang="scss" src="@/assets/page-detail.scss" />
+<style lang="scss" src="@/assets/common.page-detail.scss" />

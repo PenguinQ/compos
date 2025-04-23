@@ -1,24 +1,34 @@
 import { blobToBase64String } from 'rxdb';
 import type { RxDocument } from 'rxdb';
 
-// Databases
 import { db } from '@/database';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
 import { isBundle, isProduct, isVariant } from '@/database/utils';
-import type { QueryParams, OrderDocProduct, ProductDoc } from '@/database/types';
+import type { OrderDocProduct, ProductDoc } from '@/database/types';
 
 // Helpers
 import createError from '@/helpers/createError';
 import { ComPOSError } from '@/helpers/createError';
 
-type SaleDetailBundleItem = {
+/**
+ * ---
+ * About ProductItem:
+ * 1. "sku" is optional since the product item type can be either product or variant, which each of those type can have an sku.
+ */
+type ProductItem = {
   id: string;
   name: string;
   quantity: number;
   sku?: string;
 };
 
-export type SaleDetailProduct = {
+/**
+ * ---
+ * About Product:
+ * 1. "product_id" is optional since the product type can be a variant.
+ * 2. "sku" is optional since the product type can be either product or variant, which each of those type can have an sku, but bundle doesn't.
+ */
+type Product = {
   id: string;
   active: boolean;
   product_id?: string;
@@ -27,28 +37,26 @@ export type SaleDetailProduct = {
   price: string;
   quantity: number;
   sku?: string;
-  items?: SaleDetailBundleItem[];
+  items?: ProductItem[];
 };
 
-type SaleDetailProductSoldItem = {
-  id: string;
-  name: string;
-  price: string;
-  quantity: number;
-  sku?: string;
-};
-
-export type SaleDetailProductSold = {
+/**
+ * ---
+ * About ProductSold:
+ * 1. "sku" is optional since the product type can be either product or variant, which each of those type can have an sku, but bundle doesn't.
+ * 2. "items" is optional since the product sold can be a product or variant that doesnt have items like bundle.
+ */
+type ProductSold = {
   id: string;
   name: string;
   price: string;
   quantity: number;
   total: string;
   sku?: string;
-  items?: SaleDetailProductSoldItem[];
+  items?: (ProductItem & { price: string; })[];
 };
 
-export type SaleDetailOrder = {
+type Order = {
   id: string;
   canceled: boolean;
   name: string;
@@ -56,26 +64,31 @@ export type SaleDetailOrder = {
   tendered: string;
   change: string;
   total: string;
+  note?: string;
 };
 
-export type SaleDetailQueryReturn = {
+/**
+ * ---
+ * About QueryReturn:
+ * 1. "order_notes" is optional since the sale can have or not have order_notes.
+ * 2. "initial_balance" is optional since the sale can have or not have balance.
+ * 3. "final_balance" is optional since final_balance are tied to initial_balance; if there's no initial_balance, there's no final_balance.
+ */
+export type QueryReturn = {
   id: string;
   finished: boolean;
   name: string;
-  products: SaleDetailProduct[];
-  products_sold: SaleDetailProductSold[];
-  orders: SaleDetailOrder[];
+  order_notes?: string[];
+  products: Product[];
+  products_sold: ProductSold[];
+  orders: Order[];
   initial_balance?: string;
   final_balance?: string;
   revenue: string;
   updated_at: string;
 };
 
-type GetSaleDetailQuery = Omit<QueryParams, 'limit' | 'observe' | 'page' | 'sort'> & {
-  id: string;
-};
-
-export default async ({ id, normalizer }: GetSaleDetailQuery) => {
+export default async (id: string) => {
   try {
     const _querySale = await db.sale.findOne({ selector: { id } }).exec();
 
@@ -84,6 +97,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
     const {
       name,
       finished,
+      order_notes,
       initial_balance,
       final_balance,
       revenue,
@@ -94,13 +108,11 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
     }  = _querySale;
 
     /**
-     * ------------------------------------------
-     * 1. Get details for each product in a sale.
-     * ------------------------------------------
-     * Since product id in sale can be either product id, or variant id, populate can't be used here,
-     * instead we query each of the product based on the type of the id.
+     * ----------------------------------------
+     * 1. Get each product details in the sale.
+     * ----------------------------------------
      */
-    const products_data = <SaleDetailProduct[]>[];
+    const products_data = [];
 
     for (const product of products) {
       const is_product = isProduct(product.id);
@@ -115,15 +127,15 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
         const { active, name, price, sku } = _queryProduct.toJSON();
         const product_attachments  = _queryProduct.allAttachments();
         const product_images       = product_attachments.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
-        const product_data: SaleDetailProduct = {
+        const product_data = {
           id        : product.id,
           product_id: '',
-          images    : [],
+          images    : [] as string[],
           quantity  : product.quantity,
-          sku       : sku ? sku : '',
-          price     : price!,           // Since it's a product without a variant, it's expected to have a price.
+          price     : price!,
           active,
           name,
+          ...(sku ? { sku } : {}),
         };
 
         for (const image of product_images) {
@@ -152,15 +164,15 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
         const { name, price, sku } = _queryVariant.toJSON();
         const variant_attachments  = _queryVariant.allAttachments();
         const variant_images       = variant_attachments.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
-        const product_data: SaleDetailProduct = {
+        const product_data = {
           id        : product.id,
           product_id: variant_product_id,
           active    : variant_product_active,
-          images    : [],
+          images    : [] as string[],
           name      : is_variant ? `${variant_product_name} - ${name}` : name,
           quantity  : product.quantity,
-          sku       : sku ? sku : '',
           price,
+          ...(sku ? { sku } : {}),
         };
 
         for (const image of variant_images) {
@@ -205,7 +217,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
               id,
               name,
               quantity,
-              ...(sku ? { sku} : {}),
+              ...(sku ? { sku } : {}),
             });
           } else if (isVariant(id)) {
             const _queryVariant = await db.variant.findOne(id).exec();
@@ -215,7 +227,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
             const _queryProduct: RxDocument<ProductDoc> = await _queryVariant.populate('product_id');
 
             const { name: product_name } = _queryProduct.toJSON();
-            const { name: variant_name, sku } = _queryVariant.toJSON();
+            const { name: variant_name, sku: variant_sku } = _queryVariant.toJSON();
             const variant_attachments = _queryVariant.allAttachments();
             const variant_images      = variant_attachments.filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
 
@@ -231,7 +243,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
               name: `${product_name} - ${variant_name}`,
               id,
               quantity,
-              ...(sku ? { sku} : {}),
+              ...(variant_sku ? { sku: variant_sku } : {}),
             });
           }
         }
@@ -249,9 +261,9 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
     }
 
     /**
-     * ----------------------------------------
-     * 2. Get details for each order in a sale.
-     * ----------------------------------------
+     * --------------------------------------
+     * 2. Get each order details in the sale.
+     * --------------------------------------
      */
     const _queryOrders = await db.order.find({
       selector: {
@@ -260,10 +272,10 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
         },
       },
     }).exec();
-    const orders_data = <SaleDetailOrder[]>[];
+    const orders_data = [];
 
     for (const order of _queryOrders) {
-      const { id, canceled, name, products, tendered, change, total } = order.toJSON();
+      const { id, canceled, name, products, tendered, change, total, note } = order.toJSON();
       const order_products = [];
 
       for (const product of products) {
@@ -288,22 +300,23 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
       }
 
       orders_data.push({
+        products: order_products,
         id,
         canceled,
         name,
-        products: order_products,
         tendered,
         change,
         total,
+        ...(note ? { note } : {}),
       });
     }
 
     /**
-     * -------------------------------------
-     * 3. Get details of each sold products.
-     * -------------------------------------
+     * --------------------------------------
+     * 3. Get details for each products sold.
+     * --------------------------------------
      */
-    const products_sold_data = <SaleDetailProductSold[]>[];
+    const products_sold_data = [];
 
     for (const product of products_sold) {
       const {
@@ -316,7 +329,7 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
         total,
       } = product;
       let   current_name  = name;
-      const current_items = [] as SaleDetailProductSoldItem[];
+      const current_items = [];
 
       if (isProduct(id)) {
         const _queryProduct = await db.product.findOne(id).exec();
@@ -373,8 +386,8 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
             }
 
             current_items.push({
-              id,
               name: current_item_name,
+              id,
               ...(sku ? { sku } : {}),
               ...itemRest,
             });
@@ -394,32 +407,19 @@ export default async ({ id, normalizer }: GetSaleDetailQuery) => {
     }
 
     return {
-      result: normalizer ? normalizer({
-        products     : products_data,
-        products_sold: products_sold_data,
-        orders       : orders_data,
-        id,
-        name,
-        finished,
-        initial_balance,
-        final_balance,
-        revenue,
-        created_at,
-        updated_at,
-      }) : {
-        products     : products_data,
-        products_sold: products_sold_data,
-        orders       : orders_data,
-        id,
-        name,
-        finished,
-        initial_balance,
-        final_balance,
-        revenue,
-        created_at,
-        updated_at,
-      },
-    }
+      products     : products_data,
+      products_sold: products_sold_data,
+      orders       : orders_data,
+      order_notes,
+      id,
+      name,
+      finished,
+      initial_balance,
+      final_balance,
+      revenue,
+      created_at,
+      updated_at,
+    };
   } catch (error) {
     if (error instanceof ComPOSError || error instanceof Error) throw error;
 

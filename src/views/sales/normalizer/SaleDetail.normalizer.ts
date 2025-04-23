@@ -1,97 +1,36 @@
 import { getUpdateTime, toIDR } from '@/helpers';
-import type { SaleDetailQueryReturn } from '@/database/query/sale/getSaleDetail';
+import type { QueryReturn } from '@/database/query/sale/getSaleDetail';
 
-type DetailProductBundleItem = {
-  name: string;
-  quantity: number;
-};
-
-type DetailProduct = {
-  active: boolean;
-  images: string[];
-  name: string;
-  price: string;
-  priceFormatted: string;
-  quantity: number;
-  items?: DetailProductBundleItem[];
-};
-
-type DetailProductSoldItem = {
-  name: string;
-  quantity: number;
-};
-
-type DetailProductSold = {
-  name: string;
-  quantity: number;
-  total: string;
-  totalFormatted: string;
-  items?: DetailProductSoldItem[];
-};
-
-type DetailOrderProduct = {
-  id: string;
-  name: string;
-  price: string
-  priceFormatted: string;
-  quantity: number;
-  total: string;
-  totalFormatted: string;
-};
-
-type DetailOrder = {
-  id: string;
-  canceled: boolean;
-  name: string;
-  products: DetailOrderProduct[];
-  total: string;
-  totalFormatted: string;
-  tendered: string;
-  tenderedFormatted: string;
-  change: string;
-  changeFormatted: string;
-};
-
-export type DetailNormalizerReturn = {
-  name: string;
-  finished: boolean;
-  products: DetailProduct[];
-  productsSold: DetailProductSold[];
-  orders: DetailOrder[];
-  initialBalance?: string;
-  initialBalanceFormatted?: string;
-  finalBalance?: string;
-  finalBalanceFormatted?: string;
-  revenue: string;
-  revenueFormatted: string;
-  updatedAt: string;
-};
-
-export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
+export const saleDetailNormalizer = (data: QueryReturn) => {
   const {
     finished,
     name,
     products,
     products_sold,
     orders,
+    order_notes,
     initial_balance,
     final_balance,
     revenue,
     updated_at,
-  } = data as SaleDetailQueryReturn || {};
+  } = data || {};
   const saleProducts     = [];
   const saleOrders       = [];
   const saleProductsSold = [];
 
   for (const product of products) {
-    const { active, name, price, images, quantity, items } = product;
+    const { active, name, price, images, quantity, items, sku } = product;
     const saleProductsItems = [];
 
     if (items) {
       for (const item of items) {
-        const { name, quantity } = item;
+        const { name, quantity, sku } = item;
 
-        saleProductsItems.push({ name, quantity });
+        saleProductsItems.push({
+          name,
+          quantity,
+          ...(sku ? { sku } : {}),
+        });
       }
     }
 
@@ -102,13 +41,14 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
       name,
       price,
       quantity,
+      ...(sku ? { sku } : {}),
       ...(items ? { items: saleProductsItems } : {}),
     });
   }
 
   for (const order of orders) {
-    const { id, canceled, name, products, tendered, change, total }  = order;
-    const orderProducts = <DetailOrderProduct[]>[];
+    const { id, canceled, name, products, tendered, change, total, note }  = order;
+    const orderProducts = [];
 
     for (const product of products) {
       const { id, name, price, quantity, total } = product;
@@ -135,11 +75,12 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
       tendered,
       change,
       total,
+      ...(note ? { note } : {}),
     });
   }
 
   for (const product of products_sold) {
-    const { name, quantity, total, items } = product;
+    const { name, quantity, total, items, sku } = product;
     const product_items = [];
 
     if (items) {
@@ -155,6 +96,7 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
       name,
       total,
       quantity,
+      ...(sku ? { sku } : {}),
       ...(items ? { items: product_items } : {}),
     });
   }
@@ -165,6 +107,7 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
     orders          : saleOrders,
     revenueFormatted: toIDR(revenue),
     updatedAt       : getUpdateTime(updated_at),
+    orderNotes      : order_notes,
     name,
     finished,
     revenue,

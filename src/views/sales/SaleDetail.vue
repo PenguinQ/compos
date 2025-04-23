@@ -15,6 +15,7 @@ import {
   CardBody,
   CardHeader,
   CardTitle,
+  CardSubtitle,
   Dialog,
   EmptyState,
   Label,
@@ -42,6 +43,7 @@ import ComposIcon, {
 
 // View Components
 import { OrderCard, ProductListItem } from '@/views/components';
+import SaleProductDetails from './components/SaleProductDetails.vue';
 
 // Hooks
 import { useSaleDetail } from './hooks/SaleDetail.hook';
@@ -73,9 +75,11 @@ const tab = ref(0);
 watch(
   data,
   (newData) => {
-    const { name } = newData;
+    if (newData) {
+      const { name } = newData;
 
-    document.title = `${name} - ComPOS`;
+      document.title = `${name} - ComPOS`;
+    }
   },
 );
 </script>
@@ -89,20 +93,20 @@ watch(
       <ToolbarTitle>{{ data ? data.name : 'Sale Detail' }}</ToolbarTitle>
       <ToolbarSpacer />
       <template v-if="!isError && !isLoading">
-        <ToolbarAction v-if="!data.finished" icon @click="router.push(`/sale/dashboard/${saleId}`)">
+        <ToolbarAction v-if="!data?.finished" icon @click="router.push(`/sale/dashboard/${saleId}`)">
           <ComposIcon :icon="LayoutSidebarReverse" />
         </ToolbarAction>
-        <ToolbarAction v-if="!data.finished" icon backgroundColor="var(--color-blue-4)" @click="router.push(`/sale/edit/${saleId}`)">
+        <ToolbarAction v-if="!data?.finished" icon backgroundColor="var(--color-blue-4)" @click="router.push(`/sale/edit/${saleId}`)">
           <ComposIcon :icon="PencilSquare" />
         </ToolbarAction>
         <ToolbarAction icon backgroundColor="var(--color-red-4)" @click="dialog.delete = true">
           <ComposIcon :icon="Trash" />
         </ToolbarAction>
-        <ToolbarAction v-if="!data.finished" icon backgroundColor="var(--color-green-4)" @click="dialog.finish = true">
+        <ToolbarAction v-if="!data?.finished" icon backgroundColor="var(--color-green-4)" @click="dialog.finish = true">
           <ComposIcon :icon="CheckLarge" :size="32" />
         </ToolbarAction>
       </template>
-      <template #extension>
+      <template #extensions>
         <TabControls v-model="tab" grow>
           <TabControl title="Details" />
           <TabControl title="Products" />
@@ -115,20 +119,20 @@ watch(
     <template #fixed>
       <PullToRefresh @refresh="handleRefresh" />
     </template>
-    <EmptyState
-      v-if="isError"
-      :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-      :title="GLOBAL.ERROR_EMPTY_TITLE"
-      :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-      height="100%"
-    >
-      <template #action>
-        <Button @click="refetch">Try Again</Button>
-      </template>
-    </EmptyState>
+    <Bar v-if="isLoading" margin="56px 0" />
     <template v-else>
-      <Bar v-if="isLoading" margin="56px 0" />
-      <TabPanels v-else v-model="tab">
+      <EmptyState
+        v-if="isError"
+        :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+        :title="GLOBAL.ERROR_EMPTY_TITLE"
+        :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+        height="100%"
+      >
+        <template #action>
+          <Button @click="refetch">Try Again</Button>
+        </template>
+      </EmptyState>
+      <TabPanels v-else-if="data" v-model="tab">
         <TabPanel>
           <Container class="page-container">
             <div class="sale-summaries">
@@ -139,9 +143,9 @@ watch(
                 </Label>
               </Text>
               <Text body="small" margin="0 0 16px">Last update: {{ data.updatedAt || '-' }}</Text>
-              <Row :col="{ default: 2, md: 3 }" gutter="16px">
+              <Row :col="{ default: 1, sm: 2, md: 3 }">
                 <Column>
-                  <Card class="info-card" data-emoji="🌿">
+                  <Card class="info-card info-card--initial" data-emoji="🌿">
                     <CardBody>
                       <div class="info-card__title">Initial Balance</div>
                       <div class="info-card__value">{{ data.initialBalanceFormatted || '-' }}</div>
@@ -149,7 +153,7 @@ watch(
                   </Card>
                 </Column>
                 <Column>
-                  <Card class="info-card" data-emoji="🌱">
+                  <Card class="info-card info-card--final" data-emoji="🌱">
                     <CardBody>
                       <div class="info-card__title">Final Balance</div>
                       <div class="info-card__value">{{ data.finalBalanceFormatted || '-' }}</div>
@@ -157,7 +161,7 @@ watch(
                   </Card>
                 </Column>
                 <Column>
-                  <Card class="info-card" data-emoji="💰">
+                  <Card class="info-card info-card--revenue" data-emoji="💰">
                     <CardBody>
                       <div class="info-card__title">Revenue</div>
                       <div class="info-card__value">{{ data.revenueFormatted || '-' }}</div>
@@ -166,48 +170,83 @@ watch(
                 </Column>
               </Row>
             </div>
-            <Card class="section-card" variant="outline">
-              <CardHeader>
-                <CardTitle>Products Sold</CardTitle>
-              </CardHeader>
-              <CardBody padding="0">
-                <div class="products-sold">
-                  <EmptyState
-                    v-if="!data.productsSold.length"
-                    :emoji="SALE_DETAIL.EMPTY_SOLD_EMOJI"
-                    :title="SALE_DETAIL.EMPTY_SOLD_TITLE"
-                    :description="SALE_DETAIL.EMPTY_SOLD_DESCRIPTION"
-                    margin="80px 0"
-                  />
-                  <table v-else>
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Amount</th>
-                        <th>Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <template v-for="product of data.productsSold">
-                        <tr>
-                          <td>{{ product.name }}</td>
-                          <td>{{ product.quantity }}</td>
-                          <td>{{ product.totalFormatted }}</td>
-                        </tr>
-                        <template v-if="product.items">
-                          <tr v-for="item of product.items" data-product-item>
-                            <td colspan="3">
-                              &gt; {{ item.name }}
-                              (&times;{{ item.quantity }})
-                            </td>
+            <Row :col="{ default: 1, md: 2 }">
+              <Column>
+                <Card class="section-card" variant="outline">
+                  <CardHeader>
+                    <CardTitle>Order Notes</CardTitle>
+                    <CardSubtitle>Notes available in this sale that you can add to each order.</CardSubtitle>
+                  </CardHeader>
+                  <CardBody padding="0">
+                    <div class="order-notes">
+                      <EmptyState
+                        v-if="!data.orderNotes?.length"
+                        :emoji="SALE_DETAIL.EMPTY_NOTES_EMOJI"
+                        :title="SALE_DETAIL.EMPTY_NOTES_TITLE"
+                        :description="SALE_DETAIL.EMPTY_NOTES_DESCRIPTION"
+                        min-height="inherit"
+                        padding="16px"
+                      />
+                      <div v-else class="note-list">
+                        <div
+                          v-for="(note, index) in data.orderNotes"
+                          :key="`note-${saleId}-${index}`"
+                          class="note-list__item"
+                        >
+                          {{ note }}
+                        </div>
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
+              </Column>
+              <Column>
+                <Card class="section-card" variant="outline">
+                  <CardHeader>
+                    <CardTitle>Products Sold</CardTitle>
+                    <CardSubtitle>Products that has been ordered in this sale.</CardSubtitle>
+                  </CardHeader>
+                  <CardBody padding="0">
+                    <div class="products-sold">
+                      <EmptyState
+                        v-if="!data.productsSold.length"
+                        :emoji="SALE_DETAIL.EMPTY_SOLD_EMOJI"
+                        :title="SALE_DETAIL.EMPTY_SOLD_TITLE"
+                        :description="SALE_DETAIL.EMPTY_SOLD_DESCRIPTION"
+                        min-height="inherit"
+                        padding="16px"
+                      />
+                      <table v-else>
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Amount</th>
+                            <th>Total</th>
                           </tr>
-                        </template>
-                      </template>
-                    </tbody>
-                  </table>
-                </div>
-              </CardBody>
-            </Card>
+                        </thead>
+                        <tbody>
+                          <template v-for="product of data.productsSold">
+                            <tr>
+                              <td>{{ product.name }}</td>
+                              <td>{{ product.quantity }}</td>
+                              <td>{{ product.totalFormatted }}</td>
+                            </tr>
+                            <template v-if="product.items">
+                              <tr v-for="item of product.items" data-product-item>
+                                <td colspan="3">
+                                  &gt; {{ item.name }}
+                                  (&times;{{ item.quantity }})
+                                </td>
+                              </tr>
+                            </template>
+                          </template>
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardBody>
+                </Card>
+              </Column>
+            </Row>
           </Container>
         </TabPanel>
         <TabPanel>
@@ -216,34 +255,39 @@ watch(
               :key="`sale-product-${index}`"
               v-for="(product, index) of data.products"
               :active="product.active"
+              :images="product.images"
               :name="product.name"
             >
               <template #details>
-                <div class="product-list-details">
-                  <div class="product-list-details__item">
-                    <ComposIcon :icon="Tag" />
-                    {{ product.priceFormatted }}
-                  </div>
-                  <div class="product-list-details__item">
-                    <ComposIcon :icon="CartPlus" />
-                    {{ product.quantity }}
-                  </div>
-                </div>
-                <div v-if="product.items" class="product-list-items">
-                  <div
-                    v-for="(item, index) of product.items"
+                <SaleProductDetails
+                  direction="horizontal"
+                  :items="[
+                    {
+                      icon: Tag,
+                      value: product.priceFormatted,
+                    },
+                    {
+                      icon: CartPlus,
+                      value: product.quantity,
+                    },
+                  ]"
+                />
+                <div v-if="product.items" class="bundle-items">
+                  <SaleProductDetails
+                    v-for="(item, index) in product.items"
                     :key="index"
-                    class="product-list-items__item"
-                  >
-                    <div class="product-list-items__detail">
-                      <ComposIcon :icon="Box" />
-                      {{ item.name }}
-                    </div>
-                    <div class="product-list-items__detail">
-                      <ComposIcon :icon="CartPlus" />
-                      {{ item.quantity }}
-                    </div>
-                  </div>
+                    direction="horizontal"
+                    :items="[
+                      {
+                        icon: Box,
+                        value: item.name,
+                      },
+                      {
+                        icon: CartPlus,
+                        value: item.quantity,
+                      },
+                    ]"
+                  />
                 </div>
               </template>
             </ProductListItem>
@@ -267,7 +311,8 @@ watch(
                   :tendered="order.tenderedFormatted"
                   :change="order.changeFormatted"
                   :products="order.products"
-                  v-on="!data.finished && !order.canceled ? { cancel  : () => handleCancelOrder(order.id, order.name) } : {}"
+                  :note="order.note"
+                  v-on="!data?.finished && !order.canceled ? { cancel  : () => handleCancelOrder(order.id, order.name) } : {}"
                 />
               </Column>
             </Row>
@@ -334,7 +379,7 @@ watch(
   </Dialog>
 </template>
 
-<style lang="scss" src="@/assets/page-detail.scss" />
+<style lang="scss" src="@/assets/common.page-detail.scss" />
 <style lang="scss" scoped>
 .sale-summaries {
   padding: 0 16px;
@@ -351,6 +396,7 @@ watch(
     position: absolute;
     right: 0;
     bottom: 0;
+    opacity: 0.8;
     transform: translate(12%, 12%);
   }
 
@@ -376,78 +422,46 @@ watch(
     font-weight: 600;
   }
 
-  &__background {
-    font-size: 64px;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    opacity: 0.6;
-    transform: translate(12%, 12%);
+  &--initial {
+    .info-card__title {
+      border-bottom-color: var(--color-blue-4);
+    }
+  }
+
+  &--final {
+    .info-card__title {
+      border-bottom-color: var(--color-green-4);
+    }
+  }
+
+  &--revenue {
+    .info-card__title {
+      border-bottom-color: #9B59B6;
+    }
   }
 }
 
-.product-list {
-  .vc-pli {
-    &:last-of-type {
-      border-color: var(--color-border);
-    }
-  }
+.order-notes {
+  min-height: 260px;
+  max-height: 400px;
+  overflow-y: auto;
 
-  &-details {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 8px;
-
+  .note-list {
     &__item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      @include text-body-md;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--color-border);
 
-      compos-icon {
-        width: 16px;
-        height: 16px;
-        flex-shrink: 0;
-      }
-    }
-  }
-
-  &-items {
-    display: inline-flex;
-    flex-direction: column;
-    border-top: 1px solid var(--color-border);
-    padding-top: 12px;
-    padding-inline-end: 12px;
-    margin-top: 12px;
-
-    &__item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 8px;
-
-      &:first-of-type {
-        margin-top: 0;
-      }
-
-    }
-
-    &__detail {
-      @include text-body-sm;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      compos-icon {
-        width: 16px;
-        height: 16px;
-        flex-shrink: 0;
+      &:last-of-type {
+        border-bottom-color: transparent;
       }
     }
   }
 }
+
 
 .products-sold {
+  min-height: 260px;
   max-height: 400px;
   overflow-y: auto;
 
@@ -513,6 +527,39 @@ watch(
         }
       }
     }
+  }
+}
+
+.product-list {
+  .vc-pli {
+    &:last-of-type {
+      border-color: var(--color-border);
+    }
+  }
+
+  &-details {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+
+    &__item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      compos-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .bundle-items {
+    border-top: 1px solid var(--color-border);
+    padding-top: 12px;
+    margin-top: 12px;
   }
 }
 

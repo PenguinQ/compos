@@ -61,9 +61,11 @@ const {
 watch(
   data,
   (newData) => {
-    const { name } = newData;
+    if (newData) {
+      const { name } = newData;
 
-    document.title = `${name} - ComPOS`;
+      document.title = `${name} - ComPOS`;
+    }
   },
 );
 </script>
@@ -98,114 +100,112 @@ watch(
     <template #fixed>
       <PullToRefresh @refresh="handleRefresh" />
     </template>
-    <EmptyState
-      v-if="isError"
-      :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-      :title="GLOBAL.ERROR_EMPTY_TITLE"
-      :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-      margin="56px 0"
-    >
-      <template #action>
-        <Button @click="refetch">Try Again</Button>
-      </template>
-    </EmptyState>
+    <Bar v-if="isLoading" />
     <template v-else>
-      <Container class="page-container">
-        <Bar v-if="isLoading" margin="56px 0" />
-        <template v-else>
-          <Ticker
-            v-if="!data.active"
-            class="page-ticker"
-            :items="[
-              {
-                title: 'Inactive Bundle',
-                description: `This product bundle currently inactive since any or one of its products stock is empty or doesn't have any products at all.`,
-              },
-            ]"
-            margin="0 0 16px"
-          />
-          <Row>
-            <Column :col="{ default: 12, md: 'auto' }">
-              <ProductImage class="product-detail-image">
-                <img
-                  v-if="data.images.length"
-                  v-for="image of data.images"
-                  :src="image"
-                  :alt="`${data.name} image`"
-                />
-                <img v-else :src="no_image" :alt="`${data.name} image`" />
-              </ProductImage>
-            </Column>
-            <Column>
-              <Card class="section-card" variant="outline">
-                <CardBody>
-                  <Text heading="3" margin="0 0 4px">{{ data.name }}</Text>
-                  <Text v-if="data.description">{{ data.description }}</Text>
-                  <Separator />
-                  <DescriptionList class="product-detail-list" alignment="horizontal">
-                    <DescriptionListItem alignItems="center">
-                      <dt>Status</dt>
-                      <dd>
-                        <Label :color="data.active ? 'green' : 'red'">
-                          {{ data.active ? 'Active' : 'Inactive' }}
-                        </Label>
-                      </dd>
-                    </DescriptionListItem>
-                    <DescriptionListItem>
-                      <dt>Price</dt>
-                      <dd>{{ data.price_formatted }}</dd>
-                    </DescriptionListItem>
-                    <DescriptionListItem>
-                      <dt>Updated At</dt>
-                      <dd>{{ data.updated_at || '-' }}</dd>
-                    </DescriptionListItem>
-                  </DescriptionList>
-                </CardBody>
-              </Card>
-              <Card class="section-card" variant="outline">
-                <CardHeader>
-                  <CardTitle>Products</CardTitle>
-                  <CardSubtitle>Products available in this bundle.</CardSubtitle>
-                </CardHeader>
-                <CardBody padding="0">
-                  <EmptyState
-                    v-if="!data.products.length"
-                    emoji="🍃"
-                    :title="BUNDLE_DETAIL.EMPTY_PRODUCT_TITLE"
-                    :description="BUNDLE_DETAIL.EMPTY_PRODUCT_DESCRIPTION"
-                    margin="56px 0"
-                  />
-                  <template v-else>
-                    <ProductListItem
-                      :key="`product-bundle-${product.id}`"
-                      v-for="product of data.products"
-                      :active="product.active"
-                      :name="product.name"
-                      :details="[
-                        {
-                          name: 'Price',
-                          value: product.price_formatted,
-                        },
-                        {
-                          name: 'Stock',
-                          value: String(product.stock),
-                        },
-                        {
-                          name: 'Quantity',
-                          value: String(product.quantity),
-                        },
-                        {
-                          name: 'SKU',
-                          value: product.sku || '-',
-                        },
-                      ]"
-                    />
-                  </template>
-                </CardBody>
-              </Card>
-            </Column>
-          </Row>
+      <EmptyState
+        v-if="isError"
+        :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+        :title="GLOBAL.ERROR_EMPTY_TITLE"
+        :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+        height="100%"
+      >
+        <template #action>
+          <Button @click="refetch">Try Again</Button>
         </template>
+      </EmptyState>
+      <Container v-else-if="data" class="page-container">
+        <Ticker
+          v-if="!data.active"
+          class="page-ticker"
+          :items="[
+            {
+              title: 'Inactive Bundle',
+              description: `This product bundle currently inactive since any or one of its products stock is empty or doesn't have any products at all.`,
+            },
+          ]"
+          margin="0 0 16px"
+        />
+        <Row>
+          <Column :col="{ default: 12, md: 'auto' }">
+            <ProductImage class="product-detail-image">
+              <img
+                v-if="data.images.length"
+                v-for="image of data.images"
+                :src="image"
+                :alt="`${data.name} image`"
+              />
+              <img v-else :src="no_image" :alt="`${data.name} image`" />
+            </ProductImage>
+          </Column>
+          <Column>
+            <Card class="section-card" variant="outline">
+              <CardBody>
+                <Text heading="3" margin="0 0 4px">{{ data.name }}</Text>
+                <Text v-if="data.description">{{ data.description }}</Text>
+                <Separator />
+                <DescriptionList class="product-detail-list" alignment="horizontal">
+                  <DescriptionListItem alignItems="center">
+                    <dt>Status</dt>
+                    <dd>
+                      <Label :color="data.active ? 'green' : 'red'">
+                        {{ data.active ? 'Active' : 'Inactive' }}
+                      </Label>
+                    </dd>
+                  </DescriptionListItem>
+                  <DescriptionListItem>
+                    <dt>Price</dt>
+                    <dd>{{ data.priceFormatted }}</dd>
+                  </DescriptionListItem>
+                  <DescriptionListItem>
+                    <dt>Updated At</dt>
+                    <dd>{{ data.updatedAt || '-' }}</dd>
+                  </DescriptionListItem>
+                </DescriptionList>
+              </CardBody>
+            </Card>
+            <Card class="section-card" variant="outline">
+              <CardHeader>
+                <CardTitle>Products</CardTitle>
+                <CardSubtitle>Products available in this bundle.</CardSubtitle>
+              </CardHeader>
+              <CardBody padding="0">
+                <EmptyState
+                  v-if="!data.products.length"
+                  emoji="🍃"
+                  :title="BUNDLE_DETAIL.EMPTY_PRODUCT_TITLE"
+                  :description="BUNDLE_DETAIL.EMPTY_PRODUCT_DESCRIPTION"
+                  margin="56px 0"
+                />
+                <template v-else>
+                  <ProductListItem
+                    :key="`product-bundle-${product.id}`"
+                    v-for="product of data.products"
+                    :active="product.active"
+                    :name="product.name"
+                    :details="[
+                      {
+                        name: 'Price',
+                        value: product.priceFormatted,
+                      },
+                      {
+                        name: 'Stock',
+                        value: String(product.stock),
+                      },
+                      {
+                        name: 'Quantity',
+                        value: String(product.quantity),
+                      },
+                      {
+                        name: 'SKU',
+                        value: product.sku || '-',
+                      },
+                    ]"
+                  />
+                </template>
+              </CardBody>
+            </Card>
+          </Column>
+        </Row>
       </Container>
     </template>
   </Content>
@@ -224,4 +224,4 @@ watch(
   </Dialog>
 </template>
 
-<style lang="scss" src="@/assets/page-detail.scss" />
+<style lang="scss" src="@/assets/common.page-detail.scss" />

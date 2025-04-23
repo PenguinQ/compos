@@ -9,17 +9,15 @@ import type { SaleDocProduct } from '@/database/types';
 import { isNumericString } from '@/helpers';
 import { ComPOSError } from '@/helpers/createError';
 
-type MutateAddSaleQueryData = {
-  name: string;
-  balance?: string;
-  products: SaleDocProduct[];
-};
+interface MutateAddSaleParams {
+  data: {
+    name: string;
+    balance?: string;
+    products: SaleDocProduct[];
+  };
+}
 
-type MutateAddSaleQuery = {
-  data: MutateAddSaleQueryData;
-};
-
-export default async ({ data }: MutateAddSaleQuery) => {
+export default async ({ data }: MutateAddSaleParams) => {
   try {
     const ulid         = monotonicFactory();
     const { sanitize } = DOMPurify;

@@ -1,8 +1,8 @@
 import { createApp } from 'vue';
 import { initDB } from '@/database';
 
-import './assets/main.scss';
-import './assets/global.scss';
+import './assets/core.main.scss';
+import './assets/core.global.scss';
 
 import App from './App.vue';
 import router from './router';

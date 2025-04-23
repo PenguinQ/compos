@@ -86,7 +86,7 @@ const {
       />
       <template v-else>
         <div class="products-list">
-          <template v-if="type === 'product'">
+          <template v-if="list && 'products' in list">
             <Card class="product" :key="product.id" v-for="product in list.products" :to="`/product/${product.id}`">
               <ProductImage class="product__image">
                 <img :src="product.image ? product.image : no_image" :alt="`${product.name} image`" />
@@ -101,7 +101,7 @@ const {
             </Card>
           </template>
           <template v-else>
-            <Card class="product" :key="bundle.id" v-for="bundle in list.bundles" :to="`/bundle/${bundle.id}`">
+            <Card class="product" :key="bundle.id" v-for="bundle in list?.bundles" :to="`/bundle/${bundle.id}`">
               <ProductImage class="product__image">
                 <img
                   v-if="bundle.images.length"

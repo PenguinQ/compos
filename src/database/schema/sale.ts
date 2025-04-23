@@ -1,5 +1,5 @@
 export default {
-  version: 0,
+  version: 1,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -14,6 +14,15 @@ export default {
     name: {
       type: 'string',
       maxLength: 1000,
+    },
+    order_notes: {
+      type: 'array',
+      uniqueItems: true,
+      items: {
+        type: 'string',
+        maxLength: 1000,
+      },
+      default: [],
     },
     products: {
       type: 'array',

@@ -1,14 +1,12 @@
 import { reactive, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { Ref } from 'vue';
 
 // Databases
 import { useQuery, useMutation } from '@/database/hooks';
 import { getProductDetail, mutateAddProduct, mutateEditProduct } from '@/database/query/product'
 
 // Normalizers
-import { formDetailNormalizer } from '../normalizer/ProductForm.normalizer';
-import type { ProductFormNormalizerReturn } from '../normalizer/ProductForm.normalizer';
+import { productFormDetailNormalizer } from '../normalizer/ProductForm.normalizer';;
 
 // Helpers
 import { isImagesValid, isNumeric, isNumericString } from '@/helpers';
@@ -26,7 +24,7 @@ type NewImage = {
 
 type FormDataVariant = {
   id?: string;
-  product_id?: string;
+  productId?: string;
   name: string;
   price: string;
   stock: number;
@@ -98,48 +96,48 @@ export const useProductForm = () => {
     isLoading: productDetailLoading,
   } = useQuery({
     queryKey: ['product-form-details', params.id],
-    queryFn: () => getProductDetail({
-      id: params.id as string,
-      normalizer: formDetailNormalizer,
-    }),
+    queryFn: () => getProductDetail(params.id as string),
+    queryNormalizer: productFormDetailNormalizer,
     enabled: params.id ? true : false,
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get the product detail', type: 'error' });
       console.error('Failed to get the product detail,', error.message);
     },
-    onSuccess: (response: unknown) => {
-      const resp = response as ProductFormNormalizerReturn;
+    onSuccess: (response) => {
+      if (response) {
+        const resp = response;
 
-      if (params.id) {
-        formData.id          = resp.id;
-        formData.name        = resp.name;
-        formData.description = resp.description;
-        formData.by          = resp.by;
-        formData.images      = resp.images;
-        formData.price       = resp.price;
-        formData.stock       = resp.stock;
-        formData.sku         = resp.sku;
+        if (params.id) {
+          formData.id          = resp.id;
+          formData.name        = resp.name;
+          formData.description = resp.description;
+          formData.by          = resp.by;
+          formData.images      = resp.images;
+          formData.price       = resp.price;
+          formData.stock       = resp.stock;
+          formData.sku         = resp.sku;
 
-        for (const variant of resp.variants) {
-          formData.variants.push({
-            id            : variant.id,
-            product_id    : variant.product_id,
-            name          : variant.name,
-            price         : variant.price,
-            stock         : variant.stock,
-            images        : variant.images,
-            newImages     : [],
-            deletedImages : [],
-            sku           : variant.sku,
-          });
+          for (const variant of resp.variants) {
+            formData.variants.push({
+              id           : variant.id,
+              productId    : variant.productId,
+              name         : variant.name,
+              price        : variant.price,
+              stock        : variant.stock,
+              images       : variant.images,
+              newImages    : [],
+              deletedImages: [],
+              sku          : variant.sku,
+            });
 
-          formError.variants.push({
-            name : '',
-            price: '',
-            stock: '',
-            sku  : '',
-          });
+            formError.variants.push({
+              name : '',
+              price: '',
+              stock: '',
+              sku  : '',
+            });
+          }
         }
       }
     },
@@ -427,7 +425,7 @@ export const useProductForm = () => {
 
   return {
     productId    : params.id,
-    productDetail: productDetail as Ref<ProductFormNormalizerReturn>,
+    productDetail,
     formData,
     formError,
     productDetailError,

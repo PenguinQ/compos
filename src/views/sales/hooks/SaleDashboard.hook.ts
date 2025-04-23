@@ -1,7 +1,6 @@
 import { computed, reactive, inject, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Big from 'big.js';
-import type { Ref } from 'vue';
 
 // Databases
 import { useQuery, useObservableQuery, useMutation } from '@/database/hooks';
@@ -16,23 +15,18 @@ import { isBundle } from '@/database/utils';
 
 // Normalizers
 import {
-  detailsNormalizer,
-  productsNormalizer,
-  ordersNormalizer,
-} from '../normalizer/SaleDashboard.normalizer';
-import type {
-  DetailsNormalizerReturn,
-  DetailsNormalizerProduct,
-  ProductsNormalizerReturn,
-  ProductsNormalizerProduct,
-  OrdersNormalizerReturn,
+  dashboardDetailsNormalizer,
+  dashboardOrdersNormalizer,
+  dashboardProductsNormalizer,
 } from '../normalizer/SaleDashboard.normalizer';
 
-interface Product extends Omit<ProductsNormalizerProduct, 'price'> {
+type SaleProductDetails = ReturnType<typeof dashboardDetailsNormalizer>['products'];
+
+type SaleProduct = Omit<ReturnType<typeof dashboardProductsNormalizer>['products'][number], 'price'> & {
   price: Big;
   amount: number;
   sortOrder: number;
-}
+};
 
 export const useSaleDashboard = () => {
   const toast  = inject('ToastProvider');
@@ -40,10 +34,10 @@ export const useSaleDashboard = () => {
   const router = useRouter();
   const { params } = route;
   const controlsView          = ref('order-default');
-  const detailsProducts       = ref<DetailsNormalizerProduct[]>([]);
+  const detailsProducts       = ref<SaleProductDetails>([]);
   const loadProducts          = ref(false);
   const loadOrders            = ref(false);
-  const products              = ref<Product[]>([]);
+  const products              = ref<SaleProduct[]>([]);
   const orderedProducts       = computed(() => products.value.filter(p => p.amount > 0));
   const sortedOrderedProducts = computed(() => orderedProducts.value.sort((a, b) => a.sortOrder - b.sortOrder));
   const totalProductsCount    = computed(() => orderedProducts.value.reduce((acc, product) => acc += product.amount, 0));
@@ -55,6 +49,8 @@ export const useSaleDashboard = () => {
     initial: undefined,
     current: undefined,
   });
+  const orderNote  = ref('');
+  const orderNotes = ref<string[]>([]);
   const dialog = reactive({
     cancel : false,
     finish : false,
@@ -80,10 +76,8 @@ export const useSaleDashboard = () => {
     isLoading: isDetailsLoading,
   } = useQuery({
     queryKey: ['sale-dashboard-details', params.id],
-    queryFn: () => getSaleDetail({
-      id        : params.id as string,
-      normalizer: detailsNormalizer,
-    }),
+    queryFn: () => getSaleDetail(params.id as string),
+    queryNormalizer: dashboardDetailsNormalizer,
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get the sale detail', type: 'error', duration: 2000 });
@@ -92,19 +86,30 @@ export const useSaleDashboard = () => {
       router.push('/sale');
     },
     onSuccess: response => {
-      const { finished, balance: detailsBalance, products } = response as DetailsNormalizerReturn;
+      if (response) {
+        const {
+          balance   : responseBalance,
+          orderNotes: responseOrderNotes,
+          finished,
+          products,
+        } = response;
 
-      if (finished) {
-        router.push(`/sale/detail/${params.id}`);
-      } else {
-        for (const product of products) detailsProducts.value.push(product);
+        if (finished) {
+          router.push(`/sale/detail/${params.id}`);
+        } else {
+          for (const product of products) detailsProducts.value.push(product);
 
-        loadProducts.value = true;
-        loadOrders.value   = true;
+          loadProducts.value = true;
+          loadOrders.value   = true;
 
-        if (detailsBalance) {
-          balance.initial = detailsBalance;
-          balance.current = detailsBalance;
+          if (responseBalance) {
+            balance.initial = responseBalance;
+            balance.current = responseBalance;
+          }
+
+          if (responseOrderNotes) {
+            for (const note of responseOrderNotes) orderNotes.value.push(note);
+          }
         }
       }
     },
@@ -116,10 +121,8 @@ export const useSaleDashboard = () => {
     refetch  : productsRefetch,
   } = useQuery({
     queryKey: ['sale-dashboard-products', params.id],
-    queryFn: () => getSaleProducts({
-      products  : detailsProducts.value,
-      normalizer: productsNormalizer,
-    }),
+    queryFn: () => getSaleProducts(detailsProducts.value),
+    queryNormalizer: dashboardProductsNormalizer,
     enabled: loadProducts,
     onError: error => {
       // @ts-ignore
@@ -127,59 +130,36 @@ export const useSaleDashboard = () => {
       console.error('Failed to get the sale products,', error.message);
     },
     onSuccess: response => {
-      const { products: responseProducts } = response as ProductsNormalizerReturn;
-      const tempProducts = [];
+      if (response) {
+        const { products: responseProducts } = response;
+        const tempProducts = [];
 
-      // Reset the products stock map
-      productsStock.clear();
+        // Reset the products stock map
+        productsStock.clear();
 
-      for (const product of responseProducts) {
-        tempProducts.push({
-          id            : product.id,
-          active        : product.active,
-          images        : product.images,
-          name          : product.name,
-          price         : Big(product.price),
-          priceFormatted: product.priceFormatted,
-          quantity      : product.quantity,
-          stock         : product.stock,
-          items         : product.items,
-          amount        : 0,
-          sortOrder     : 0,
-        });
+        for (const product of responseProducts) {
+          tempProducts.push({
+            ...product,
+            amount   : 0,
+            sortOrder: 0,
+            price    : Big(product.price),
+          });
 
-        if (isBundle(product.id)) {
-          for (const item of product.items || []) {
-            if (!productsStock.has(item.id)) productsStock.set(item.id, item.stock);
-          }
-        } else {
-          if (!productsStock.has(product.id)) {
-            productsStock.set(product.id, product.stock);
+          if (isBundle(product.id)) {
+            for (const item of product.items || []) {
+              if (!productsStock.has(item.id)) productsStock.set(item.id, item.stock);
+            }
+          } else {
+            if (!productsStock.has(product.id)) {
+              productsStock.set(product.id, product.stock);
+            }
           }
         }
-      }
 
-      products.value = tempProducts;
+        products.value = tempProducts;
+      }
     },
   });
-
-  const handleSortOrder = (id: string) => {
-    const product  = products.value.find(p => p.id === id);
-
-    if (product) {
-      const inOrders = product.amount > 0;
-
-      if (product.sortOrder === 0 && inOrders) {
-        const highestOrder = products.value.reduce((acc, curr) => {
-          return curr.sortOrder > acc.sortOrder ? curr : acc;
-        }, products.value[0]).sortOrder;
-
-        product.sortOrder = highestOrder + 1;
-      } else if (product.sortOrder !== 0 && !inOrders) {
-        product.sortOrder = 0;
-      }
-    }
-  };
 
   const {
     data     : ordersData,
@@ -188,10 +168,11 @@ export const useSaleDashboard = () => {
     refetch  : ordersRefetch,
   } = useObservableQuery({
     queryFn: () => getSaleOrders({
-      id        : params.id as string,
-      sort      : 'desc',
-      normalizer: ordersNormalizer,
+      id  : params.id as string,
+      sort: 'desc',
+      observe: true,
     }),
+    queryNormalizer: dashboardOrdersNormalizer,
     enabled: loadOrders,
     onError: error => {
       // @ts-ignore
@@ -199,15 +180,17 @@ export const useSaleDashboard = () => {
       console.error('Failed to get the sale orders,', error.message);
     },
     onSuccess: response => {
-      const { ordersTotalChange } = response as OrdersNormalizerReturn;
+      if (response) {
+        const { ordersTotalChange } = response;
 
-      if (balance.initial) {
-        const bigBalance = Big(balance.initial);
-        const bigChange  = Big(ordersTotalChange);
-        const subtractedBalance = bigBalance.minus(bigChange);
+        if (balance.initial) {
+          const bigBalance = Big(balance.initial);
+          const bigChange  = Big(ordersTotalChange);
+          const subtractedBalance = bigBalance.minus(bigChange);
 
-        if (subtractedBalance.gte(0)) {
-          balance.current = bigBalance.minus(bigChange).toString();
+          if (subtractedBalance.gte(0)) {
+            balance.current = bigBalance.minus(bigChange).toString();
+          }
         }
       }
     },
@@ -254,6 +237,7 @@ export const useSaleDashboard = () => {
           tendered: paymentTendered.value.toString(),
           change  : paymentChange.value.toString(),
           products: mutateProducts,
+          note    : orderNote.value,
         },
       });
     },
@@ -266,8 +250,9 @@ export const useSaleDashboard = () => {
       resetProductsAmount();
       paymentInput.value  = '0';
       controlsView.value  = 'order-default';
-      dialog.payment = false;
-      dialog.history = false;
+      orderNote.value     = '';
+      dialog.payment      = false;
+      dialog.history      = false;
 
       // Get new products data.
       productsRefetch();
@@ -313,6 +298,24 @@ export const useSaleDashboard = () => {
     },
   });
 
+  const handleSortOrder = (id: string) => {
+    const product  = products.value.find(p => p.id === id);
+
+    if (product) {
+      const inOrders = product.amount > 0;
+
+      if (product.sortOrder === 0 && inOrders) {
+        const highestOrder = products.value.reduce((acc, curr) => {
+          return curr.sortOrder > acc.sortOrder ? curr : acc;
+        }, products.value[0]).sortOrder;
+
+        product.sortOrder = highestOrder + 1;
+      } else if (product.sortOrder !== 0 && !inOrders) {
+        product.sortOrder = 0;
+      }
+    }
+  };
+
   const handleClickBackspace = () => {
     paymentInput.value = paymentInput.value.length === 1 ? '0' : paymentInput.value.slice(0, -1);
   };
@@ -329,6 +332,7 @@ export const useSaleDashboard = () => {
 
   const handleClickClear = () => {
     resetProductsAmount();
+    orderNote.value = '';
   };
 
   const handleClickCancel = () => {
@@ -431,12 +435,14 @@ export const useSaleDashboard = () => {
   };
 
   return {
-    saleId     : params.id,
-    detailsData: detailsData as Ref<DetailsNormalizerReturn>,
-    ordersData : ordersData as Ref<OrdersNormalizerReturn>,
+    saleId: params.id,
+    detailsData,
+    ordersData,
     products,
     orderedProducts,
     sortedOrderedProducts,
+    orderNotes,
+    orderNote,
     controlsView,
     balance,
     paymentChange,

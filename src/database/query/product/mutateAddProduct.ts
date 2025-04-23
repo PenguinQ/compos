@@ -2,7 +2,6 @@ import { monotonicFactory } from 'ulidx';
 import DOMPurify from 'isomorphic-dompurify';
 import type { RxDocument } from 'rxdb';
 
-// Databases
 import { db } from '@/database';
 import { addImages, compressProductImage, isImagesValid } from '@/database/utils';
 import { PRODUCT_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
@@ -12,22 +11,22 @@ import type { VariantDoc } from '@/database/types';
 import { isNumeric, isNumericString, sanitizeNumericString } from '@/helpers';
 import { ComPOSError } from '@/helpers/createError';
 
-type MutateAddProductVariant = Partial<VariantDoc> & {
+type Variant = Partial<VariantDoc> & {
   new_images?: File[];
 };
 
-type MutateAddProductQuery = {
+interface MutateAddProductParams {
   name: string;
   description?: string;
   by?: string;
   price?: string;
   stock?: number;
   sku?: string;
-  variants?: MutateAddProductVariant[];
+  variants?: Variant[];
   new_images?: File[];
-};
+}
 
-export default async (data: MutateAddProductQuery) => {
+export default async (data: MutateAddProductParams) => {
   try {
     const { sanitize } = DOMPurify;
     const ulid       = monotonicFactory();

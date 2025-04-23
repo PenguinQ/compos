@@ -219,7 +219,7 @@ const inArray = (array: CheckboxValue[], value: CheckboxValue) => {
   </div>
 </template>
 
-<style src="@/assets/form.scss" />
+<style src="@/assets/component.form.scss" />
 <style lang="scss">
 .cp-form-checkbox {
   display: inline-flex;

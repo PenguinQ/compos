@@ -1,50 +1,23 @@
-import type { SaleDoc } from '@/database/types';
+import type { QueryReturn } from '@/database/query/sale/getSaleList';
 
-type NormalizerDataPage = {
-  current: number;
-  first: boolean;
-  last: boolean;
-  total: number;
-};
+export const saleListNormalizer = (data: QueryReturn) => {
+  const { data: saleList, data_count: saleListCount, page } = data;
+  const tempList = [];
 
-type NormalizerData = {
-  data: unknown;
-  data_count: number;
-  page: NormalizerDataPage;
-};
-
-type SaleList = {
-  id: string;
-  name: string;
-  product_count: number;
-};
-
-export type ListNormalizerReturn = {
-  sales: SaleList[];
-  sales_count: number;
-  sales_count_tottal: number;
-  page: NormalizerDataPage;
-};
-
-export const listNormalizer = (data: unknown) => {
-  const { data: sales_data, data_count, page } =  data as NormalizerData;
-  const sales = sales_data || [];
-  const sales_list: SaleList[] = [];
-
-  for (const sale of sales as SaleDoc[]) {
+  for (const sale of saleList) {
     const { id, name, products } = sale;
 
-    sales_list.push({
+    tempList.push({
       id,
       name,
-      product_count: products.length,
+      productCount: products.length,
     });
   }
 
   return {
-    page,
-    sales: sales_list,
-    sales_count: sales_list.length,
-    sales_count_total: data_count,
+    page           : page!,
+    sales          : tempList,
+    salesCount     : tempList.length,
+    salesCountTotal: saleListCount,
   };
 };

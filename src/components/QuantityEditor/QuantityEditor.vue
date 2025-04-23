@@ -263,7 +263,7 @@ watch(computedValue, newValue => {
   </div>
 </template>
 
-<style src="../../assets/form.scss" />
+<style src="@/assets/component.form.scss" />
 <style lang="scss">
 .cp-form-quantity {
   display: inline-grid;

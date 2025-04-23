@@ -1,40 +1,41 @@
 import { blobToBase64String } from 'rxdb';
 
-// Databases
 import { db } from '@/database';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
 import { isBundle, isProduct, isVariant } from '@/database/utils';
-import type { QueryParams } from '@/database/types';
 
 // Helpers
 import createError from '@/helpers/createError';
 import { ComPOSError } from '@/helpers/createError';
 
-export type SaleFormDetailProduct = {
+type Product = {
   id: string;
   images: string[];
   name: string;
   quantity: number;
 };
 
-export type SaleFormDetailReturn = {
+/**
+ * ---
+ * About QueryReturn:
+ * 1. "order_notes" is optional since the sale can have or not have order_notes.
+ * 2. "initial_balance" is optional since the sale can have or not have balance.
+ */
+export type QueryReturn = {
   id: string;
   name: string;
   initial_balance?: string;
-  products: SaleFormDetailProduct[];
+  order_notes?: string[];
+  products: Product[];
 };
 
-type SaleFormDetailQuery = Omit<QueryParams, 'limit' | 'observe' | 'page' | 'sort'> & {
-  id: string;
-};
-
-export default async ({ id, normalizer }: SaleFormDetailQuery) => {
+export default async (id: string) => {
   try {
     const _querySale = await db.sale.findOne({ selector: { id } }).exec();
 
     if (!_querySale) throw createError('Sale not found', { status: 404 });
 
-    const { name, initial_balance, products } = _querySale;
+    const { name, initial_balance, order_notes, products } = _querySale;
     const product_list = [];
 
     for (const product of products) {
@@ -150,18 +151,12 @@ export default async ({ id, normalizer }: SaleFormDetailQuery) => {
     }
 
     return {
-      result: normalizer ? normalizer({
-        id,
-        name,
-        initial_balance,
-        products: product_list,
-      }) : {
-        id,
-        name,
-        initial_balance,
-        products: product_list,
-      },
-    }
+      id,
+      name,
+      initial_balance,
+      order_notes,
+      products: product_list,
+    };
   } catch (error) {
     if (error instanceof ComPOSError || error instanceof Error) throw error;
 

@@ -1,16 +1,26 @@
 import { RxAttachment, blobToBase64String } from 'rxdb';
 import type { RxDocument } from 'rxdb';
 
-// Databases
 import { db } from '@/database';
 import { isVariant, isBundle, isProduct } from '@/database/utils';
 import { IMAGE_ID_PREFIX, THUMBNAIL_ID_PREFIX } from '@/database/constants';
-import type { BundleDoc, ProductDoc, QueryParams, VariantDoc } from '@/database/types';
+import type { BundleDoc, ProductDoc, VariantDoc } from '@/database/types';
 
 // Helpers
 import { ComPOSError } from '@/helpers/createError';
 
-export type GetSaleProductsBundleItem = {
+interface GetSaleProductsParams {
+  id: string;
+  product_id?: string;
+  quantity: number;
+};
+
+/**
+ * ---
+ * About ProductItem:
+ * 1. "sku" is optional since the product type can be either product or variant, which each of those type can have an sku.
+ */
+type ProductItem = {
   id: string;
   name: string;
   price: string;
@@ -19,7 +29,14 @@ export type GetSaleProductsBundleItem = {
   sku?: string;
 };
 
-type GetSaleProductsData = {
+/**
+ * ---
+ * About Product:
+ * 1. "stock" is optional since if the product type is a bundle, the stock are following the bundle items stock.
+ * 2. "sku" is optional since if the product type is a bundle, it doesn't have its own sku, but the bundle items are.
+ * 3. "items" is optional since items exclusive to a bundle.
+ */
+type Product = {
   id: string;
   active: boolean;
   images: string[];
@@ -28,23 +45,15 @@ type GetSaleProductsData = {
   stock?: number;
   quantity: number;
   sku?: string;
-  items?: GetSaleProductsBundleItem[];
+  items?: ProductItem[];
 };
 
-export type GetSaleProductsQueryReturn = {
-  data: GetSaleProductsData[];
+export type QueryReturn = {
+  data: Product[];
   data_count: number;
 };
 
-interface GetSaleProductsQuery extends Omit<QueryParams, 'page' | 'limit' | 'sort'> {
-  products: {
-    id: string;
-    product_id?: string;
-    quantity?: number;
-  }[];
-}
-
-export default async ({ products, normalizer }: GetSaleProductsQuery) => {
+export default async (products: GetSaleProductsParams[]) => {
   try {
     const filtered_products = [];
     const products_data     = [];
@@ -88,7 +97,7 @@ export default async ({ products, normalizer }: GetSaleProductsQuery) => {
         } = product as RxDocument<BundleDoc>;
         const bundle_images   = <string[]>[];
         const bundle_items    = [];
-        const bundle_quantity = products.find(product => product.id === id)?.quantity;
+        const bundle_quantity = products.find(product => product.id === id)!.quantity;
 
         /**
          * ------------------------------------------------
@@ -157,8 +166,8 @@ export default async ({ products, normalizer }: GetSaleProductsQuery) => {
             }
 
             bundle_items.push({
-              price: price!, // Product without variant always have a price.
-              stock: stock!, // Product without variant always have a stock.
+              price: price!, // In this case, product without variant always have a price.
+              stock: stock!, // In this case, product without variant always have a stock.
               id,
               name,
               quantity,
@@ -193,7 +202,7 @@ export default async ({ products, normalizer }: GetSaleProductsQuery) => {
         } = product as RxDocument<ProductDoc> | RxDocument<VariantDoc>;
         const attachments    = product.allAttachments();
         const images         = (attachments as RxAttachment<unknown>[]).filter(image => image.id.startsWith(IMAGE_ID_PREFIX));
-        const quantity       = products.find(product => product.id === id)?.quantity;
+        const quantity       = products.find(product => product.id === id)!.quantity;
         const product_images = [];
         let   product_name   = name;
 
@@ -219,10 +228,10 @@ export default async ({ products, normalizer }: GetSaleProductsQuery) => {
         products_data.push({
           images: product_images,
           name  : product_name,
-          price : price,
-          stock : stock,
+          price : price!, // In this case, either product nor variant always have a price.
           id,
           active,
+          stock,
           quantity,
           ...(sku ? { sku } : {}),
         });
@@ -230,14 +239,10 @@ export default async ({ products, normalizer }: GetSaleProductsQuery) => {
     }
 
     return {
-      result: normalizer ? normalizer({
-        data      : products_data,
-        data_count: products_data.length,
-      }) : {
-        data      : products_data,
-        data_count: products_data.length,
-      }
-    }
+      data      : products_data,
+      data_count: products_data.length,
+    };
+
   } catch (error) {
     if (error instanceof ComPOSError || error instanceof Error) throw error;
 

@@ -20,6 +20,10 @@ export default async (file: File, restoreAttachments = false) => {
     const backupJSON = JSON.parse(backupText);
     const { collections, attachments } = backupJSON as BackupData;
 
+    const getCurrentSchemaHash = async (name: string) => {
+      return await db.collections[name as keyof DatabaseCollection].schema.hash;
+    };
+
     /**
      * ---------------------------------------------------------------
      * Remove existing collection and all documents on the collection.
@@ -44,7 +48,19 @@ export default async (file: File, restoreAttachments = false) => {
      * -----------------------------------------
      */
     for (const collection of collections) {
-      const { name } = collection;
+      const { name, docs } = collection;
+
+      collection.schemaHash = await getCurrentSchemaHash(name);
+
+      if (name === 'product') {
+        for (const doc of docs as any) {
+          if (!doc.variants) doc.variants = [];
+        }
+      } else if (name === 'sale') {
+        for (const doc of docs as any) {
+          if (!doc.notes) doc.notes = [];
+        }
+      }
 
       await db[name as keyof DatabaseCollection].importJSON(collection as CollectionsDump);
     }
@@ -91,7 +107,8 @@ export default async (file: File, restoreAttachments = false) => {
         }
       }
     }
-    return { result: true }
+
+    return { result: true };
   } catch (error) {
     if (error instanceof Error) {
       throw error;

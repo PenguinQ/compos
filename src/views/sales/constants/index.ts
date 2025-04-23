@@ -10,13 +10,16 @@ export const SALE_LIST = {
 };
 
 export const SALE_DETAIL = {
+  EMPTY_NOTES_EMOJI: '📝',
+  EMPTY_NOTES_TITLE: '"Scribble, scribble..."',
+  EMPTY_NOTES_DESCRIPTION: 'Looks like there\'s no notes yet.',
   ERROR_DETAIL_TITLE: 'Error Detail Title',
   ERROR_DETAIL_DESCRIPTION: 'Error Detail Description',
-  EMPTY_ORDER_EMOJI: '📉',
-  EMPTY_ORDER_TITLE: 'Not stonks...',
+  EMPTY_ORDER_EMOJI: '🙅',
+  EMPTY_ORDER_TITLE: 'Well...',
   EMPTY_ORDER_DESCRIPTION: 'No order has been made, yet.',
-  EMPTY_SOLD_EMOJI: '🍃',
-  EMPTY_SOLD_TITLE: 'Whoosh...',
+  EMPTY_SOLD_EMOJI: '🙅‍♂️',
+  EMPTY_SOLD_TITLE: 'Well...',
   EMPTY_SOLD_DESCRIPTION: 'No products has been sold, yet.',
 };
 

@@ -1,41 +1,14 @@
-import type { BundlesData } from '@/database/query/bundle/getBundleList';
+import type { QueryReturn } from '@/database/query/bundle/getBundleList';
 
-type NormalizerDataPage = {
-  current: number;
-  first: boolean;
-  last: boolean;
-  total: number;
-};
+export const bundleListNormalizer = (data: QueryReturn) => {
+  const { data: bundlesData, data_count: dataCount, page } = data;
+  const bundles      = bundlesData || [];
+  const bundlesList = [];
 
-type NormalizerData = {
-  data: unknown;
-  data_count: number;
-  page: NormalizerDataPage;
-};
-
-type BundleList = {
-  count: number;
-  id: string,
-  images: string[];
-  name: string;
-};
-
-export type BundleListNormalizerReturn = {
-  bundles: BundleList[];
-  bundles_count: number;
-  bundles_count_total: number;
-  page: NormalizerDataPage;
-};
-
-export const bundleListNormalizer = (data: unknown) => {
-  const { data: bundles_data, data_count, page } = data as NormalizerData;
-  const bundles      = bundles_data || [];
-  const bundles_list = <BundleList[]>[];
-
-  for (const bundle of bundles as BundlesData[]) {
+  for (const bundle of bundles) {
     const { id, name, images, products } = bundle;
 
-    bundles_list.push({
+    bundlesList.push({
       images: images || [],
       count : products.length,
       id,
@@ -44,9 +17,9 @@ export const bundleListNormalizer = (data: unknown) => {
   }
 
   return {
-    bundles            : bundles_list,
-    bundles_count      : bundles_list.length,
-    bundles_count_total: data_count,
+    bundles          : bundlesList,
+    bundlesCount     : bundlesList.length,
+    bundlesCountTotal: dataCount,
     page,
   };
 };

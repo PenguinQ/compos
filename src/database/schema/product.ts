@@ -1,5 +1,5 @@
 export default {
-  version: 0,
+  version: 1,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -27,16 +27,14 @@ export default {
       items: {
         type: 'string',
       },
-      // default: [],
+      default: [],
     },
     price: {
       type: 'string',
-      // default: '0',
     },
     stock: {
       type: 'integer',
       minimum: 0,
-      // default: 0,
     },
     sku: {
       type: 'string',
@@ -56,8 +54,6 @@ export default {
     'id',
     'active',
     'name',
-    // 'price',
-    // 'stock',
     'created_at',
     'updated_at',
   ],

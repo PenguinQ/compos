@@ -1,14 +1,12 @@
 import { inject, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { Ref } from 'vue';
 
 // Databases
-import { getBundleDetail, mutateDeleteBundle } from '@/database/query/bundle';
 import { useQuery, useMutation } from '@/database/hooks';
+import { getBundleDetail, mutateDeleteBundle } from '@/database/query/bundle';
 
 // Normalizers
 import { bundleDetailNormalizer } from '../normalizer/BundleDetail.normalizer';
-import type { BundleDetailNormalizerReturn } from '../normalizer/BundleDetail.normalizer';
 
 export const useBundleDetail = () => {
   const toast  = inject('ToastProvider');
@@ -25,10 +23,8 @@ export const useBundleDetail = () => {
     isSuccess,
   } = useQuery({
     queryKey: ['bundle-details', params.id],
-    queryFn: () => getBundleDetail({
-      id: params.id as string,
-      normalizer: bundleDetailNormalizer,
-    }),
+    queryFn: () => getBundleDetail(params.id as string),
+    queryNormalizer: bundleDetailNormalizer,
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get the bundle detail', type: 'error', duration: 2000 });
@@ -60,7 +56,7 @@ export const useBundleDetail = () => {
 
   return {
     bundleId: params.id,
-    data    : data as Ref<BundleDetailNormalizerReturn>,
+    data,
     dialogDelete,
     isError,
     isLoading,

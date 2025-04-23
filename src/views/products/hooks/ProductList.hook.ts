@@ -1,6 +1,5 @@
 import { computed, inject, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { Ref } from 'vue';
 
 // Databases
 import { useQuery } from '@/database/hooks';
@@ -13,8 +12,6 @@ import { usePagination } from '@/views/hooks';
 // Normalizers
 import { productListNormalizer } from '../normalizer/ProductList.normalizer';
 import { bundleListNormalizer } from '../normalizer/BundleList.normalizer';
-import type { ProductListNormalizerReturn } from '../normalizer/ProductList.normalizer';
-import type { BundleListNormalizerReturn } from '../normalizer/BundleList.normalizer';
 
 // Helpers
 import { cleanWhitespace, debounce } from '@/helpers';
@@ -51,38 +48,48 @@ export const useProductList = (type: 'product' | 'bundle') => {
       currentSearch,
       currentPage,
     ],
-    queryFn: () => type === 'product' ? getProductList({
-      search_query: currentSearch.value,
-      sort: 'desc',
-      limit: page.limit,
-      page: currentPage.value,
-      complete: true,
-      normalizer: productListNormalizer,
-    }) : getBundleList({
-      search_query: currentSearch.value,
-      sort: 'desc',
-      limit: page.limit,
-      page: currentPage.value,
-      normalizer: bundleListNormalizer,
-    }),
+    queryFn: async () => {
+      if (type === 'product') {
+        return await getProductList({
+          search_query: currentSearch.value,
+          sort: 'desc',
+          limit: page.limit,
+          page: currentPage.value,
+          complete: true,
+        });
+      }
+
+      return await getBundleList({
+        search_query: currentSearch.value,
+        sort: 'desc',
+        limit: page.limit,
+        page: currentPage.value,
+      });
+    },
+    queryNormalizer: (data) => {
+      if (type === 'product') {
+        return productListNormalizer(data as Awaited<ReturnType<typeof getProductList>>);
+      }
+      return bundleListNormalizer(data as Awaited<ReturnType<typeof getBundleList>>);
+    },
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get product list', type: 'error', duration: 2000 });
       console.error('Failed to get product list,', error.message);
     },
-    onSuccess: (response: unknown) => {
+    onSuccess: (response) => {
       if (response) {
-        const { page: response_page, products, bundles } = response as ProductListNormalizerReturn & BundleListNormalizerReturn;
+        const { page: responsePage } = response;
 
-        page.current = response_page.current;
-        page.total   = response_page.total;
-        page.first   = response_page.first;
-        page.last    = response_page.last;
+        page.current = responsePage.current;
+        page.total   = responsePage.total;
+        page.first   = responsePage.first;
+        page.last    = responsePage.last;
 
-        if (type === 'product') {
-          isListEmpty.value = products.length ? false : true;
+        if ('products' in response) {
+          isListEmpty.value = response.products.length ? false : true;
         } else {
-          isListEmpty.value = bundles.length ? false : true;
+          isListEmpty.value = response.bundles.length ? false : true;
         }
       }
     },
@@ -145,7 +152,7 @@ export const useProductList = (type: 'product' | 'bundle') => {
   };
 
   return {
-    list: list as Ref<ProductListNormalizerReturn & BundleListNormalizerReturn>,
+    list,
     searchQuery,
     page,
     listError,

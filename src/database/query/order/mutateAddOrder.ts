@@ -2,7 +2,6 @@ import { monotonicFactory } from 'ulidx';
 import Big from 'big.js';
 import type { RxDocument } from 'rxdb';
 
-// Databases
 import { db } from '@/database';
 import { isBundle, isProduct, isVariant } from '@/database/utils';
 import { ORDER_ID_PREFIX } from '@/database/constants';
@@ -11,7 +10,7 @@ import type { ProductDoc, VariantDoc, OrderDocProduct } from '@/database/types';
 // Helpers
 import createError, { ComPOSError } from '@/helpers/createError';
 
-type MutateAddOrderDataBundleItem = {
+type BundleItem = {
   id: string;
   name: string;
   price: string;
@@ -19,27 +18,26 @@ type MutateAddOrderDataBundleItem = {
   sku?: string;
 };
 
-type MutateAddOrderDataProduct ={
+type Product ={
   id: string;
   name: string;
   price: string;
   amount: number;
-  items?: MutateAddOrderDataBundleItem[];
+  items?: BundleItem[];
   sku?: string;
 };
 
-type MutateAddOrderData = {
-  tendered: string;
-  change: string;
-  products: MutateAddOrderDataProduct[];
-};
-
-type MutateAddOrder = {
+interface MutateAddOrderParams {
   id: string;
-  data: MutateAddOrderData;
-};
+  data: {
+    tendered: string;
+    change: string;
+    products: Product[];
+    note?: string;
+  };
+}
 
-export default async ({ id, data }: MutateAddOrder) => {
+export default async ({ id, data }: MutateAddOrderParams) => {
   try {
     const ulid           = monotonicFactory();
     const order_id       = ORDER_ID_PREFIX + ulid();
@@ -107,7 +105,7 @@ export default async ({ id, data }: MutateAddOrder) => {
       order_name = `Order #${order_number}`;
     }
 
-    const { tendered, change, products } = data;
+    const { tendered, change, products, note } = data;
 
     /**
      * ----------------------------------------------------------------------------------------------------
@@ -227,6 +225,7 @@ export default async ({ id, data }: MutateAddOrder) => {
       change,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      ...(note ? { note } : {}),
     });
 
     /**

@@ -7,7 +7,7 @@ import { db } from '@/database';
 import createError from '@/helpers/createError';
 import { ComPOSError } from '@/helpers/createError';
 
-export default async (id: string): Promise<string> => {
+export default async (id: string) => {
   try {
     const _querySaleConstruct = db.sale.findOne(id);
     const _querySale          = await _querySaleConstruct.exec();

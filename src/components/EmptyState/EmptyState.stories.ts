@@ -43,6 +43,12 @@ const meta: Meta<EmptyStateProps> = {
     height: {
       control: 'text',
     },
+    maxHeight: {
+      control: 'text',
+    },
+    minHeight: {
+      control: 'text',
+    },
     padding: {
       control: 'text',
     },

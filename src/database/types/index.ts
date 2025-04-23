@@ -120,6 +120,7 @@ export type OrderDoc = {
   tendered: string;
   change: string;
   total: string;
+  note?: string;
   created_at: string;
   updated_at: string;
 };
@@ -153,6 +154,7 @@ export type SaleDoc = {
   id: string;
   finished: boolean;
   name: string;
+  order_notes?: string[];
   products: SaleDocProduct[];
   products_sold: SaleDocProductSold[];
   orders: string[];

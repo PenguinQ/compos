@@ -27,12 +27,22 @@ withDefaults(defineProps<ProductItem>(), {
   active: true,
   images: () => [],
 });
+
+/**
+ * --------
+ * Glossary
+ * --------
+ * vc  = view component
+ * pli = product list item
+ */
 </script>
 
 <template>
   <div class="vc-pli" :data-status="!active ? 'inactive' : undefined">
     <ProductImage :width="imageWidth" :height="imageHeight">
-      <img v-if="images.length" v-for="image of images" :src="image" :alt="`${name} image`" />
+      <template v-if="images.length">
+        <img v-for="image of images" :src="image" :alt="`${name} image`" />
+      </template>
       <img v-else :src="no_image" :alt="`${name} image`" />
     </ProductImage>
     <div class="vc-pli-info">
@@ -137,6 +147,12 @@ withDefaults(defineProps<ProductItem>(), {
         @include text-body-sm;
         border-collapse: collapse;
         opacity: 0.8;
+
+        tr {
+          &:first-of-type td {
+            padding-top: 0;
+          }
+        }
 
         td {
           padding: 2px 0;

@@ -1,35 +1,6 @@
-import type { ProductDetailQueryReturn } from '@/database/query/product/getProductDetail';
+import type { QueryReturn } from '@/database/query/product/getProductDetail';
 
-type Image = {
-  id: string;
-  url: string;
-};
-
-type ProductVariants = {
-  id: string;
-  active: boolean;
-  product_id: string;
-  name: string;
-  images: Image[];
-  price: string;
-  stock: number;
-  sku: string,
-};
-
-export type ProductFormNormalizerReturn = {
-  id: string;
-  active: boolean;
-  images: Image[];
-  name: string;
-  description: string;
-  by: string;
-  price: string;
-  stock: number;
-  sku: string;
-  variants: ProductVariants[];
-};
-
-export const formDetailNormalizer = (data: unknown): ProductFormNormalizerReturn => {
+export const productFormDetailNormalizer = (data: QueryReturn) => {
   const {
     id,
     active,
@@ -41,7 +12,7 @@ export const formDetailNormalizer = (data: unknown): ProductFormNormalizerReturn
     stock,
     sku,
     variants,
-  } = data as ProductDetailQueryReturn || {};
+  } = data || {};
   const productImages   = [];
   const productVariants = [];
 
@@ -67,14 +38,14 @@ export const formDetailNormalizer = (data: unknown): ProductFormNormalizerReturn
       }
 
       productVariants.push({
-        id        : id || '',
-        active    : active || false,
-        product_id: product_id || '',
-        images    : variantImages,
-        name      : name || '',
-        price     : price ?? '0',
-        stock     : stock ?? 0,
-        sku       : sku || '',
+        id       : id || '',
+        active   : active || false,
+        productId: product_id || '',
+        images   : variantImages,
+        name     : name || '',
+        price    : price ?? '0',
+        stock    : stock ?? 0,
+        sku      : sku || '',
       });
     }
   }

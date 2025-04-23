@@ -42,19 +42,27 @@ type EmptyState = {
    */
   title?: string;
   /**
-   * Set the EmptyState width.
+   * Set the CSS width value of the EmptyState.
    */
   width?: CSS.Property.Width;
   /**
-   * Set the EmptyState height.
+   * Set the CSS height value of the EmptyState.
    */
   height?: CSS.Property.Height;
   /**
-   * Set the EmptyState padding.
+   * Set the CSS max-height value of the EmptyState.
+   */
+  maxHeight?: CSS.Property.MaxHeight;
+  /**
+   * Set the CSS min-height value of the EmptyState.
+   */
+  minHeight?: CSS.Property.MinHeight;
+  /**
+   * Set the CSS padding value of the EmptyState.
    */
   padding?: CSS.Property.Padding;
   /**
-   * Set the EmptyState margin.
+   * Set the CSS margin value of the EmptyState.
    */
   margin?: CSS.Property.Margin;
 };
@@ -70,7 +78,7 @@ const classes = computed(() => ({
 </script>
 
 <template>
-  <div :class="classes" :style="{ width, height, padding, margin }">
+  <div :class="classes" :style="{ width, height, maxHeight, minHeight, padding, margin }">
     <div class="cp-empty-state__container" :style="{ width }">
       <picture v-if="image" class="cp-empty-state__image">
         <img :src="image" :alt="imageAlt ? imageAlt : 'Empty state image'" :style="{ width: imageWidth, height: imageHeight }" />

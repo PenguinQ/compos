@@ -9,15 +9,15 @@ import type { BundleDocProduct } from '@/database/types';
 import { isNumeric, isNumericString, sanitizeNumericString } from '@/helpers';
 import { ComPOSError } from '@/helpers/createError';
 
-type MutateAddBundleQuery = {
+interface MutateAddBundleParams {
   name: string;
   description?: string;
   price: string;
   auto_price: boolean;
   products: BundleDocProduct[];
-};
+}
 
-export default async (data: MutateAddBundleQuery) => {
+export default async (data: MutateAddBundleParams) => {
   try {
     const { sanitize } = DOMPurify;
     const ulid       = monotonicFactory();

@@ -15,6 +15,7 @@ import {
   EmptyState,
   QuantityEditor,
   Text,
+  Select,
   Toolbar,
   ToolbarAction,
   ToolbarSpacer,
@@ -37,7 +38,8 @@ import ComposIcon, {
 } from '@/components/Icons';
 
 // View Components
-import { OrderCard, ProductImage } from '@/views/components';
+import { OrderCard, ProductListItem } from '@/views/components';
+import SaleProductDetails from './components/SaleProductDetails.vue'
 
 // Helpers
 import { debounce, toIDR } from '@/helpers';
@@ -49,9 +51,6 @@ import { useSaleDashboard } from './hooks/SaleDashboard.hook';
 import GLOBAL from '@/views/constants';
 import { SALE_DASHBOARD } from './constants';
 
-// Assets
-import no_image from '@assets/illustration/no_image.svg';
-
 const {
   saleId,
   dialog,
@@ -62,6 +61,8 @@ const {
   orderedProducts,
   sortedOrderedProducts,
   ordersData,
+  orderNote,
+  orderNotes,
   totalProductsCount,
   totalProductsPrice,
   paymentInput,
@@ -91,8 +92,10 @@ const {
 
 const handleResize = debounce(() => {
   if (window.innerWidth >= 992) {
-    dialog.payment = false;
-    dialog.history = false;
+    dialog.payment     = false;
+    dialog.history     = false;
+  } else {
+    controlsView.value = 'order-default';
   }
 }, 200);
 
@@ -132,97 +135,91 @@ onUnmounted(() => {
   </Header>
   <Content>
     <div class="dashboard">
+      <!-- Content -->
       <div class="dashboard-content">
-        <EmptyState
-          v-if="isProductsError"
-          :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-          :title="GLOBAL.ERROR_EMPTY_TITLE"
-          :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-          margin="56px 0"
-        >
-          <template #action>
-            <Button @click="productsRefetch">Try Again</Button>
-          </template>
-        </EmptyState>
+        <Bar v-if="isProductsLoading" />
         <template v-else>
-          <Bar v-if="isProductsLoading" />
-          <Card v-else class="products-card">
+          <EmptyState
+            v-if="isProductsError"
+            :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+            :title="GLOBAL.ERROR_EMPTY_TITLE"
+            :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+            margin="56px 0"
+          >
+            <template #action>
+              <Button @click="productsRefetch">Try Again</Button>
+            </template>
+          </EmptyState>
+          <Card v-else class="product-list-card">
             <CardBody padding="0">
-              <div
+              <ProductListItem
                 v-for="product in products"
                 :key="`product-${product.id}`"
-                :class="`product${product.active ? '' : ' product--inactive'}`"
+                :active="product.active"
+                :images="product.images"
               >
-                <ProductImage class="product-image">
-                  <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
-                  <template v-else>
-                    <img
-                      v-for="(image, index) in product.images"
-                      :key="`product-${product.id}-image-${index}`"
-                      :src="image ? image : no_image"
-                      :alt="`${product.name} image`"
-                    />
-                  </template>
-                </ProductImage>
-                <div class="product-content">
-                  <div class="product-content__main">
-                    <div class="product-details">
-                      <Text class="text-truncate" heading="5">{{ product.name }}</Text>
-                      <div class="product-info">
-                        <div class="product-info__item">
-                          <ComposIcon :icon="Tag" />
-                          <span class="text-truncate">{{ product.priceFormatted }}</span>
-                        </div>
-                        <div v-if="!product.items" class="product-info__item">
-                          <ComposIcon :icon="Boxes" />
-                          <span>{{ product.stock }}</span>
-                        </div>
-                        <div class="product-info__item">
-                          <ComposIcon :icon="CartPlus" />
-                          <span>{{ product.quantity }}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <QuantityEditor
-                      v-model="product.amount"
-                      :step="product.quantity"
-                      :max="product.stock"
-                      :disabled="!product.active"
-                      @clickIncrement="handleSortOrder(product.id)"
-                      @clickDecrement="handleSortOrder(product.id)"
+                <template #details>
+                  <Text class="text-truncate" heading="5" truncate margin="0 0 8px">{{ product.name }}</Text>
+                  <SaleProductDetails
+                    :items="[
+                      {
+                        icon: Tag,
+                        value: product.priceFormatted,
+                      },
+                      ...(!product.items ? [{
+                        icon: Boxes,
+                        value: product.stock
+                      }] : []),
+                      {
+                        icon: CartPlus,
+                        value: product.quantity,
+                      },
+                    ]"
+                  />
+                </template>
+                <template #additionals>
+                  <div v-if="product.items" class="bundle-items">
+                    <SaleProductDetails
+                      v-for="(item, index) in product.items"
+                      :key="`${product.id}-item-${index}`"
+                      direction="horizontal"
+                      :items="[
+                        {
+                          icon: Box,
+                          value: item.name,
+                          truncate: true,
+                        },
+                        {
+                          icon: Boxes,
+                          value: item.stock,
+                        },
+                        {
+                          icon: CartPlus,
+                          value: item.quantity,
+                        },
+                      ]"
                     />
                   </div>
-                  <div v-if="product.items" class="product-content__additional">
-                    <div class="product-bundle-details">
-                      <div
-                        v-for="item of product.items"
-                        :key="`product-${item.id}-item`"
-                        class="product-bundle-info"
-                      >
-                        <span class="product-bundle-info__item" style="flex-shrink: 1;">
-                          <ComposIcon :icon="Box" />
-                          <span class="text-truncate">{{ item.name }}</span>
-                        </span>
-                        <span class="product-bundle-info__item">
-                          <ComposIcon :icon="Boxes" />
-                          <span>{{ item.stock }}</span>
-                        </span>
-                        <span class="product-bundle-info__item">
-                          <ComposIcon :icon="CartPlus" />
-                          <span>{{ item.quantity }}</span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                </template>
+                <template #extensions>
+                  <QuantityEditor
+                    v-model="product.amount"
+                    :step="product.quantity"
+                    :max="product.stock"
+                    :disabled="!product.active"
+                    @clickIncrement="handleSortOrder(product.id)"
+                    @clickDecrement="handleSortOrder(product.id)"
+                  />
+                </template>
+              </ProductListItem>
             </CardBody>
           </Card>
         </template>
       </div>
+
       <!-- Controls -->
       <div class="dashboard-control">
-        <Card v-if="controlsView !== 'order-payment'" class="order-card">
+        <Card v-if="controlsView !== 'order-payment'" class="order-list-card">
           <CardHeader>
             <CardTitle>
               Order
@@ -248,7 +245,7 @@ onUnmounted(() => {
                 <Bar v-if="isOrdersLoading" />
                 <template v-else>
                   <EmptyState
-                    v-if="!ordersData.orders.length"
+                    v-if="!ordersData?.orders.length"
                     :emoji="SALE_DASHBOARD.ORDER_LIST_EMPTY_EMOJI"
                     :title="SALE_DASHBOARD.ORDER_LIST_EMPTY_TITLE"
                     :description="SALE_DASHBOARD.ORDER_LIST_EMPTY_DESCRIPTION"
@@ -264,6 +261,7 @@ onUnmounted(() => {
                       :tendered="order.tenderedFormatted"
                       :change="order.changeFormatted"
                       :products="order.products"
+                      :note="order.note"
                       @cancel="handleCancelOrder(order.id, order.name)"
                     />
                   </div>
@@ -277,42 +275,36 @@ onUnmounted(() => {
                 :title="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_TITLE"
                 :description="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_DESCRIPTION"
                 height="100%"
+                margin="0 16px"
               />
-              <div v-else class="order-products-list">
-                <div
-                  v-for="product of sortedOrderedProducts"
+              <div v-else class="order-product-list">
+                <ProductListItem
+                  v-for="product in sortedOrderedProducts"
                   :key="`order-product-${product.id}`"
-                  class="order-product"
+                  :images="product.images"
+                  :name="product.name"
                 >
-                  <ProductImage class="product-image">
-                    <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
-                    <template v-else>
-                      <img
-                        v-for="(image, index) in product.images"
-                        :key="`order-product-${product.id}-image-${index}`"
-                        :src="image ? image : no_image"
-                        :alt="`${product.name} image`"
-                      />
-                    </template>
-                  </ProductImage>
-                  <div class="order-product-content">
-                    <Text class="text-truncate" heading="6" margin="0 0 4px">{{ product.name }}</Text>
-                    <div class="order-product-details">
-                      <div class="order-product-details__item">
-                        <ComposIcon :icon="Tags" />
-                        <span class="text-truncate">
-                          {{ toIDR(product.price.times(product.amount).toString()) }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <QuantityEditor
-                    v-model="product.amount"
-                    :step="product.quantity"
-                    :max="product.stock"
-                    small
-                  />
-                </div>
+                  <template #details>
+                    <SaleProductDetails
+                      :items="[
+                        {
+                          icon: Tags,
+                          value: toIDR(product.price.times(product.amount).toString()),
+                        },
+                      ]"
+                    />
+                  </template>
+                  <template #extensions>
+                    <QuantityEditor
+                      v-model="product.amount"
+                      :step="product.quantity"
+                      :max="product.stock"
+                      size="small"
+                      @clickIncrement="handleSortOrder(product.id)"
+                      @clickDecrement="handleSortOrder(product.id)"
+                    />
+                  </template>
+                </ProductListItem>
               </div>
             </template>
           </CardBody>
@@ -321,40 +313,46 @@ onUnmounted(() => {
           <CardBody>
             <div class="order-details-container">
               <template v-if="controlsView === 'order-default'">
-                <dl class="order-details-summary">
-                  <div class="order-details-summary__item">
+                <div v-if="orderNotes.length" class="order-note">
+                  <Select v-model="orderNote" size="small">
+                    <option value="">Select Order Note (Optional)</option>
+                    <option v-for="note in orderNotes" :value="note">{{ note }}</option>
+                  </Select>
+                </div>
+                <dl class="order-summaries">
+                  <div class="order-summaries__item">
                     <dt>Total Item</dt>
                     <dd>{{ totalProductsCount }}</dd>
                   </div>
-                  <div class="order-details-summary__item">
+                  <div class="order-summaries__item">
                     <dt>Total</dt>
                     <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
                   </div>
-                  <div v-if="balance.current" class="order-details-summary__item">
+                  <div v-if="balance.current" class="order-summaries__item">
                     <dt>Balance</dt>
                     <dd>{{ toIDR(balance.current) }}</dd>
                   </div>
                 </dl>
               </template>
               <template v-if="controlsView === 'order-payment'">
-                <dl class="order-details-summary">
-                  <div class="order-details-summary__item">
+                <dl class="order-summaries">
+                  <div class="order-summaries__item">
                     <dt>Total Item</dt>
                     <dd>{{ totalProductsCount }}</dd>
                   </div>
-                  <div class="order-details-summary__item">
+                  <div class="order-summaries__item">
                     <dt>Total</dt>
                     <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
                   </div>
-                  <div class="order-details-summary__item">
+                  <div class="order-summaries__item">
                     <dt>Payment Amount</dt>
                     <dd>{{ toIDR(paymentTendered.toString()) }}</dd>
                   </div>
-                  <div v-if="balance.current" class="order-details-summary__item">
+                  <div v-if="balance.current" class="order-summaries__item">
                     <dt>Balance</dt>
                     <dd>{{ toIDR(balance.current) }}</dd>
                   </div>
-                  <div class="order-details-summary__item order-details-summary__item--change">
+                  <div class="order-summaries__item order-summaries__item--change">
                     <dt>
                       <ComposIcon :icon="CashCoin" />
                       Change
@@ -362,8 +360,8 @@ onUnmounted(() => {
                     <dd>{{ toIDR(paymentChange.toString()) }}</dd>
                   </div>
                 </dl>
-                <div class="order-details-calculator">
-                  <div class="order-details-calculator__display">
+                <div class="order-calculator">
+                  <div class="order-calculator__display">
                     <button
                       v-if="paymentInput !== '0'"
                       type="button"
@@ -384,7 +382,7 @@ onUnmounted(() => {
                       <ComposIcon :icon="BackspaceFill" />
                     </button>
                   </div>
-                  <div class="order-details-calculator__buttons">
+                  <div class="order-calculator__buttons">
                     <button type="button" @click="handleClickCalculator('1')">1</button>
                     <button type="button" @click="handleClickCalculator('2')">2</button>
                     <button type="button" @click="handleClickCalculator('3')">3</button>
@@ -445,137 +443,138 @@ onUnmounted(() => {
           :description="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_DESCRIPTION"
           height="100%"
         />
-        <div v-else class="order-products-list">
-          <div
-            v-for="product of sortedOrderedProducts"
+        <div v-else class="order-product-list">
+          <ProductListItem
+            v-for="product in sortedOrderedProducts"
             :key="`dialog-order-product-${product.id}`"
-            class="order-product"
+            :images="product.images"
+            imageWidth="60px"
+            imageHeight="60px"
+            :name="product.name"
           >
-            <ProductImage class="product-image">
-              <img v-if="!product.images.length" :src="no_image" :alt="`${product.name} image`">
-              <template v-else>
-                <img
-                  v-for="(image, index) in product.images"
-                  :key="`dialog-order-product-${product.id}-image-${index}`"
-                  :src="image ? image : no_image"
-                  :alt="`${product.name} image`"
-                />
-              </template>
-            </ProductImage>
-            <div class="order-product-content">
-              <Text heading="6" margin="0 0 4px">{{ product.name }}</Text>
-              <div class="order-product-details">
-                <div class="order-product-details__item">
-                  <ComposIcon :icon="Tags" />
-                  <span class="text-truncate">
-                    {{ toIDR(product.price.times(product.amount).toString()) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <QuantityEditor
-              v-model="product.amount"
-              :step="product.quantity"
-              :max="product.stock"
-              small
-              @clickDecrement="handleSortOrder(product.id)"
-              @clickIncrement="handleSortOrder(product.id)"
-            />
-          </div>
+            <template #details>
+              <SaleProductDetails
+                :items="[
+                  {
+                    icon: Tags,
+                    value: toIDR(product.price.times(product.amount).toString()),
+                  },
+                ]"
+              />
+            </template>
+            <template #extensions>
+              <QuantityEditor
+                v-model="product.amount"
+                :step="product.quantity"
+                :max="product.stock"
+                size="small"
+                @clickIncrement="handleSortOrder(product.id)"
+                @clickDecrement="handleSortOrder(product.id)"
+              />
+            </template>
+          </ProductListItem>
         </div>
       </template>
-      <template v-if="controlsView === 'order-default'">
-        <dl class="order-details-summary">
-          <div class="order-details-summary__item">
-            <dt>Total Item</dt>
-            <dd>{{ totalProductsCount }}</dd>
-          </div>
-          <div class="order-details-summary__item">
-            <dt>Total</dt>
-            <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
-          </div>
-          <div v-if="balance.current" class="order-details-summary__item">
-            <dt>Balance</dt>
-            <dd>{{ toIDR(balance.current) }}</dd>
-          </div>
-        </dl>
-      </template>
-      <template v-if="controlsView === 'order-payment'">
-        <dl class="order-details-summary">
-          <div class="order-details-summary__item">
-            <dt>Total Item</dt>
-            <dd>{{ totalProductsCount }}</dd>
-          </div>
-          <div class="order-details-summary__item">
-            <dt>Total</dt>
-            <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
-          </div>
-          <div class="order-details-summary__item">
-            <dt>Payment Amount</dt>
-            <dd>{{ toIDR(paymentTendered.toString()) }}</dd>
-          </div>
-          <div v-if="balance.current" class="order-details-summary__item">
-            <dt>Balance</dt>
-            <dd>{{ toIDR(balance.current) }}</dd>
-          </div>
-          <div class="order-details-summary__item order-details-summary__item--change">
-            <dt>
-              <ComposIcon :icon="CashCoin" />
-              Change
-            </dt>
-            <dd>{{ toIDR(paymentChange.toString()) }}</dd>
-          </div>
-        </dl>
-        <div class="order-details-calculator">
-          <div class="order-details-calculator__display">
-            <button
-              v-if="paymentInput !== '0'"
-              type="button"
-              class="button button--icon"
-              aria-label="Clear calculator"
-              @click="paymentInput = '0'"
-            >
-              <ComposIcon :icon="XCircleFill" />
-            </button>
-            <div>{{ toIDR(paymentTendered.toString()) }}</div>
-            <button
-              v-if="paymentInput !== '0'"
-              type="button"
-              class="button button--icon"
-              aria-label="Backspace"
-              @click="handleClickBackspace"
-            >
-              <ComposIcon :icon="BackspaceFill" />
-            </button>
-          </div>
-          <div class="order-details-calculator__buttons">
-            <button type="button" @click="handleClickCalculator('1')">1</button>
-            <button type="button" @click="handleClickCalculator('2')">2</button>
-            <button type="button" @click="handleClickCalculator('3')">3</button>
-            <button type="button" @click="handleClickCalculator('4')">4</button>
-            <button type="button" @click="handleClickCalculator('5')">5</button>
-            <button type="button" @click="handleClickCalculator('6')">6</button>
-            <button type="button" @click="handleClickCalculator('7')">7</button>
-            <button type="button" @click="handleClickCalculator('8')">8</button>
-            <button type="button" @click="handleClickCalculator('9')">9</button>
-            <button type="button" @click="handleClickCalculator('0')">0</button>
-            <button type="button" @click="handleClickCalculator('00')">00</button>
-            <button type="button" @click="handleClickCalculator('000')">000</button>
-          </div>
-        </div>
-      </template>
-      <div class="dashboard-actions">
+      <div class="order-details-container">
         <template v-if="controlsView === 'order-default'">
-          <Button full color="red" variant="outline" @click="handleClickClear">Clear</Button>
-          <Button full :disabled="!orderedProducts.length" @click="controlsView = 'order-payment'">Pay</Button>
+          <div v-if="orderNotes.length" class="order-note">
+            <Select v-model="orderNote" size="small">
+              <option value="">Select Order Note (Optional)</option>
+              <option v-for="note in orderNotes" :value="note">{{ note }}</option>
+            </Select>
+          </div>
+          <dl class="order-summaries">
+            <div class="order-summaries__item">
+              <dt>Total Item</dt>
+              <dd>{{ totalProductsCount }}</dd>
+            </div>
+            <div class="order-summaries__item">
+              <dt>Total</dt>
+              <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
+            </div>
+            <div v-if="balance.current" class="order-summaries__item">
+              <dt>Balance</dt>
+              <dd>{{ toIDR(balance.current) }}</dd>
+            </div>
+          </dl>
         </template>
         <template v-if="controlsView === 'order-payment'">
-          <Button full color="red" variant="outline" @click="handleClickCancel" small>Cancel</Button>
-          <Button color="green" full @click="handlePayment">Confirm</Button>
+          <dl class="order-summaries">
+            <div class="order-summaries__item">
+              <dt>Total Item</dt>
+              <dd>{{ totalProductsCount }}</dd>
+            </div>
+            <div class="order-summaries__item">
+              <dt>Total</dt>
+              <dd>{{ toIDR(totalProductsPrice.toString()) }}</dd>
+            </div>
+            <div class="order-summaries__item">
+              <dt>Payment Amount</dt>
+              <dd>{{ toIDR(paymentTendered.toString()) }}</dd>
+            </div>
+            <div v-if="balance.current" class="order-summaries__item">
+              <dt>Balance</dt>
+              <dd>{{ toIDR(balance.current) }}</dd>
+            </div>
+            <div class="order-summaries__item order-summaries__item--change">
+              <dt>
+                <ComposIcon :icon="CashCoin" />
+                Change
+              </dt>
+              <dd>{{ toIDR(paymentChange.toString()) }}</dd>
+            </div>
+          </dl>
+          <div class="order-calculator">
+            <div class="order-calculator__display">
+              <button
+                v-if="paymentInput !== '0'"
+                type="button"
+                class="button button--icon"
+                aria-label="Clear calculator"
+                @click="paymentInput = '0'"
+              >
+                <ComposIcon :icon="XCircleFill" />
+              </button>
+              <div>{{ toIDR(paymentTendered.toString()) }}</div>
+              <button
+                v-if="paymentInput !== '0'"
+                type="button"
+                class="button button--icon"
+                aria-label="Backspace"
+                @click="handleClickBackspace"
+              >
+                <ComposIcon :icon="BackspaceFill" />
+              </button>
+            </div>
+            <div class="order-calculator__buttons">
+              <button type="button" @click="handleClickCalculator('1')">1</button>
+              <button type="button" @click="handleClickCalculator('2')">2</button>
+              <button type="button" @click="handleClickCalculator('3')">3</button>
+              <button type="button" @click="handleClickCalculator('4')">4</button>
+              <button type="button" @click="handleClickCalculator('5')">5</button>
+              <button type="button" @click="handleClickCalculator('6')">6</button>
+              <button type="button" @click="handleClickCalculator('7')">7</button>
+              <button type="button" @click="handleClickCalculator('8')">8</button>
+              <button type="button" @click="handleClickCalculator('9')">9</button>
+              <button type="button" @click="handleClickCalculator('0')">0</button>
+              <button type="button" @click="handleClickCalculator('00')">00</button>
+              <button type="button" @click="handleClickCalculator('000')">000</button>
+            </div>
+          </div>
         </template>
-        <template v-if="controlsView === 'order-history'">
-          <Button full color="red" variant="outline" @click="controlsView = 'order-default'" small>Back</Button>
-        </template>
+        <div class="dashboard-actions">
+          <template v-if="controlsView === 'order-default'">
+            <Button full color="red" variant="outline" @click="handleClickClear">Clear</Button>
+            <Button full :disabled="!orderedProducts.length" @click="controlsView = 'order-payment'">Pay</Button>
+          </template>
+          <template v-if="controlsView === 'order-payment'">
+            <Button full color="red" variant="outline" @click="handleClickCancel" small>Cancel</Button>
+            <Button color="green" full @click="handlePayment">Confirm</Button>
+          </template>
+          <template v-if="controlsView === 'order-history'">
+            <Button full color="red" variant="outline" @click="controlsView = 'order-default'" small>Back</Button>
+          </template>
+        </div>
       </div>
     </div>
   </Dialog>
@@ -602,7 +601,7 @@ onUnmounted(() => {
       <Bar v-if="isOrdersLoading" />
       <template v-else>
         <EmptyState
-          v-if="!ordersData.orders.length"
+          v-if="!ordersData?.orders.length"
           :emoji="SALE_DASHBOARD.ORDER_LIST_EMPTY_EMOJI"
           :title="SALE_DASHBOARD.ORDER_LIST_EMPTY_TITLE"
           :description="SALE_DASHBOARD.ORDER_LIST_EMPTY_DESCRIPTION"
@@ -618,6 +617,7 @@ onUnmounted(() => {
             :tendered="order.tenderedFormatted"
             :change="order.changeFormatted"
             :products="order.products"
+            :note="order.note"
             @cancel="handleCancelOrder(order.id, order.name)"
           />
         </div>
@@ -703,370 +703,299 @@ onUnmounted(() => {
   }
 }
 
-.order-card {
-  display: none;
-  flex-direction: column;
+.product {
+  &-list-card {
+    max-height: 100%;
+    border-right: none;
+    border-left: none;
+    border-radius: 0;
+    overflow-y: auto;
 
-  .cp-card__header {
-    flex-shrink: 0;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .cp-card__title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  .cp-card__body {
-    flex-grow: 1;
-    overflow: auto;
-    padding: 0;
-  }
-}
-
-.order-product {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-
-  .vc-product-image {
-    width: 60px;
-    height: 60px;
-    flex: 0 0 auto;
-
-    img {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-  }
-
-  &-content {
-    min-width: 0%;
-    flex-grow: 1;
-  }
-
-  &-details {
-    &__item {
-      @include text-body-sm;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-
-      compos-icon {
-        width: 16px;
-        height: 16px;
+    :deep() {
+      .vc-product-image {
+        width: 60px;
+        height: 60px;
       }
     }
   }
 }
 
-.order-list {
-  min-height: 100%;
-  background-color: var(--color-neutral-1);
-  padding: 16px;
-
-  .vc-order-card {
+.bundle {
+  &-items {
+    border-top: 1px solid var(--color-border);
+    padding-top: 16px;
     margin-top: 16px;
 
-    &:first-of-type {
-      margin-top: 0;
-    }
-  }
-}
-
-.order-details-card {
-  flex: 1 0 auto;
-  display: none;
-
-  .cp-card__body {
-    height: 100%;
-    padding: 0;
-  }
-}
-
-.order-details-container {
-  height: inherit;
-  display: flex;
-  flex-direction: column;
-
-  > *:first-child {
-    flex-grow: 1;
-  }
-}
-
-.order-details-summary {
-  border-bottom: 1px solid var(--color-border);
-  overflow: auto;
-  padding: 16px;
-  margin: 0;
-
-  &__item {
-    @include text-body-lg;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 12px;
-    overflow-x: auto;
-    overflow-y: hidden;
-
-    &:last-of-type {
-      margin-bottom: 0;
-    }
-
-    &--change {
-      color: var(--color-white);
-      background-color: var(--color-green-5);
-      margin-left: -16px;
-      margin-right: -16px;
-      padding-top: 8px;
-      padding-bottom: 8px;
-      padding-inline-start: 16px;
-      padding-inline-end: 16px;
-    }
-
-    dt {
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      display: flex;
+    .details {
       align-items: center;
-      gap: 8px;
-      overflow: hidden;
-      flex: 0 0 auto;
+      flex-direction: row;
+      gap: 12px;
 
-      compos-icon {
-        flex-shrink: 0;
+      &__item:first-of-type {
+        flex-shrink: 1;
       }
-    }
-
-    dd {
-      font-weight: 600;
-      margin: 0;
     }
   }
 }
 
-.order-details-calculator {
-  border-bottom: 1px solid var(--color-border);
+.order {
+  &-list-card {
+    display: none;
+    flex-direction: column;
 
-  &__display {
-    font-size: 24px;
-    line-height: 28px;
-    text-align: right;
-    border-bottom: 1px solid var(--color-neutral-2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 16px;
-
-    button {
-      cursor: pointer;
+    .cp-card__header {
       flex-shrink: 0;
+      border-bottom: 1px solid var(--color-border);
     }
 
-    div {
-      text-align: right;
-      overflow-y: hidden;
-      flex-grow: 1;
-    }
-  }
-
-  &__buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    padding: 16px;
-
-    button {
-      @include text-body-lg;
-      color: var(--color-black);
-      background-color: var(--color-white);
-      border: 1px solid var(--color-neutral-4);
-      border-radius: 4px;
-      cursor: pointer;
-      padding: 16px;
-      transition-property: transform;
-      transition-duration: var(--transition-duration-very-fast);
-      transition-timing-function: var(--transition-timing-function);
-      outline: none;
-
-      &:active {
-        transform: scale(0.95);
-      }
-    }
-  }
-}
-
-.dialog-payment {
-  :deep() {
-    .cp-dialog-body {
-      flex-grow: 1;
-      padding: 0;
-    }
-  }
-}
-
-.dialog-history {
-  :deep() {
-    .cp-dialog-body {
-      flex-grow: 1;
-      padding: 0;
-    }
-  }
-}
-
-.dialog-payment-container {
-  height: 100%;
-  display: grid;
-  grid-template-rows: 1fr;
-  grid-template-columns: 1fr;
-
-  .order-products-list {
-    overflow: auto;
-  }
-
-  .order-details-summary {
-    border-top: 1px solid var(--color-border);
-
-    &:first-child {
-      border-top: none;
-    }
-  }
-}
-
-.products-card {
-  max-height: 100%;
-  border-right: none;
-  border-left: none;
-  border-radius: 0;
-  overflow-y: auto;
-}
-
-.product {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  background-color: var(--color-white);
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  padding-top: 16px;
-  padding-bottom: 16px;
-  -webkit-padding-inline-start: 16px;
-  padding-inline-start: 16px;
-  -webkit-padding-inline-end: 16px;
-  padding-inline-end: 16px;
-  margin-top: -1px;
-
-  &:first-of-type {
-    border-top-color: transparent;
-    margin-top: 0;
-  }
-
-  &:last-of-type {
-    border-bottom-color: transparent;
-  }
-
-  &--inactive {
-    filter: grayscale(1);
-  }
-
-  &-image {
-    width: 60px;
-    height: 60px;
-    flex-shrink: 0;
-    align-self: flex-start;
-
-    img {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-  }
-
-  &-content {
-    min-width: 0%;
-    flex: 1 1 auto;
-
-    &__main {
+    .cp-card__title {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
     }
 
-    &__additional {
-      border-top: 1px solid var(--color-border);
-      padding-top: 16px;
-      margin-top: 16px;
+    .cp-card__body {
+      flex-grow: 1;
+      overflow: auto;
+      padding: 0;
     }
   }
 
-  &-details {
-    min-width: 0%;
-    flex: 1;
-  }
+  &-list {
+    min-height: 100%;
+    background-color: var(--color-neutral-1);
+    padding: 16px;
 
-  &-info {
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
+    .vc-odc {
+      margin-bottom: 16px;
 
-    &__item {
-      @include text-body-sm;
-      min-width: 0%;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-
-      compos-icon {
-        width: 16px;
-        height: 16px;
-        flex-shrink: 0;
+      &:last-of-type {
+        margin-bottom: 0;
       }
     }
   }
 
-  &-bundle-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 8px;
+  &-product-list {
+    padding: 6px 0;
 
-    &:first-of-type {
-      margin-top: 0;
+    :deep() {
+      .vc-pli {
+        border-bottom: none;
+        padding-top: 6px;
+        padding-bottom: 6px;
+      }
+
+      .vc-product-image {
+        width: 60px;
+        height: 60px;
+      }
+    }
+  }
+
+  &-details {
+    &-card {
+      flex: 1 0 auto;
+      display: none;
+
+      .cp-card__body {
+        height: 100%;
+        padding: 0;
+      }
     }
 
+    &-container {
+      min-height: 0;
+      height: 100%;
+      display: grid;
+      grid-template-rows: 1fr;
+
+      > * {
+        min-width: 0;
+        border-top: 1px solid var(--color-border);
+
+        &:only-child {
+          border-top: none;
+        }
+      }
+    }
+  }
+
+  &-note {
+    padding: 16px;
+  }
+
+  &-summaries {
+    overflow: auto;
+    padding: 16px;
+    margin: 0;
+
     &__item {
-      @include text-body-sm;
-      min-width: 0%;
+      @include text-body-md;
       display: flex;
       align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
+      justify-content: space-between;
+      gap: 12px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      margin-bottom: 12px;
 
-      compos-icon {
-        width: 16px;
-        height: 16px;
+      &:last-of-type {
+        margin-bottom: 0;
+      }
+
+      &--change {
+        color: var(--color-white);
+        background-color: var(--color-blue-4);
+        margin-left: -16px;
+        margin-right: -16px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        padding-inline-start: 16px;
+        padding-inline-end: 16px;
+      }
+
+      dt {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow: hidden;
+        flex: 0 0 auto;
+
+        compos-icon {
+          flex-shrink: 0;
+        }
+      }
+
+      dd {
+        font-weight: 600;
+        margin: 0;
+      }
+    }
+  }
+
+  &-calculator {
+    &__display {
+      font-size: 20px;
+      line-height: 1.5;
+      font-weight: 600;
+      text-align: right;
+      background-color: var(--color-neutral-1);
+      border-bottom: 1px solid var(--color-neutral-2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 16px;
+
+      button {
+        cursor: pointer;
         flex-shrink: 0;
+
+        compos-icon {
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      div {
+        white-space: nowrap;
+        text-align: right;
+        overflow-y: hidden;
+        flex-grow: 1;
+      }
+    }
+
+    &__buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 16px;
+
+      button {
+        color: var(--color-black);
+        @include text-body-md;
+        font-weight: 600;
+        background-color: var(--color-white);
+        border: 1px solid var(--color-neutral-4);
+        border-radius: 4px;
+        cursor: pointer;
+        padding: 8px;
+        transition-property: transform;
+        transition-duration: var(--transition-duration-very-fast);
+        transition-timing-function: var(--transition-timing-function);
+        outline: none;
+
+        &:active {
+          transform: scale(0.95);
+        }
       }
     }
   }
 }
 
+.dialog {
+  &-payment,
+  &-history {
+    :deep() {
+      .cp-dialog-body {
+        flex-grow: 1;
+        padding: 0;
+      }
+    }
+  }
+
+  &-payment {
+    &-container {
+      height: 100%;
+      display: grid;
+      grid-template-rows: 1fr;
+      grid-template-columns: 1fr;
+
+      .order-products-list {
+        overflow: auto;
+      }
+
+      .order-summaries {
+        border-top: 1px solid var(--color-border);
+
+        &:first-child {
+          border-top: none;
+        }
+      }
+    }
+
+    .order-product-list {
+      overflow: auto;
+    }
+  }
+}
+
 @include screen-sm {
-  .product {
-    &-info {
-      align-items: center;
-      flex-direction: row;
-      gap: 12px;
+  .details {
+    align-items: center;
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .order {
+    &-calculator {
+      &__display {
+        font-size: 24px;
+        padding: 16px;
+
+        button compos-icon {
+          width: 24px;
+          height: 24px;
+        }
+      }
+
+      &__buttons button {
+        @include text-body-lg;
+        padding: 12px;
+      }
     }
   }
 };
@@ -1101,26 +1030,34 @@ onUnmounted(() => {
     }
   }
 
-  .products-card {
-    border-radius: 8px;
-  }
-
   .product {
-    &-image {
-      width: 80px;
-      height: 80px;
+    &-list-card {
+      border-radius: 8px;
+
+      :deep() {
+        .vc-product-image {
+          width: 80px;
+          height: 80px;
+        }
+      }
     }
   }
 
-  .order-card {
-    display: flex;
-  }
+  .order {
+    &-list-card {
+      display: flex;
+    }
 
-  .order-details-card {
-    display: block;
+    &-details {
+      &-card {
+        display: block;
+      }
 
-    &--mobile {
-      display: none;
+      &-container {
+        > *:first-child {
+          border-top: none;
+        }
+      }
     }
   }
 }

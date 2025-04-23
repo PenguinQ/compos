@@ -1,44 +1,51 @@
 import { blobToBase64String } from 'rxdb';
 import type { RxAttachment, RxDocument } from 'rxdb';
+import type { Observable } from 'rxjs';
 
-// Databases
 import { db } from '@/database';
 import { getPageStatus, isVariant } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
-import type { BundleDoc, QueryPage } from '@/database/types';
+import type { BundleDoc, ProductDoc, QueryParams, VariantDoc } from '@/database/types';
 
 // Helpers
 import { ComPOSError } from '@/helpers/createError';
 
-export type BundlesData = BundleDoc & {
+interface GetBundleListParams extends Omit<QueryParams, 'limit' | 'page'> {
+  page: number;
+  limit: number;
+  sort: 'asc' | 'desc';
+}
+
+export type Bundle = BundleDoc & {
   images: string[];
 };
 
-type BundleListQuery = {
-  active?: boolean;
-  limit: number;
-  observe?: boolean;
-  page: number;
-  search_query?: string;
-  sort: 'asc' | 'desc';
-  normalizer?: (data: unknown) => void;
-};
-
-export type BundleListQueryReturn = {
-  data: BundlesData[];
+export type QueryReturn = {
+  data: Bundle[];
   data_count: number;
-  page: QueryPage;
+  observable?: boolean;
+  page: {
+    current: number;
+    first: boolean;
+    last: boolean;
+    total: number;
+  };
 };
 
-export default async ({
+export type ObservableQueryReturn = {
+  observable: true;
+  observableQuery: Observable<RxDocument<BundleDoc>[]>;
+  observableQueryFn: (data: RxDocument<BundleDoc>[]) => Promise<Omit<QueryReturn, 'observable'>>;
+};
+
+export default (async ({
   active,
   search_query,
-  page,
-  sort,
   limit,
   observe = false,
-  normalizer,
-}: BundleListQuery) => {
+  page,
+  sort,
+}: GetBundleListParams) => {
   try {
     const query_selector = search_query ? {
       name: { $regex: `.*${search_query}.*`, $options: 'i' },
@@ -83,7 +90,7 @@ export default async ({
 
           if (_findProductQuery) {
             const images    = _findProductQuery.allAttachments();
-            const thumbnail = (images as RxAttachment<unknown>[]).filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
+            const thumbnail = (images as RxAttachment<ProductDoc | VariantDoc>[]).filter(att => att.id.startsWith(THUMBNAIL_ID_PREFIX));
 
             if (thumbnail.length) {
               const thumbnail_data   = await thumbnail[0].getData();
@@ -101,93 +108,57 @@ export default async ({
       return bundles_data;
     };
 
+    const queryFn = async (query: RxDocument<BundleDoc>[] | Observable<RxDocument<BundleDoc>[]>) =>{
+      const bundles_count = await getBundlesCount();
+      const total_page    = Math.ceil(bundles_count / query_limit);
+      const { first_page, last_page } = await getPageStatus({
+        collection: 'bundle',
+        query     : {
+          name: { $regex: `.*${search_query}.*`, $options: 'i' },
+          ...(active !== undefined && { active: { $eq: active } }),
+        },
+        data      : query as RxDocument<BundleDoc>[],
+        sortBy    : [{ id: sort }],
+        sort,
+        db,
+      });
+      const bundles_data = await getBundlesData(query as RxDocument<BundleDoc>[]);
+
+      return {
+        data      : bundles_data,
+        data_count: bundles_count,
+        page      : {
+          current: page,
+          first  : first_page,
+          last   : last_page,
+          total  : total_page,
+        },
+      };
+    };
+
     const _queryConstruct = db.bundle.find({
       selector: query_selector,
       skip    : query_skip,
       limit   : query_limit,
       sort    : query_sort,
     });
+
     const _queryBundle = observe ? _queryConstruct.$ : await _queryConstruct.exec();
 
-    /**
-     * ----------------------
-     * 1. Observable queries.
-     * ----------------------
-     */
-    if (observe) {
-      const observeableProcessor = async (data: unknown): Promise<object> =>{
-        const bundles_count = await getBundlesCount();
-        const total_page    = Math.ceil(bundles_count / query_limit);
-        const { first_page, last_page } = await getPageStatus({
-          db,
-          collection: 'bundle',
-          data      : data as RxDocument<BundleDoc>[],
-          sortBy    : [{ id: sort }],
-          query     : {
-            name: { $regex: `.*${search_query}.*`, $options: 'i' },
-            ...(active !== undefined && { active: { $eq: active } }),
-          },
-          sort,
-        });
-        const bundles_data = await getBundlesData(data as RxDocument<BundleDoc>[]);
-
-        return {
-          data      : bundles_data,
-          data_count: bundles_count,
-          page      : {
-            current: page,
-            first  : first_page,
-            last   : last_page,
-            total  : total_page,
-          },
-        };
-      };
-
-      return {
-        observeable: true,
-        result     : _queryBundle,
-        observeableProcessor,
-        normalizer,
-      };
-    }
-
-    /**
-     * --------------------------
-     * 2. Non-observable queries.
-     * --------------------------
-     */
-    const bundles_count = await getBundlesCount();
-    const total_page    = Math.ceil(bundles_count / query_limit);
-    const { first_page, last_page } = await getPageStatus({
-      db,
-      collection: 'bundle',
-      data      : _queryBundle as RxDocument<BundleDoc>[],
-      sortBy    : [{ id: sort }],
-      query     : {
-        name: { $regex: `.*${search_query}.*`, $options: 'i' },
-        ...(active !== undefined && { active: { $eq: active } }),
-      },
-      sort,
-    });
-    const bundles_data = await getBundlesData(_queryBundle as RxDocument<BundleDoc>[]);
-
-    const raw_data = {
-      data      : bundles_data,
-      data_count: bundles_count,
-      page      : {
-        current: page,
-        first  : first_page,
-        last   : last_page,
-        total  : total_page,
-      },
-    };
-
-    return {
-      result: normalizer ? normalizer(raw_data) : raw_data,
+    return observe ? {
+      observable       : observe,
+      observableQuery  : _queryBundle,
+      observableQueryFn: queryFn,
+    } : {
+      observable: observe,
+      ...await queryFn(_queryBundle),
     };
   } catch (error) {
     if (error instanceof ComPOSError || error instanceof Error) throw error;
 
     throw new Error(String(error));
   }
+}) as {
+  (params: GetBundleListParams & { observe: true }): Promise<ObservableQueryReturn>;
+  (params: GetBundleListParams & { observe?: false }): Promise<QueryReturn>;
 };
