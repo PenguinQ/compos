@@ -26,13 +26,13 @@ type SalesListProps = {
 const props = defineProps<SalesListProps>();
 
 const {
-  list,
+  saleList,
+  saleListError,
+  saleListLoading,
   isListEmpty,
   page,
   searchQuery,
-  listError,
-  listLoading,
-  listRefetch,
+  saleListRefetch,
   handlePaginationPrev,
   handlePaginationNext,
   handleSearch,
@@ -42,14 +42,14 @@ const {
 
 <template>
   <EmptyState
-    v-if="listError"
+    v-if="saleListError"
     :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
     :title="GLOBAL.ERROR_EMPTY_TITLE"
     :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
     margin="56px 0"
   >
     <template #action>
-      <Button @click="listRefetch">Try Again</Button>
+      <Button @click="saleListRefetch">Try Again</Button>
     </template>
   </EmptyState>
   <template v-else>
@@ -59,7 +59,7 @@ const {
       @input="handleSearch"
       @clear="handleSearchClear"
     />
-    <Bar v-if="listLoading" margin="56px 0" />
+    <Bar v-if="saleListLoading" margin="56px 0" />
     <template v-else>
       <EmptyState
         v-if="isListEmpty && searchQuery === ''"
@@ -78,19 +78,19 @@ const {
       <template v-else>
         <div class="sales-list">
           <div
-            :key="sales.id"
-            v-for="sales in list.sales"
+            :key="`sale-list-item-${sale.id}`"
+            v-for="sale in saleList?.sales"
             class="sale"
           >
             <div
               class="sale__detail"
               role="button"
               tabindex="0"
-              :aria-label="`Go to ${sales.name} detail`"
-              @click="$router.push(`/sale/detail/${sales.id}`)"
+              :aria-label="`Go to ${sale.name} detail`"
+              @click="$router.push(`/sale/detail/${sale.id}`)"
             >
-              <div class="sale__title text-truncate">{{ sales.name }}</div>
-              <div class="sale__count">{{ sales.product_count }} Products</div>
+              <div class="sale__title text-truncate">{{ sale.name }}</div>
+              <div class="sale__count">{{ sale.productCount }} Products</div>
             </div>
             <ButtonBlock
               v-if="status === 'running'"
@@ -99,8 +99,8 @@ const {
               height="76px"
               backgroundColor="var(--color-blue-4)"
               icon
-              :aria-label="`Go to ${sales.name}`"
-              @click="$router.push(`/sale/dashboard/${sales.id}`)"
+              :aria-label="`Go to ${sale.name}`"
+              @click="$router.push(`/sale/dashboard/${sale.id}`)"
             >
               <ComposIcon :icon="LayoutSidebarReverse" size="28" />
             </ButtonBlock>
@@ -120,7 +120,7 @@ const {
     <Pagination
       v-if="!isListEmpty"
       frame
-      :loading="listLoading"
+      :loading="saleListLoading"
       :page="page.current"
       :total_page="page.total"
       :first_page="page.current <= 1"

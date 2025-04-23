@@ -8,18 +8,17 @@ import type { SaleDocProduct } from '@/database/types';
 import { createError, isNumericString } from '@/helpers';
 import { ComPOSError } from '@/helpers/createError';
 
-type MutateEditSaleQueryData = {
-  name: string;
-  balance?: string;
-  products: SaleDocProduct[];
-};
-
-type MutateEditSaleQuery = {
+interface MutateEditSaleParams {
   id: string;
-  data: MutateEditSaleQueryData;
-};
+  data: {
+    name: string;
+    balance?: string;
+    products: SaleDocProduct[];
+    order_notes?: string[];
+  };
+}
 
-export default async ({ id, data }: MutateEditSaleQuery) => {
+export default async ({ id, data }: MutateEditSaleParams) => {
   try {
     const { sanitize } = DOMPurify;
     const _queryConstruct = db.sale.findOne(id);
@@ -28,7 +27,7 @@ export default async ({ id, data }: MutateEditSaleQuery) => {
     if (!_querySale) throw createError('Sale not found', { status: 404 });
 
     const { finished } = _querySale;
-    const { name, balance, products } = data;
+    const { name, balance, order_notes, products } = data;
     const clean_name      = sanitize(name);
     let initial_balance   = balance;
 
@@ -67,6 +66,8 @@ export default async ({ id, data }: MutateEditSaleQuery) => {
       $set: {
         name: clean_name,
         products,
+        order_notes,
+        // ...(order_notes?.length ? order_notes : {}),
         ...(initial_balance ? { initial_balance } : {}),
       },
     });

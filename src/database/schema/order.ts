@@ -1,5 +1,5 @@
 export default {
-  version: 0,
+  version: 1,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -89,6 +89,9 @@ export default {
     total: {
       type: 'string',
       default: '0',
+    },
+    note: {
+      type: 'string',
     },
     created_at: {
       type: 'date-time',

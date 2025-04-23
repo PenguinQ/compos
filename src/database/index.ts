@@ -1,4 +1,5 @@
 import { addRxPlugin, createRxDatabase } from 'rxdb';
+import { RxDBMigrationSchemaPlugin } from 'rxdb/plugins/migration-schema';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
 import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
@@ -71,6 +72,13 @@ export const createCollections = async () => {
     product: {
       schema : product,
       methods: productORMs,
+      migrationStrategies: {
+        1: function(oldDoc) {
+          if (!oldDoc.variants) oldDoc.variants = [];
+
+          return oldDoc;
+        },
+      },
     },
     variant: {
       schema : variant,
@@ -83,9 +91,21 @@ export const createCollections = async () => {
     sale: {
       schema : sale,
       methods: saleORMs,
+      migrationStrategies: {
+        1: function(oldDoc) {
+          oldDoc.notes = [];
+
+          return oldDoc;
+        },
+      },
     },
     order: {
       schema: order,
+      migrationStrategies: {
+        1: function(oldDoc) {
+          return oldDoc;
+        },
+      },
     },
   });
 
@@ -143,6 +163,7 @@ export const initDB = async () => {
 
   addRxPlugin(RxDBUpdatePlugin);
   addRxPlugin(RxDBAttachmentsPlugin);
+  addRxPlugin(RxDBMigrationSchemaPlugin);
   addRxPlugin(RxDBJsonDumpPlugin);
 
   if (!db) await createDB();

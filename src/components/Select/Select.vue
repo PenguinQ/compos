@@ -183,7 +183,7 @@ const handleInput = (e: Event) => {
   </div>
 </template>
 
-<style src="@/assets/form.scss" />
+<style src="@/assets/component.form.scss" />
 <style lang="scss">
 .cp-form-select {
   .cp-form-field {

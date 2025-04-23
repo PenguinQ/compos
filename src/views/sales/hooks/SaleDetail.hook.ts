@@ -1,6 +1,5 @@
 import { inject, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { Ref } from 'vue';
 
 // Databases
 import { useQuery, useMutation } from '@/database/hooks';
@@ -12,8 +11,7 @@ import {
 import { mutateCancelOrder } from '@/database/query/order';
 
 // Normalizers
-import { detailNormalizer } from '../normalizer/SaleDetail.normalizer';
-import type { DetailNormalizerReturn } from '../normalizer/SaleDetail.normalizer';
+import { saleDetailNormalizer } from '../normalizer/SaleDetail.normalizer';
 
 export const useSaleDetail = () => {
   const toast  = inject('ToastProvider');
@@ -37,10 +35,8 @@ export const useSaleDetail = () => {
     isLoading,
   } = useQuery({
     queryKey: ['sale-detail', params.id],
-    queryFn: () => getSaleDetail({
-      id        : params.id as string,
-      normalizer: detailNormalizer,
-    }),
+    queryFn: () => getSaleDetail(params.id as string),
+    queryNormalizer: saleDetailNormalizer,
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Error getting sale detail', type: 'error' });
@@ -116,7 +112,7 @@ export const useSaleDetail = () => {
 
   return {
     saleId: params.id,
-    data  : data as Ref<DetailNormalizerReturn>,
+    data,
     dialog,
     cancelDetail,
     isError,

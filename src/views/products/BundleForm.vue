@@ -87,9 +87,11 @@ const {
 watch(
   bundleDetail,
   (newData) => {
-    const { name } = newData;
+    if (newData) {
+      const { name } = newData;
 
-    document.title = `Edit ${name} - ComPOS`;
+      document.title = `Edit ${name} - ComPOS`;
+    }
   },
 );
 </script>
@@ -116,136 +118,133 @@ watch(
     <template v-if="bundleId" #fixed>
       <PullToRefresh @refresh="handleRefresh" />
     </template>
-    <Container class="page-container">
+    <Bar v-if="bundleDetailLoading" />
+    <template v-else>
       <EmptyState
         v-if="bundleDetailError"
         :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
         :title="GLOBAL.ERROR_EMPTY_TITLE"
         :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-        margin="56px 0"
+        height="100%"
       >
         <template #action>
           <Button @click="bundleDetailRefetch">Try Again</Button>
         </template>
       </EmptyState>
-      <template v-else>
-        <Bar v-if="bundleDetailLoading" margin="56px 0" />
-        <template v-else>
-          <form id="bundle-form">
-            <Card class="section-card" variant="outline" margin="0 0 16px">
-              <CardHeader>
-                <CardTitle>General</CardTitle>
-                <CardSubtitle>General information about the bundle.</CardSubtitle>
-              </CardHeader>
-              <CardBody>
-                <Row :col="1" :gutter="16">
-                  <Column>
-                    <Textfield
-                      id="bundle-name"
-                      label="Name"
-                      :labelProps="{ for: 'bundle-name' }"
-                      :error="formError.name ? true : false"
-                      :message="formError.name"
-                      v-model="formData.name"
-                    />
-                  </Column>
-                  <Column>
-                    <Textarea
-                      id="bundle-description"
-                      label="Description"
-                      :labelProps="{ for: 'bundle-description' }"
-                      v-model="formData.description"
-                    />
-                  </Column>
-                  <Column>
-                    <Textfield
-                      id="bundle-price"
-                      label="Price"
-                      prepend="Rp"
-                      v-model="formData.price"
-                      :readonly="formData.auto_price"
-                      :labelProps="{ for: 'bundle-price' }"
-                      :error="formError.price ? true : false"
-                      :message="formError.price ? formError.price : formData.auto_price ? BUNDLE_FORM.PRICE_MESSAGE : ''"
-                    />
-                  </Column>
-                  <Column>
-                    <Checkbox
-                      v-model="formData.auto_price"
-                      label="Auto Price"
-                      :message="BUNDLE_FORM.AUTO_PRICE_MESSAGE"
-                    />
-                  </Column>
-                </Row>
-              </CardBody>
-            </Card>
-            <Card class="section-card" variant="outline">
-              <CardHeader>
-                <CardTitle>Products</CardTitle>
-                <CardSubtitle>List of products included in the bundle.</CardSubtitle>
-              </CardHeader>
-              <CardBody padding="0">
-                <EmptyState
-                  v-if="!formData.products.length"
-                  emoji="📦"
-                  :title="BUNDLE_FORM.PRODUCT_EMPTY_TITLE"
-                  :description="BUNDLE_FORM.PRODUCT_EMPTY_DESCRIPTION"
-                  margin="56px 0"
-                >
-                  <template #action>
-                    <Button @click="showProductsDialog = !showProductsDialog">Add Product</Button>
-                  </template>
-                </EmptyState>
-                <template v-else>
-                  <div class="selected-product-list">
-                    <ProductListItem
-                      :key="`form-product-bundle-${product.id}`"
-                      v-for="(product, index) in formData.products"
-                      :active="product.active"
-                      :images="product.images"
-                      :name="product.name"
-                      :details="[
-                        {
-                          name: 'Price',
-                          value: toIDR(product.total_price),
-                        },
-                        {
-                          name: 'Stock',
-                          value: String(product.stock),
-                        },
-                        {
-                          name: 'SKU',
-                          value: product.sku || '-',
-                        },
-                      ]"
-                    >
-                      <template #extension>
-                        <QuantityEditor
-                          v-if="product.quantity !== undefined && product.active"
-                          v-model="product.quantity"
-                          :min="1"
-                          :max="product.stock"
-                          readonly
-                          size="small"
-                        />
-                        <ButtonRemove
-                          :size="22"
-                          :aria-label="`Remove ${product.name}`"
-                          @click="handleRemoveProduct(index)"
-                        />
-                      </template>
-                    </ProductListItem>
-                  </div>
-                  <div class="selected-product-list-action">
-                    <Button variant="outline" full @click="showProductsDialog = true">Add Product</Button>
-                  </div>
+      <Container v-else class="page-container">
+        <form id="bundle-form">
+          <Card class="section-card" variant="outline" margin="0 0 16px">
+            <CardHeader>
+              <CardTitle>General</CardTitle>
+              <CardSubtitle>General information about the bundle.</CardSubtitle>
+            </CardHeader>
+            <CardBody>
+              <Row :col="1" :gutter="16">
+                <Column>
+                  <Textfield
+                    id="bundle-name"
+                    label="Name"
+                    :labelProps="{ for: 'bundle-name' }"
+                    :error="formError.name ? true : false"
+                    :message="formError.name"
+                    v-model="formData.name"
+                  />
+                </Column>
+                <Column>
+                  <Textarea
+                    id="bundle-description"
+                    label="Description"
+                    :labelProps="{ for: 'bundle-description' }"
+                    v-model="formData.description"
+                  />
+                </Column>
+                <Column>
+                  <Textfield
+                    id="bundle-price"
+                    label="Price"
+                    prepend="Rp"
+                    v-model="formData.price"
+                    :readonly="formData.autoPrice"
+                    :labelProps="{ for: 'bundle-price' }"
+                    :error="formError.price ? true : false"
+                    :message="formError.price ? formError.price : formData.autoPrice ? BUNDLE_FORM.PRICE_MESSAGE : ''"
+                  />
+                </Column>
+                <Column>
+                  <Checkbox
+                    v-model="formData.autoPrice"
+                    label="Auto Price"
+                    :message="BUNDLE_FORM.AUTO_PRICE_MESSAGE"
+                  />
+                </Column>
+              </Row>
+            </CardBody>
+          </Card>
+          <Card class="section-card" variant="outline">
+            <CardHeader>
+              <CardTitle>Products</CardTitle>
+              <CardSubtitle>List of products included in the bundle.</CardSubtitle>
+            </CardHeader>
+            <CardBody padding="0">
+              <EmptyState
+                v-if="!formData.products.length"
+                emoji="📦"
+                :title="BUNDLE_FORM.PRODUCT_EMPTY_TITLE"
+                :description="BUNDLE_FORM.PRODUCT_EMPTY_DESCRIPTION"
+                margin="56px 0"
+              >
+                <template #action>
+                  <Button @click="showProductsDialog = !showProductsDialog">Add Product</Button>
                 </template>
-              </CardBody>
-            </Card>
-          </form>
-        </template>
-      </template>
-    </Container>
+              </EmptyState>
+              <template v-else>
+                <div class="selected-product-list">
+                  <ProductListItem
+                    :key="`form-product-bundle-${product.id}`"
+                    v-for="(product, index) in formData.products"
+                    :active="product.active"
+                    :images="product.images"
+                    :name="product.name"
+                    :details="[
+                      {
+                        name: 'Price',
+                        value: toIDR(product.totalPrice),
+                      },
+                      {
+                        name: 'Stock',
+                        value: String(product.stock),
+                      },
+                      {
+                        name: 'SKU',
+                        value: product.sku || '-',
+                      },
+                    ]"
+                  >
+                    <template #extensions>
+                      <QuantityEditor
+                        v-if="product.quantity !== undefined && product.active"
+                        v-model="product.quantity"
+                        :min="1"
+                        :max="product.stock"
+                        readonly
+                      />
+                      <ButtonRemove
+                        :size="22"
+                        :aria-label="`Remove ${product.name}`"
+                        @click="handleRemoveProduct(index)"
+                      />
+                    </template>
+                  </ProductListItem>
+                </div>
+                <div class="selected-product-list-action">
+                  <Button variant="outline" full @click="showProductsDialog = true">Add Product</Button>
+                </div>
+              </template>
+            </CardBody>
+          </Card>
+        </form>
+      </Container>
+    </template>
   </Content>
 
   <!-- Dialog Product Selection -->
@@ -271,19 +270,19 @@ watch(
         <template #fixed>
           <PullToRefresh @refresh="handleRefreshList" />
         </template>
-        <EmptyState
-          v-if="productListError"
-          :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-          :title="GLOBAL.ERROR_EMPTY_TITLE"
-          :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-          margin="56px 0"
-        >
-          <template #action>
-            <Button @click="productListRefetch">Try Again</Button>
-          </template>
-        </EmptyState>
+        <Bar v-if="productListLoading" />
         <template v-else>
-          <Bar v-if="productListLoading" />
+          <EmptyState
+            v-if="productListError"
+            :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+            :title="GLOBAL.ERROR_EMPTY_TITLE"
+            :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+            height="100%"
+          >
+            <template #action>
+              <Button @click="productListRefetch">Try Again</Button>
+            </template>
+          </EmptyState>
           <template v-else>
             <EmptyState
               v-if="!productList?.products.length && searchQuery === ''"
@@ -345,4 +344,4 @@ watch(
   </Dialog>
 </template>
 
-<style lang="scss" src="@/assets/page-form.scss" />
+<style lang="scss" src="@/assets/common.page-form.scss" />

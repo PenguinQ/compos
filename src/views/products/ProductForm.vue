@@ -67,9 +67,11 @@ const {
 watch(
   productDetail,
   (newData) => {
-    const { name } = newData;
+    if (newData) {
+      const { name } = newData;
 
-    document.title = `Edit ${name} - ComPOS`;
+      document.title = `Edit ${name} - ComPOS`;
+    }
   },
 );
 </script>
@@ -94,21 +96,21 @@ watch(
     <template v-if="productId" #fixed>
       <PullToRefresh @refresh="handleRefresh" />
     </template>
-    <Container class="page-container">
+    <Bar v-if="productDetailLoading" />
+    <template v-else>
       <EmptyState
         v-if="productDetailError"
         :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
         :title="GLOBAL.ERROR_EMPTY_TITLE"
         :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-        margin="56px 0"
+        height="100%"
       >
         <template #action>
           <Button @click="productDetailRefetch">Try Again</Button>
         </template>
       </EmptyState>
-      <template v-else>
-        <Bar v-if="productDetailLoading" margin="56px 0" />
-        <form v-else id="product-form" @submit.prevent>
+      <Container v-else class="page-container">
+        <form id="product-form" @submit.prevent>
           <Row>
             <Column :col="{ default: 12, md: 'auto' }">
               <div class="product-image" :data-error="true">
@@ -361,12 +363,12 @@ watch(
             </Column>
           </Row>
         </form>
-      </template>
-    </Container>
+      </Container>
+    </template>
   </Content>
 </template>
 
-<style lang="scss" src="@/assets/page-form.scss" />
+<style lang="scss" src="@/assets/common.page-form.scss" />
 <style lang="scss" scoped>
 .product-image {
   width: 180px;

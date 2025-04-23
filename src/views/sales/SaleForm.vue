@@ -98,9 +98,11 @@ const {
 watch(
   saleDetail,
   (newData) => {
-    const { name } = newData;
+    if (newData) {
+      const { name } = newData;
 
-    document.title = `Edit ${name} - ComPOS`;
+      document.title = `Edit ${name} - ComPOS`;
+    }
   },
 );
 </script>
@@ -223,6 +225,7 @@ watch(
                       :key="`form-sale-product-${product.id}`"
                       v-for="(product, index) of formData.products"
                       :name="product.name"
+                      :images="product.images"
                       :details="[
                         {
                           name: 'Quantity per Order',
@@ -230,8 +233,8 @@ watch(
                         },
                       ]"
                     >
-                      <template #extension>
-                        <QuantityEditor v-model="product.quantity" :min="1" size="small" readonly />
+                      <template #extensions>
+                        <QuantityEditor v-model="product.quantity" :min="1" readonly />
                         <ButtonRemove
                           :size="22"
                           :aria-label="`Remove ${product.name}`"
@@ -281,7 +284,7 @@ watch(
           @input="handleSearch($event, 'bundle')"
         />
         <ToolbarAction @click="handleDialogClose($event, true)">Done</ToolbarAction>
-        <template #extension>
+        <template #extensions>
           <TabControls v-model="productListTab" grow>
             <TabControl title="Product" @click="productListTab = 0" />
             <TabControl title="Bundle" @click="productListTab = 1; loadBundles = true;" />
@@ -392,7 +395,7 @@ watch(
                 />
                 <div v-else class="product-selection-list">
                   <ProductSelectionItem
-                    v-for="bundle of bundleList.bundles"
+                    v-for="bundle of bundleList?.bundles"
                     :key="bundle.id"
                     :images="bundle.images"
                     :name="bundle.name"
@@ -426,7 +429,7 @@ watch(
   </Dialog>
 </template>
 
-<style lang="scss" src="@/assets/page-form.scss" />
+<style lang="scss" src="@/assets/common.page-form.scss" />
 <style lang="scss" scoped>
 .order-notes {
   margin-bottom: 8px;

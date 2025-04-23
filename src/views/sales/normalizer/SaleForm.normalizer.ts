@@ -1,22 +1,9 @@
-import type { SaleFormDetailReturn, SaleFormDetailProduct } from '@/database/query/sale/getSaleFormDetail';
-import type { ProductListQueryReturn, VariantsData } from '@/database/query/product/getProductList';
-import type { BundleListQueryReturn } from '@/database/query/bundle/getBundleList';
+import type { QueryReturn as  SaleFormDetailReturn } from '@/database/query/sale/getSaleFormDetail';
+import type { QueryReturn as ProductListReturn, Variant } from '@/database/query/product/getProductList';
+import type { QueryReturn as BundleListReturn } from '@/database/query/bundle/getBundleList';
 
-type Pagination = {
-  current: number;
-  first: boolean;
-  last: boolean;
-  total: number;
-};
-
-export type DetailNormalizerReturn = {
-  name: string;
-  balance?: string;
-  products: SaleFormDetailProduct[];
-};
-
-export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
-  const { name, initial_balance, products } = data as SaleFormDetailReturn;
+export const saleFormDetailNormalizer = (data: SaleFormDetailReturn) => {
+  const { name, initial_balance, order_notes, products } = data;
   const productList = [];
 
   for (const product of products) {
@@ -31,41 +18,22 @@ export const detailNormalizer = (data: unknown): DetailNormalizerReturn => {
   }
 
   return {
-    products: productList,
+    products  : productList,
+    orderNotes: order_notes || [],
     name,
     ...(initial_balance ? { balance: initial_balance } : {}),
   };
 };
 
-export type ProductListVariant = {
-  id: string;
-  active: boolean;
-  images: string[];
-  name: string;
-};
-
-export type ProductList = {
-  id: string;
-  active: boolean;
-  images: string[];
-  name: string;
-  variants: ProductListVariant[];
-};
-
-export type ProductListNormalizerReturn = {
-  page: Pagination,
-  products: ProductList[];
-};
-
-export const productListNormalizer = (data: unknown): ProductListNormalizerReturn => {
-  const { data: productsData, page } = data as ProductListQueryReturn;
+export const saleFormProductListNormalizer = (data: ProductListReturn) => {
+  const { data: productsData, page } = data;
   const productList = [];
 
   for (const product of productsData) {
     const { id, active, variants, name, images } = product;
     const variantList = [];
 
-    for (const variant of variants as VariantsData[]) {
+    for (const variant of variants as Variant[]) {
       const { active, id, images, name } = variant;
 
       variantList.push({
@@ -88,15 +56,8 @@ export const productListNormalizer = (data: unknown): ProductListNormalizerRetur
   return { products: productList, page };
 };
 
-export type BundleList = Omit<ProductList, 'variants'>;
-
-export type BundleListNormalizerReturn = {
-  bundles: BundleList[];
-  page: Pagination;
-};
-
-export const bundleListNormalizer = (data: unknown): BundleListNormalizerReturn => {
-  const { data: bundlesData, page } = data as BundleListQueryReturn;
+export const saleFormBundleListNormalizer = (data: BundleListReturn) => {
+  const { data: bundlesData, page } = data;
   const bundleList = [];
 
   for (const bundle of bundlesData) {

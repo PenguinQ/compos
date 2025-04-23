@@ -204,7 +204,7 @@ watch(
   </div>
 </template>
 
-<style src="@/assets/form.scss" />
+<style src="@/assets/component.form.scss" />
 <style lang="scss">
 .cp-form-textarea {
   width: 100%;

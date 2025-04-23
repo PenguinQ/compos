@@ -1,6 +1,5 @@
 import { inject, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { Ref } from 'vue';
 
 // Databases
 import { useQuery, useMutation } from '@/database/hooks';
@@ -8,8 +7,7 @@ import { mutateDeleteProduct } from '@/database/query/product';
 import getProductDetail from '@/database/query/product/getProductDetail';
 
 // Normalizers
-import { detailNormalizer } from '../normalizer/ProductDetail.normalizer';
-import type { ProductDetailNormalizerReturn } from '../normalizer/ProductDetail.normalizer';
+import { productDetailNormalizer } from '../normalizer/ProductDetail.normalizer';
 
 export const useProductDetail = () => {
   const toast  = inject('ToastProvider');
@@ -26,10 +24,8 @@ export const useProductDetail = () => {
     isSuccess,
   } = useQuery({
     queryKey: ['product-details', params.id],
-    queryFn: () => getProductDetail({
-      id        : params.id as string,
-      normalizer: detailNormalizer,
-    }),
+    queryFn: () => getProductDetail(params.id as string),
+    queryNormalizer: productDetailNormalizer,
     onError: error => {
       // @ts-ignore
       toast.add({ message: 'Failed to get the product detail', type: 'error', duration: 2000 });
@@ -61,7 +57,7 @@ export const useProductDetail = () => {
 
   return {
     productId: params.id,
-    data: data as Ref<ProductDetailNormalizerReturn>,
+    data,
     dialogDelete,
     isError,
     isLoading,

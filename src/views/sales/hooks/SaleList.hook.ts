@@ -1,6 +1,5 @@
 import { computed, inject, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { Ref } from 'vue';
 
 // Databases
 import { useQuery } from '@/database/hooks';
@@ -10,8 +9,7 @@ import { getSaleList } from '@/database/query/sale';
 import { usePagination } from '@/views/hooks';
 
 // Normalizers
-import { listNormalizer } from '../normalizer/SaleList.normalizer';
-import type { ListNormalizerReturn } from '../normalizer/SaleList.normalizer';
+import { saleListNormalizer } from '../normalizer/SaleList.normalizer';
 
 // Common Helpers
 import { cleanWhitespace, debounce } from '@/helpers';
@@ -37,34 +35,34 @@ export const useSaleList = (status: 'running' | 'finished' = 'running') => {
   );
 
   const {
-    data     : list,
-    refetch  : listRefetch,
-    isLoading: listLoading,
-    isError  : listError,
+    data     : saleList,
+    refetch  : saleListRefetch,
+    isLoading: saleListLoading,
+    isError  : saleListError,
   } = useQuery({
     delay: 300,
     queryKey: ['sale-list', searchQuery, status, currentPage],
     queryFn: () => getSaleList({
       search_query: currentSearch.value,
-      sort: 'desc',
+      page        : currentPage.value,
+      limit       : 10,
+      sort        : 'desc',
       status,
-      limit: 10,
-      page: currentPage.value,
-      normalizer: listNormalizer,
     }),
-    onError: (error: Error) => {
+    queryNormalizer: saleListNormalizer,
+    onError: (error) => {
       // @ts-ignore
       toast.add({ message: 'Failed to get sale list', type: 'error', duration: 2000 });
       console.error('Failed to get sale list,', error);
     },
-    onSuccess: (response: unknown) => {
+    onSuccess: (response) => {
       if (response) {
-        const { page: response_page, sales } = response as ListNormalizerReturn;
+        const { page: responsePage, sales } = response;
 
-        page.current = response_page.current;
-        page.total = response_page.total;
-        page.first = response_page.first;
-        page.last = response_page.last;
+        page.current = responsePage.current;
+        page.total   = responsePage.total;
+        page.first   = responsePage.first;
+        page.last    = responsePage.last;
 
         isListEmpty.value = sales.length ? false : true;
       }
@@ -128,16 +126,16 @@ export const useSaleList = (status: 'running' | 'finished' = 'running') => {
   };
 
   return {
-    list: list as Ref<ListNormalizerReturn>,
+    saleList,
     searchQuery,
     page,
-    listError,
-    listLoading,
+    saleListError,
+    saleListLoading,
     isListEmpty,
     handleSearch,
     handleSearchClear,
     handlePaginationPrev,
     handlePaginationNext,
-    listRefetch,
+    saleListRefetch,
   };
 };

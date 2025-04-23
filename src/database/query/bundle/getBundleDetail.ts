@@ -1,44 +1,36 @@
 import { blobToBase64String } from 'rxdb';
-import type { RxDocument, RxAttachment } from 'rxdb';
+import type { RxDocument } from 'rxdb';
 
-// Databases
 import { db } from '@/database';
 import { isVariant } from '@/database/utils';
 import { IMAGE_ID_PREFIX } from '@/database/constants';
-import type { BundleDoc, ProductDoc, VariantDoc } from '@/database/types';
+import type { BundleDoc, ProductDoc } from '@/database/types';
 
 // Helpers
 import createError from '@/helpers/createError';
 import { ComPOSError } from '@/helpers/createError';
 
-export type BundleDetailProductImage = {
-  id: string;
-  url: string;
-};
-
-export type BundleDetailProduct = Omit<ProductDoc, 'variants'> & {
+type Product = Omit<ProductDoc, 'variants'> & {
   product_name?: string;
-  images: BundleDetailProductImage[];
+  images: {
+    id: string;
+    url: string;
+  }[];
   quantity: number;
 };
 
-type GetBundleDetailQuery = {
-  id: string;
-  normalizer?: (data: unknown) => void;
+export type QueryReturn = BundleDoc & {
+  products: Product[];
 };
 
-export type GetBundleDetailQueryReturn = BundleDoc & {
-  products: BundleDetailProduct[];
-};
-
-export default async ({ id, normalizer }: GetBundleDetailQuery) => {
+export default async (id: string) => {
   try {
     const _queryBundle = await db.bundle.findOne({ selector: { id } }).exec();
 
     if (!_queryBundle) throw createError('Bundle not found', { status: 404 });
 
-    const { products, ...bundleData } = _queryBundle.toJSON();
-    const products_list: BundleDetailProduct[] = [];
+    const { products, ...bundle_data } = _queryBundle.toJSON();
+    const products_list = [];
 
     /**
      * ---------------------------
@@ -65,7 +57,7 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
         const { name: p_name }    = _queryProduct.toJSON();
         const variant_json        = _queryVariant.toJSON();
         const variant_attachments = _queryVariant.allAttachments();
-        const images              = variant_attachments.filter((att: RxAttachment<VariantDoc>) => att.id.startsWith(IMAGE_ID_PREFIX));
+        const images              = variant_attachments.filter(att => att.id.startsWith(IMAGE_ID_PREFIX));
         const variant_images      = [];
 
         for (const image of images) {
@@ -95,7 +87,7 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
 
         const product_json        = _queryProduct.toJSON();
         const product_attachments = _queryProduct.allAttachments();
-        const images              = product_attachments.filter((att: RxAttachment<ProductDoc>) => att.id.startsWith(IMAGE_ID_PREFIX));
+        const images              = product_attachments.filter(att => att.id.startsWith(IMAGE_ID_PREFIX));
         const product_images      = [];
 
         for (const image of images) {
@@ -115,14 +107,9 @@ export default async ({ id, normalizer }: GetBundleDetailQuery) => {
     }
 
     return {
-      result: normalizer ? normalizer({
-        products: products_list,
-        ...bundleData
-      }): {
-        products: products_list,
-        ...bundleData
-      },
-    };
+      products: products_list,
+      ...bundle_data,
+    }
   } catch (error) {
     if (error instanceof ComPOSError || error instanceof Error) throw error;
 

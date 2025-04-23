@@ -12,16 +12,16 @@ import {
 } from '@/helpers';
 import { ComPOSError } from '@/helpers/createError';
 
-type MutateEditBundleQuery = {
+interface MutateEditBundleParams {
   id: string;
   name: string;
   description: string;
   price: string;
   auto_price: boolean;
   products: BundleDocProduct[];
-};
+}
 
-export default async (data: MutateEditBundleQuery) => {
+export default async (data: MutateEditBundleParams) => {
   try {
     const { sanitize } = DOMPurify;
     const {

@@ -15,9 +15,9 @@ type ToolbarSlots = {
    */
   default?: Slot;
   /**
-   * Slot used to create content for the Dialog extension.
+   * Slot used to create content for the Dialog extensions.
    */
-  extension?: Slot;
+  extensions?: Slot;
 };
 
 defineProps<Toolbar>();
@@ -25,9 +25,9 @@ defineSlots<ToolbarSlots>();
 
 const ToolbarTitle = defineAsyncComponent(() => import('./ToolbarTitle.vue'));
 
-const outerRef     = ref<HTMLDivElement | null>(null);
-const innerRef     = ref<HTMLDivElement | null>(null);
-const extensionRef = ref<HTMLDivElement | null>(null);
+const outerRef      = ref<HTMLDivElement | null>(null);
+const innerRef      = ref<HTMLDivElement | null>(null);
+const extensionsRef = ref<HTMLDivElement | null>(null);
 
 const toggleToolbar = (toggle: boolean) => {
   const outerContainer = outerRef.value;
@@ -52,7 +52,7 @@ defineExpose({
   /**
    * Toolbar extension container.
    */
-  extension: extensionRef,
+  extensions: extensionsRef,
   /**
    * Function to hide Toolbar.
    */
@@ -66,8 +66,8 @@ defineExpose({
       <ToolbarTitle v-if="title" class="cp-toolbar-title">{{ title }}</ToolbarTitle>
       <slot />
     </div>
-    <div v-if="$slots.extension" ref="extensionRef" class="cp-toolbar__extension">
-      <slot name="extension"></slot>
+    <div v-if="$slots.extensions" ref="extensionRef" class="cp-toolbar__extension">
+      <slot name="extensions"></slot>
     </div>
   </div>
 </template>

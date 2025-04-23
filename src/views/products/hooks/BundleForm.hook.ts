@@ -1,7 +1,6 @@
 import { computed, reactive, ref, inject, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Big from 'big.js';
-import type { Ref } from 'vue';
 
 // Databases
 import { useQuery, useMutation } from '@/database/hooks';
@@ -9,31 +8,25 @@ import { getBundleDetail, mutateAddBundle, mutateEditBundle } from '@/database/q
 import { getProductList } from '@/database/query/product';
 
 // Normalizers
-import { formDetailNormalizer, formProductListNormalizer } from '../normalizer/BundleForm.normalizer'
+import {
+  bundleFormDetailNormalizer,
+  bundleFormProductListNormalizer,
+} from '../normalizer/BundleForm.normalizer'
 
 // Common Helpers
-import {
-  debounce,
-  isNumeric,
-  isNumericString,
-} from '@/helpers';
+import { debounce, isNumeric, isNumericString } from '@/helpers';
 
-// Types
-import type {
-  FormDetailNormalizerReturn,
-  FormProductListNormalizerReturn,
-  FormProductListProduct,
-  FormProductListVariant,
-} from '../normalizer/BundleForm.normalizer';
+type Product = ReturnType<typeof bundleFormProductListNormalizer>['products'][number];
+type Variant = Product['variants'][number];
 
 type FormDataProduct = {
   id: string;
-  product_id: string;
+  productId: string;
   active: boolean;
   images: string[];
   name: string;
   price: string;
-  total_price: string;
+  totalPrice: string;
   quantity: number;
   stock: number;
   sku: string;
@@ -43,9 +36,9 @@ type FormData = {
   name: string;
   description: string;
   price: string;
-  auto_price: boolean;
+  autoPrice: boolean;
   products: FormDataProduct[];
-  selected_products: FormDataProduct[];
+  selectedProducts: FormDataProduct[];
 };
 
 type FormErrorProducts = {
@@ -67,12 +60,12 @@ export const useBundleForm = () => {
   const loadProducts       = ref(false);
   const showProductsDialog = ref(false);
   const formData: FormData = reactive({
-    name             : '',
-    description      : '',
-    price            : '0',
-    auto_price       : true,
-    products         : [],
-    selected_products: [],
+    name            : '',
+    description     : '',
+    price           : '0',
+    autoPrice       : true,
+    products        : [],
+    selectedProducts: [],
   });
   const formError: FormError = reactive({
     name    : '',
@@ -86,7 +79,7 @@ export const useBundleForm = () => {
     first  : true,
     last   : true,
   });
-  const current_page = computed(() => page.current);
+  const currentPage = computed(() => page.current);
 
   const {
     data     : bundleDetail,
@@ -95,39 +88,39 @@ export const useBundleForm = () => {
     isLoading: bundleDetailLoading,
   } = useQuery({
     queryKey: ['bundle-form-details', params.id],
-    queryFn: () => getBundleDetail({
-      id: params.id as string,
-      normalizer: formDetailNormalizer,
-    }),
+    queryFn: () => getBundleDetail(params.id as string),
+    queryNormalizer: bundleFormDetailNormalizer,
     enabled: params.id ? true : false,
     onError: error => {
       // @ts-ignore
       toast.add({ message: `Error getting the bundle detail`, type: 'error' });
       console.error('Error getting the bundle detail,', error.message);
     },
-    onSuccess: (response: unknown) => {
-      const resp = response as FormDetailNormalizerReturn;
+    onSuccess: (response) => {
+      if (response) {
+        const resp = response;
 
-      if (params.id) {
-        formData.name        = resp.name;
-        formData.description = resp.description;
-        formData.price       = resp.price;
-        formData.auto_price  = resp.auto_price;
+        if (params.id) {
+          formData.name        = resp.name;
+          formData.description = resp.description;
+          formData.price       = resp.price;
+          formData.autoPrice  = resp.autoPrice;
 
-        for (const product of resp.products) {
-          formData.products.push({
-            id         : product.id,
-            product_id : product.product_id,
-            active     : product.active,
-            images     : product.images,
-            name       : product.name,
-            price      : product.price,
-            total_price: product.total_price,
-            quantity   : product.quantity,
-            stock      : product.stock,
-            sku        : product.sku,
-          });
-          formError.products.push({ quantity: '' });
+          for (const product of resp.products) {
+            formData.products.push({
+              id        : product.id,
+              productId : product.productId,
+              active    : product.active,
+              images    : product.images,
+              name      : product.name,
+              price     : product.price,
+              totalPrice: product.totalPrice,
+              quantity  : product.quantity,
+              stock     : product.stock,
+              sku       : product.sku,
+            });
+            formError.products.push({ quantity: '' });
+          }
         }
       }
     },
@@ -139,7 +132,7 @@ export const useBundleForm = () => {
     isLoading: productListLoading,
     isError  : productListError,
   } = useQuery({
-    queryKey: ['bundle-form-products', searchQuery, current_page],
+    queryKey: ['bundle-form-products', searchQuery, currentPage],
     queryFn: () => getProductList({
       active: true,
       search_query: searchQuery.value,
@@ -147,8 +140,8 @@ export const useBundleForm = () => {
       complete: true,
       limit: page.limit,
       page: page.current,
-      normalizer: formProductListNormalizer,
     }),
+    queryNormalizer: bundleFormProductListNormalizer,
     enabled: loadProducts,
     onError: error => {
       // @ts-ignore
@@ -174,16 +167,16 @@ export const useBundleForm = () => {
       const bundle_products = [];
 
       for (const product of formData.products) {
-        const { id, product_id, active, quantity } = product;
+        const { id, productId, active, quantity } = product;
 
-        bundle_products.push({ id, product_id, active, quantity });
+        bundle_products.push({ id, product_id: productId, active, quantity });
       }
 
       return mutateAddBundle({
         name       : formData.name,
         description: formData.description,
         price      : formData.price,
-        auto_price : formData.auto_price,
+        auto_price : formData.autoPrice,
         products   : bundle_products,
       });
     },
@@ -207,9 +200,9 @@ export const useBundleForm = () => {
       const bundle_products = [];
 
       for (const product of formData.products) {
-        const { id, product_id, active, quantity } = product;
+        const { id, productId, active, quantity } = product;
 
-        bundle_products.push({ id, product_id, active, quantity });
+        bundle_products.push({ id, product_id: productId, active, quantity });
       }
 
       return mutateEditBundle({
@@ -217,7 +210,7 @@ export const useBundleForm = () => {
         name       : formData.name,
         description: formData.description,
         price      : formData.price,
-        auto_price : formData.auto_price,
+        auto_price : formData.autoPrice,
         products   : bundle_products,
       });
     },
@@ -300,42 +293,42 @@ export const useBundleForm = () => {
    */
   const handleOpenDialog = () => {
     loadProducts.value = true;
-    formData.selected_products = [...formData.products];
+    formData.selectedProducts = [...formData.products];
   };
 
   const handleCloseDialog = (_e: Event, save?: boolean) => {
     if (save) {
-      formData.products = [...formData.selected_products];
+      formData.products = [...formData.selectedProducts];
     }
 
-    formData.selected_products = [];
+    formData.selectedProducts = [];
     showProductsDialog.value   = false;
     page.current               = 1;
   };
 
-  const handleSelectProduct = (data: FormProductListProduct) => {
+  const handleSelectProduct = (data: Product) => {
     const { id, active, images, name, price, variants, sku, stock } = data;
-    const products = formData.selected_products;
+    const products = formData.selectedProducts;
 
     if (variants.length) {
       const variant_ids = variants.map(variant => variant.id);
       const is_variants_selected = variant_ids.every(id => products.some(product => id === product.id));
 
       if (is_variants_selected) {
-        formData.selected_products = products.filter(product => !variant_ids.some(id => id === product.id));
+        formData.selectedProducts = products.filter(product => !variant_ids.some(id => id === product.id));
       } else {
         for (const variant of variants) {
-          const { id, product_id, active, images, name: variant_name, price, sku, stock } = variant;
+          const { id, productId, active, images, name: variant_name, price, sku, stock } = variant;
           const is_variant_selected = products.find(product => product.id === id);
 
           if (!is_variant_selected) {
             products.push({
-              name       : `${name} - ${variant_name}`,
-              total_price: Big(price).times(1).toFixed(),
-              quantity   : 1,
-              sku        : sku || '',
+              name      : `${name} - ${variant_name}`,
+              totalPrice: Big(price).times(1).toFixed(),
+              quantity  : 1,
+              sku       : sku || '',
+              productId : productId,
               id,
-              product_id,
               active,
               images,
               price,
@@ -355,10 +348,10 @@ export const useBundleForm = () => {
         formError.products.splice(index, 1);
       } else {
         products.push({
-          product_id : '',
-          total_price: Big(price).times(1).toFixed(),
-          quantity   : 1,
-          sku        : sku || '',
+          productId : '',
+          totalPrice: Big(price).times(1).toFixed(),
+          quantity  : 1,
+          sku       : sku || '',
           id,
           active,
           images,
@@ -371,9 +364,9 @@ export const useBundleForm = () => {
     }
   };
 
-  const handleSelectVariant = (data: FormProductListVariant, product_name: string) => {
-    const { id, product_id, active, images, name, price, sku, stock } = data;
-    const products = formData.selected_products;
+  const handleSelectVariant = (data: Variant, product_name: string) => {
+    const { id, productId, active, images, name, price, sku, stock } = data;
+    const products = formData.selectedProducts;
     const selected = products.find(product => product.id === id);
 
     if (selected) {
@@ -383,12 +376,12 @@ export const useBundleForm = () => {
       formError.products.splice(index, 1);
     } else {
       products.push({
-        name       : `${product_name} - ${name}`,
-        total_price: Big(price).times(1).toString(),
-        quantity   : 1,
-        sku        : sku || '',
+        name      : `${product_name} - ${name}`,
+        totalPrice: Big(price).times(1).toString(),
+        quantity  : 1,
+        sku       : sku || '',
+        productId,
         id,
-        product_id,
         active,
         images,
         price,
@@ -398,9 +391,9 @@ export const useBundleForm = () => {
     }
   };
 
-  const isProductSelected = (data: FormProductListProduct) => {
+  const isProductSelected = (data: Product) => {
     const { id, variants } = data;
-    const products = formData.selected_products;
+    const products = formData.selectedProducts;
 
     if (variants.length) {
       const variant_ids = variants.map(variant => variant.id);
@@ -412,7 +405,7 @@ export const useBundleForm = () => {
   };
 
   const isVariantSelected = (id: string) => {
-    return formData.selected_products.find(product => product.id === id);
+    return formData.selectedProducts.find(product => product.id === id);
   };
 
   const toPrevPage = (_e: Event, toFirst?: boolean) => {
@@ -441,15 +434,15 @@ export const useBundleForm = () => {
    * ----------------------
    */
   const handleRefresh = async (loading: any) => {
-    formData.name              = '';
-    formData.description       = '';
-    formData.price             = '0';
-    formData.auto_price        = true;
-    formData.products          = [];
-    formData.selected_products = [];
-    formError.name             = '';
-    formError.price            = '';
-    formError.products         = [];
+    formData.name             = '';
+    formData.description      = '';
+    formData.price            = '0';
+    formData.autoPrice        = true;
+    formData.products         = [];
+    formData.selectedProducts = [];
+    formError.name            = '';
+    formError.price           = '';
+    formError.products        = [];
 
     await bundleDetailRefetch();
     loading.complete();
@@ -472,7 +465,7 @@ export const useBundleForm = () => {
   watch(
     () => formData.products,
     (products) => {
-      if (formData.auto_price) {
+      if (formData.autoPrice) {
         formData.price = getUpdatedPrice(products);
       }
     },
@@ -480,7 +473,7 @@ export const useBundleForm = () => {
   );
 
   watch(
-    () => formData.auto_price,
+    () => formData.autoPrice,
     (auto_price) => {
       if (auto_price) {
         formData.price = getUpdatedPrice(formData.products);
@@ -490,14 +483,16 @@ export const useBundleForm = () => {
 
   return {
     bundleId: params.id,
-    bundleDetail: bundleDetail as Ref<FormDetailNormalizerReturn>,
+    bundleDetail,
+    productList,
+    // bundleDetail: bundleDetail as Ref<FormDetailNormalizerReturn>,
+    // productList: productList as Ref<FormProductListNormalizerReturn>,
     formData,
     formError,
     page,
     searchQuery,
     loadProducts,
     showProductsDialog,
-    productList: productList as Ref<FormProductListNormalizerReturn>,
     productListError,
     productListLoading,
     bundleDetailError,

@@ -3,7 +3,6 @@ import DOMPurify from 'isomorphic-dompurify';
 import Big from 'big.js';
 import type { RxDocument } from 'rxdb';
 
-// Databases
 import { db } from '@/database';
 import { addImages, compressProductImage, isImagesValid } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX, VARIANT_ID_PREFIX } from '@/database/constants';
@@ -13,7 +12,7 @@ import type { ProductDoc, VariantDoc } from '@/database/types';
 import { isNumeric, isNumericString, sanitizeNumericString } from '@/helpers';
 import { ComPOSError } from '@/helpers/createError';
 
-type MutateEditProductQueryVariant = {
+type Variant = {
   id?: string;
   name: string;
   price: string;
@@ -23,7 +22,7 @@ type MutateEditProductQueryVariant = {
   deleted_images: string[],
 };
 
-type MutateEditProductQueryData = {
+type Data = {
   name: string;
   description?: string;
   by?: string;
@@ -32,14 +31,14 @@ type MutateEditProductQueryData = {
   sku?: string;
   new_images?: File[];
   deleted_images?: string[];
-  variants?: MutateEditProductQueryVariant[];
+  variants?: Variant[];
   deleted_variants?: string[];
 };
 
-type MutateEditProductQuery = {
+interface MutateEditProductParams {
   id: string;
-  data: MutateEditProductQueryData;
-};
+  data: Data;
+}
 
 const removeImages = async (images: string[], doc: RxDocument<ProductDoc> | RxDocument<VariantDoc>) => {
   for (const id of images) {
@@ -136,7 +135,7 @@ const updateBundlesStatus = async ({ id, active }: { id: string; active: boolean
   }
 };
 
-export default async ({ id, data }: MutateEditProductQuery) => {
+export default async ({ id, data }: MutateEditProductParams) => {
   try {
     const { sanitize } = DOMPurify;
     const {

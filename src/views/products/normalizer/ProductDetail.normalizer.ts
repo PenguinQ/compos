@@ -1,37 +1,10 @@
+// Databases
+import type { QueryReturn } from '@/database/query/product/getProductDetail';
+
 // Helpers
 import { getUpdateTime, toIDR } from '@/helpers';
 
-// Databases
-import type { ProductDetailQueryReturn } from '@/database/query/product/getProductDetail';
-
-type ProductVariants = {
-  id: string;
-  active: boolean;
-  product_id: string;
-  name: string;
-  images: string[];
-  price: string;
-  price_formatted: string;
-  stock: number;
-  sku?: string;
-};
-
-export type ProductDetailNormalizerReturn = {
-  id: string;
-  active: boolean;
-  images: string[];
-  name: string;
-  description: string;
-  by: string;
-  price: string;
-  priceFormatted: string;
-  stock: number;
-  sku: string;
-  variants: ProductVariants[];
-  updatedAt: string;
-};
-
-export const detailNormalizer = (data: unknown): ProductDetailNormalizerReturn => {
+export const productDetailNormalizer = (data: QueryReturn) => {
   const {
     id,
     active,
@@ -44,7 +17,7 @@ export const detailNormalizer = (data: unknown): ProductDetailNormalizerReturn =
     sku,
     variants,
     updated_at,
-  } = data as ProductDetailQueryReturn || {};
+  } = data || {};
   const productImages   = [];
   const productVariants = [];
 
@@ -71,31 +44,31 @@ export const detailNormalizer = (data: unknown): ProductDetailNormalizerReturn =
       }
 
       productVariants.push({
-        id             : id || '',
-        active         : active || false,
-        product_id     : product_id || '',
-        name           : name || '',
-        images         : variantImages,
-        price          : price ?? '0',
-        price_formatted: toIDR(price ?? '0'),
-        stock          : stock || 0,
-        sku            : sku || '',
+        id            : id || '',
+        active        : active || false,
+        productId     : product_id || '',
+        name          : name || '',
+        images        : variantImages,
+        price         : price ?? '0',
+        priceFormatted: toIDR(price ?? '0'),
+        stock         : stock || 0,
+        sku           : sku || '',
       });
     }
   }
 
   return {
-    id             : id || '',
-    active         : active || false,
-    images         : productImages,
-    name           : name || '',
-    description    : description || '',
-    by             : by || '',
-    price          : price ?? '0',
-    priceFormatted : toIDR(price ?? '0'),
-    stock          : stock || 0,
-    sku            : sku || '',
-    variants       : productVariants,
-    updatedAt      : getUpdateTime(updated_at),
+    id            : id || '',
+    active        : active || false,
+    images        : productImages,
+    name          : name || '',
+    description   : description || '',
+    by            : by || '',
+    price         : price ?? '0',
+    priceFormatted: toIDR(price ?? '0'),
+    stock         : stock || 0,
+    sku           : sku || '',
+    variants      : productVariants,
+    updatedAt     : getUpdateTime(updated_at),
   };
 };

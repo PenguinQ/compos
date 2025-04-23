@@ -1,53 +1,26 @@
-import type { ProductsData } from '@/database/query/product/getProductList';
+import type { QueryReturn } from '@/database/query/product/getProductList';
 
-type NormalizerDataPage = {
-  current: number;
-  first: boolean;
-  last: boolean;
-  total: number;
-};
+export const productListNormalizer = (data: QueryReturn) => {
+  const { data: productsData, data_count: dataCount, page } = data;
+  const products     = productsData || [];
+  const productList = [];
 
-type NormalizerData = {
-  data: unknown;
-  data_count: number;
-  page: NormalizerDataPage;
-};
-
-type ProductList = {
-  id: string;
-  name: string;
-  variants?: number;
-  image: string;
-};
-
-export type ProductListNormalizerReturn = {
-  products: ProductList[];
-  products_count: number;
-  products_count_total: number;
-  page: NormalizerDataPage;
-};
-
-export const productListNormalizer = (data: unknown) => {
-  const { data: products_data, data_count, page } = data as NormalizerData;
-  const products     = products_data || [];
-  const product_list = <ProductList[]>[];
-
-  for (const product of products as ProductsData[]) {
+  for (const product of products) {
     const { id, variants, name, images } = product;
-    const product_image = images[0] || '';
+    const productImage = images[0] || '';
 
-    product_list.push({
+    productList.push({
       variants: variants?.length,
-      image   : product_image,
+      image   : productImage,
       id,
       name,
     });
   }
 
   return {
-    products            : product_list,
-    products_count      : product_list.length,
-    products_count_total: data_count,
+    products          : productList,
+    productsCount     : productList.length,
+    productsCountTotal: dataCount,
     page,
   };
 };

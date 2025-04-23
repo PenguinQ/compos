@@ -17,44 +17,54 @@ type OrderCard = {
   total: string;
   tendered: string;
   onCancel?: Function;
+  note?: string;
 };
 
 withDefaults(defineProps<OrderCard>(), {
   canceled: false,
 });
+
+/**
+ * --------
+ * Glossary
+ * --------
+ * vc  = view component
+ * odc = order card
+ */
 </script>
 
 <template>
-<Card class="vc-order-card">
+<Card class="vc-odc">
   <CardBody padding="12px 16px">
-    <Text class="vc-order-card__name" heading="6" margin="0">
+    <Text class="vc-odc__name" heading="6" margin="0">
       {{ title }}
       <Label v-if="canceled" color="red" variant="outline">Canceled</Label>
     </Text>
-    <div class="vc-order-card-details">
-      <div class="vc-order-card-details__item">
+    <div class="vc-odc-details">
+      <div class="vc-odc-details__item">
         <ComposIcon :icon="Receipt" />
         <span>{{ total }}</span>
       </div>
-      <div class="vc-order-card-details__item">
+      <div class="vc-odc-details__item">
         <ComposIcon :icon="Cash" />
         <span>{{ tendered }}</span>
       </div>
-      <div class="vc-order-card-details__item">
+      <div class="vc-odc-details__item">
         <ComposIcon :icon="CashCoin" />
         <span>{{ change }}</span>
       </div>
     </div>
-    <div class="vc-order-card-products">
-      <div v-for="product of products" class="vc-order-card-products__item">
+    <div class="vc-odc-products">
+      <div v-for="product of products" class="vc-odc-products__item">
         <ComposIcon :icon="Box" />
         {{ product.quantity }}&times; {{ product.name }}
       </div>
     </div>
+    <Text v-if="note" class="vc-odc__note" body="small" margin="12px 0 0">{{ note }}</Text>
     <button
       v-if="onCancel"
       type="button"
-      class="vc-order-card__remove button button--icon"
+      class="vc-odc__remove button button--icon"
       @click="$emit('cancel')"
     >
       <ComposIcon :icon="XLarge" :size="16" />
@@ -64,7 +74,7 @@ withDefaults(defineProps<OrderCard>(), {
 </template>
 
 <style lang="scss">
-.vc-order-card {
+.vc-odc {
   overflow: unset;
 
   .cp-card__body {
@@ -132,6 +142,11 @@ withDefaults(defineProps<OrderCard>(), {
         flex-shrink: 0;
       }
     }
+  }
+
+  &__note {
+    border-top: 1px solid var(--color-border);
+    padding-top: 12px;
   }
 
   &__remove {

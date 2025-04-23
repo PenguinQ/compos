@@ -1,26 +1,12 @@
-import type { SaleDetailQueryReturn } from '@/database/query/sale/getSaleDetail';
-import type { GetSaleProductsQueryReturn, GetSaleProductsBundleItem } from '@/database/query/sale/getSaleProducts';
-import type { ObservableReturns as OrdersQueryReturns } from '@/database/query/sale/getSaleOrders';
+import type { QueryReturn as SaleDetailQueryReturn } from '@/database/query/sale/getSaleDetail';
+import type { QueryReturn as SaleOrdersQueryReturn } from '@/database/query/sale/getSaleOrders';
+import type { QueryReturn as SaleProductsQueryReturn } from '@/database/query/sale/getSaleProducts';
 
 import { getUpdateTime, toIDR } from '@/helpers';
 
-export type DetailsNormalizerProduct = {
-  id: string;
-  product_id?: string;
-  quantity?: number;
-};
-
-export type DetailsNormalizerReturn = {
-  name: string;
-  finished: boolean;
-  products: DetailsNormalizerProduct[];
-  balance?: string;
-  updatedAt: string;
-};
-
-export const detailsNormalizer = (data: unknown): DetailsNormalizerReturn => {
-  const { finished, name, products, initial_balance, updated_at } = data as SaleDetailQueryReturn || {};
-  const saleProducts: { id: string, product_id?: string, quantity?: number }[] = [];
+export const dashboardDetailsNormalizer = (data: SaleDetailQueryReturn) => {
+  const { finished, name, products, initial_balance, updated_at, order_notes } = data || {};
+  const saleProducts = [];
 
   for (const product of products) {
     const { id, product_id, quantity } = product;
@@ -33,41 +19,13 @@ export const detailsNormalizer = (data: unknown): DetailsNormalizerReturn => {
     updatedAt: getUpdateTime(updated_at),
     name,
     finished,
+    ...(order_notes ? { orderNotes: order_notes } : {}),
     ...(initial_balance ? { balance: initial_balance } : {}),
   };
 };
 
-type ProductsNormalizerItem = GetSaleProductsBundleItem & {
-  priceFormatted: string;
-};
-
-/**
- * -------------------------------------------------------------------------------------------------------
- * 1. "stock" is optional since the product can be a bundle, and each of bundle item has it's own "stock".
- * 2. "sku" is optional since the product can be a bundle, and each of bundle item has it's own "sku".
- * 3. "items" is optional since "items" only used for bundle.
- * -------------------------------------------------------------------------------------------------------
- */
-export type ProductsNormalizerProduct = {
-  id: string;
-  active: boolean;
-  images: string[];
-  name: string;
-  price: string;
-  priceFormatted: string;
-  stock: number;
-  quantity: number;
-  sku?: string;
-  items?: ProductsNormalizerItem[];
-};
-
-export type ProductsNormalizerReturn = {
-  products: ProductsNormalizerProduct[];
-  productsCount: number;
-};
-
-export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
-  const { data: productsData, data_count } = data as GetSaleProductsQueryReturn;
+export const dashboardProductsNormalizer = (data: SaleProductsQueryReturn)=> {
+  const { data: productsData, data_count } = data;
   const productList = [];
 
   for (const product of productsData) {
@@ -86,14 +44,10 @@ export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
     let itemStock = stock;
 
     if (items) {
+      const lowestStockedItem = items.reduce((acc, curr) => curr.stock < acc.stock ? curr : acc, items[0]);
+
       for (const item of items) {
         const { id, name, price, quantity, sku, stock } = item;
-
-        if (itemStock) {
-          if (itemStock > stock) itemStock = stock;
-        } else {
-          itemStock = stock;
-        }
 
         itemList.push({
           priceFormatted: toIDR(price),
@@ -101,9 +55,17 @@ export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
           name,
           price,
           quantity,
-          sku,
           stock,
+          ...(sku ? { sku } : {}),
         });
+      }
+
+      if ((quantity * lowestStockedItem.quantity) === lowestStockedItem.stock) {
+        itemStock = quantity;
+      } else if ((quantity * lowestStockedItem.quantity) > lowestStockedItem.stock) {
+        itemStock = 0;
+      } else {
+        itemStock = lowestStockedItem.stock;
       }
     }
 
@@ -115,9 +77,9 @@ export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
       active,
       images,
       name,
-      sku,
       price,
       quantity,
+      ...(sku ? { sku } : {}),
     });
   }
 
@@ -127,44 +89,13 @@ export const productsNormalizer = (data: unknown): ProductsNormalizerReturn => {
   };
 };
 
-type OrdersNormalizerOrderProductItem = {
-  name: string;
-  quantity: number;
-};
-
-type OrdersNormalizerOrderProduct = {
-  name: string;
-  quantity: number;
-  items?: OrdersNormalizerOrderProductItem[];
-};
-
-type OrdersNormalizerOrder = {
-  products: OrdersNormalizerOrderProduct[],
-  id: string;
-  canceled: boolean;
-  name: string;
-  total: string;
-  totalFormatted: string;
-  tendered: string;
-  tenderedFormatted: string;
-  change: string;
-  changeFormatted: string;
-};
-
-export type OrdersNormalizerReturn = {
-  orders: OrdersNormalizerOrder[];
-  ordersTotalChange: string;
-  ordersTotalChangeFormatted: string;
-  ordersCount: number;
-};
-
-export const ordersNormalizer = (data: unknown): OrdersNormalizerReturn => {
-  const { data: ordersData, data_count } = data as OrdersQueryReturns;
+export const dashboardOrdersNormalizer = (data: SaleOrdersQueryReturn) => {
+  const { data: ordersData, data_count } = data;
   const { orders, orders_total_change }  = ordersData;
   const ordersList = [];
 
   for (const order of orders) {
-    const { id, canceled, name, products, total, tendered, change } = order;
+    const { id, canceled, name, products, total, tendered, change, note } = order;
     const orderProductList = [];
 
     for (const product of products) {
@@ -200,6 +131,7 @@ export const ordersNormalizer = (data: unknown): OrdersNormalizerReturn => {
       total,
       tendered,
       change,
+      note,
     });
   }
 
