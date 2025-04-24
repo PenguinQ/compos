@@ -18,7 +18,7 @@ type BundleItem = {
   sku?: string;
 };
 
-type Product ={
+type Product = {
   id: string;
   name: string;
   price: string;

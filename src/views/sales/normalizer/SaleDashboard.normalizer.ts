@@ -60,13 +60,7 @@ export const dashboardProductsNormalizer = (data: SaleProductsQueryReturn)=> {
         });
       }
 
-      if ((quantity * lowestStockedItem.quantity) === lowestStockedItem.stock) {
-        itemStock = quantity;
-      } else if ((quantity * lowestStockedItem.quantity) > lowestStockedItem.stock) {
-        itemStock = 0;
-      } else {
-        itemStock = lowestStockedItem.stock;
-      }
+      itemStock = Math.floor(lowestStockedItem.stock / lowestStockedItem.quantity);
     }
 
     productList.push({

@@ -262,7 +262,7 @@ onUnmounted(() => {
                       :change="order.changeFormatted"
                       :products="order.products"
                       :note="order.note"
-                      @cancel="handleCancelOrder(order.id, order.name)"
+                      v-on="!order.canceled ? { cancel  : () => handleCancelOrder(order.id, order.name) } : {}"
                     />
                   </div>
                 </template>
@@ -619,6 +619,7 @@ onUnmounted(() => {
             :products="order.products"
             :note="order.note"
             @cancel="handleCancelOrder(order.id, order.name)"
+            v-on="!order.canceled ? { cancel  : () => handleCancelOrder(order.id, order.name) } : {}"
           />
         </div>
       </template>
