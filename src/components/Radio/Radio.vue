@@ -175,7 +175,7 @@ const handleKeydown = (e: KeyboardEvent) => {
   padding: 8px 0;
 
   &:focus-within .cp-form-radio__circle {
-    outline: 2px solid var(--color-focus-outline);
+    outline: 2px solid var(--color-blue-5);
   }
 
   &__container {
@@ -238,11 +238,11 @@ const handleKeydown = (e: KeyboardEvent) => {
 
     input[type="radio"] + .cp-form-radio__circle,
     input[type="radio"]:checked + .cp-form-radio__circle {
-      background-color: var(--color-disabled-background);
-      border-color: var(--color-disabled-border);
+      background-color: var(--color-stone-2);
+      border-color: var(--color-stone-3);
 
       &::before {
-        background-color: var(--color-disabled-border);
+        background-color: var(--color-stone-3);
       }
     }
   }

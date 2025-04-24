@@ -182,7 +182,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-neutral-2);
   padding-top: 0;
   padding-bottom: 0;
   padding-inline-start: var(--padding-start, 16px);
@@ -270,10 +270,10 @@ onMounted(() => {
         }
 
         .cp-form-field {
-          color: var(--color-disabled-border);
+          color: var(--color-stone-3);
 
           & + compos-icon {
-            color: var(--color-disabled-border);
+            color: var(--color-stone-3);
           }
         }
       }

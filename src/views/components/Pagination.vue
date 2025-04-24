@@ -154,8 +154,8 @@ const classes       = computed(() => ({
 
   &[data-cp-disabled] {
     #{$root}__detail {
-      background-color: var(--color-disabled-background);
-      border-color: var(--color-disabled-border);
+      background-color: var(--color-stone-2);
+      border-color: var(--color-stone-3);
     }
   }
 }

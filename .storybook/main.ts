@@ -49,7 +49,7 @@ const config: StorybookConfig = {
         preprocessorOptions: {
           scss: {
             additionalData: `
-            @import '@assets/mixins';
+              @import '@/assets/core.mixins';
             `,
           },
         },

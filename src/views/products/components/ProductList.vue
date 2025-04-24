@@ -164,7 +164,7 @@ const {
   }
 
   &__detail {
-    border-top: 1px solid var(--color-disabled-border);
+    border-top: 1px solid var(--color-stone-2);
     padding: 12px;
   }
 

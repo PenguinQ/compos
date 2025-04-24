@@ -450,7 +450,7 @@ watch(
     &__item {
       @include text-body-md;
       padding: 8px 16px;
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-neutral-2);
 
       &:last-of-type {
         border-bottom-color: transparent;
@@ -495,7 +495,7 @@ watch(
 
     thead {
       th {
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-neutral-2);
         position: sticky;
         top: 0;
       }
@@ -533,7 +533,7 @@ watch(
 .product-list {
   .vc-pli {
     &:last-of-type {
-      border-color: var(--color-border);
+      border-color: var(--color-neutral-2);
     }
   }
 
@@ -557,7 +557,7 @@ watch(
   }
 
   .bundle-items {
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-neutral-2);
     padding-top: 12px;
     margin-top: 12px;
   }

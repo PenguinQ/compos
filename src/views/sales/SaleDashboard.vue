@@ -723,7 +723,7 @@ onUnmounted(() => {
 
 .bundle {
   &-items {
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-neutral-2);
     padding-top: 16px;
     margin-top: 16px;
 
@@ -746,7 +746,7 @@ onUnmounted(() => {
 
     .cp-card__header {
       flex-shrink: 0;
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-neutral-2);
     }
 
     .cp-card__title {
@@ -813,7 +813,7 @@ onUnmounted(() => {
 
       > * {
         min-width: 0;
-        border-top: 1px solid var(--color-border);
+        border-top: 1px solid var(--color-neutral-2);
 
         &:only-child {
           border-top: none;
@@ -960,7 +960,7 @@ onUnmounted(() => {
       }
 
       .order-summaries {
-        border-top: 1px solid var(--color-border);
+        border-top: 1px solid var(--color-neutral-2);
 
         &:first-child {
           border-top: none;

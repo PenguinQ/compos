@@ -53,7 +53,7 @@ withDefaults(defineProps<ProductSelectionItem>(), {
 <style lang="scss">
 .vc-product-selection-item {
   background-color: var(--color-white);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-neutral-2);
   display: flex;
   align-items: center;
   gap: 16px;

@@ -127,7 +127,7 @@ const classes = computed(() => ({
 
   &:disabled {
     color: white;
-    background-color: var(--color-disabled-2);
+    background-color: var(--color-stone-3);
     border-color: transparent;
     cursor: not-allowed;
   }

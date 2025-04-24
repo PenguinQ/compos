@@ -145,12 +145,12 @@ onMounted(() => {
     }
 
     &::-webkit-scrollbar-track {
-      background-color: #ecebed;
+      background-color: #ECEBED;
       border-radius: 24px;
     }
 
     &::-webkit-scrollbar-thumb {
-      background-color: #b2b4bd;
+      background-color: #B2B4BD;
       border-radius: 24px;
     }
   }

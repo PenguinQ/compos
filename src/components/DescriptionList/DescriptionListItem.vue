@@ -56,7 +56,7 @@ defineProps<DescriptionListItem>();
     gap: 12px;
 
     dt {
-      line-height: var(--text-body-height-md-px);
+      line-height: var(--text-body-height-md);
       width: 128px;
       flex: 0 0 128px;
     }

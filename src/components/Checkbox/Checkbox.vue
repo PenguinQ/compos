@@ -241,7 +241,7 @@ const inArray = (array: CheckboxValue[], value: CheckboxValue) => {
     flex-shrink: 0;
 
     &:focus-within {
-      outline: 2px solid var(--color-focus-outline);
+      outline: 2px solid var(--color-blue-5);
     }
   }
 
@@ -315,11 +315,11 @@ const inArray = (array: CheckboxValue[], value: CheckboxValue) => {
 
     input[type="checkbox"] + .cp-form-checkbox__box,
     input[type="checkbox"]:checked + .cp-form-checkbox__box {
-      background-color: var(--color-disabled-background);
-      border-color: var(--color-disabled-border);
+      background-color: var(--color-stone-2);
+      border-color: var(--color-stone-3);
 
       compos-icon {
-        color: var(--color-disabled-border);
+        color: var(--color-stone-3);
       }
     }
   }
