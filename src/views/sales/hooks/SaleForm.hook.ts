@@ -191,9 +191,10 @@ export const useSaleForm = () => {
 
       return mutateAddSale({
         data: {
-          name    : formData.name,
-          balance : formData.balance,
-          products: productsData,
+          name       : formData.name,
+          balance    : formData.balance,
+          products   : productsData,
+          order_notes: formData.orderNotes.filter(note => note !== ''),
         },
       });
     },

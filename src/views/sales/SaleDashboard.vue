@@ -957,18 +957,9 @@ onUnmounted(() => {
       .order-products-list {
         overflow: auto;
       }
-
-      .order-summaries {
-        border-top: 1px solid var(--color-neutral-2);
-
-        &:first-child {
-          border-top: none;
-        }
-      }
     }
 
     .order-product-list {
-      border-bottom: 1px solid var(--color-neutral-2);
       overflow: auto;
     }
   }

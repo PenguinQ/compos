@@ -14,6 +14,7 @@ interface MutateAddSaleParams {
     name: string;
     balance?: string;
     products: SaleDocProduct[];
+    order_notes?: string[];
   };
 }
 
@@ -22,8 +23,9 @@ export default async ({ data }: MutateAddSaleParams) => {
     const ulid         = monotonicFactory();
     const { sanitize } = DOMPurify;
     const sale_id = SALE_ID_PREFIX + ulid();
-    const { name, balance, products = [] } = data;
-    const clean_name = sanitize(name);
+    const { name, balance, products = [], order_notes } = data;
+    const clean_name  = sanitize(name);
+    const clean_notes = order_notes ? order_notes.map(note => sanitize(note)) : [];
 
     if (clean_name.trim() === '')             throw new Error('Name cannot be empty');
     if (balance && !isNumericString(balance)) throw new Error('Balance must be a number');
@@ -36,6 +38,7 @@ export default async ({ data }: MutateAddSaleParams) => {
       products     : products,
       products_sold: [],
       orders       : [],
+      order_notes  : clean_notes,
       revenue      : '0',
       created_at   : new Date().toISOString(),
       updated_at   : new Date().toISOString(),

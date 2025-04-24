@@ -28,8 +28,9 @@ export default async ({ id, data }: MutateEditSaleParams) => {
 
     const { finished } = _querySale;
     const { name, balance, order_notes, products } = data;
-    const clean_name      = sanitize(name);
-    let initial_balance   = balance;
+    const clean_name    = sanitize(name);
+    const clean_notes   = order_notes ? order_notes.map(note => sanitize(note)) : [];
+    let initial_balance = balance;
 
     if (finished)                 throw new Error('You cannot edit a finished sale');
     if (clean_name.trim() === '') throw new Error('Name cannot be empty');
@@ -64,10 +65,9 @@ export default async ({ id, data }: MutateEditSaleParams) => {
 
     await _queryConstruct.update({
       $set: {
-        name: clean_name,
+        name       : clean_name,
+        order_notes: clean_notes,
         products,
-        order_notes,
-        // ...(order_notes?.length ? order_notes : {}),
         ...(initial_balance ? { initial_balance } : {}),
       },
     });
