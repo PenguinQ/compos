@@ -325,7 +325,7 @@ watch(
   <!-- Dialog Delete Sale -->
   <Dialog v-model="dialog.delete" :title="`Delete ${data?.name}?`">
     <Text body="large" textAlign="center" margin="0">
-      Currently there's no order on this sale yet, delete it?
+      Do you want to delete this sale? This action is irreversible.
     </Text>
     <template #footer>
       <div class="dialog-actions">
@@ -340,7 +340,7 @@ watch(
   <!-- Dialog Finish Sale -->
   <Dialog v-model="dialog.finish" :title="`Finish ${data?.name}?`">
     <Text body="large" textAlign="center" margin="0">
-      Finishing this product will finish this sale and set the status as finished.
+      Do you want to finish this sale? Finishing this sale will set the status as finished, and this action is irreversible.
     </Text>
     <template #footer>
       <div class="dialog-actions">
