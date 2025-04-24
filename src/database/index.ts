@@ -87,6 +87,11 @@ export const createCollections = async () => {
     bundle: {
       schema : bundle,
       methods: bundleORMs,
+      migrationStrategies: {
+        1: function(oldDoc) {
+          return oldDoc;
+        },
+      },
     },
     sale: {
       schema : sale,

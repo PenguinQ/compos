@@ -618,7 +618,6 @@ onUnmounted(() => {
             :change="order.changeFormatted"
             :products="order.products"
             :note="order.note"
-            @cancel="handleCancelOrder(order.id, order.name)"
             v-on="!order.canceled ? { cancel  : () => handleCancelOrder(order.id, order.name) } : {}"
           />
         </div>
@@ -969,6 +968,7 @@ onUnmounted(() => {
     }
 
     .order-product-list {
+      border-bottom: 1px solid var(--color-neutral-2);
       overflow: auto;
     }
   }

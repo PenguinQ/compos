@@ -262,6 +262,7 @@ $headerHeight: 56px;
       height: $headerHeight;
       color: var(--color-white);
       background-color: var(--color-black);
+      background-image: linear-gradient(180deg, var(--color-black) 0%, #141B25 100%);
       display: flex;
       align-items: center;
       justify-content: space-between;
