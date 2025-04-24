@@ -408,8 +408,8 @@ watch(
 
   &-item {
     background-color: var(--color-white);
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-neutral-2);
+    border-bottom: 1px solid var(--color-neutral-2);
     margin-bottom: 16px;
 
     &:last-of-type {
@@ -417,7 +417,7 @@ watch(
     }
 
     &__header {
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-neutral-2);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -438,7 +438,7 @@ watch(
 
   &-action {
     background: var(--color-white);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-neutral-2);
     padding: 16px;
   }
 }

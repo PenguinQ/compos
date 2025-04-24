@@ -77,6 +77,7 @@ defineExpose({
   --toolbar-height: 56px;
   min-height: var(--toolbar-height);
   background-color: var(--color-black);
+  background-image: linear-gradient(180deg, var(--color-black) 0%, #141B25 100%);
   box-shadow: rgba(0, 0, 0, 0.16) 0 3px 6px, rgba(0, 0, 0, 0.23) 0 3px 6px;
   position: relative;
   z-index: var(--z-10);

@@ -73,7 +73,7 @@ $root: '.vc-button-block';
 
   &:disabled {
     color: white;
-    background-color: var(--color-disabled-2);
+    background-color: var(--color-stone-2);
     border-color: transparent;
     cursor: not-allowed;
   }

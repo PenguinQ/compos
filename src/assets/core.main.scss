@@ -28,7 +28,7 @@ body {
   width: 100%;
   height: 100%;
   color: var(--color-black, #2E4057);
-  background-color: var(--color-background);
+  background-color: var(--color-neutral-1);
   font-family: var(--text-body-family);
   @include text-body-md;
   font-weight: 400;

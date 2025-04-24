@@ -308,7 +308,7 @@ watch(computedValue, newValue => {
     &:not(:disabled) {
       &:hover,
       &:focus {
-        background-color: var(--color-primary);
+        background-color: var(--color-blue-3);
       }
 
       &:active {
@@ -319,7 +319,7 @@ watch(computedValue, newValue => {
     }
 
     &:disabled {
-      background-color: var(--color-disabled-2);
+      background-color: var(--color-stone-3);
       border-color: transparent;
       cursor: not-allowed;
     }
@@ -362,14 +362,14 @@ watch(computedValue, newValue => {
     }
 
     &:focus {
-      border-color: var(--color-primary);
+      border-color: var(--color-blue-3);
       box-shadow: 0 2px 6px rgba(127, 90, 255, 0.1);
       outline: none;
     }
 
     &:disabled {
-      background-color: var(--color-disabled-background);
-      border-color: var(--color-disabled-border);
+      background-color: var(--color-stone-2);
+      border-color: var(--color-stone-3);
       cursor: not-allowed;
     }
   }

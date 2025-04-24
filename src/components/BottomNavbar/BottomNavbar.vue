@@ -10,6 +10,7 @@
 .cp-bottom-navbar {
   color: var(--color-white);
   background-color: var(--color-black);
+  background-image: linear-gradient(0deg, var(--color-black) 0%, #141B25 100%);
   display: grid;
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;

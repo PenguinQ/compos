@@ -1,0 +1,20 @@
+import { Canvas, Meta, ArgTypes, Story } from '@storybook/blocks';
+import * as ColorsStories from './Colors.stories';
+
+<Meta title="General/Colors" />
+
+# Colors 🎨
+The colors used in this application are defined as a CSS variables, where each color has 7 steps. You can see the colors below.
+
+## Palette
+The colors are separated as two categories, `base` and `monochromatic`. These categories are in name only, no specific usage method.
+
+### Base
+These are base colors available that can be used.
+
+<Canvas of={ColorsStories.Base} sourceState="none" />
+
+### Monochromatic
+These are monochromatic colors available that can be used.
+
+<Canvas of={ColorsStories.Monochromatic} sourceState="none" />

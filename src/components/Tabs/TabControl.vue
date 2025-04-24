@@ -75,5 +75,9 @@ defineSlots<TabControlSlots>();
       width: 100%;
     }
   }
+
+  .cp-toolbar & {
+    background-color: transparent;
+  }
 }
 </style>
