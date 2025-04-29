@@ -143,7 +143,7 @@ watch(
                   :items="[
                     {
                       title: 'Price, Stock, and SKU',
-                      description: 'Since this product has variants that have their own price, stock, and SKU, the default price, stock, and SKU of this product will follow the variants.',
+                      description: 'Since this product has variants; the price, stock, and SKU are set on each variants.',
                       type: 'info',
                     },
                   ]"
@@ -208,6 +208,7 @@ watch(
                     v-for="variant of data.variants"
                     :active="variant.active"
                     :name="variant.name"
+                    :images="variant.images"
                     :details="[
                       {
                         name: 'Price',
