@@ -108,8 +108,8 @@ const classes = computed(() => ({
 <style lang="scss">
 .cp-empty-state {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: safe center;
+  justify-content: safe center;
 
   &__container {
     max-width: 100%;

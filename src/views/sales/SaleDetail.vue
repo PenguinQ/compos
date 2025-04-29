@@ -126,7 +126,8 @@ watch(
         :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
         :title="GLOBAL.ERROR_EMPTY_TITLE"
         :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-        height="100%"
+        minHeight="100%"
+        padding="16px"
       >
         <template #action>
           <Button @click="refetch">Try Again</Button>
@@ -184,7 +185,7 @@ watch(
                         :emoji="SALE_DETAIL.EMPTY_NOTES_EMOJI"
                         :title="SALE_DETAIL.EMPTY_NOTES_TITLE"
                         :description="SALE_DETAIL.EMPTY_NOTES_DESCRIPTION"
-                        min-height="inherit"
+                        minHeight="inherit"
                         padding="16px"
                       />
                       <div v-else class="note-list">
@@ -213,7 +214,7 @@ watch(
                         :emoji="SALE_DETAIL.EMPTY_SOLD_EMOJI"
                         :title="SALE_DETAIL.EMPTY_SOLD_TITLE"
                         :description="SALE_DETAIL.EMPTY_SOLD_DESCRIPTION"
-                        min-height="inherit"
+                        minHeight="inherit"
                         padding="16px"
                       />
                       <table v-else>
@@ -251,46 +252,55 @@ watch(
         </TabPanel>
         <TabPanel>
           <div class="product-list">
-            <ProductListItem
-              :key="`sale-product-${index}`"
-              v-for="(product, index) of data.products"
-              :active="product.active"
-              :images="product.images"
-              :name="product.name"
-            >
-              <template #details>
-                <SaleProductDetails
-                  direction="horizontal"
-                  :items="[
-                    {
-                      icon: Tag,
-                      value: product.priceFormatted,
-                    },
-                    {
-                      icon: CartPlus,
-                      value: product.quantity,
-                    },
-                  ]"
-                />
-                <div v-if="product.items" class="bundle-items">
+            <EmptyState
+              v-if="!data.products.length"
+              :emoji="SALE_DETAIL.EMPTY_PRODUCT_EMOJI"
+              :title="SALE_DETAIL.EMPTY_PRODUCT_TITLE"
+              :description="SALE_DETAIL.EMPTY_PRODUCT_DESCRIPTION"
+              padding="48px 16px"
+            />
+            <template v-else>
+              <ProductListItem
+                :key="`sale-product-${index}`"
+                v-for="(product, index) of data.products"
+                :active="product.active"
+                :images="product.images"
+                :name="product.name"
+              >
+                <template #details>
                   <SaleProductDetails
-                    v-for="(item, index) in product.items"
-                    :key="index"
                     direction="horizontal"
                     :items="[
                       {
-                        icon: Box,
-                        value: item.name,
+                        icon: Tag,
+                        value: product.priceFormatted,
                       },
                       {
                         icon: CartPlus,
-                        value: item.quantity,
+                        value: product.quantity,
                       },
                     ]"
                   />
-                </div>
-              </template>
-            </ProductListItem>
+                  <div v-if="product.items" class="bundle-items">
+                    <SaleProductDetails
+                      v-for="(item, index) in product.items"
+                      :key="index"
+                      direction="horizontal"
+                      :items="[
+                        {
+                          icon: Box,
+                          value: item.name,
+                        },
+                        {
+                          icon: CartPlus,
+                          value: item.quantity,
+                        },
+                      ]"
+                    />
+                  </div>
+                </template>
+              </ProductListItem>
+            </template>
           </div>
         </TabPanel>
         <TabPanel>
@@ -299,7 +309,7 @@ watch(
             :emoji="SALE_DETAIL.EMPTY_ORDER_EMOJI"
             :title="SALE_DETAIL.EMPTY_ORDER_TITLE"
             :description="SALE_DETAIL.EMPTY_ORDER_DESCRIPTION"
-            margin="80px 0"
+            padding="48px 16px"
           />
           <div v-else class="order-list">
             <Row :col="{ default: 1, md: 2 }">

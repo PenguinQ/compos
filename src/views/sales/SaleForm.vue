@@ -1,5 +1,5 @@
 <script setup lang=ts>
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
 
 // Common Components
 import {
@@ -94,6 +94,9 @@ const {
   handleAddNote,
   handleRemoveNote,
 } = useSaleForm();
+
+const productListContainer = ref<HTMLDivElement | null>(null);
+const bundleListContainer  = ref<HTMLDivElement | null>(null);
 
 watch(
   saleDetail,
@@ -297,35 +300,35 @@ watch(
         </template>
         <TabPanels v-model="productListTab">
           <TabPanel>
-            <Bar v-if="isProductListLoading" margin="116px 0" />
+            <EmptyState
+              v-if="isProductListError"
+              :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+              :title="GLOBAL.ERROR_EMPTY_TITLE"
+              :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+              margin="48px 16px 16px"
+            >
+              <template #action>
+                <Button @click="productListRefetch">Try Again</Button>
+              </template>
+            </EmptyState>
             <template v-else>
-              <EmptyState
-                v-if="isProductListError"
-                :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-                :title="GLOBAL.ERROR_EMPTY_TITLE"
-                :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-                margin="56px 0"
-              >
-                <template #action>
-                  <Button @click="productListRefetch">Try Again</Button>
-                </template>
-              </EmptyState>
+              <Bar v-if="isProductListLoading" margin="48px 16px 16px" />
               <template v-else>
                 <EmptyState
                   v-if="!productList?.products.length && searchProductQuery === ''"
                   :emoji="SALE_FORM.PRODUCT_EMPTY_EMOJI"
                   :title="SALE_FORM.PRODUCT_EMPTY_TITLE"
                   :description="SALE_FORM.PRODUCT_EMPTY_DESCRIPTION"
-                  margin="56px 0"
+                  margin="48px 16px 16px"
                 />
                 <EmptyState
                   v-else-if="!productList?.products.length && searchProductQuery !== ''"
                   :emoji="SALE_FORM.PRODUCT_EMPTY_SEARCH_EMOJI"
                   :title="SALE_FORM.PRODUCT_EMPTY_SEARCH_TITLE"
                   :description="SALE_FORM.PRODUCT_EMPTY_SEARCH_DESCRIPTION"
-                  margin="56px 0"
+                  margin="48px 16px 16px"
                 />
-                <div v-else class="product-selection-list">
+                <div v-else ref="productListContainer" class="product-selection-list">
                   <template :key="product.id" v-for="product of productList?.products">
                     <ProductSelectionItem
                       :images="product.images"
@@ -347,7 +350,7 @@ watch(
                   </template>
                 </div>
                 <template v-if="!isProductListLoading && !isProductListError">
-                  <FloatingActions v-if="productList?.products.length" sticky=".cp-content">
+                  <FloatingActions v-if="productList?.products.length" sticky=".cp-content" :spacedElement="productListContainer">
                     <Pagination
                       frame
                       :page="pageProduct.current"
@@ -365,35 +368,35 @@ watch(
             </template>
           </TabPanel>
           <TabPanel lazy>
-            <Bar v-if="isBundleListLoading" margin="116px 0" />
+            <EmptyState
+              v-if="isBundleListError"
+              :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+              :title="GLOBAL.ERROR_EMPTY_TITLE"
+              :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+              margin="48px 16px 16px"
+            >
+              <template #action>
+                <Button @click="bundleListRefetch">Try Again</Button>
+              </template>
+            </EmptyState>
             <template v-else>
-              <EmptyState
-                v-if="isBundleListError"
-                :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-                :title="GLOBAL.ERROR_EMPTY_TITLE"
-                :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-                margin="56px 0"
-              >
-                <template #action>
-                  <Button @click="bundleListRefetch">Try Again</Button>
-                </template>
-              </EmptyState>
+              <Bar v-if="isBundleListLoading" margin="48px 16px 16px" />
               <template v-else>
                 <EmptyState
                   v-if="!bundleList?.bundles.length && searchProductQuery === ''"
                   :emoji="SALE_FORM.BUNDLE_EMPTY_EMOJI"
                   :title="SALE_FORM.BUNDLE_EMPTY_TITLE"
                   :description="SALE_FORM.BUNDLE_EMPTY_DESCRIPTION"
-                  margin="56px 0"
+                  margin="48px 16px 16px"
                 />
                 <EmptyState
                   v-else-if="!bundleList?.bundles.length && searchProductQuery !== ''"
                   :emoji="SALE_FORM.BUNDLE_EMPTY_SEARCH_EMOJI"
                   :title="SALE_FORM.BUNDLE_EMPTY_SEARCH_TITLE"
                   :description="SALE_FORM.BUNDLE_EMPTY_SEARCH_DESCRIPTION"
-                  margin="56px 0"
+                  margin="48px 16px 16px"
                 />
-                <div v-else class="product-selection-list">
+                <div v-else ref="bundleListContainer" class="product-selection-list">
                   <ProductSelectionItem
                     v-for="bundle of bundleList?.bundles"
                     :key="bundle.id"
@@ -405,9 +408,8 @@ watch(
                   />
                 </div>
                 <template v-if="!isBundleListLoading && !isBundleListError">
-                  <FloatingActions sticky=".cp-content">
+                  <FloatingActions v-if="bundleList?.bundles.length" sticky=".cp-content" :spacedElement="productListContainer">
                     <Pagination
-                      v-if="productList?.products.length"
                       frame
                       :page="pageBundle.current"
                       :total_page="pageBundle.total"

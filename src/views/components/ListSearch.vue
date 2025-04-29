@@ -8,6 +8,7 @@ import ComposIcon, { XCircleFill } from '@/components/Icons';
 type ListSearch = {
   placeholder?: string;
   sticky?: boolean;
+  value?: string;
   modelValue?: string;
 };
 
@@ -41,7 +42,7 @@ const handleClear = () => {
   <div ref="container" :class="classes">
     <Textfield
       v-bind="$attrs"
-      :value="modelValue"
+      :value="modelValue || value"
       :placeholder="placeholder"
       size="small"
       @input="handleInput"

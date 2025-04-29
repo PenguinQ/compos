@@ -55,7 +55,7 @@ const {
     :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
     :title="GLOBAL.ERROR_EMPTY_TITLE"
     :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-    margin="56px 0"
+    margin="48px 16px 16px"
   >
     <template #action>
       <Button @click="listRefetch">Try Again</Button>
@@ -65,27 +65,28 @@ const {
     <ListSearch
       sticky
       :placeholder="type === 'product' ? 'Search Product' : 'Search Bundle'"
+      :value="searchQuery"
       @input="handleSearch"
       @clear="handleSearchClear"
     />
-    <Bar v-if="listLoading" margin="56px 0" />
+    <Bar v-if="listLoading" margin="48px 16px 16px" />
     <template v-else>
       <EmptyState
         v-if="isListEmpty && searchQuery === ''"
         emoji="🍃"
         :title="type === 'product' ? PRODUCT_LIST.PRODUCT_EMPTY_TITLE : PRODUCT_LIST.BUNDLE_EMPTY_TITLE"
         :description="type === 'product' ? PRODUCT_LIST.PRODUCT_EMPTY_DESCRIPTION : PRODUCT_LIST.BUNDLE_EMPTY_DESCRIPTION"
-        margin="56px 0"
+        margin="48px 16px 16px"
       />
       <EmptyState
         v-else-if="isListEmpty && searchQuery !== ''"
         emoji="😵‍💫"
         :title="PRODUCT_LIST.SEARCH_EMPTY_TITLE"
         :description="PRODUCT_LIST.SEARCH_EMPTY_DESCRIPTION"
-        margin="56px 0"
+        margin="48px 16px 16px"
       />
       <template v-else>
-        <div class="products-list">
+        <div ref="listRef" class="product-list">
           <template v-if="list && 'products' in list">
             <Card class="product" :key="product.id" v-for="product in list.products" :to="`/product/${product.id}`">
               <ProductImage class="product__image">
@@ -109,7 +110,7 @@ const {
                   :src="image ? image : no_image"
                   :alt="`${bundle.name} image`"
                 />
-                <img v-else :src=" no_image" :alt="`${bundle.name} image`" />
+                <img v-else :src="no_image" :alt="`${bundle.name} image`" />
               </ProductImage>
               <div class="product__detail">
                 <Text class="product__title" heading="4" margin="0 0 8px" :title="bundle.name">
@@ -124,7 +125,7 @@ const {
       </template>
     </template>
   </template>
-  <FloatingActions sticky=".cp-content">
+  <FloatingActions v-if="!listError" sticky=".cp-content" spacedElement=".product-list">
     <FloatingActionButton
       align="flex-end"
       @click="$router.push(`${type === 'product' ? '/product/add' : '/bundle/add'}`)"
@@ -148,7 +149,7 @@ const {
 </template>
 
 <style lang="scss" scoped>
-.products-list {
+.product-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
@@ -176,19 +177,19 @@ const {
 }
 
 @include screen-md {
-  .products-list {
+  .product-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @include screen-lg {
-  .products-list {
+  .product-list {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 @include screen-xl {
-  .products-list {
+  .product-list {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }

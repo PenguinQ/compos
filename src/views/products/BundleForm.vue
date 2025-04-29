@@ -270,33 +270,33 @@ watch(
         <template #fixed>
           <PullToRefresh @refresh="handleRefreshList" />
         </template>
-        <Bar v-if="productListLoading" />
+        <EmptyState
+          v-if="productListError"
+          :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+          :title="GLOBAL.ERROR_EMPTY_TITLE"
+          :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+          margin="48px 16px 16px"
+        >
+          <template #action>
+            <Button @click="productListRefetch">Try Again</Button>
+          </template>
+        </EmptyState>
         <template v-else>
-          <EmptyState
-            v-if="productListError"
-            :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
-            :title="GLOBAL.ERROR_EMPTY_TITLE"
-            :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-            height="100%"
-          >
-            <template #action>
-              <Button @click="productListRefetch">Try Again</Button>
-            </template>
-          </EmptyState>
+          <Bar v-if="productListLoading" margin="48px 16px 16px" />
           <template v-else>
             <EmptyState
               v-if="!productList?.products.length && searchQuery === ''"
               emoji="🍃"
               :title="BUNDLE_FORM.PRODUCT_LIST_EMPTY_TITLE"
               :description="BUNDLE_FORM.PRODUCT_LIST_EMPTY_DESCRIPTION"
-              height="100%"
+              margin="48px 16px 16px"
             />
             <EmptyState
               v-else-if="!productList?.products.length && searchQuery !== ''"
               emoji="😵‍💫"
               :title="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_TITLE"
               :description="BUNDLE_FORM.PRODUCT_SEARCH_EMPTY_DESCRIPTION"
-              height="100%"
+              margin="48px 16px 16px"
             />
             <template v-else>
               <div class="product-selection-list">
@@ -322,7 +322,7 @@ watch(
               </div>
             </template>
             <template v-if="!productListLoading && !productListError">
-              <FloatingActions v-if="productList?.products.length" sticky=".cp-content">
+              <FloatingActions v-if="productList?.products.length" sticky=".cp-content" spacedElement=".product-selection-list">
                 <Pagination
                   frame
                   :loading="productListLoading"

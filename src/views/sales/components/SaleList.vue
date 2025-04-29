@@ -19,11 +19,11 @@ import { useSaleList } from '../hooks/SaleList.hook';
 import GLOBAL from '@/views/constants';
 import { SALE_LIST } from '../constants';
 
-type SalesListProps = {
+type SaleListProps = {
   status: 'running' | 'finished';
 };
 
-const props = defineProps<SalesListProps>();
+const props = defineProps<SaleListProps>();
 
 const {
   saleList,
@@ -46,7 +46,7 @@ const {
     :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
     :title="GLOBAL.ERROR_EMPTY_TITLE"
     :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-    margin="56px 0"
+    margin="48px 16px 16px"
   >
     <template #action>
       <Button @click="saleListRefetch">Try Again</Button>
@@ -59,24 +59,24 @@ const {
       @input="handleSearch"
       @clear="handleSearchClear"
     />
-    <Bar v-if="saleListLoading" margin="56px 0" />
+    <Bar v-if="saleListLoading" margin="48px 16px 16px" />
     <template v-else>
       <EmptyState
         v-if="isListEmpty && searchQuery === ''"
         emoji="🍃"
         :title="status === 'running' ? SALE_LIST.RUNNING_EMPTY_TITLE : SALE_LIST.FINISHED_EMPTY_TITLE"
         :description="status === 'running' ? SALE_LIST.RUNNING_EMPTY_DESCRIPTION : SALE_LIST.FINISHED_EMPTY_DESCRIPTION"
-        margin="56px 0"
+        margin="48px 16px 16px"
       />
       <EmptyState
         v-else-if="isListEmpty && searchQuery !== ''"
         emoji="😵‍💫"
         :title="SALE_LIST.SEARCH_EMPTY_TITLE"
         :description="SALE_LIST.SEARCH_EMPTY_DESCRIPTION"
-        margin="56px 0"
+        margin="48px 16px 16px"
       />
       <template v-else>
-        <div class="sales-list">
+        <div class="sale-list">
           <div
             :key="`sale-list-item-${sale.id}`"
             v-for="sale in saleList?.sales"
@@ -109,7 +109,7 @@ const {
       </template>
     </template>
   </template>
-  <FloatingActions sticky=".cp-content">
+  <FloatingActions v-if="!saleListError" sticky=".cp-content" spacedElement=".sale-list">
     <FloatingActionButton
       v-if="status === 'running'"
       align="flex-end"
@@ -179,7 +179,6 @@ const {
 
   &__count {
     @include text-body-sm;
-    // font-size: var(--text-body-size-sm);
   }
 
   &__action {

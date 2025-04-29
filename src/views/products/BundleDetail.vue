@@ -174,7 +174,7 @@ watch(
                   emoji="🍃"
                   :title="BUNDLE_DETAIL.EMPTY_PRODUCT_TITLE"
                   :description="BUNDLE_DETAIL.EMPTY_PRODUCT_DESCRIPTION"
-                  margin="56px 0"
+                  padding="48px 16px"
                 />
                 <template v-else>
                   <ProductListItem
