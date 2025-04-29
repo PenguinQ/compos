@@ -144,7 +144,7 @@ onUnmounted(() => {
             :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
             :title="GLOBAL.ERROR_EMPTY_TITLE"
             :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-            margin="56px 0"
+            padding="48px 0"
           >
             <template #action>
               <Button @click="productsRefetch">Try Again</Button>
@@ -235,7 +235,8 @@ onUnmounted(() => {
                 :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
                 :title="GLOBAL.ERROR_EMPTY_TITLE"
                 :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-                height="100%"
+                minHeight="100%"
+                padding="16px"
               >
                 <template #action>
                   <Button @click="ordersRefetch">Try Again</Button>
@@ -249,7 +250,8 @@ onUnmounted(() => {
                     :emoji="SALE_DASHBOARD.ORDER_LIST_EMPTY_EMOJI"
                     :title="SALE_DASHBOARD.ORDER_LIST_EMPTY_TITLE"
                     :description="SALE_DASHBOARD.ORDER_LIST_EMPTY_DESCRIPTION"
-                    height="100%"
+                    minHeight="100%"
+                    padding="16px"
                   />
                   <div v-else class="order-list">
                     <OrderCard
@@ -274,8 +276,8 @@ onUnmounted(() => {
                 :emoji="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_EMOJI"
                 :title="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_TITLE"
                 :description="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_DESCRIPTION"
-                height="100%"
-                margin="0 16px"
+                minHeight="100%"
+                padding="16px"
               />
               <div v-else class="order-product-list">
                 <ProductListItem
@@ -441,7 +443,8 @@ onUnmounted(() => {
           :emoji="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_EMOJI"
           :title="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_TITLE"
           :description="SALE_DASHBOARD.ORDER_ITEMS_EMPTY_DESCRIPTION"
-          height="100%"
+          minHeight="100%"
+          padding="16px"
         />
         <div v-else class="order-product-list">
           <ProductListItem
@@ -591,7 +594,8 @@ onUnmounted(() => {
       :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
       :title="GLOBAL.ERROR_EMPTY_TITLE"
       :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
-      height="100%"
+      minHeight="100%"
+      padding="16px"
     >
       <template #action>
         <Button @click="ordersRefetch">Try Again</Button>
@@ -605,7 +609,8 @@ onUnmounted(() => {
           :emoji="SALE_DASHBOARD.ORDER_LIST_EMPTY_EMOJI"
           :title="SALE_DASHBOARD.ORDER_LIST_EMPTY_TITLE"
           :description="SALE_DASHBOARD.ORDER_LIST_EMPTY_DESCRIPTION"
-          height="100%"
+          minHeight="100%"
+          padding="16px"
         />
         <div v-else class="order-list">
           <OrderCard

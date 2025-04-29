@@ -6,15 +6,15 @@ import {
   onUnmounted,
   onUpdated,
 } from 'vue';
-import type { UnwrapRef } from 'vue';
 
 type FloatingActions = {
-  spacedElement?: UnwrapRef<HTMLElement> | string | null;
   sticky?: string;
 };
 
 const props = defineProps<FloatingActions>();
 
+const wrapper        = ref<HTMLDivElement | null>(null);
+const spacer         = ref<HTMLDivElement | null>(null);
 const container      = ref<HTMLDivElement | null>(null);
 const dialog         = computed(() => container.value?.closest('.cp-dialog'));
 const measuredHeight = ref(0);
@@ -23,6 +23,10 @@ const classes = computed(() => ({
   'vc-floating-actions--sticky': props.sticky,
 }));
 let observer: IntersectionObserver | null = null;
+
+const setHeight = () => {
+  measuredHeight.value = container.value!.offsetHeight;
+};
 
 const handleVisibility = () => {
   if (container.value) {
@@ -44,37 +48,24 @@ onMounted(() => {
   if (container.value && props.sticky) {
     observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const containerRect = container.value!.getBoundingClientRect();
-
-          measuredHeight.value = containerRect.height;
-        };
+        if (entry.isIntersecting) setHeight();
       });
     });
 
     observer.observe(container.value as HTMLDivElement);
 
-    handleVisibility();
-
-    if (dialog.value) dialog.value.addEventListener('transitionend', handleVisibility);
+    if (dialog.value) {
+      dialog.value.addEventListener('transitionend', handleVisibility);
+    } else {
+      handleVisibility();
+    }
   }
 });
 
 onUpdated(() => {
-  if (props.sticky && container.value) {
-    const containerRect = container.value.getBoundingClientRect();
-
-    measuredHeight.value = containerRect.height;
-
-    if (props.spacedElement) {
-      if (typeof props.spacedElement === 'string') {
-        const reference = document.querySelector(props.spacedElement) as HTMLElement;
-
-        if (reference) reference.style.paddingBottom = `${measuredHeight.value}px`;
-      } else {
-        props.spacedElement.style.paddingBottom = `${measuredHeight.value}px`;
-      }
-    }
+  if (props.sticky) {
+    setHeight();
+    handleVisibility();
   }
 });
 
@@ -82,39 +73,57 @@ onUnmounted(() => {
   if (observer) observer.disconnect();
 });
 
-defineExpose({ height: measuredHeight, container });
+defineExpose({ height: measuredHeight, spacer, container });
 </script>
 
 <template>
-  <div ref="container" :class="classes">
-    <slot />
+  <div ref="wrapper" :class="classes">
+    <div
+      v-if="sticky"
+      ref="spacer"
+      class="vc-floating-actions__spacer"
+      :style="{ height: sticky ? `calc(${measuredHeight}px)` : undefined }"
+    />
+    <div ref="container" class="vc-floating-actions__container">
+      <slot />
+    </div>
   </div>
 </template>
 
 <style lang="scss">
 .vc-floating-actions {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  align-items: center;
-  padding: 16px;
-  transition: opacity var(--transition-duration-normal) var(--transition-timing-function);
-  pointer-events: none;
+  display: contents;
 
-  &:empty {
-    padding: 0;
+  &__container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    padding: 16px;
+    pointer-events: none;
+    transition: opacity var(--transition-duration-normal) var(--transition-timing-function);
+
+    &:empty {
+      padding: 0;
+    }
+
+    * {
+      pointer-events: auto;
+    }
   }
 
-  * {
-    pointer-events: auto;
+  &__spacer {
+    pointer-events: none;
   }
 
   &--sticky {
-    opacity: 0;
-    position: fixed;
-    bottom: 0;
-    z-index: var(--z-60);
+    .vc-floating-actions__container {
+      opacity: 0;
+      position: fixed;
+      bottom: 0;
+      z-index: var(--z-60);
+    }
   }
 }
 </style>

@@ -200,7 +200,7 @@ watch(
                   emoji="🍃"
                   :title="PRODUCT_DETAIL.EMPTY_VARIANT_TITLE"
                   :description="PRODUCT_DETAIL.EMPTY_VARIANT_DESCRIPTION"
-                  margin="56px 0"
+                  padding="48px 16px"
                 />
                 <template v-else>
                   <ProductListItem

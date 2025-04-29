@@ -35,8 +35,8 @@ const props = withDefaults(defineProps<Shimmer>(), {
 
 const classes = computed(() => ({
   'cp-loader'                 : true,
-  'cp-loader--shimmer'        : true,
-  'cp-loader--shimmer-animate': props.animate,
+  'cp-loader-shimmer'        : true,
+  'cp-loader-shimmer--animate': props.animate,
 }));
 const styles = reactive({
   display     : props.block ? 'block' : undefined,
@@ -62,7 +62,7 @@ const styles = reactive({
   }
 }
 
-.cp-loader--shimmer {
+.cp-loader-shimmer {
   width: 100px;
   height: 100px;
   background-color: #CED3DC;
@@ -70,7 +70,7 @@ const styles = reactive({
   border-radius: 8px;
   vertical-align: top;
 
-  &-animate {
+  &--animate {
     animation: animation 1500ms ease-in-out infinite;
   }
 }

@@ -239,7 +239,7 @@ watch(
                         emoji="🍃"
                         :title="PRODUCT_FORM.EMPTY_VARIANT_TITLE"
                         :description="PRODUCT_FORM.EMPTY_VARIANT_DESCRIPTION"
-                        margin="56px 0"
+                        padding="48px 16px"
                       >
                         <template #action>
                           <Button @click="handleAddVariant">Add Variant</Button>

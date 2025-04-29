@@ -15,6 +15,10 @@ type Bar = {
    */
   margin?: CSS.Property.Margin;
   /**
+   * Set the Bar **container** CSS padding.
+   */
+  padding?: CSS.Property.Padding;
+  /**
    * Set the Bar size.
    */
   size?: CSS.Property.Width | CSS.Property.Height;
@@ -30,18 +34,18 @@ withDefaults(defineProps<Bar>(), {
 </script>
 
 <template>
-  <div class="cp-loader cp-loader--bar" :style="{ width, height, margin }">
+  <div class="cp-loader cp-loader-bar" :style="{ width, height, padding, margin }">
     <span :style="{ width: size, height: size }" />
   </div>
 </template>
 
 <style lang="scss">
-.cp-loader--bar {
+.cp-loader-bar {
   --loader-color: no-repeat linear-gradient(v-bind(color) calc(50% - 10px), transparent 0 calc(50% + 10px), v-bind(color) 0);
   height: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: safe center;
+  justify-content: safe center;
 
   span {
     width: 45px;
