@@ -182,6 +182,7 @@ watch(
                     v-for="product of data.products"
                     :active="product.active"
                     :name="product.name"
+                    :images="product.image ? [product.image] : []"
                     :details="[
                       {
                         name: 'Price',
