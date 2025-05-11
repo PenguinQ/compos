@@ -7,7 +7,7 @@ import type { RouterLinkProps, RouteLocationRaw } from 'vue-router';
 import type { ListTitleAs } from './ListTitle.vue';
 import type { ListDescriptionAs } from './ListDescription.vue';
 
-interface ListItem extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLinkProps, 'to'> {
+export interface ListItem extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLinkProps, 'to'> {
   /**
    * Set some text at the end of the ListItem.
    */
