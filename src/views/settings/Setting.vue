@@ -17,9 +17,12 @@ import {
   ListItem,
 } from '@/components';
 import ComposIcon, {
+  Book,
+  ChatDots,
   ChevronRight,
   DatabaseDown,
   DatabaseUp,
+  Github,
   InfoCircle,
 } from '@/components/Icons';
 
@@ -59,7 +62,7 @@ const {
             <ComposIcon :icon="DatabaseUp" :size="28" />
           </template>
           <template #append>
-            <ComposIcon :icon="ChevronRight" :size="28" />
+            <ComposIcon :icon="ChevronRight" :size="20" />
           </template>
         </ListItem>
         <ListItem
@@ -70,6 +73,9 @@ const {
         >
           <template #prepend>
             <ComposIcon :icon="DatabaseDown" :size="28" />
+          </template>
+          <template #append>
+            <ComposIcon :icon="ChevronRight" :size="20" />
           </template>
         </ListItem>
       </List>
@@ -83,40 +89,52 @@ const {
       />
     </Card>
     <Card radius="0" margin="16px 0">
-      <List title="About">
-        <ListItem title="Version" :description="`${version}`">
+      <List title="Help">
+        <ListItem
+          title="How to Use"
+          description="See the guide on how to use the application in Notion."
+          to="https://www.notion.so/penguinq/How-to-Use-ComPOS-1e478b9f40b580079906d95048f660e8"
+          target="_blank"
+        >
           <template #prepend>
-            <ComposIcon :icon="InfoCircle" :size="28" />
+            <ComposIcon :icon="Book" :size="28" />
+          </template>
+          <template #append>
+            <ComposIcon :icon="ChevronRight" :size="20" />
           </template>
         </ListItem>
         <ListItem
           title="Submit Issues"
-          description="Submit any issues you found on this application Github repository."
-          clickable
-          @click="dialogBackup = true"
+          description="Submit any issues you found on this application GitHub repository."
+          to="https://github.com/PenguinQ/compos/issues"
         >
           <template #prepend>
-            <ComposIcon :icon="DatabaseUp" :size="28" />
+            <ComposIcon :icon="ChatDots" :size="28" />
           </template>
-        </ListItem>
-        <ListItem
-          title="Create Backup File"
-          description="Export all your data as a backup file (.json) for future recovery and restoration."
-          clickable
-          @click="dialogBackup = true"
-        >
-          <template #prepend>
-            <ComposIcon :icon="DatabaseUp" :size="28" />
+          <template #append>
+            <ComposIcon :icon="ChevronRight" :size="20" />
           </template>
         </ListItem>
       </List>
     </Card>
-
     <Card radius="0" margin="16px 0">
       <List title="About">
         <ListItem title="Version" :description="`${version}`">
           <template #prepend>
             <ComposIcon :icon="InfoCircle" :size="28" />
+          </template>
+        </ListItem>
+        <ListItem
+          title="GitHub"
+          description="Check the application repository on GitHub!"
+          to="https://github.com/PenguinQ/compos/issues"
+          target="_blank"
+        >
+          <template #prepend>
+            <ComposIcon :icon="Github" :size="28" />
+          </template>
+          <template #append>
+            <ComposIcon :icon="ChevronRight" :size="20" />
           </template>
         </ListItem>
       </List>
@@ -127,7 +145,7 @@ const {
   <Dialog
     v-model="dialogBackup"
     title="Create Backup Data?"
-    maxWidth="288px"
+    maxWidth="480px"
   >
     <Checkbox v-model="backupImages" label="Backup Images?" />
     <Text body="small" margin="4px 0 0">
@@ -148,7 +166,7 @@ const {
   <Dialog
     v-model="dialogRestore"
     title="Restore from Backup File?"
-    maxWidth="288px"
+    maxWidth="480px"
     @leave="handleDialogRestoreLeave"
   >
     <Text body="large" textAlign="center" margin="0 0 24px">
