@@ -64,9 +64,9 @@ The command will run scripts to generate web-component and icon map needed that 
 
 ## Known Issues
 1. **Firefox iOS Backup**
-   In iOS, Firefox has different behaviour with other browsers using Chromium, where Firefox will preview JSON data rather than give option to download it when creating backup like other Chromium browser do unless you’re .
+   In iOS, Firefox has different behaviour with other browsers using Chromium, where Firefox will preview JSON data rather than give option to download it when creating backup like other Chromium browser do unless you’re **adding the website to the home screen**.
 
-   If you’re add the application to the home screen and run it in PWA context window, it run just fine.
+   If you’re add the application to the home screen and run it in PWA context window, it should run just fine.
 
    Reference:
    - https://bugs.webkit.org/show_bug.cgi?id=216918#c14
