@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { version } from '../../../package.json';
+
 // Common Components
 import {
   Header,
@@ -14,7 +16,12 @@ import {
   List,
   ListItem,
 } from '@/components';
-import ComposIcon, { DatabaseDown, DatabaseUp } from '@/components/Icons';
+import ComposIcon, {
+  ChevronRight,
+  DatabaseDown,
+  DatabaseUp,
+  InfoCircle,
+} from '@/components/Icons';
 
 import { useSetting } from './hooks/Setting.hook';
 
@@ -51,6 +58,9 @@ const {
           <template #prepend>
             <ComposIcon :icon="DatabaseUp" :size="28" />
           </template>
+          <template #append>
+            <ComposIcon :icon="ChevronRight" :size="28" />
+          </template>
         </ListItem>
         <ListItem
           title="Restore From Backup File"
@@ -72,10 +82,53 @@ const {
         @change="handleChangeRestore"
       />
     </Card>
+    <Card radius="0" margin="16px 0">
+      <List title="About">
+        <ListItem title="Version" :description="`${version}`">
+          <template #prepend>
+            <ComposIcon :icon="InfoCircle" :size="28" />
+          </template>
+        </ListItem>
+        <ListItem
+          title="Submit Issues"
+          description="Submit any issues you found on this application Github repository."
+          clickable
+          @click="dialogBackup = true"
+        >
+          <template #prepend>
+            <ComposIcon :icon="DatabaseUp" :size="28" />
+          </template>
+        </ListItem>
+        <ListItem
+          title="Create Backup File"
+          description="Export all your data as a backup file (.json) for future recovery and restoration."
+          clickable
+          @click="dialogBackup = true"
+        >
+          <template #prepend>
+            <ComposIcon :icon="DatabaseUp" :size="28" />
+          </template>
+        </ListItem>
+      </List>
+    </Card>
+
+    <Card radius="0" margin="16px 0">
+      <List title="About">
+        <ListItem title="Version" :description="`${version}`">
+          <template #prepend>
+            <ComposIcon :icon="InfoCircle" :size="28" />
+          </template>
+        </ListItem>
+      </List>
+    </Card>
   </Content>
 
   <!-- Dialog Backup -->
-  <Dialog v-model="dialogBackup" title="Create Backup Data?">
+  <Dialog
+    v-model="dialogBackup"
+    title="Create Backup Data?"
+    maxWidth="288px"
+  >
     <Checkbox v-model="backupImages" label="Backup Images?" />
     <Text body="small" margin="4px 0 0">
       Backup all images will takes longer time to complete and increase the backup file size.
@@ -92,7 +145,12 @@ const {
   </Dialog>
 
   <!-- Dialog Restore -->
-  <Dialog v-model="dialogRestore" title="Restore from Backup File?" @leave="handleDialogRestoreLeave">
+  <Dialog
+    v-model="dialogRestore"
+    title="Restore from Backup File?"
+    maxWidth="288px"
+    @leave="handleDialogRestoreLeave"
+  >
     <Text body="large" textAlign="center" margin="0 0 24px">
       Restore using the backup file will replace current existing data with the new one.
     </Text>

@@ -19,6 +19,7 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.5.0",
     "big.js": "^6.2.2",
     "compressorjs": "^1.2.1",
     "file-saver": "^2.0.5",
@@ -64,6 +65,7 @@
     "rimraf": "^5.0.5",
     "sass": "^1.66.1",
     "storybook": "^8.4.6",
+    "storybook-vue3-router": "^5.0.0",
     "svgo": "^3.3.2",
     "tsx": "^4.19.2",
     "typescript": "^5.0.2",

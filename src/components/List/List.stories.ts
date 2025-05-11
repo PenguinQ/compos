@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { vueRouter } from 'storybook-vue3-router'
 import type { Meta, StoryObj } from '@storybook/vue3';
 import type { ComponentProps } from 'vue-component-type-helpers';
 
@@ -32,6 +33,9 @@ const meta: Meta<ListProps> = {
   args: {
     inset: false,
   },
+  decorators: [
+    vueRouter(),
+  ],
 };
 
 export default meta;
@@ -53,6 +57,8 @@ export const Playground: Story = {
       {
         title: 'Firmament Frontline: Glamoth',
         description: 'Firmament Frontline: Glamoth is a Planar Ornament Relic Set that can be obtained by challenging World 8 in Simulated Universe or Divergent Universe in 2-5 ✨ rarities.',
+        to: 'https://www.google.com',
+        target: '_blank',
       },
       {
         title: 'Rutilant Arena',

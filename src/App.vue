@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, watchEffect } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
+import { Analytics } from '@vercel/analytics/vue';
 
 import { recreateDB } from '@/database';
 import { backupStore } from '@/stores';
@@ -36,6 +37,7 @@ watchEffect(() => {
 
 <template>
   <ToastProvider>
+    <Analytics />
     <OfflineStatus />
     <WarningFirefox />
     <RouterView />
