@@ -12,7 +12,7 @@ interface Link extends /* @vue-ignore */ AnchorHTMLAttributes, RouterLinkProps {
   fontStyle?: CSS.Property.FontStyle;
   fontWeight?: CSS.Property.FontWeight;
   lineHeight?: CSS.Property.LineHeight;
-  target?: string; // re-referenced since somehow even though the attributes already defined in AnchorHTMLAttributes, it's shown warning on runtime.
+  target?: '_self' | '_blank' | '_parent' | '_top'; // re-referenced since somehow even though the attributes already defined in AnchorHTMLAttributes, it's shown warning on runtime.
   textAlign?: CSS.Property.TextAlign;
   textDecoration?: CSS.Property.TextDecoration;
   textTransform?: CSS.Property.TextTransform;

@@ -1,31 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, reactive, onMounted, defineAsyncComponent } from 'vue';
-import type { Slot, UnwrapRef } from 'vue';
+import type { AnchorHTMLAttributes, Slot, UnwrapRef } from 'vue';
+import { RouterLink } from 'vue-router';
+import type { RouterLinkProps, RouteLocationRaw } from 'vue-router';
 
+import ListItemContent from './ListItemContent.vue';
 import type { ListTitleAs } from './ListTitle.vue';
 import type { ListDescriptionAs } from './ListDescription.vue';
 
-export type ListItem = {
-  /**
-   * Set the title of the ListItem.
-   */
-  title?: string;
-  /**
-   * Render the title as another HTML tag, default as `h4`.
-   */
-  titleAs?: ListTitleAs;
-  /**
-   * Set the description text of the ListItem.
-   */
-  description?: string;
-  /**
-   * Render the description as another HTML tag, default as `p`.
-   */
-  descriptionAs?: ListDescriptionAs;
-  /**
-   * Set some text at the start of the ListItem.
-   */
-  prepend?: string;
+interface ListItem extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLinkProps, 'to'> {
   /**
    * Set some text at the end of the ListItem.
    */
@@ -34,9 +17,62 @@ export type ListItem = {
    * Set the ListItem as a clickable button.
    */
   clickable?: boolean;
-};
+  /**
+   * Render the description as another HTML tag, default as `p`.
+   */
+  descriptionAs?: ListDescriptionAs;
+  /**
+   * Set the description text of the ListItem.
+   */
+  description?: string;
+  /**
+   * Set some text at the start of the ListItem.
+   */
+  prepend?: string;
+  target?: '_self' | '_blank' | '_parent' | '_top';
+  to?: string | RouteLocationRaw;
+  /**
+   * Render the title as another HTML tag, default as `h4`.
+   */
+  titleAs?: ListTitleAs;
+  /**
+   * Set the title of the ListItem.
+   */
+  title?: string;
+}
 
-type ListItemSlots = {
+// export type ListItem = {
+//   /**
+//    * Set some text at the end of the ListItem.
+//    */
+//   append?: string;
+//   /**
+//    * Set the ListItem as a clickable button.
+//    */
+//   clickable?: boolean;
+//   /**
+//    * Render the description as another HTML tag, default as `p`.
+//    */
+//   descriptionAs?: ListDescriptionAs;
+//   /**
+//    * Set the description text of the ListItem.
+//    */
+//   description?: string;
+//   /**
+//    * Set some text at the start of the ListItem.
+//    */
+//   prepend?: string;
+//   /**
+//    * Render the title as another HTML tag, default as `h4`.
+//    */
+//   titleAs?: ListTitleAs;
+//   /**
+//    * Set the title of the ListItem.
+//    */
+//   title?: string;
+// };
+
+export type ListItemSlots = {
   /**
    * Slot used to create custom append, since append property only accept string.
    */
@@ -57,6 +93,8 @@ type ListInputs = {
   textfield: HTMLDivElement | null,
 };
 
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(defineProps<ListItem>(), {
   clickable: false,
 });
@@ -66,6 +104,7 @@ const slots = defineSlots<ListItemSlots>();
 const ListTitle       = defineAsyncComponent(() => import('./ListTitle.vue'));
 const ListDescription = defineAsyncComponent(() => import('./ListDescription.vue'));
 
+const isExternalLink   = ref(false);
 const containerRef     = ref<HTMLDivElement | null>(null);
 const appendRef        = ref<HTMLDivElement | null>(null);
 const prependRef       = ref<HTMLDivElement | null>(null);
@@ -83,9 +122,11 @@ const prependedInputs = reactive<ListInputs>({
 });
 const classes = computed(() => ({
   'cp-list-item'           : true,
+  'cp-list-item--link'     : props.to && typeof props.to === 'string',
   'cp-list-item--clickable': props.clickable,
   'cp-list-item--input'    : hasInput.value,
 }));
+const contentRef = ref(null);
 
 const searchElements = (inputs: UnwrapRef<ListInputs>, container: HTMLDivElement) => {
   inputs.checkbox  = container.querySelector<HTMLDivElement>('.cp-form-checkbox');
@@ -134,34 +175,109 @@ const handleKeydown = (e: KeyboardEvent) => {
 };
 
 onMounted(() => {
-  if (containerRef.value) {
+  if (containerRef.value && contentRef.value) {
     if (slots.append !== undefined) {
-      searchElements(appendedInputs, appendRef.value as HTMLDivElement);
+      console.log(contentRef.value);
+      // searchElements(appendedInputs, appendRef.value as HTMLDivElement);
 
-      if (appendedInputs.select)   handleSelect(appendedInputs.select);
-      if (appendedInputs.checkbox) handleCheckbox(appendedInputs.checkbox);
+      // if (appendedInputs.select)   handleSelect(appendedInputs.select);
+      // if (appendedInputs.checkbox) handleCheckbox(appendedInputs.checkbox);
     }
 
-    if (slots.prepend !== undefined) {
-      searchElements(prependedInputs, prependRef.value as HTMLDivElement);
+    // if (slots.append !== undefined) {
+    //   searchElements(appendedInputs, appendRef.value as HTMLDivElement);
 
-      if (prependedInputs.select)   handleSelect(prependedInputs.select);
-      if (prependedInputs.checkbox) handleCheckbox(prependedInputs.checkbox);
-    }
+    //   if (appendedInputs.select)   handleSelect(appendedInputs.select);
+    //   if (appendedInputs.checkbox) handleCheckbox(appendedInputs.checkbox);
+    // }
+
+    // if (slots.prepend !== undefined) {
+    //   searchElements(prependedInputs, prependRef.value as HTMLDivElement);
+
+    //   if (prependedInputs.select)   handleSelect(prependedInputs.select);
+    //   if (prependedInputs.checkbox) handleCheckbox(prependedInputs.checkbox);
+    // }
+  }
+
+  if (props.to) {
+    isExternalLink.value = typeof props.to === 'string' && props.to.startsWith('http');
   }
 });
 </script>
 
 <template>
+  <template v-if="props.to">
+    <a
+      v-if="isExternalLink"
+      ref="containerRef"
+      v-bind="$attrs"
+      :class="classes"
+      :href="(to as string)"
+      :target="target"
+      :data-cp-disabled="hasDisabledInput ? hasDisabledInput : undefined"
+    >
+      <div ref="prependRef" v-if="prepend || $slots.prepend" class="cp-list-item__prepend">
+        <slot v-if="$slots.prepend" name="prepend" />
+        <template v-if="prepend">{{ prepend }}</template>
+      </div>
+      <div class="cp-list-item__content">
+        <ListTitle v-if="title" :as="titleAs" v-html="title" />
+        <ListDescription v-if="description" :as="descriptionAs" v-html="description" />
+        <slot />
+      </div>
+      <div ref="appendRef" v-if="append || $slots.append" class="cp-list-item__append">
+        <slot v-if="$slots.append" name="append" />
+        <template v-if="append">{{ append }}</template>
+      </div>
+    </a>
+    <RouterLink v-else :to="(to as RouteLocationRaw)" v-slot="{ href, navigate }" custom>
+      <a
+        ref="containerRef"
+        v-bind="$attrs"
+        :class="classes"
+        :href="href"
+        :target="target"
+        @click="navigate"
+      >
+        <div ref="prependRef" v-if="prepend || $slots.prepend" class="cp-list-item__prepend">
+          <slot v-if="$slots.prepend" name="prepend" />
+          <template v-if="prepend">{{ prepend }}</template>
+        </div>
+        <div class="cp-list-item__content">
+          <ListTitle v-if="title" :as="titleAs" v-html="title" />
+          <ListDescription v-if="description" :as="descriptionAs" v-html="description" />
+          <slot />
+        </div>
+        <div ref="appendRef" v-if="append || $slots.append" class="cp-list-item__append">
+          <slot v-if="$slots.append" name="append" />
+          <template v-if="append">{{ append }}</template>
+        </div>
+      </a>
+    </RouterLink>
+  </template>
   <div
+    v-else
     ref="containerRef"
+    v-bind="$attrs"
     :class="classes"
     :role="clickable ? 'button' : undefined"
     :tabindex="clickable ? 0 : undefined"
     :data-cp-disabled="hasDisabledInput ? hasDisabledInput : undefined"
     @keydown="handleKeydown"
   >
-    <div ref="prependRef" v-if="prepend || $slots.prepend" class="cp-list-item__prepend">
+    <ListItemContent
+      ref="contentRef"
+      :append="append"
+      :prepend="prepend"
+      :title="title"
+      :titleAs="titleAs"
+      :description="description"
+      :descriptionAs="descriptionAs"
+    />
+      <!-- <template v-if="$slots.append">{{ $slots.append }}</template>
+      <template v-if="$slots.prepend">{{ $slots.prepend }}</template>
+    </ListItemContent> -->
+    <!-- <div ref="prependRef" v-if="prepend || $slots.prepend" class="cp-list-item__prepend">
       <slot v-if="$slots.prepend" name="prepend" />
       <template v-if="prepend">{{ prepend }}</template>
     </div>
@@ -173,7 +289,7 @@ onMounted(() => {
     <div ref="appendRef" v-if="append || $slots.append" class="cp-list-item__append">
       <slot v-if="$slots.append" name="append" />
       <template v-if="append">{{ append }}</template>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -188,7 +304,7 @@ onMounted(() => {
   padding-inline-start: var(--padding-start, 16px);
   padding-inline-end: var(--padding-start, 16px);
 
-  &:last-of-type {
+  &:last-child {
     border-bottom-color: transparent;
   }
 
@@ -280,10 +396,15 @@ onMounted(() => {
     }
   }
 
+  &--link,
   &--clickable,
   &--input {
     user-select: none;
     cursor: pointer;
+  }
+
+  &--link {
+    text-decoration: none;
   }
 
   &--clickable {
