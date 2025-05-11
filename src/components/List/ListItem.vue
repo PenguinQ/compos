@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, reactive, onMounted, defineAsyncComponent } from 'vue';
-import type { AnchorHTMLAttributes, Slot, UnwrapRef } from 'vue';
 import { RouterLink } from 'vue-router';
+import type { AnchorHTMLAttributes, Slot, UnwrapRef } from 'vue';
 import type { RouterLinkProps, RouteLocationRaw } from 'vue-router';
 
-import ListItemContent from './ListItemContent.vue';
 import type { ListTitleAs } from './ListTitle.vue';
 import type { ListDescriptionAs } from './ListDescription.vue';
 
@@ -29,8 +28,10 @@ interface ListItem extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLi
    * Set some text at the start of the ListItem.
    */
   prepend?: string;
+  /**
+   *
+   */
   target?: '_self' | '_blank' | '_parent' | '_top';
-  to?: string | RouteLocationRaw;
   /**
    * Render the title as another HTML tag, default as `h4`.
    */
@@ -39,38 +40,11 @@ interface ListItem extends /* @vue-ignore */ AnchorHTMLAttributes, Omit<RouterLi
    * Set the title of the ListItem.
    */
   title?: string;
+  /**
+   *
+   */
+  to?: string | RouteLocationRaw;
 }
-
-// export type ListItem = {
-//   /**
-//    * Set some text at the end of the ListItem.
-//    */
-//   append?: string;
-//   /**
-//    * Set the ListItem as a clickable button.
-//    */
-//   clickable?: boolean;
-//   /**
-//    * Render the description as another HTML tag, default as `p`.
-//    */
-//   descriptionAs?: ListDescriptionAs;
-//   /**
-//    * Set the description text of the ListItem.
-//    */
-//   description?: string;
-//   /**
-//    * Set some text at the start of the ListItem.
-//    */
-//   prepend?: string;
-//   /**
-//    * Render the title as another HTML tag, default as `h4`.
-//    */
-//   titleAs?: ListTitleAs;
-//   /**
-//    * Set the title of the ListItem.
-//    */
-//   title?: string;
-// };
 
 export type ListItemSlots = {
   /**
@@ -126,7 +100,6 @@ const classes = computed(() => ({
   'cp-list-item--clickable': props.clickable,
   'cp-list-item--input'    : hasInput.value,
 }));
-const contentRef = ref(null);
 
 const searchElements = (inputs: UnwrapRef<ListInputs>, container: HTMLDivElement) => {
   inputs.checkbox  = container.querySelector<HTMLDivElement>('.cp-form-checkbox');
@@ -175,28 +148,20 @@ const handleKeydown = (e: KeyboardEvent) => {
 };
 
 onMounted(() => {
-  if (containerRef.value && contentRef.value) {
+  if (containerRef.value) {
     if (slots.append !== undefined) {
-      console.log(contentRef.value);
-      // searchElements(appendedInputs, appendRef.value as HTMLDivElement);
+      searchElements(appendedInputs, appendRef.value as HTMLDivElement);
 
-      // if (appendedInputs.select)   handleSelect(appendedInputs.select);
-      // if (appendedInputs.checkbox) handleCheckbox(appendedInputs.checkbox);
+      if (appendedInputs.select)   handleSelect(appendedInputs.select);
+      if (appendedInputs.checkbox) handleCheckbox(appendedInputs.checkbox);
     }
 
-    // if (slots.append !== undefined) {
-    //   searchElements(appendedInputs, appendRef.value as HTMLDivElement);
+    if (slots.prepend !== undefined) {
+      searchElements(prependedInputs, prependRef.value as HTMLDivElement);
 
-    //   if (appendedInputs.select)   handleSelect(appendedInputs.select);
-    //   if (appendedInputs.checkbox) handleCheckbox(appendedInputs.checkbox);
-    // }
-
-    // if (slots.prepend !== undefined) {
-    //   searchElements(prependedInputs, prependRef.value as HTMLDivElement);
-
-    //   if (prependedInputs.select)   handleSelect(prependedInputs.select);
-    //   if (prependedInputs.checkbox) handleCheckbox(prependedInputs.checkbox);
-    // }
+      if (prependedInputs.select)   handleSelect(prependedInputs.select);
+      if (prependedInputs.checkbox) handleCheckbox(prependedInputs.checkbox);
+    }
   }
 
   if (props.to) {
@@ -265,19 +230,7 @@ onMounted(() => {
     :data-cp-disabled="hasDisabledInput ? hasDisabledInput : undefined"
     @keydown="handleKeydown"
   >
-    <ListItemContent
-      ref="contentRef"
-      :append="append"
-      :prepend="prepend"
-      :title="title"
-      :titleAs="titleAs"
-      :description="description"
-      :descriptionAs="descriptionAs"
-    />
-      <!-- <template v-if="$slots.append">{{ $slots.append }}</template>
-      <template v-if="$slots.prepend">{{ $slots.prepend }}</template>
-    </ListItemContent> -->
-    <!-- <div ref="prependRef" v-if="prepend || $slots.prepend" class="cp-list-item__prepend">
+    <div ref="prependRef" v-if="prepend || $slots.prepend" class="cp-list-item__prepend">
       <slot v-if="$slots.prepend" name="prepend" />
       <template v-if="prepend">{{ prepend }}</template>
     </div>
@@ -289,7 +242,7 @@ onMounted(() => {
     <div ref="appendRef" v-if="append || $slots.append" class="cp-list-item__append">
       <slot v-if="$slots.append" name="append" />
       <template v-if="append">{{ append }}</template>
-    </div> -->
+    </div>
   </div>
 </template>
 
@@ -405,6 +358,10 @@ onMounted(() => {
 
   &--link {
     text-decoration: none;
+
+    &:visited {
+      color: inherit;
+    }
   }
 
   &--clickable {
