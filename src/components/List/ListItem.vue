@@ -357,6 +357,7 @@ onMounted(() => {
   }
 
   &--link {
+    color: var(--color-black);
     text-decoration: none;
 
     &:visited {

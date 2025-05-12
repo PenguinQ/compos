@@ -4,7 +4,7 @@ import { RouterView, useRoute } from 'vue-router';
 import { Analytics } from '@vercel/analytics/vue';
 
 import { recreateDB } from '@/database';
-import { backupStore } from '@/stores';
+import { visibilityStore } from '@/stores';
 
 // Common Components
 import { OfflineStatus, ToastProvider } from '@/components';
@@ -15,11 +15,11 @@ import WarningFirefox from '@/views/components/WarningFirefox.vue';
 const route = useRoute();
 
 const checkFromBlob = () => {
-  if (document.visibilityState === 'visible' && backupStore.get()) recreateDB();
+  if (document.visibilityState === 'visible' && visibilityStore.get()) recreateDB();
 };
 
 onMounted(() => {
-  backupStore.clear();
+  visibilityStore.clear();
 
   document.addEventListener('visibilitychange', checkFromBlob);
 });
