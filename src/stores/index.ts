@@ -1,1 +1,1 @@
-export { default as backupStore } from './backupStore';
+export { default as visibilityStore } from './visibilityStore';

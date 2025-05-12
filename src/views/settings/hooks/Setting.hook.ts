@@ -4,6 +4,9 @@ import { ref, inject } from 'vue';
 import { useQuery } from '@/database/hooks';
 import { createBackup, restoreBackup } from '@/database/helpers';
 
+// Stores
+import { visibilityStore } from '@/stores';
+
 export const useSetting = () => {
   const toast         = inject('ToastProvider');
   const backupImages  = ref(false);
@@ -94,6 +97,13 @@ export const useSetting = () => {
     if (backupInput.value) backupInput.value.value = '';
   };
 
+  const handleExternalLink = (url: string) => {
+    visibilityStore.set();
+    window.open(url, '_blank', 'noopener,noreferrer');
+
+    return false;
+  };
+
   return {
     backupInput,
     backupImages,
@@ -108,5 +118,6 @@ export const useSetting = () => {
     restoreRefetch,
     handleChangeRestore,
     handleDialogRestoreLeave,
+    handleExternalLink,
   }
 };

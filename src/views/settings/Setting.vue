@@ -40,6 +40,7 @@ const {
   restoreRefetch,
   handleChangeRestore,
   handleDialogRestoreLeave,
+  handleExternalLink,
 } = useSetting();
 </script>
 
@@ -93,8 +94,8 @@ const {
         <ListItem
           title="How to Use"
           description="See the guide on how to use the application in Notion."
-          to="https://www.notion.so/penguinq/How-to-Use-ComPOS-1e478b9f40b580079906d95048f660e8"
-          target="_blank"
+          clickable
+          @click="handleExternalLink('https://www.notion.so/penguinq/How-to-Use-ComPOS-1e478b9f40b580079906d95048f660e8')"
         >
           <template #prepend>
             <ComposIcon :icon="Book" :size="28" />
@@ -106,7 +107,8 @@ const {
         <ListItem
           title="Submit Issues"
           description="Submit any issues you found on this application GitHub repository."
-          to="https://github.com/PenguinQ/compos/issues"
+          clickable
+          @click="handleExternalLink('https://github.com/PenguinQ/compos/issues')"
         >
           <template #prepend>
             <ComposIcon :icon="ChatDots" :size="28" />
@@ -127,8 +129,8 @@ const {
         <ListItem
           title="GitHub"
           description="Check the application repository on GitHub!"
-          to="https://github.com/PenguinQ/compos/issues"
-          target="_blank"
+          clickable
+          @click="handleExternalLink('https://github.com/PenguinQ/compos/issues')"
         >
           <template #prepend>
             <ComposIcon :icon="Github" :size="28" />
