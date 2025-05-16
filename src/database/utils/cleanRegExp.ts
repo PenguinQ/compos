@@ -1,3 +1,3 @@
-export default (string: string) => {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+export default (dirty: string) => {
+  return dirty.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
