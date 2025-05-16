@@ -1,8 +1,9 @@
+import DOMPurify from 'isomorphic-dompurify';
 import type { RxDocument } from 'rxdb';
 import type { Observable } from 'rxjs';
 
 import { db } from '@/database';
-import { getPageStatus } from '@/database/utils';
+import { cleanRegexp, getPageStatus } from '@/database/utils';
 import type { QueryParams } from '@/database/types';
 import type { SaleDoc } from '@/database/types';
 
@@ -43,21 +44,23 @@ export default (async ({
   status,
 }: GetSaleListParams) => {
   try {
-    const query_selector = search_query ? {
-      name: { $regex: `.*${search_query}.*`, $options: 'i' },
+    const { sanitize } = DOMPurify;
+    const clean_query = cleanRegexp(sanitize(search_query ? search_query : ''));
+    const query_selector = clean_query ? {
+      name: { $regex: `.*${clean_query}.*`, $options: 'i' },
       finished: { $eq: status === 'running' ? false : true },
     } : {
       id: { $gt: '' },
       finished: { $eq: status === 'running' ? false : true },
     };
-    const query_skip     = page > 1 ? (page - 1) * limit  : 0;
-    const query_limit    = limit;
-    const query_sort     = [{ id: sort }];
+    const query_skip  = page > 1 ? (page - 1) * limit  : 0;
+    const query_limit = limit;
+    const query_sort  = [{ id: sort }];
 
     const getSalesCount = async () => {
       let _query;
 
-      if (search_query) {
+      if (clean_query) {
         _query = await db.sale.find({ selector: query_selector }).exec();
 
         return _query.length;
@@ -90,7 +93,7 @@ export default (async ({
       const { first_page, last_page } = await getPageStatus({
         collection: 'sale',
         query     : {
-          name    : { $regex: `.*${search_query}.*`, $options: 'i' },
+          name    : { $regex: `.*${clean_query}.*`, $options: 'i' },
           finished: { $eq: status === 'running' ? false : true },
         },
         data      : query as RxDocument<SaleDoc>[],

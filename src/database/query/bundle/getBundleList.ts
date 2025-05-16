@@ -1,9 +1,10 @@
 import { blobToBase64String } from 'rxdb';
+import DOMPurify from 'isomorphic-dompurify';
 import type { RxAttachment, RxDocument } from 'rxdb';
 import type { Observable } from 'rxjs';
 
 import { db } from '@/database';
-import { getPageStatus, isVariant } from '@/database/utils';
+import { cleanRegexp, getPageStatus, isVariant } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
 import type { BundleDoc, ProductDoc, QueryParams, VariantDoc } from '@/database/types';
 
@@ -47,8 +48,10 @@ export default (async ({
   sort,
 }: GetBundleListParams) => {
   try {
-    const query_selector = search_query ? {
-      name: { $regex: `.*${search_query}.*`, $options: 'i' },
+    const { sanitize } = DOMPurify;
+    const clean_query = cleanRegexp(sanitize(search_query ? search_query : ''));
+    const query_selector = clean_query ? {
+      name: { $regex: `.*${clean_query}.*`, $options: 'i' },
       ...(active !== undefined && { active: { $eq: active } }),
     } : {
       id: { $gte: '' },
@@ -61,7 +64,7 @@ export default (async ({
     const getBundlesCount = async () => {
       let _query;
 
-      if (search_query) {
+      if (clean_query) {
         _query = await db.bundle.find({ selector: query_selector }).exec();
 
         return _query.length;
@@ -114,7 +117,7 @@ export default (async ({
       const { first_page, last_page } = await getPageStatus({
         collection: 'bundle',
         query     : {
-          name: { $regex: `.*${search_query}.*`, $options: 'i' },
+          name: { $regex: `.*${clean_query}.*`, $options: 'i' },
           ...(active !== undefined && { active: { $eq: active } }),
         },
         data      : query as RxDocument<BundleDoc>[],

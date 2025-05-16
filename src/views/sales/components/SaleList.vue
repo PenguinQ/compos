@@ -56,6 +56,7 @@ const {
     <ListSearch
       sticky
       :placeholder="status === 'running' ? 'Search running sales' : 'Search finished sales'"
+      :value="searchQuery"
       @input="handleSearch"
       @clear="handleSearchClear"
     />
