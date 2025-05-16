@@ -4,7 +4,7 @@ import type { RxDocument } from 'rxdb';
 import type { Observable } from 'rxjs';
 
 import { db } from '@/database';
-import { cleanRegexp, getPageStatus } from '@/database/utils';
+import { cleanRegExp, getPageStatus } from '@/database/utils';
 import { THUMBNAIL_ID_PREFIX } from '@/database/constants';
 import type { ProductDoc, VariantDoc, QueryParams } from '@/database/types';
 
@@ -56,7 +56,7 @@ export default (async ({
 }: GetProductListParams) => {
   try {
     const { sanitize } = DOMPurify;
-    const clean_query = cleanRegexp(sanitize(search_query ? search_query : ''));
+    const clean_query = cleanRegExp(sanitize(search_query ? search_query : ''));
     const query_selector = clean_query ? {
       name: { $regex: `.*${clean_query}.*`, $options: 'i' },
       ...(active !== undefined && { active }),

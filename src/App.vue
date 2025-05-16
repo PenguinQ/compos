@@ -37,7 +37,7 @@ watchEffect(() => {
 
 <template>
   <ToastProvider>
-    <Analytics />
+    <Analytics mode="production" />
     <OfflineStatus />
     <WarningFirefox />
     <RouterView />
