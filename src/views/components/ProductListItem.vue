@@ -132,6 +132,7 @@ withDefaults(defineProps<ProductItem>(), {
     &__name {
       font-weight: 600;
       margin-bottom: 4px;
+      overflow-x: auto;
 
       &:only-child {
         margin: 0;

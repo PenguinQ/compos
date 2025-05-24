@@ -33,13 +33,13 @@ export const SALE_FORM = {
   BUNDLE_EMPTY_DESCRIPTION: 'Looks like there\'s no active bundles, try updating or checking one.',
   BUNDLE_EMPTY_SEARCH_EMOJI: '😵‍💫',
   BUNDLE_EMPTY_SEARCH_TITLE: 'Welp',
-  BUNDLE_EMPTY_SEARCH_DESCRIPTION: 'Looks like there\'s no active bundles with that title, look for another one!',
+  BUNDLE_EMPTY_SEARCH_DESCRIPTION: 'Looks like there\'s no active bundles with that name, look for another one!',
   PRODUCT_EMPTY_EMOJI: '🍃',
   PRODUCT_EMPTY_TITLE: 'Hmm...',
   PRODUCT_EMPTY_DESCRIPTION: 'Looks like there\'s no active products, try updating or checking one.',
   PRODUCT_EMPTY_SEARCH_EMOJI: '😵‍💫',
   PRODUCT_EMPTY_SEARCH_TITLE: 'Welp',
-  PRODUCT_EMPTY_SEARCH_DESCRIPTION: 'Looks like there\'s no active products with that title, look for another one!',
+  PRODUCT_EMPTY_SEARCH_DESCRIPTION: 'Looks like there\'s no active products with that name, look for another one!',
   FORM_MESSAGE_BALANCE: 'Set the amount of money for a change you provide for this sale.',
   FORM_MESSAGE_ORDER_NOTES: 'Set the predefined notes for every order that you can add on each order made.',
 };
@@ -51,4 +51,7 @@ export const SALE_DASHBOARD = {
   ORDER_LIST_EMPTY_EMOJI: '🍃',
   ORDER_LIST_EMPTY_TITLE: 'Nothing Here Yet...',
   ORDER_LIST_EMPTY_DESCRIPTION: 'Time to add your first order!',
+  PRODUCT_EMPTY_SEARCH_EMOJI: '😵‍💫',
+  PRODUCT_EMPTY_SEARCH_TITLE: 'Welp',
+  PRODUCT_EMPTY_SEARCH_DESCRIPTION: 'Looks like there\'s no active products with that name, look for another one!',
 };
