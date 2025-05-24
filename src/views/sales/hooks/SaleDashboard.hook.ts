@@ -1,4 +1,4 @@
-import { computed, reactive, inject, ref } from 'vue';
+import { computed, reactive, inject, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Big from 'big.js';
 
@@ -13,12 +13,16 @@ import {
 import { mutateAddOrder, mutateCancelOrder } from '@/database/query/order';
 import { isBundle } from '@/database/utils';
 
+// Helpers
+import { cleanWhitespace, debounce } from '@/helpers';
+
 // Normalizers
 import {
   dashboardDetailsNormalizer,
   dashboardOrdersNormalizer,
   dashboardProductsNormalizer,
 } from '../normalizer/SaleDashboard.normalizer';
+
 
 type SaleProductDetails = ReturnType<typeof dashboardDetailsNormalizer>['products'];
 
@@ -37,8 +41,10 @@ export const useSaleDashboard = () => {
   const detailsProducts       = ref<SaleProductDetails>([]);
   const loadProducts          = ref(false);
   const loadOrders            = ref(false);
+  const initialProducts       = ref<SaleProduct[]>([]);
   const products              = ref<SaleProduct[]>([]);
-  const orderedProducts       = computed(() => products.value.filter(p => p.amount > 0));
+  const searchQuery           = ref('');
+  const orderedProducts       = computed(() => initialProducts.value.filter(p => p.amount > 0));
   const sortedOrderedProducts = computed(() => orderedProducts.value.sort((a, b) => a.sortOrder - b.sortOrder));
   const totalProductsCount    = computed(() => orderedProducts.value.reduce((acc, product) => acc += product.amount, 0));
   const totalProductsPrice    = computed(() => orderedProducts.value.reduce((acc, product) => acc.plus(Big(product.price).times(product.amount)), Big(0)));
@@ -74,6 +80,7 @@ export const useSaleDashboard = () => {
     data     : detailsData,
     isError  : isDetailsError,
     isLoading: isDetailsLoading,
+    refetch  : detailsRefetch,
   } = useQuery({
     queryKey: ['sale-dashboard-details', params.id],
     queryFn: () => getSaleDetail(params.id as string),
@@ -134,7 +141,8 @@ export const useSaleDashboard = () => {
         const { products: responseProducts } = response;
         const tempProducts = [];
 
-        // Reset the products stock map
+        // Reset the products stock map, and search query
+        searchQuery.value = '';
         productsStock.clear();
 
         for (const product of responseProducts) {
@@ -156,7 +164,8 @@ export const useSaleDashboard = () => {
           }
         }
 
-        products.value = tempProducts;
+        initialProducts.value = tempProducts;
+        products.value        = tempProducts;
       }
     },
   });
@@ -299,13 +308,13 @@ export const useSaleDashboard = () => {
   });
 
   const handleSortOrder = (id: string) => {
-    const product  = products.value.find(p => p.id === id);
+    const product  = initialProducts.value.find(p => p.id === id);
 
     if (product) {
       const inOrders = product.amount > 0;
 
       if (product.sortOrder === 0 && inOrders) {
-        const highestOrder = products.value.reduce((acc, curr) => {
+        const highestOrder = initialProducts.value.reduce((acc, curr) => {
           return curr.sortOrder > acc.sortOrder ? curr : acc;
         }, products.value[0]).sortOrder;
 
@@ -434,8 +443,22 @@ export const useSaleDashboard = () => {
     dialog.cancel     = true;
   };
 
+  watch(searchQuery, debounce((query: string) => {
+    if (query !== '') {
+      products.value = initialProducts.value.filter(product => {
+        const name         = product.name.toLowerCase();
+        const cleanedQuery = cleanWhitespace(query.toLowerCase());
+
+        return name.includes(cleanedQuery);
+      });
+    } else {
+      products.value = initialProducts.value;
+    }
+  }));
+
   return {
     saleId: params.id,
+    searchQuery,
     detailsData,
     ordersData,
     products,
@@ -469,6 +492,7 @@ export const useSaleDashboard = () => {
     handlePayment,
     handleShowOrderHistory,
     handleSortOrder,
+    detailsRefetch,
     productsRefetch,
     ordersRefetch,
     mutateFinish,

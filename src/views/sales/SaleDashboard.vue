@@ -15,6 +15,7 @@ import {
   EmptyState,
   QuantityEditor,
   Text,
+  Textfield,
   Select,
   Toolbar,
   ToolbarAction,
@@ -53,6 +54,7 @@ import { SALE_DASHBOARD } from './constants';
 
 const {
   saleId,
+  searchQuery,
   dialog,
   controlsView,
   balance,
@@ -84,6 +86,7 @@ const {
   handlePayment,
   handleShowOrderHistory,
   handleSortOrder,
+  detailsRefetch,
   productsRefetch,
   ordersRefetch,
   mutateCancelOrderFn,
@@ -137,83 +140,121 @@ onUnmounted(() => {
     <div class="dashboard">
       <!-- Content -->
       <div class="dashboard-content">
-        <Bar v-if="isProductsLoading" />
+        <div class="product-list-search">
+          <Textfield v-model="searchQuery" placeholder="Search product..." size="small">
+            <template v-if="searchQuery" #append>
+              <button class="button button--icon" type="button" @click="searchQuery = ''">
+                <ComposIcon :icon="XCircleFill" :size="20" />
+              </button>
+            </template>
+          </Textfield>
+        </div>
+        <Bar v-if="isDetailsLoading" />
         <template v-else>
           <EmptyState
-            v-if="isProductsError"
+            v-if="isDetailsError"
             :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
             :title="GLOBAL.ERROR_EMPTY_TITLE"
             :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
             padding="48px 0"
           >
             <template #action>
-              <Button @click="productsRefetch">Try Again</Button>
+              <Button @click="detailsRefetch">Try Again</Button>
             </template>
           </EmptyState>
-          <Card v-else class="product-list-card">
-            <CardBody padding="0">
-              <ProductListItem
-                v-for="product in products"
-                :key="`product-${product.id}`"
-                :active="product.active"
-                :images="product.images"
+          <template v-else>
+            <Bar v-if="isProductsLoading" />
+            <template v-else>
+              <EmptyState
+                v-if="isProductsError"
+                :emoji="GLOBAL.ERROR_EMPTY_EMOJI"
+                :title="GLOBAL.ERROR_EMPTY_TITLE"
+                :description="GLOBAL.ERROR_EMPTY_DESCRIPTION"
+                padding="48px 0"
               >
-                <template #details>
-                  <Text class="text-truncate" heading="5" truncate margin="0 0 8px">{{ product.name }}</Text>
-                  <SaleProductDetails
-                    :items="[
-                      {
-                        icon: Tag,
-                        value: product.priceFormatted,
-                      },
-                      ...(!product.items ? [{
-                        icon: Boxes,
-                        value: product.stock
-                      }] : []),
-                      {
-                        icon: CartPlus,
-                        value: product.quantity,
-                      },
-                    ]"
-                  />
+                <template #action>
+                  <Button @click="productsRefetch">Try Again</Button>
                 </template>
-                <template #additionals>
-                  <div v-if="product.items" class="bundle-items">
-                    <SaleProductDetails
-                      v-for="(item, index) in product.items"
-                      :key="`${product.id}-item-${index}`"
-                      direction="horizontal"
-                      :items="[
-                        {
-                          icon: Box,
-                          value: item.name,
-                          truncate: true,
-                        },
-                        {
-                          icon: Boxes,
-                          value: item.stock,
-                        },
-                        {
-                          icon: CartPlus,
-                          value: item.quantity,
-                        },
-                      ]"
-                    />
-                  </div>
-                </template>
-                <template #extensions>
-                  <QuantityEditor
-                    v-model="product.amount"
-                    :step="product.quantity"
-                    :max="product.stock"
-                    :disabled="!product.active"
-                    @clickIncrement="handleSortOrder(product.id)"
-                    @clickDecrement="handleSortOrder(product.id)"
-                  />
-                </template>
-              </ProductListItem>
-            </CardBody>
-          </Card>
+              </EmptyState>
+              <Card v-else class="product-list-card">
+                <CardBody padding="0">
+                  <EmptyState
+                    v-if="!products.length"
+                    :emoji="SALE_DASHBOARD.PRODUCT_EMPTY_SEARCH_EMOJI"
+                    :title="SALE_DASHBOARD.PRODUCT_EMPTY_SEARCH_TITLE"
+                    :description="SALE_DASHBOARD.PRODUCT_EMPTY_SEARCH_DESCRIPTION"
+                    padding="48px 0"
+                  >
+                    <template #action>
+                      <Button @click="searchQuery = ''">Reset</Button>
+                    </template>
+                  </EmptyState>
+                  <template v-else>
+                    <ProductListItem
+                      v-for="product in products"
+                      :key="`product-${product.id}`"
+                      :active="product.active"
+                      :images="product.images"
+                    >
+                      <template #details>
+                        <Text class="text-truncate" heading="5" truncate margin="0 0 8px" style="overflow-x: auto;">{{ product.name }}</Text>
+                        <SaleProductDetails
+                          :items="[
+                            {
+                              icon: Tag,
+                              value: product.priceFormatted,
+                            },
+                            ...(!product.items ? [{
+                              icon: Boxes,
+                              value: product.stock
+                            }] : []),
+                            {
+                              icon: CartPlus,
+                              value: product.quantity,
+                            },
+                          ]"
+                        />
+                      </template>
+                      <template #additionals>
+                        <div v-if="product.items" class="bundle-items">
+                          <SaleProductDetails
+                            v-for="(item, index) in product.items"
+                            :key="`${product.id}-item-${index}`"
+                            direction="horizontal"
+                            :items="[
+                              {
+                                icon: Box,
+                                value: item.name,
+                                truncate: true,
+                              },
+                              {
+                                icon: Boxes,
+                                value: item.stock,
+                              },
+                              {
+                                icon: CartPlus,
+                                value: item.quantity,
+                              },
+                            ]"
+                          />
+                        </div>
+                      </template>
+                      <template #extensions>
+                        <QuantityEditor
+                          v-model="product.amount"
+                          :step="product.quantity"
+                          :max="product.stock"
+                          :disabled="!product.active"
+                          @clickIncrement="handleSortOrder(product.id)"
+                          @clickDecrement="handleSortOrder(product.id)"
+                        />
+                      </template>
+                    </ProductListItem>
+                  </template>
+                </CardBody>
+              </Card>
+            </template>
+          </template>
         </template>
       </div>
 
@@ -680,6 +721,9 @@ onUnmounted(() => {
     overflow-y: auto;
     padding-top: 16px;
     padding-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
   &-control {
@@ -709,6 +753,11 @@ onUnmounted(() => {
 }
 
 .product {
+  &-list-search {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
   &-list-card {
     max-height: 100%;
     border-right: none;
@@ -1028,6 +1077,11 @@ onUnmounted(() => {
   }
 
   .product {
+    &-list-search {
+      padding-right: 0;
+      padding-left: 0;
+    }
+
     &-list-card {
       border-radius: 8px;
 
